@@ -316,5 +316,6 @@
   "thread_archived": "Fil archivé.",
   "view": "Voir",
   "report_post": "Signaler la publication",
-  "delete_post": "Supprimer la publication"
+  "delete_post": "Supprimer la publication",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

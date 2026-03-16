@@ -316,5 +316,6 @@
   "thread_archived": "Тема архивирована.",
   "view": "Смотреть",
   "report_post": "Пожаловаться на пост",
-  "delete_post": "Удалить пост"
+  "delete_post": "Удалить пост",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

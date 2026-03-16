@@ -316,5 +316,6 @@
   "thread_archived": "Keskustelu arkistoitu.",
   "view": "Katso",
   "report_post": "Ilmoita viestistä",
-  "delete_post": "Poista viesti"
+  "delete_post": "Poista viesti",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

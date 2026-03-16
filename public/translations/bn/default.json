@@ -316,5 +316,6 @@
   "thread_archived": "থ্রেড আর্কাইভ করা হয়েছে।",
   "view": "দেখুন",
   "report_post": "পোস্ট রিপোর্ট করুন",
-  "delete_post": "পোস্ট মুছুন"
+  "delete_post": "পোস্ট মুছুন",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

@@ -316,5 +316,6 @@
   "thread_archived": "Thread na-archive na.",
   "view": "Tingnan",
   "report_post": "I-report ang post",
-  "delete_post": "Tanggalin ang post"
+  "delete_post": "Tanggalin ang post",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

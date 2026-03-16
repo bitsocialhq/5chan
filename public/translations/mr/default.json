@@ -316,5 +316,6 @@
   "thread_archived": "सूत्र आर्काइव केले गेले.",
   "view": "पहा",
   "report_post": "पोस्ट निर्वेदन करा",
-  "delete_post": "पोस्ट हटवा"
+  "delete_post": "पोस्ट हटवा",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

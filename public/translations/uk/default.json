@@ -316,5 +316,6 @@
   "thread_archived": "Тему архівовано.",
   "view": "Переглянути",
   "report_post": "Поскаржитися на пост",
-  "delete_post": "Видалити пост"
+  "delete_post": "Видалити пост",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

@@ -316,5 +316,6 @@
   "thread_archived": "Wątek zarchiwizowany.",
   "view": "Zobacz",
   "report_post": "Zgłoś post",
-  "delete_post": "Usuń post"
+  "delete_post": "Usuń post",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

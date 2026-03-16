@@ -316,5 +316,6 @@
   "thread_archived": "主题已归档。",
   "view": "查看",
   "report_post": "举报帖子",
-  "delete_post": "删除帖子"
+  "delete_post": "删除帖子",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

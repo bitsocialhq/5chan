@@ -316,5 +316,6 @@
   "thread_archived": "Tråd arkiveret.",
   "view": "Se",
   "report_post": "Rapporter indlæg",
-  "delete_post": "Slet indlæg"
+  "delete_post": "Slet indlæg",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

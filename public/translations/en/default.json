@@ -100,6 +100,7 @@
   "hide_post": "Hide post",
   "report_post": "Report post",
   "delete_post": "Delete post",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone.",
   "hide_thread": "Hide thread",
   "unhide_post": "Unhide post",
   "unhide_thread": "Unhide thread",

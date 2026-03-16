@@ -316,5 +316,6 @@
   "thread_archived": "थ्रेड आर्काइव हो गया।",
   "view": "देखें",
   "report_post": "पोस्ट की रिपोर्ट करें",
-  "delete_post": "पोस्ट हटाएं"
+  "delete_post": "पोस्ट हटाएं",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

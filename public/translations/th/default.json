@@ -316,5 +316,6 @@
   "thread_archived": "เธรดถูกเก็บถาวร",
   "view": "ดู",
   "report_post": "แจ้งรายงานโพสต์",
-  "delete_post": "ลบโพสต์"
+  "delete_post": "ลบโพสต์",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

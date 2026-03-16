@@ -316,5 +316,6 @@
   "thread_archived": "스레드가 아카이브되었습니다.",
   "view": "보기",
   "report_post": "게시물 신고",
-  "delete_post": "게시물 삭제"
+  "delete_post": "게시물 삭제",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

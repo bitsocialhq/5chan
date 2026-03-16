@@ -234,6 +234,10 @@ const DeletePostButton = ({ post, onClose }: DeletePostButtonProps) => {
   const { publishCommentEdit } = usePublishCommentEdit(deleteOptions);
 
   const handleClick = async () => {
+    const confirmed = window.confirm(t('delete_post_confirm'));
+    if (!confirmed) {
+      return;
+    }
     try {
       await publishCommentEdit();
       onClose();

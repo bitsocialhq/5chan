@@ -316,5 +316,6 @@
   "thread_archived": "Το νήμα αρχειοθετήθηκε.",
   "view": "Προβολή",
   "report_post": "Αναφορά ανάρτησης",
-  "delete_post": "Διαγραφή ανάρτησης"
+  "delete_post": "Διαγραφή ανάρτησης",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

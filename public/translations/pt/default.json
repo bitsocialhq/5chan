@@ -316,5 +316,6 @@
   "thread_archived": "Tópico arquivado.",
   "view": "Ver",
   "report_post": "Denunciar publicação",
-  "delete_post": "Excluir publicação"
+  "delete_post": "Excluir publicação",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

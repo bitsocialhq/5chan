@@ -316,5 +316,6 @@
   "thread_archived": "Thread archiviert.",
   "view": "Ansehen",
   "report_post": "Beitrag melden",
-  "delete_post": "Beitrag löschen"
+  "delete_post": "Beitrag löschen",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

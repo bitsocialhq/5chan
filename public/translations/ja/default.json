@@ -316,5 +316,6 @@
   "thread_archived": "スレッドがアーカイブされました。",
   "view": "表示",
   "report_post": "投稿を報告",
-  "delete_post": "投稿を削除"
+  "delete_post": "投稿を削除",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

@@ -316,5 +316,6 @@
   "thread_archived": "Fjala është arkivuar.",
   "view": "Shiko",
   "report_post": "Raporto postimin",
-  "delete_post": "Fshi postimin"
+  "delete_post": "Fshi postimin",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

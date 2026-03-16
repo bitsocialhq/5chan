@@ -316,5 +316,6 @@
   "thread_archived": "تم أرشفة الموضوع.",
   "view": "عرض",
   "report_post": "الإبلاغ عن المنشور",
-  "delete_post": "حذف المنشور"
+  "delete_post": "حذف المنشور",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

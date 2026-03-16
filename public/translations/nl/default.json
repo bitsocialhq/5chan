@@ -316,5 +316,6 @@
   "thread_archived": "Thread gearchiveerd.",
   "view": "Bekijken",
   "report_post": "Bericht melden",
-  "delete_post": "Bericht verwijderen"
+  "delete_post": "Bericht verwijderen",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

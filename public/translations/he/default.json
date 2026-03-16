@@ -316,5 +316,6 @@
   "thread_archived": "השרשור נשמר בארכיון.",
   "view": "צפה",
   "report_post": "דווח על פוסט",
-  "delete_post": "מחק פוסט"
+  "delete_post": "מחק פוסט",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }

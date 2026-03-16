@@ -316,5 +316,6 @@
   "thread_archived": "Benang diarsipkan.",
   "view": "Lihat",
   "report_post": "Laporkan kiriman",
-  "delete_post": "Hapus kiriman"
+  "delete_post": "Hapus kiriman",
+  "delete_post_confirm": "Delete this post permanently? This cannot be undone."
 }
