@@ -7,7 +7,7 @@
   "license": "GPL-2.0-only",
   "private": true,
   "dependencies": {
-    "@bitsocialnet/bitsocial-react-hooks": "https://github.com/bitsocialnet/bitsocial-react-hooks.git#8c0b3d6d51723a1bd2777ad0f04babbae64d678d",
+    "@bitsocialnet/bitsocial-react-hooks": "https://github.com/bitsocialnet/bitsocial-react-hooks.git#0a8008377ca2e745b861de0690c73c837b5d039d",
     "@capacitor/app": "7.0.1",
     "@capacitor/status-bar": "7.0.1",
     "@capawesome/capacitor-android-edge-to-edge-support": "7.2.2",
@@ -29,7 +29,6 @@
     "i18next-browser-languagedetector": "7.1.0",
     "i18next-http-backend": "2.2.2",
     "json-stringify-pretty-compact": "4.0.0",
-    "kubo": "0.39.0",
     "lodash": "4.17.23",
     "memoizee": "0.4.15",
     "react": "19.1.2",
