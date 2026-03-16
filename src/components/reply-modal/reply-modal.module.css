@@ -8,9 +8,6 @@
   z-index: 999;
   background-color: var(--challenge-modal-background-color);
   border: var(--challenge-modal-border);
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 
 .title {

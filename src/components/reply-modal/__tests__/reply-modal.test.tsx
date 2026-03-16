@@ -166,15 +166,26 @@ vi.mock('lodash/debounce', () => ({
 
 vi.mock('@react-spring/web', async () => {
   const React = await vi.importActual<typeof import('react')>('react');
+  const normalizeStyle = (style: Record<string, unknown> | undefined) =>
+    style
+      ? Object.fromEntries(
+          Object.entries(style).map(([key, value]) => [
+            key,
+            typeof value === 'object' && value !== null && 'get' in value && typeof (value as { get: unknown }).get === 'function'
+              ? (value as { get: () => unknown }).get()
+              : value,
+          ]),
+        )
+      : undefined;
 
   return {
     animated: {
-      div: React.forwardRef(({ style, ...props }: any, ref) => React.createElement('div', { ...props, ref, style: { touchAction: style?.touchAction } })),
+      div: React.forwardRef(({ style, ...props }: any, ref) => React.createElement('div', { ...props, ref, style: normalizeStyle(style) })),
     },
     useSpring: () => [
       {
-        x: { get: () => 120 },
-        y: { get: () => 80 },
+        left: { get: () => 120 },
+        top: { get: () => 80 },
       },
       {
         start: testState.springStartMock,
@@ -436,5 +447,16 @@ describe('ReplyModal', () => {
     expect(linkInput?.getAttribute('placeholder')).toContain('Link_to_file');
     expect(container.textContent).not.toContain('warning');
     expect(container.textContent).not.toContain('Spoiler?');
+  });
+
+  it('positions the draggable modal with left/top styles instead of a transform layer', async () => {
+    await renderReplyModal('/mu/thread/post-1');
+
+    const modal = container.querySelector<HTMLDivElement>('[class*="container"]');
+
+    expect(modal?.style.left).toBe('120px');
+    expect(modal?.style.top).toBe('80px');
+    expect(modal?.style.transform).toBe('');
+    expect(modal?.style.touchAction).toBe('none');
   });
 });

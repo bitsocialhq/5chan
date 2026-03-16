@@ -111,13 +111,16 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const nodeRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  const [{ x, y }, api] = useSpring(() => ({
-    x: window.innerWidth / 2 - 150,
-    y: window.innerHeight / 2 - 200,
+  const [{ left, top }, api] = useSpring(() => ({
+    left: Math.round(window.innerWidth / 2 - 150),
+    top: Math.round(window.innerHeight / 2 - 200),
   }));
 
   const bind = useDrag(
     ({ active, event, offset: [ox, oy] }) => {
+      const nextLeft = Math.round(ox);
+      const nextTop = Math.round(oy);
+
       if (active) {
         event.preventDefault();
         document.body.style.userSelect = 'none';
@@ -126,10 +129,10 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
         document.body.style.userSelect = '';
         document.body.style.webkitUserSelect = '';
       }
-      api.start({ x: ox, y: oy, immediate: true });
+      api.start({ left: nextLeft, top: nextTop, immediate: true });
     },
     {
-      from: () => [x.get(), y.get()],
+      from: () => [left.get(), top.get()],
       filterTaps: true,
       bounds: undefined,
     },
@@ -138,10 +141,10 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   useEffect(() => {
     if (nodeRef.current && isMobile) {
       const viewportHeight = window.innerHeight;
-      const centeredPosition = scrollY + viewportHeight / 2 - 300;
-      api.start({ y: centeredPosition, immediate: true });
+      const centeredPosition = Math.round(scrollY + viewportHeight / 2 - 300);
+      api.start({ top: centeredPosition, immediate: true });
     }
-  }, [isMobile, scrollY, api]);
+  }, [api, isMobile, scrollY]);
 
   const parentCidRef = useRef<HTMLSpanElement>(null);
 
@@ -284,8 +287,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       className={styles.container}
       ref={nodeRef}
       style={{
-        x,
-        y,
+        left,
+        top,
         touchAction: 'none',
       }}
     >
