@@ -314,5 +314,7 @@
   "archived": "Arkistoitu",
   "loading_archive": "Ladataan arkistoa...",
   "thread_archived": "Keskustelu arkistoitu.",
-  "view": "Katso"
+  "view": "Katso",
+  "report_post": "Ilmoita viestistä",
+  "delete_post": "Poista viesti"
 }

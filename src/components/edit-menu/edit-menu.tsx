@@ -36,7 +36,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const resolvedPost = withResolvedCommentCommunityAddress(post);
-  const { author, cid, content, deleted, locked, parentCid, pinned, postCid, reason, removed, spoiler } = resolvedPost || {};
+  const { author, cid, content, deleted, locked, parentCid, pinned, postCid, removed, spoiler } = resolvedPost || {};
   const communityAddress = getCommentCommunityAddress(resolvedPost);
   const archived = isCommentArchived(resolvedPost);
   const authorDisplayName = resolvedPost?.author?.displayName;
@@ -80,7 +80,6 @@ const EditMenu = ({ post }: { post: Comment }) => {
             removed: removed ?? false,
             purged: purged ?? false,
             spoiler: spoiler ?? false,
-            reason,
             author: modBanExpiresAt ? { banExpiresAt: modBanExpiresAt } : undefined,
           }
         : undefined,
@@ -101,7 +100,6 @@ const EditMenu = ({ post }: { post: Comment }) => {
     deleted,
     locked,
     pinned,
-    reason,
     removed,
     purged,
     spoiler,
@@ -118,7 +116,6 @@ const EditMenu = ({ post }: { post: Comment }) => {
       communityAddress,
       content: publishCommentEditOptions.content,
       deleted: publishCommentEditOptions.deleted,
-      reason: publishCommentEditOptions.reason,
       spoiler: publishCommentEditOptions.spoiler,
       onChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
@@ -150,7 +147,6 @@ const EditMenu = ({ post }: { post: Comment }) => {
         removed: publishCommentEditOptions.commentModeration?.removed,
         purged: publishCommentEditOptions.commentModeration?.purged,
         spoiler: publishCommentEditOptions.commentModeration?.spoiler,
-        reason: publishCommentEditOptions.reason,
         author: publishCommentEditOptions.commentModeration?.author,
       },
       author: account?.author,
@@ -436,18 +432,6 @@ const EditMenu = ({ post }: { post: Comment }) => {
                     )}
                   </>
                 )}
-                <div className={`${styles.menuItem} ${styles.menuReason}`}>
-                  {capitalize(t('reason'))}? ({t('optional')})
-                  <input
-                    type='text'
-                    value={publishCommentEditOptions.reason || ''}
-                    onChange={(e) => {
-                      const newReason = e.target.value;
-                      setPublishCommentEditOptions((state) => ({ ...state, reason: newReason }));
-                    }}
-                    size={14}
-                  />
-                </div>
                 <div className={styles.bottom}>
                   <button className={isMobile ? 'button' : ''} onClick={_publishCommentEdit} disabled={!canSave}>
                     {t('save')}

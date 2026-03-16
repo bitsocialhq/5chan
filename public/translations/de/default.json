@@ -314,5 +314,7 @@
   "archived": "Archiviert",
   "loading_archive": "Archiv wird geladen...",
   "thread_archived": "Thread archiviert.",
-  "view": "Ansehen"
+  "view": "Ansehen",
+  "report_post": "Beitrag melden",
+  "delete_post": "Beitrag löschen"
 }

@@ -229,9 +229,24 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
         createPortal(
           <FloatingFocusManager context={context} modal={false}>
             <div className={styles.postMenu} ref={refs.setFloating} style={floatingStyles} aria-labelledby={headingId} {...getFloatingProps()}>
-              {cid && resolvedCommunityAddress && <CopyLinkButton cid={cid} communityAddress={resolvedCommunityAddress} linkType='thread' onClose={handleClose} />}
-              {cid && <CopyContentIdButton cid={cid} onClose={handleClose} />}
-              {authorAddress && <CopyUserIdButton address={authorAddress} onClose={handleClose} />}
+              <div
+                className={styles.postMenuItem}
+                role='button'
+                tabIndex={0}
+                onClick={() => {
+                  alert("Reporting isn't available yet.");
+                  handleClose();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    alert("Reporting isn't available yet.");
+                    handleClose();
+                  }
+                }}
+              >
+                {t('report_post')}
+              </div>
               {!(isInPostPageView && postCid === cid) && (
                 <div
                   className={styles.postMenuItem}
@@ -252,6 +267,9 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
                   {hidden ? (postCid === cid ? t('unhide_thread') : t('unhide_post')) : postCid === cid ? t('hide_thread') : t('hide_post')}
                 </div>
               )}
+              {cid && resolvedCommunityAddress && <CopyLinkButton cid={cid} communityAddress={resolvedCommunityAddress} linkType='thread' onClose={handleClose} />}
+              {cid && <CopyContentIdButton cid={cid} onClose={handleClose} />}
+              {authorAddress && <CopyUserIdButton address={authorAddress} onClose={handleClose} />}
               {link && isValidURL(link) && (type === 'image' || type === 'gif' || thumbnail) && url && <ImageSearchButton url={url} onClose={handleClose} />}
             </div>
           </FloatingFocusManager>,

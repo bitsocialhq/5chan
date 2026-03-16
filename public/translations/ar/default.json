@@ -314,5 +314,7 @@
   "archived": "مؤرشف",
   "loading_archive": "تحميل الأرشيف...",
   "thread_archived": "تم أرشفة الموضوع.",
-  "view": "عرض"
+  "view": "عرض",
+  "report_post": "الإبلاغ عن المنشور",
+  "delete_post": "حذف المنشور"
 }

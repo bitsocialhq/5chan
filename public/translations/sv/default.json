@@ -314,5 +314,7 @@
   "archived": "Arkiverad",
   "loading_archive": "Laddar arkiv...",
   "thread_archived": "Tråd arkiverad.",
-  "view": "Visa"
+  "view": "Visa",
+  "report_post": "Rapportera inlägg",
+  "delete_post": "Radera inlägg"
 }

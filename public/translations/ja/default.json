@@ -314,5 +314,7 @@
   "archived": "アーカイブ済み",
   "loading_archive": "アーカイブを読み込み中...",
   "thread_archived": "スレッドがアーカイブされました。",
-  "view": "表示"
+  "view": "表示",
+  "report_post": "投稿を報告",
+  "delete_post": "投稿を削除"
 }

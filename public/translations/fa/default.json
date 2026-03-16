@@ -314,5 +314,7 @@
   "archived": "بایگانی شده",
   "loading_archive": "در حال بارگذاری بایگانی...",
   "thread_archived": "موضوع بایگانی شد.",
-  "view": "مشاهده"
+  "view": "مشاهده",
+  "report_post": "گزارش پست",
+  "delete_post": "حذف پست"
 }

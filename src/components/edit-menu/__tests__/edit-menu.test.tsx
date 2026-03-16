@@ -128,7 +128,6 @@ const basePost = {
   parentCid: undefined as string | undefined,
   pinned: false,
   postCid: 'post-1',
-  reason: '',
   removed: false,
   spoiler: false,
   communityAddress: 'music-posting.eth',
@@ -228,7 +227,7 @@ describe('EditMenu', () => {
     expect(alertSpy).toHaveBeenLastCalledWith('cannot_edit_reply');
   });
 
-  it('lets comment authors update content, deletion, and reason', async () => {
+  it('lets comment authors update content and deletion', async () => {
     testState.privileges = {
       isAccountCommentAuthor: true,
       isAccountMod: false,
@@ -242,12 +241,9 @@ describe('EditMenu', () => {
     await click(getLabelCheckbox('Edit?'));
 
     const textarea = container.querySelector('textarea');
-    const reasonInput = container.querySelector<HTMLInputElement>('input[type="text"]');
     expect(textarea).not.toBeNull();
-    expect(reasonInput).not.toBeNull();
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'Updated body');
-    await dispatchInput(reasonInput as HTMLInputElement, 'cleanup');
     await clickButton('save');
 
     expect(testState.publishAuthorEditMock).toHaveBeenCalledOnce();
@@ -260,7 +256,6 @@ describe('EditMenu', () => {
       commentCid: 'comment-1',
       content: 'Updated body',
       deleted: true,
-      reason: 'cleanup',
       spoiler: false,
       communityAddress: 'music-posting.eth',
     });
@@ -343,12 +338,9 @@ describe('EditMenu', () => {
     await click(getCheckbox('banUser'));
 
     const banDurationInput = container.querySelector<HTMLInputElement>('[data-testid="ban-duration-input"]');
-    const reasonInput = container.querySelector<HTMLInputElement>('input[type="text"]');
     expect(banDurationInput).not.toBeNull();
-    expect(reasonInput).not.toBeNull();
 
     await dispatchInput(banDurationInput as HTMLInputElement, '7');
-    await dispatchInput(reasonInput as HTMLInputElement, 'rule violation');
     await clickButton('save');
 
     expect(confirmSpy).toHaveBeenCalledWith('purge_confirm');
@@ -363,7 +355,6 @@ describe('EditMenu', () => {
       communityAddress: 'music-posting.eth',
     });
     expect(testState.modOptions?.commentModeration).toMatchObject({
-      reason: 'rule violation',
       archived: true,
       locked: true,
       pinned: true,

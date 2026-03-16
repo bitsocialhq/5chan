@@ -314,5 +314,7 @@
   "archived": "संग्रहित",
   "loading_archive": "संग्रह लोड करत आहे...",
   "thread_archived": "सूत्र आर्काइव केले गेले.",
-  "view": "पहा"
+  "view": "पहा",
+  "report_post": "पोस्ट निर्वेदन करा",
+  "delete_post": "पोस्ट हटवा"
 }

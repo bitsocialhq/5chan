@@ -314,5 +314,7 @@
   "archived": "已归档",
   "loading_archive": "正在加载归档...",
   "thread_archived": "主题已归档。",
-  "view": "查看"
+  "view": "查看",
+  "report_post": "举报帖子",
+  "delete_post": "删除帖子"
 }

@@ -314,5 +314,7 @@
   "archived": "Diarsipkan",
   "loading_archive": "Memuat arsip...",
   "thread_archived": "Benang diarsipkan.",
-  "view": "Lihat"
+  "view": "Lihat",
+  "report_post": "Laporkan kiriman",
+  "delete_post": "Hapus kiriman"
 }

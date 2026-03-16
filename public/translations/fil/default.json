@@ -314,5 +314,7 @@
   "archived": "Na-archive",
   "loading_archive": "Naglo-load ng arkibo...",
   "thread_archived": "Thread na-archive na.",
-  "view": "Tingnan"
+  "view": "Tingnan",
+  "report_post": "I-report ang post",
+  "delete_post": "Tanggalin ang post"
 }

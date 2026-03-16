@@ -314,5 +314,7 @@
   "archived": "Arkivuar",
   "loading_archive": "Po ngarkoni arkivin...",
   "thread_archived": "Fjala është arkivuar.",
-  "view": "Shiko"
+  "view": "Shiko",
+  "report_post": "Raporto postimin",
+  "delete_post": "Fshi postimin"
 }

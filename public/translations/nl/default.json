@@ -314,5 +314,7 @@
   "archived": "Gearchiveerd",
   "loading_archive": "Archief laden...",
   "thread_archived": "Thread gearchiveerd.",
-  "view": "Bekijken"
+  "view": "Bekijken",
+  "report_post": "Bericht melden",
+  "delete_post": "Bericht verwijderen"
 }

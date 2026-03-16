@@ -314,5 +314,7 @@
   "archived": "Archivált",
   "loading_archive": "Archívum betöltése...",
   "thread_archived": "A téma archiválva.",
-  "view": "Megtekintés"
+  "view": "Megtekintés",
+  "report_post": "Bejegyzés jelentése",
+  "delete_post": "Bejegyzés törlése"
 }

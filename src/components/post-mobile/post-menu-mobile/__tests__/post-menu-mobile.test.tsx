@@ -29,7 +29,10 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({}));
+vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
+  useAccount: () => ({ author: { address: '0xmod' }, signer: { address: '0xauthor' } }),
+  usePublishCommentEdit: () => ({ publishCommentEdit: vi.fn().mockResolvedValue(undefined) }),
+}));
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks/dist/lib/localforage-lru/index.js', () => ({
   default: {
@@ -172,10 +175,10 @@ describe('PostMenuMobile', () => {
     container.remove();
   });
 
-  it('opens the mobile menu, copies share metadata, and shows edit controls for privileged users', async () => {
+  it('opens the mobile menu, copies share metadata, and shows edit controls for mods', async () => {
     testState.privileges = {
       isAccountCommentAuthor: true,
-      isAccountMod: false,
+      isAccountMod: true,
     };
 
     await renderMenu('/mu');
@@ -203,12 +206,16 @@ describe('PostMenuMobile', () => {
     expect(testState.hideMock).toHaveBeenCalled();
   });
 
-  it('shows edit controls on pseudonymous boards even without a local author-address match', async () => {
+  it('does not show edit controls on pseudonymous boards when user is not a mod', async () => {
     testState.pseudonymityMode = 'per-post';
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: false,
+    };
 
     await renderMenu('/mu');
 
-    expect(document.body.querySelector('[data-testid="edit-menu"]')?.textContent).toBe('cid-1');
+    expect(document.body.querySelector('[data-testid="edit-menu"]')).toBeNull();
   });
 
   it("does not show edit controls when pseudonymity mode is 'none' and the user lacks privileges", async () => {

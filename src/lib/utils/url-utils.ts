@@ -22,11 +22,6 @@ export const isValidURL = (url: string) => {
 const CHAN_5_HOSTNAMES = ['5chan.app', '5chan.eth.limo', '5chan.eth.link', '5chan.eth.sucks', '5chan.netlify.app'];
 
 function getShareBaseUrl(): string {
-  const { protocol, hostname, origin } = window.location;
-  if ((protocol === 'https:' || protocol === 'http:') && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-    return origin;
-  }
-  // Electron / Capacitor / local dev fallback
   return `https://${CHAN_5_HOSTNAMES[0]}`;
 }
 

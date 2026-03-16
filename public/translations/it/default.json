@@ -314,5 +314,7 @@
   "archived": "Archiviato",
   "loading_archive": "Caricamento archivio...",
   "thread_archived": "Thread archiviato.",
-  "view": "Visualizza"
+  "view": "Visualizza",
+  "report_post": "Segnala post",
+  "delete_post": "Elimina post"
 }

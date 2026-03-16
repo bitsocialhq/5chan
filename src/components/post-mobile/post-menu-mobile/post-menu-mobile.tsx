@@ -1,7 +1,8 @@
-import { memo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import type { Comment } from '@bitsocialnet/bitsocial-react-hooks';
+import type { ChallengeVerification, Comment } from '@bitsocialnet/bitsocial-react-hooks';
+import { useAccount, usePublishCommentEdit } from '@bitsocialnet/bitsocial-react-hooks';
 import { autoUpdate, flip, FloatingFocusManager, offset, shift, useClick, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
 import styles from './post-menu-mobile.module.css';
 import { getCommentMediaInfo } from '../../../lib/utils/media-utils';
@@ -16,6 +17,9 @@ import EditMenu from '../../edit-menu/edit-menu';
 import { isBoardView, isPostPageView } from '../../../lib/utils/view-utils';
 import { useLocation, useParams } from 'react-router-dom';
 import { PostMenuProps } from '../../../lib/utils/post-menu-props';
+import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../../lib/utils/comment-utils';
+import { alertChallengeVerificationFailed } from '../../../lib/utils/challenge-utils';
+import useChallengesStore from '../../../stores/use-challenges-store';
 
 async function copyShareLinkSafe(boardIdentifier: string, linkType: ShareLinkType, cid?: string): Promise<void> {
   try {
@@ -154,6 +158,109 @@ const ImageSearchButtons = ({ url, onClose }: { url: string; onClose: () => void
   );
 };
 
+const { addChallenge } = useChallengesStore.getState();
+
+const ReportPostButton = ({ onClose }: { onClose: () => void }) => {
+  const { t } = useTranslation();
+  const handleClick = () => {
+    alert("Reporting isn't available yet.");
+    onClose();
+  };
+  return (
+    <div
+      role='button'
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+    >
+      <div className={styles.postMenuItem}>{t('report_post')}</div>
+    </div>
+  );
+};
+
+type DeletePostButtonProps = {
+  post: Comment;
+  onClose: () => void;
+};
+
+const DeletePostButton = ({ post, onClose }: DeletePostButtonProps) => {
+  const { t } = useTranslation();
+  const account = useAccount();
+  const resolvedPost = withResolvedCommentCommunityAddress(post);
+  const { author, cid } = resolvedPost || {};
+  const communityAddress = getCommentCommunityAddress(resolvedPost);
+  const { isAccountCommentAuthor } = useEditCommentPrivileges({
+    commentAuthorAddress: author?.address || '',
+    communityAddress: communityAddress || '',
+    postCid: resolvedPost?.postCid,
+  });
+  const signer = isAccountCommentAuthor ? account?.signer : undefined;
+  const latestPostRef = useRef(resolvedPost);
+  useEffect(() => {
+    latestPostRef.current = resolvedPost;
+  }, [resolvedPost]);
+  const onChallenge = useCallback(async (...args: unknown[]) => {
+    addChallenge([...args, latestPostRef.current]);
+  }, []);
+
+  const deleteOptions = useMemo(
+    () => ({
+      commentCid: cid,
+      communityAddress,
+      deleted: true,
+      ...(isAccountCommentAuthor && signer
+        ? {
+            signer,
+            author: signer?.address === author?.address ? { address: signer.address, displayName: resolvedPost?.author?.displayName } : account?.author,
+          }
+        : {}),
+      onChallenge,
+      onChallengeVerification: async (challengeVerification: ChallengeVerification, publication: unknown) => {
+        alertChallengeVerificationFailed(challengeVerification, publication);
+      },
+      onError: (error: Error) => {
+        console.warn(error);
+        alert('Comment edit failed. ' + error.message);
+      },
+    }),
+    [cid, communityAddress, isAccountCommentAuthor, signer, author?.address, resolvedPost?.author?.displayName, account?.author, onChallenge],
+  );
+
+  const { publishCommentEdit } = usePublishCommentEdit(deleteOptions);
+
+  const handleClick = async () => {
+    try {
+      await publishCommentEdit();
+      onClose();
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      }
+    }
+  };
+
+  return (
+    <div
+      role='button'
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+    >
+      <div className={styles.postMenuItem}>{t('delete_post')}</div>
+    </div>
+  );
+};
+
 const HidePostButton = ({ cid, isReply, onClose, postCid }: HideButtonProps) => {
   const { t } = useTranslation();
   const { hide, hidden, unhide } = useHide({ cid: cid || '' });
@@ -253,10 +360,12 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
             createPortal(
               <FloatingFocusManager context={context} modal={false}>
                 <div className={styles.postMenu} ref={refs.setFloating} style={floatingStyles} aria-labelledby={headingId} {...getFloatingProps()}>
+                  <ReportPostButton onClose={handleClose} />
+                  {cid && resolvedCommunityAddress && <HidePostButton cid={cid} isReply={!!parentCid} postCid={postCid} onClose={handleClose} />}
+                  {(isAccountCommentAuthor || canAttemptAuthorDelete) && cid && <DeletePostButton post={editMenuPost} onClose={handleClose} />}
                   {cid && resolvedCommunityAddress && <CopyLinkButton cid={cid} communityAddress={resolvedCommunityAddress} linkType='thread' onClose={handleClose} />}
                   {cid && <CopyContentIdButton cid={cid} onClose={handleClose} />}
                   {authorAddress && <CopyUserIdButton address={authorAddress} onClose={handleClose} />}
-                  {cid && resolvedCommunityAddress && <HidePostButton cid={cid} isReply={!!parentCid} postCid={postCid} onClose={handleClose} />}
                   {link && isValidURL(link) && (type === 'image' || type === 'gif' || thumbnail) && url && <ImageSearchButtons url={url} onClose={handleClose} />}
                 </div>
               </FloatingFocusManager>,
@@ -264,7 +373,7 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
             )}
         </>
       )}
-      {(isAccountMod || isAccountCommentAuthor || canAttemptAuthorDelete) && cid && (
+      {isAccountMod && cid && (
         <span className={styles.checkbox}>
           <EditMenu post={editMenuPost} />
         </span>

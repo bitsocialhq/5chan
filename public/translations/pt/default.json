@@ -314,5 +314,7 @@
   "archived": "Arquivado",
   "loading_archive": "Carregando arquivo...",
   "thread_archived": "Tópico arquivado.",
-  "view": "Ver"
+  "view": "Ver",
+  "report_post": "Denunciar publicação",
+  "delete_post": "Excluir publicação"
 }

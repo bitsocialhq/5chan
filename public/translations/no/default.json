@@ -314,5 +314,7 @@
   "archived": "Arkivert",
   "loading_archive": "Laster arkiv...",
   "thread_archived": "Tråd arkivert.",
-  "view": "Se"
+  "view": "Se",
+  "report_post": "Rapporter innlegg",
+  "delete_post": "Slett innlegg"
 }

@@ -314,5 +314,7 @@
   "archived": "Arhivat",
   "loading_archive": "Încărcare arhivă...",
   "thread_archived": "Thread arhivat.",
-  "view": "Vizualizare"
+  "view": "Vizualizare",
+  "report_post": "Raportează postarea",
+  "delete_post": "Șterge postarea"
 }

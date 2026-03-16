@@ -314,5 +314,7 @@
   "archived": "בארכיון",
   "loading_archive": "טוען ארכיון...",
   "thread_archived": "השרשור נשמר בארכיון.",
-  "view": "צפה"
+  "view": "צפה",
+  "report_post": "דווח על פוסט",
+  "delete_post": "מחק פוסט"
 }

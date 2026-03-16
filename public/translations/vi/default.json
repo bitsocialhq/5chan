@@ -314,5 +314,7 @@
   "archived": "Đã lưu trữ",
   "loading_archive": "Đang tải lưu trữ...",
   "thread_archived": "Chủ đề đã được lưu trữ.",
-  "view": "Xem"
+  "view": "Xem",
+  "report_post": "Báo cáo bài viết",
+  "delete_post": "Xóa bài viết"
 }

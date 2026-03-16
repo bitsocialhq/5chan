@@ -314,5 +314,7 @@
   "archived": "보관됨",
   "loading_archive": "아카이브 로딩 중...",
   "thread_archived": "스레드가 아카이브되었습니다.",
-  "view": "보기"
+  "view": "보기",
+  "report_post": "게시물 신고",
+  "delete_post": "게시물 삭제"
 }

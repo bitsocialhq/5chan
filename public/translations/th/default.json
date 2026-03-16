@@ -314,5 +314,7 @@
   "archived": "เก็บถาวร",
   "loading_archive": "กำลังโหลดเก็บถาวร...",
   "thread_archived": "เธรดถูกเก็บถาวร",
-  "view": "ดู"
+  "view": "ดู",
+  "report_post": "แจ้งรายงานโพสต์",
+  "delete_post": "ลบโพสต์"
 }

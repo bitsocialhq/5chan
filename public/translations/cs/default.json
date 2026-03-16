@@ -314,5 +314,7 @@
   "archived": "Archivováno",
   "loading_archive": "Načítání archivu...",
   "thread_archived": "Vlákno archivováno.",
-  "view": "Zobrazit"
+  "view": "Zobrazit",
+  "report_post": "Nahlásit příspěvek",
+  "delete_post": "Smazat příspěvek"
 }
