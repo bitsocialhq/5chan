@@ -126,7 +126,7 @@ const CryptoAddressSetting = () => {
       <div className={styles.cryptoAddressInput}>
         <input
           type='text'
-          placeholder='myaddress.eth'
+          placeholder='myaddress.bso'
           value={cryptoState.cryptoAddress}
           onChange={(e) => {
             setInputValue(e.target.value);
@@ -141,18 +141,18 @@ const CryptoAddressSetting = () => {
         </button>
         {showCryptoAddressInfo && (
           <div className={styles.cryptoAddressInfo}>
-            steps to set a .eth address as your ID:
+            steps to set a .bso account address:
             <br />
             <ol>
               <li>
-                go to{' '}
+                buy your desired .bso address as .eth on{' '}
                 <a href='https://app.ens.domains/' target='_blank' rel='noopener noreferrer'>
                   app.ens.domains
                 </a>{' '}
-                and search the address
               </li>
-              <li>once you own the address, go to its page, click on "records", then "edit records"</li>
+              <li>once you own the .eth address, go to its page on ENS, click on "records", then "edit records"</li>
               <li>add a new text record with name "bitsocial" and value: {account?.signer?.address}</li>
+              <li>enter your .bso address in the input field above, click "check" to verify it's yours, then click "save"</li>
             </ol>
           </div>
         )}
