@@ -103,24 +103,46 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     permissions:
       contents: write
+    env:
+      COVERAGE_BADGE_BRANCH: badges
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          fetch-depth: 0
 
       - name: Download coverage badge
         uses: actions/download-artifact@v4
         with:
           name: coverage-badge
-          path: badges/
+          path: ${{ runner.temp }}/coverage-badge
 
-      - run: git add badges/coverage.json
-      - run: git status
-      - uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: 'chore(ci): update coverage badge'
-          file_pattern: 'badges/coverage.json'
-          branch: ${{ github.ref_name }}
+      - name: Publish coverage badge branch
+        env:
+          BADGE_SOURCE_PATH: ${{ runner.temp }}/coverage-badge/coverage.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git ls-remote --exit-code --heads origin "${COVERAGE_BADGE_BRANCH}"; then
+            git fetch origin "${COVERAGE_BADGE_BRANCH}:${COVERAGE_BADGE_BRANCH}"
+            git switch "${COVERAGE_BADGE_BRANCH}"
+          else
+            git switch --orphan "${COVERAGE_BADGE_BRANCH}"
+            git rm -rf --ignore-unmatch .
+            find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          fi
+
+          mkdir -p badges
+          cp "${BADGE_SOURCE_PATH}" badges/coverage.json
+
+          git add badges/coverage.json
+          if git diff --cached --quiet; then
+            echo "Coverage badge is already up to date."
+            exit 0
+          fi
+
+          git commit -m "chore(ci): update coverage badge"
+          git push origin "HEAD:${COVERAGE_BADGE_BRANCH}"
 
   android-build:
     name: Android Build
