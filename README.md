@@ -1,5 +1,5 @@
 [![Build Status](https://img.shields.io/github/actions/workflow/status/bitsocialnet/5chan/ci.yml?branch=master)](https://github.com/bitsocialnet/5chan/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bitsocialnet/5chan/refs/heads/badges/badges/coverage.json)](https://github.com/bitsocialnet/5chan/blob/master/scripts/write-coverage-badge.mjs)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bitsocialnet/5chan/badges/badges/coverage.json)](https://github.com/bitsocialnet/5chan/blob/master/scripts/write-coverage-badge.mjs)
 [![Release](https://img.shields.io/github/v/release/bitsocialnet/5chan)](https://github.com/bitsocialnet/5chan/releases/latest)
 [![License](https://img.shields.io/badge/license-GPL--2.0--only-red.svg)](https://github.com/bitsocialnet/5chan/blob/master/LICENSE)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)

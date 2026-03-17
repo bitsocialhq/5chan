@@ -142,7 +142,25 @@ jobs:
           fi
 
           git commit -m "chore(ci): update coverage badge"
-          git push origin "HEAD:${COVERAGE_BADGE_BRANCH}"
+
+          for attempt in 1 2 3; do
+            if git push --force-with-lease origin "HEAD:${COVERAGE_BADGE_BRANCH}"; then
+              exit 0
+            fi
+
+            if [ "${attempt}" -eq 3 ]; then
+              echo "Failed to publish coverage badge after ${attempt} attempts."
+              exit 1
+            fi
+
+            echo "Push failed on attempt ${attempt}; syncing with origin/${COVERAGE_BADGE_BRANCH} before retrying..."
+            git fetch origin "${COVERAGE_BADGE_BRANCH}" || true
+            if git show-ref --verify --quiet "refs/remotes/origin/${COVERAGE_BADGE_BRANCH}"; then
+              git rebase "origin/${COVERAGE_BADGE_BRANCH}"
+            fi
+
+            sleep $((attempt * 2))
+          done
 
   android-build:
     name: Android Build
