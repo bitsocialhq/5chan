@@ -33,7 +33,8 @@ Only record items that are repo-specific, likely to recur, and have a concrete m
 | Bug report in a specific file/line | Start with git history scan from `docs/agent-playbooks/bug-investigation.md` before editing |
 | `CHANGELOG.md` or package version changed | Run `yarn blotter:check`; if needed add a concise release one-liner |
 | UI/visual behavior changed | Verify in browser with `playwright-cli`; test desktop and mobile viewport |
-| New reviewable feature/fix started while on `master` | Create a short-lived `feature/*`, `fix/*`, `docs/*`, or `chore/*` branch from `master` before editing; use a separate worktree only for parallel tasks |
+| Long-running task spans multiple sessions, handoffs, or spawned agents | Use `docs/agent-playbooks/long-running-agent-workflow.md`, keep a machine-readable feature list plus a progress log, and run `./scripts/agent-init.sh --smoke` before starting a fresh feature slice |
+| New reviewable feature/fix started while on `master` | Create a short-lived `codex/feature/*`, `codex/fix/*`, `codex/docs/*`, or `codex/chore/*` branch from `master` before editing; use a separate worktree only for parallel tasks |
 | New unrelated task started while another task branch is already checked out or being worked on by another agent | Create a separate worktree from `master`, create a new short-lived task branch there, and keep each agent on its own worktree/branch/PR |
 | Open PR needs feedback triage or merge readiness check | Use the `review-and-merge-pr` skill to inspect bot/human feedback, fix valid findings, and merge only after verification |
 | Repo AI workflow files changed (`.codex/**`, `.cursor/**`) | Keep the Codex and Cursor copies aligned when they represent the same workflow; update `AGENTS.md` if the default agent policy changes |
@@ -93,11 +94,12 @@ src/
 
 - Keep `master` releasable. Do not treat `master` as a scratch branch.
 - If the user asks for a reviewable feature/fix and the current branch is `master`, create a short-lived task branch before making code changes unless the user explicitly asks to work directly on `master`.
-- Name short-lived branches by intent: `feature/*`, `fix/*`, `docs/*`, `chore/*`.
+- Name short-lived AI task branches by intent under the Codex prefix: `codex/feature/*`, `codex/fix/*`, `codex/docs/*`, `codex/chore/*`.
 - Open PRs from task branches into `master` so review bots can run against the actual change.
 - Prefer short-lived task branches over a long-lived `develop` branch unless the user explicitly asks for a staging branch workflow.
 - Use worktrees only when parallel tasks need isolated checkouts. One active task branch per worktree.
 - If a new task is unrelated to the currently checked out branch, do not stack it on that branch. Create a new worktree from `master` and create a separate short-lived task branch there.
+- Prefer `./scripts/create-task-worktree.sh <feature|fix|docs|chore> <slug>` when you need a new task worktree and do not have a stronger repo-specific reason to create it manually.
 - Treat branch and worktree as different things: the branch is the change set; the worktree is the checkout where that branch is worked on.
 - For parallel unrelated tasks, give each task its own branch from `master`, its own worktree, and its own PR into `master`.
 - After a reviewed branch is merged, prefer deleting it to keep branch drift and merge conflicts low.
@@ -117,6 +119,7 @@ src/
 - After React UI logic changes, run: `yarn doctor`.
 - Treat React Doctor output as actionable guidance; prioritize `error` then `warning`.
 - For UI/visual changes, verify with `playwright-cli` on desktop and mobile viewport.
+- The shared hook verification path is strict by default. Only set `AGENT_VERIFY_MODE=advisory` when you intentionally need signal from a broken tree without blocking the session.
 - Use `yarn test:coverage` as an advisory check when expanding test coverage or auditing risky logic; do not invent a repo-wide coverage gate unless the user asks for one.
 - If verification fails, fix and re-run until passing.
 
@@ -135,6 +138,9 @@ src/
 - When changing shared agent behavior, update the relevant files in `.codex/skills/`, `.cursor/skills/`, `.codex/agents/`, `.cursor/agents/`, `.codex/hooks/`, `.cursor/hooks/`, and their `hooks.json` or config entry points as needed.
 - If `AGENTS.md` references a skill, agent, or hook, prefer a tracked file under `.codex/` or `.cursor/` rather than an untracked local-only instruction.
 - Review `.codex/config.toml` and `.cursor/hooks.json` before changing agent orchestration or hook behavior, because they are the entry points contributors will actually load.
+- Directory-specific auto-loaded rules live under `src/AGENTS.md` and `scripts/AGENTS.md`; read them before editing files in those trees.
+- For work expected to span multiple sessions, keep explicit task state in a `feature-list.json` plus `progress.md` pair using `docs/agent-playbooks/long-running-agent-workflow.md`.
+- If more than one human or toolchain needs the same task state, keep it in a tracked location such as `docs/agent-runs/<slug>/` instead of burying it in a tool-specific hidden directory.
 
 ### Project Maintenance Rules
 
@@ -184,6 +190,8 @@ yarn electron
 yarn doctor
 yarn doctor:score
 yarn doctor:verbose
+./scripts/create-task-worktree.sh chore ai-workflow-improvement
+./scripts/agent-init.sh --smoke
 ```
 
 ## Playbooks (Load On Demand)
@@ -191,6 +199,7 @@ yarn doctor:verbose
 Use these only when relevant to the active task:
 
 - Hooks setup and scripts: `docs/agent-playbooks/hooks-setup.md`
+- Long-running agent workflow: `docs/agent-playbooks/long-running-agent-workflow.md`
 - Translations workflow: `docs/agent-playbooks/translations.md`
 - Commit/issue output format: `docs/agent-playbooks/commit-issue-format.md`
 - Skills/tools setup and MCP rationale: `docs/agent-playbooks/skills-and-tools.md`

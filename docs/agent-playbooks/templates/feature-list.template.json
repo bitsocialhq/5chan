@@ -1,0 +1,17 @@
+{
+  "task": "replace-with-task-slug",
+  "last_updated": "2026-03-17",
+  "items": [
+    {
+      "id": "F001",
+      "priority": 1,
+      "status": "pending",
+      "description": "Describe one end-to-end feature or one reviewable task slice.",
+      "verification": [
+        "List the command or user-visible check that proves this item works."
+      ],
+      "files": [],
+      "notes": ""
+    }
+  ]
+}

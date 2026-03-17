@@ -6,9 +6,10 @@ If your AI coding assistant supports lifecycle hooks, configure these for this r
 
 | Hook | Command | Purpose |
 |---|---|---|
-| `afterFileEdit` | `npx oxfmt <file>` | Auto-format files after AI edits |
-| `afterFileEdit` | `.cursor/hooks/yarn-install.sh` | Run `yarn install` when `package.json` changes |
-| `stop` | `yarn build && yarn lint && yarn type-check && (yarn audit || true)` | Build, lint, type-check, and security audit at end |
+| `afterFileEdit` | `scripts/agent-hooks/format.sh` | Auto-format files after AI edits |
+| `afterFileEdit` | `scripts/agent-hooks/yarn-install.sh` | Run `yarn install` when `package.json` changes |
+| `stop` | `scripts/agent-hooks/sync-git-branches.sh` | Prune stale refs and delete integrated temporary task branches |
+| `stop` | `scripts/agent-hooks/verify.sh` | Hard-gate build, lint, and type-check; keep `yarn audit` informational |
 
 ## Why
 
@@ -16,6 +17,8 @@ If your AI coding assistant supports lifecycle hooks, configure these for this r
 - Lockfile stays in sync
 - Build/lint/type issues caught early
 - Security visibility via `yarn audit`
+- One shared hook implementation for both Codex and Cursor
+- Temporary task branches stay aligned with the repo's worktree workflow
 
 ## Example Hook Scripts
 
@@ -42,12 +45,15 @@ exit 0
 # Run build, lint, type-check, and security audit when agent finishes
 
 cat > /dev/null  # consume stdin
-echo "=== yarn build ===" && yarn build
-echo "=== yarn lint ===" && yarn lint
-echo "=== yarn type-check ===" && yarn type-check
+yarn build
+yarn lint
+yarn type-check
+status=$?
 echo "=== yarn audit ===" && (yarn audit || true)  # informational
-exit 0
+exit $status
 ```
+
+By default, `scripts/agent-hooks/verify.sh` exits non-zero when `yarn build`, `yarn lint`, or `yarn type-check` fails. Set `AGENT_VERIFY_MODE=advisory` only when you intentionally need signal from a broken tree without blocking the hook.
 
 ### Yarn Install Hook
 
@@ -73,3 +79,5 @@ exit 0
 ```
 
 Configure hook wiring according to your agent tool docs (`hooks.json`, equivalent, etc.).
+
+In this repo, `.codex/hooks/*.sh` and `.cursor/hooks/*.sh` should stay as thin wrappers that delegate to the shared implementations under `scripts/agent-hooks/`.

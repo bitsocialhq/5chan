@@ -41,21 +41,21 @@ fi
 
 ### 3. Ensure branch workflow is reviewable
 
-- If already on a short-lived task branch such as `feature/*`, `fix/*`, `docs/*`, or `chore/*`, stay on it.
+- If already on a short-lived task branch such as `codex/feature/*`, `codex/fix/*`, `codex/docs/*`, or `codex/chore/*`, stay on it.
 - If on `master`, create a task branch before staging or committing.
 - Do **not** commit the work directly on `master` when PR review bots are expected.
 
 Suggested naming:
 
-- `feature/short-slug`
-- `fix/short-slug`
-- `docs/short-slug`
-- `chore/short-slug`
+- `codex/feature/short-slug`
+- `codex/fix/short-slug`
+- `codex/docs/short-slug`
+- `codex/chore/short-slug`
 
 Example:
 
 ```bash
-git switch -c fix/reply-editor-stuck
+git switch -c codex/fix/reply-editor-stuck
 ```
 
 ### 4. Review diffs for relevance
