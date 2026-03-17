@@ -326,6 +326,8 @@ vi.mock('../../lib/utils/replies-preview-utils', () => ({
   filterRepliesForDisplay: (replies: TestComment[]) => replies,
   getPreviewDisplayReplies: (replies: TestComment[]) => replies,
   getTotalReplyCount: ({ replyCount }: { replyCount?: number }) => replyCount ?? 0,
+  hasEnoughPreviewReplies: ({ replyCount, loadedCount, visibleCount }: { replyCount?: number; loadedCount: number; visibleCount: number }) =>
+    loadedCount >= Math.min(visibleCount, replyCount ?? visibleCount),
 }));
 
 vi.mock('../../lib/utils/thread-scroll-utils', () => ({

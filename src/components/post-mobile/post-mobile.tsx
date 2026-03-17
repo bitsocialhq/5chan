@@ -576,9 +576,10 @@ const PostMobile = ({
   const cachedPreviewReplies = (cachedPreviewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
     ? (cachedPreviewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
     : cachedPreviewRepliesResult.replies || [];
+  const cachedPreviewDisplayCount = filterRepliesForDisplay(cachedPreviewReplies).length;
   const hasEnoughCachedPreview = hasEnoughPreviewReplies({
     replyCount: resolvedPost?.replyCount,
-    loadedCount: cachedPreviewReplies.length,
+    loadedCount: cachedPreviewDisplayCount,
     visibleCount: BOARD_REPLIES_PREVIEW_VISIBLE_COUNT,
   });
   const previewRepliesResult = useReplies({
@@ -599,7 +600,7 @@ const PostMobile = ({
     ? (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
     : previewRepliesResult.replies || [];
   const previewReplies = hasEnoughCachedPreview ? cachedPreviewReplies : livePreviewReplies;
-  const repliesResult = showAllReplies ? fullRepliesResult : { ...previewRepliesResult, replies: previewReplies };
+  const repliesResult = showAllReplies ? fullRepliesResult : { ...previewRepliesResult, replies: previewReplies, updatedReplies: previewReplies };
   const { replies, hasMore, loadMore } = repliesResult;
   const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
   const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
