@@ -4,7 +4,7 @@
 # Receives JSON via stdin: {"file_path": "...", "edits": [...]}
 
 input=$(cat)
-if ! command -v jq >/dev/null 2>&1 || ! command -v realpath >/dev/null 2>&1; then
+if ! command -v jq >/dev/null 2>&1; then
   exit 0
 fi
 
@@ -19,7 +19,14 @@ cd "$repo_root" || exit 0
 
 case "$file_path" in
   *.js|*.ts|*.tsx|*.mjs)
-    resolved_path="$(realpath -m "$repo_root/$file_path" 2>/dev/null || true)"
+    dir_part="${file_path%/*}"
+    base_name="${file_path##*/}"
+    if [ "$dir_part" = "$file_path" ]; then
+      dir_part="."
+    fi
+
+    resolved_dir="$(cd -P -- "$repo_root/$dir_part" 2>/dev/null && pwd -P)" || exit 0
+    resolved_path="$resolved_dir/$base_name"
     case "$resolved_path" in
       "$repo_root"/*) npx oxfmt "$resolved_path" 2>/dev/null || true ;;
       *) exit 0 ;;
