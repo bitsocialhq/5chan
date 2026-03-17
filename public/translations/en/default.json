@@ -198,6 +198,8 @@
   "delete_wallet": "Delete Wallet",
   "fit_expanded_images_to_screen": "Fit expanded images to screen",
   "fit_expanded_images_to_screen_tip": "Limit expanded images to both browser width and height",
+  "unmute_video_sound": "Un-mute video sound",
+  "unmute_video_sound_tip": "Un-mute sound automatically for video playback",
   "choose_file": "Choose File",
   "uploading": "uploading...",
   "no_file_chosen": "No file chosen",

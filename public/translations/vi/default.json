@@ -318,5 +318,6 @@
   "report_post": "Báo cáo bài viết",
   "delete_post": "Xóa bài viết",
   "delete_post_confirm": "Xóa bài viết này vĩnh viễn? Hành động này không thể hoàn tác.",
-  "app_p2p_info": "Bạn luôn có thể kết nối với bất kỳ board nào, hoàn toàn P2P, không ai có thể ngăn cản bạn. Chỉ cần dán địa chỉ của nó vào ô tìm kiếm phía trên."
+  "app_p2p_info": "Bạn luôn có thể kết nối với bất kỳ board nào, hoàn toàn P2P, không ai có thể ngăn cản bạn. Chỉ cần dán địa chỉ của nó vào ô tìm kiếm phía trên.",
+  "unmute_video_sound_tip": "Tự động bật tiếng khi phát video"
 }

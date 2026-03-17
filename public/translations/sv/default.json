@@ -318,5 +318,6 @@
   "report_post": "Rapportera inlägg",
   "delete_post": "Radera inlägg",
   "delete_post_confirm": "Radera detta inlägg permanent? Detta kan inte ångras.",
-  "app_p2p_info": "Du kan alltid ansluta till vilket board som helst, helt P2P, ingen kan stoppa dig. Klistra bara in dess adress i sökfältet ovan."
+  "app_p2p_info": "Du kan alltid ansluta till vilket board som helst, helt P2P, ingen kan stoppa dig. Klistra bara in dess adress i sökfältet ovan.",
+  "unmute_video_sound_tip": "Aktivera ljud automatiskt vid videouppspelning"
 }

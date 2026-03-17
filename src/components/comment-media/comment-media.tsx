@@ -199,7 +199,7 @@ const Media = ({ commentMediaInfo, disableToggle, isReply, setShowThumbnail }: M
   const { t } = useTranslation();
   const { thumbnail, type, url } = commentMediaInfo || {};
   const isMobile = useIsMobile();
-  const { fitExpandedImagesToScreen } = useExpandedMediaStore();
+  const { fitExpandedImagesToScreen, unmuteExpandedVideoSound } = useExpandedMediaStore();
   const mediaClass = `${isMobile ? styles.mediaMobile : isReply ? styles.mediaDesktopReply : styles.mediaDesktopOp} ${
     fitExpandedImagesToScreen ? styles.fitToScreen : ''
   }`;
@@ -228,7 +228,7 @@ const Media = ({ commentMediaInfo, disableToggle, isReply, setShowThumbnail }: M
           onClick={disableToggle ? undefined : () => setShowThumbnail(true)}
         />
       ) : type === 'video' ? (
-        <video src={url} controls autoPlay loop muted />
+        <video src={url} controls autoPlay loop muted={!unmuteExpandedVideoSound} />
       ) : type === 'webpage' ? (
         <img
           src={thumbnail}

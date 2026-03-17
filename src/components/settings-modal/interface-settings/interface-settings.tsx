@@ -108,7 +108,7 @@ const InterfaceLanguage = () => {
 
 const InterfaceSettings = () => {
   const { t } = useTranslation();
-  const { fitExpandedImagesToScreen, setFitExpandedImagesToScreen } = useExpandedMediaStore();
+  const { fitExpandedImagesToScreen, setFitExpandedImagesToScreen, setUnmuteExpandedVideoSound, unmuteExpandedVideoSound } = useExpandedMediaStore();
   const { enableInfiniteScroll, setEnableInfiniteScroll } = useFeedViewSettingsStore();
 
   return (
@@ -131,6 +131,13 @@ const InterfaceSettings = () => {
           {capitalize(t('fit_expanded_images_to_screen'))}
         </label>
         <div className={styles.settingTip}>{capitalize(t('fit_expanded_images_to_screen_tip'))}</div>
+      </div>
+      <div className={styles.setting}>
+        <label>
+          <input type='checkbox' checked={unmuteExpandedVideoSound} onChange={(e) => setUnmuteExpandedVideoSound(e.target.checked)} />
+          {capitalize(t('unmute_video_sound'))}
+        </label>
+        <div className={styles.settingTip}>{capitalize(t('unmute_video_sound_tip'))}</div>
       </div>
       <div className={styles.setting}>
         <label>

@@ -15,6 +15,7 @@ const testState = vi.hoisted(() => ({
   gifFrameUrl: null as string | null,
   hostname: 'example.com',
   isMobile: false,
+  unmuteExpandedVideoSound: false,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -36,6 +37,7 @@ vi.mock('../../../lib/utils/url-utils', () => ({
 vi.mock('../../../stores/use-expanded-media-store', () => ({
   default: () => ({
     fitExpandedImagesToScreen: testState.fitExpandedImagesToScreen,
+    unmuteExpandedVideoSound: testState.unmuteExpandedVideoSound,
   }),
 }));
 
@@ -76,6 +78,7 @@ describe('CommentMedia', () => {
     testState.gifFrameUrl = null;
     testState.hostname = 'example.com';
     testState.isMobile = false;
+    testState.unmuteExpandedVideoSound = false;
     setShowThumbnailMock = vi.fn();
 
     container = document.createElement('div');
@@ -251,5 +254,37 @@ describe('CommentMedia', () => {
     });
 
     expect(setShowThumbnailMock).toHaveBeenCalledWith(false);
+  });
+
+  it('unmutes expanded videos when the preference is enabled', async () => {
+    testState.unmuteExpandedVideoSound = true;
+
+    await renderMedia({
+      commentMediaInfo: {
+        type: 'video',
+        url: 'https://cdn.example.com/video.mp4',
+      },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: false,
+    });
+
+    const video = container.querySelector<HTMLVideoElement>('video[src="https://cdn.example.com/video.mp4"]');
+    expect(video).toBeTruthy();
+    expect(video?.muted).toBe(false);
+  });
+
+  it('keeps expanded videos muted when the preference is disabled', async () => {
+    await renderMedia({
+      commentMediaInfo: {
+        type: 'video',
+        url: 'https://cdn.example.com/video.mp4',
+      },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: false,
+    });
+
+    const video = container.querySelector<HTMLVideoElement>('video[src="https://cdn.example.com/video.mp4"]');
+    expect(video).toBeTruthy();
+    expect(video?.muted).toBe(true);
   });
 });

@@ -19,6 +19,8 @@ const testState = vi.hoisted(() => ({
   fetchMock: vi.fn(),
   fitExpandedImagesToScreen: false,
   setFitExpandedImagesToScreenMock: vi.fn(),
+  setUnmuteExpandedVideoSoundMock: vi.fn(),
+  unmuteExpandedVideoSound: false,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -32,6 +34,8 @@ vi.mock('../../../../stores/use-expanded-media-store', () => ({
   default: () => ({
     fitExpandedImagesToScreen: testState.fitExpandedImagesToScreen,
     setFitExpandedImagesToScreen: testState.setFitExpandedImagesToScreenMock,
+    setUnmuteExpandedVideoSound: testState.setUnmuteExpandedVideoSoundMock,
+    unmuteExpandedVideoSound: testState.unmuteExpandedVideoSound,
   }),
 }));
 
@@ -86,6 +90,8 @@ describe('InterfaceSettings', () => {
     testState.fetchMock.mockReset();
     testState.fitExpandedImagesToScreen = false;
     testState.setFitExpandedImagesToScreenMock.mockReset();
+    testState.setUnmuteExpandedVideoSoundMock.mockReset();
+    testState.unmuteExpandedVideoSound = false;
     useFeedViewSettingsStore.getState().setEnableInfiniteScroll(false);
     useAppUpdateStore.setState({
       needRefresh: false,
@@ -131,12 +137,14 @@ describe('InterfaceSettings', () => {
 
     await act(async () => {
       checkbox?.click();
+      await Promise.resolve();
+      await Promise.resolve();
     });
 
     expect(useFeedViewSettingsStore.getState().enableInfiniteScroll).toBe(true);
     expect(checkbox?.checked).toBe(true);
     expect(container.querySelector('[data-testid="board-mode"]')?.textContent).toBe('infinite');
-    expect(setItemSpy).toHaveBeenCalledWith(STORAGE_KEY, expect.stringContaining('"enableInfiniteScroll":true'));
+    expect(localStorage.getItem(STORAGE_KEY)).toContain('"enableInfiniteScroll":true');
   });
 
   it('toggles fit expanded images through the media store', async () => {
@@ -151,6 +159,20 @@ describe('InterfaceSettings', () => {
     });
 
     expect(testState.setFitExpandedImagesToScreenMock).toHaveBeenCalledWith(true);
+  });
+
+  it('toggles unmute video sound through the media store', async () => {
+    render(createElement(InterfaceSettings));
+
+    const label = Array.from(container.querySelectorAll('label')).find((candidate) => candidate.textContent?.toLowerCase().includes('unmute_video_sound'));
+    const checkbox = label?.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    expect(checkbox).toBeTruthy();
+
+    await act(async () => {
+      checkbox?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(testState.setUnmuteExpandedVideoSoundMock).toHaveBeenCalledWith(true);
   });
 
   it('changes the interface language from the language selector', async () => {

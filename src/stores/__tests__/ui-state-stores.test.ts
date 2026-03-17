@@ -32,15 +32,19 @@ describe('ui state stores', () => {
     expect(store.getState().selectedText).toBe('');
   });
 
-  it('useExpandedMediaStore persists fitExpandedImagesToScreen', async () => {
+  it('useExpandedMediaStore persists expanded media preferences', async () => {
     const store = (await import('../use-expanded-media-store')).default;
 
     expect(store.getState().fitExpandedImagesToScreen).toBe(false);
+    expect(store.getState().unmuteExpandedVideoSound).toBe(false);
 
     store.getState().setFitExpandedImagesToScreen(true);
+    store.getState().setUnmuteExpandedVideoSound(true);
 
     expect(store.getState().fitExpandedImagesToScreen).toBe(true);
+    expect(store.getState().unmuteExpandedVideoSound).toBe(true);
     expect(localStorage.getItem('expanded-media-store')).toContain('fitExpandedImagesToScreen');
+    expect(localStorage.getItem('expanded-media-store')).toContain('unmuteExpandedVideoSound');
   });
 
   it('useSubplebbitOfflineStore merges updates and clears initialLoad after the timeout', async () => {

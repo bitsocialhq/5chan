@@ -318,5 +318,6 @@
   "report_post": "Bejegyzés jelentése",
   "delete_post": "Bejegyzés törlése",
   "delete_post_confirm": "Végleg törölni ezt a bejegyzést? Ez nem vonható vissza.",
-  "app_p2p_info": "Bármikor csatlakozhatsz bármely boardhoz, teljesen P2P, senki sem állíthat meg. Egyszerűen illeszd be a címét a fenti keresőmezőbe."
+  "app_p2p_info": "Bármikor csatlakozhatsz bármely boardhoz, teljesen P2P, senki sem állíthat meg. Egyszerűen illeszd be a címét a fenti keresőmezőbe.",
+  "unmute_video_sound_tip": "Hang automatikus bekapcsolása videólejátszáskor"
 }
