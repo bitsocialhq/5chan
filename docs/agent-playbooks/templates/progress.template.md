@@ -2,7 +2,7 @@
 
 Append one entry per session.
 
-## 2026-03-17 14:30
+## YYYY-MM-DD HH:MM
 
 - Item: F001
 - Summary: Replace this with the session summary.

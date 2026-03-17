@@ -6,4 +6,5 @@ These rules apply to `scripts/**`. Follow the repo-root `AGENTS.md` first, then 
 - Use repo-relative paths and environment variables instead of user-specific absolute paths.
 - For dev-server helpers, default to `http://5chan.localhost:1355` and respect the existing `PORTLESS=0` fallback instead of hard-coding alternate ports.
 - Keep shell helpers thin. When logic becomes stateful or cross-platform, prefer a Node script.
-- Git and worktree helpers must validate input, default to safe operations, and never delete or rewrite branches implicitly.
+- Git and worktree helpers must validate input and default to safe operations.
+- If a helper deletes local branches automatically, document the exact eligibility checks and keep the behavior conservative.

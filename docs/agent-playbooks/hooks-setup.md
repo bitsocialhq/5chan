@@ -45,10 +45,10 @@ exit 0
 # Run build, lint, type-check, and security audit when agent finishes
 
 cat > /dev/null  # consume stdin
-yarn build
-yarn lint
-yarn type-check
-status=$?
+status=0
+yarn build || status=1
+yarn lint || status=1
+yarn type-check || status=1
 echo "=== yarn audit ===" && (yarn audit || true)  # informational
 exit $status
 ```

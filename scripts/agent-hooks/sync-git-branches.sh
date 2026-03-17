@@ -106,8 +106,8 @@ while IFS='|' read -r branch upstream; do
     echo ""
   fi
 
-  echo "=== git branch -D $branch ==="
-  git branch -D "$branch" 2>&1 || true
+  echo "=== git branch -d $branch ==="
+  git branch -d "$branch" 2>&1 || true
   echo ""
 done < <(git for-each-ref --format='%(refname:short)|%(upstream:short)' refs/heads)
 
