@@ -46,7 +46,10 @@ const config = {
   },
 
   rebuildConfig: {
-    force: true,
+    // Only better-sqlite3 is intentionally prepared and verified before packaging.
+    // Using `onlyModules` prevents Forge from rebuilding unrelated optional addons
+    // that inflate Windows package times.
+    onlyModules: ['better-sqlite3'],
   },
 
   hooks: {
