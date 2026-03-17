@@ -8,33 +8,10 @@ import useFeedViewSettingsStore from '../../../stores/use-feed-view-settings-sto
 import Version from '../../version';
 import StyleSelector from '../../style-selector/style-selector';
 import { INTERFACE_LANGUAGE_STORAGE_KEY, SUPPORTED_INTERFACE_LANGUAGES } from '../../../lib/constants';
+import { fetchLatestStableVersion, isElectron } from '../../../lib/app-update';
 import useAppUpdateStore from '../../../stores/use-app-update-store';
 
 const commitRef = process.env.VITE_COMMIT_REF;
-const isElectron = window.electronApi?.isElectron === true;
-
-const fetchLatestStableVersion = async (): Promise<string> => {
-  const versionUrl = isElectron
-    ? 'https://raw.githubusercontent.com/bitsocialnet/5chan/master/package.json'
-    : new URL(`/version.json?t=${Date.now()}`, window.location.origin).toString();
-  const packageRes = await fetch(versionUrl, { cache: 'no-store' });
-  const packageData = await packageRes.json();
-
-  if (typeof packageData?.version !== 'string') {
-    throw new Error('invalid version payload');
-  }
-
-  return packageData.version;
-};
-
-const refreshServiceWorkerRegistration = async (): Promise<void> => {
-  if (!('serviceWorker' in navigator)) {
-    return;
-  }
-
-  const registration = await navigator.serviceWorker.getRegistration();
-  await registration?.update();
-};
 
 const fetchLatestVersionInfo = async (t: (key: string, opts?: Record<string, unknown>) => string, applyAppUpdate: () => Promise<void>): Promise<void> => {
   try {
@@ -47,8 +24,8 @@ const fetchLatestVersionInfo = async (t: (key: string, opts?: Record<string, unk
         const updateActionText = t('download_latest_desktop', { link: 'https://github.com/bitsocialnet/5chan/releases/latest', interpolation: { escapeValue: false } });
         alert(newVersionText + ' ' + updateActionText);
       } else {
-        await refreshServiceWorkerRegistration();
         await applyAppUpdate();
+        return;
       }
 
       updateAvailable = true;
@@ -87,14 +64,16 @@ const CheckForUpdates = () => {
 
   const checkForUpdates = async () => {
     setLoading(true);
-    if (needRefresh) {
-      await applyAppUpdate();
-      setLoading(false);
-      return;
-    }
+    try {
+      if (needRefresh) {
+        await applyAppUpdate();
+        return;
+      }
 
-    await fetchLatestVersionInfo(t, applyAppUpdate);
-    setLoading(false);
+      await fetchLatestVersionInfo(t, applyAppUpdate);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

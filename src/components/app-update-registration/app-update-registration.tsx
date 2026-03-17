@@ -1,50 +1,46 @@
-import { memo, useEffect } from 'react';
-import { registerSW } from 'virtual:pwa-register';
+import { useEffect } from 'react';
+import packageJson from '../../../package.json';
+import { fetchLatestStableVersion, isElectron, refreshServiceWorkerRegistration } from '../../lib/app-update';
 import useAppUpdateStore from '../../stores/use-app-update-store';
 
 const UPDATE_CHECK_INTERVAL_MS = 60 * 1000;
 
 const AppUpdateRegistration = () => {
   useEffect(() => {
-    let intervalId: number | null = null;
+    if (isElectron) {
+      return undefined;
+    }
 
-    const updateServiceWorker = registerSW({
-      immediate: true,
-      onNeedRefresh: () => {
-        useAppUpdateStore.getState().setNeedRefresh(true);
-      },
-      onRegisteredSW: (_swScriptUrl: string, serviceWorkerRegistration: ServiceWorkerRegistration | undefined) => {
-        if (!serviceWorkerRegistration) {
-          return;
+    let isDisposed = false;
+
+    const syncUpdateAvailability = async () => {
+      await refreshServiceWorkerRegistration().catch((error) => {
+        console.error('Failed to refresh service worker registration', error);
+      });
+
+      try {
+        const latestStableVersion = await fetchLatestStableVersion();
+
+        if (!isDisposed) {
+          useAppUpdateStore.getState().setNeedRefresh(packageJson.version !== latestStableVersion);
         }
-
-        const checkForUpdates = () => {
-          void serviceWorkerRegistration.update().catch(() => undefined);
-        };
-
-        checkForUpdates();
-        if (intervalId !== null) {
-          window.clearInterval(intervalId);
-        }
-        intervalId = window.setInterval(checkForUpdates, UPDATE_CHECK_INTERVAL_MS);
-      },
-      onRegisterError: (error: unknown) => {
-        console.error('Failed to register service worker', error);
-      },
-    });
-
-    useAppUpdateStore.getState().setUpdateServiceWorker(updateServiceWorker);
-
-    return () => {
-      if (intervalId !== null) {
-        window.clearInterval(intervalId);
+      } catch (error) {
+        console.error('Failed to check app update availability', error);
       }
+    };
+
+    void syncUpdateAvailability();
+    const intervalId = window.setInterval(() => {
+      void syncUpdateAvailability();
+    }, UPDATE_CHECK_INTERVAL_MS);
+    return () => {
+      isDisposed = true;
+      window.clearInterval(intervalId);
       useAppUpdateStore.getState().setNeedRefresh(false);
-      useAppUpdateStore.getState().setUpdateServiceWorker(null);
     };
   }, []);
 
   return null;
 };
 
-export default memo(AppUpdateRegistration);
+export default AppUpdateRegistration;

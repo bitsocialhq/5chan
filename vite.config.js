@@ -127,15 +127,6 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api/, /^\/_\(.*\)/],
         maximumFileSizeToCacheInBytes: 6000000,
         runtimeCaching: [
-          // Fix index.html not refreshing on new versions
-          {
-            urlPattern: ({ url }) => url.pathname === '/' || url.pathname === '/index.html',
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'html-cache',
-              networkTimeoutSeconds: 3,
-            },
-          },
           // PNG caching
           {
             urlPattern: ({ url }) => url.pathname.endsWith('.png'),

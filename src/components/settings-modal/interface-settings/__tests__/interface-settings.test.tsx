@@ -89,7 +89,6 @@ describe('InterfaceSettings', () => {
     useFeedViewSettingsStore.getState().setEnableInfiniteScroll(false);
     useAppUpdateStore.setState({
       needRefresh: false,
-      updateServiceWorker: null,
       applyAppUpdate: testState.applyAppUpdateMock,
     });
     vi.stubGlobal('alert', testState.alertMock);

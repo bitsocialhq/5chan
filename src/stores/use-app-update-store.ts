@@ -1,12 +1,9 @@
 import { create } from 'zustand';
-
-type UpdateServiceWorker = (reloadPage?: boolean) => Promise<void>;
+import { refreshServiceWorkerRegistration } from '../lib/app-update';
 
 interface AppUpdateState {
   needRefresh: boolean;
-  updateServiceWorker: UpdateServiceWorker | null;
   setNeedRefresh: (needRefresh: boolean) => void;
-  setUpdateServiceWorker: (updateServiceWorker: UpdateServiceWorker | null) => void;
   applyAppUpdate: () => Promise<void>;
 }
 
@@ -14,19 +11,13 @@ const reloadCurrentPage = () => {
   window.location.reload();
 };
 
-const useAppUpdateStore = create<AppUpdateState>((set, get) => ({
+const useAppUpdateStore = create<AppUpdateState>((set) => ({
   needRefresh: false,
-  updateServiceWorker: null,
   setNeedRefresh: (needRefresh) => set({ needRefresh }),
-  setUpdateServiceWorker: (updateServiceWorker) => set({ updateServiceWorker }),
   applyAppUpdate: async () => {
-    const { needRefresh, updateServiceWorker } = get();
-
-    if (needRefresh && updateServiceWorker) {
-      await updateServiceWorker(true);
-      return;
-    }
-
+    await refreshServiceWorkerRegistration().catch((error) => {
+      console.error('Failed to refresh service worker registration', error);
+    });
     reloadCurrentPage();
   },
 }));
