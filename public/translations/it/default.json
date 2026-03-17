@@ -319,5 +319,6 @@
   "delete_post": "Elimina post",
   "delete_post_confirm": "Eliminare definitivamente questo post? Non è possibile annullare questa operazione.",
   "app_p2p_info": "Puoi sempre connetterti a qualsiasi board, completamente P2P, nessuno può fermarti. Basta incollare il suo indirizzo nel campo di ricerca sopra.",
-  "unmute_video_sound_tip": "Attiva l'audio automaticamente durante la riproduzione video"
+  "unmute_video_sound_tip": "Attiva l'audio automaticamente durante la riproduzione video",
+  "unmute_video_sound": "Attiva audio del video"
 }

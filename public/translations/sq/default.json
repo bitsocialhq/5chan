@@ -319,5 +319,6 @@
   "delete_post": "Fshi postimin",
   "delete_post_confirm": "Fshini këtë postim përgjithmonë? Kjo nuk mund të zhbëhet.",
   "app_p2p_info": "Mund të lidhesh gjithmonë me çdo board, plotësisht P2P, askush nuk mund të të ndalojë. Thjesht ngjite adresën e tij në fushën e kërkimit më sipër.",
-  "unmute_video_sound_tip": "Aktivizo zërin automatikisht gjatë riprodhimit të videos"
+  "unmute_video_sound_tip": "Aktivizo zërin automatikisht gjatë riprodhimit të videos",
+  "unmute_video_sound": "Un-mute video sound"
 }

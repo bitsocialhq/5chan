@@ -319,5 +319,6 @@
   "delete_post": "删除帖子",
   "delete_post_confirm": "永久删除此帖子？此操作无法撤销。",
   "app_p2p_info": "你随时可以连接到任何看板，完全 P2P，没人能阻止你。只需将其地址粘贴到上方搜索框中即可。",
-  "unmute_video_sound_tip": "视频播放时自动开启声音"
+  "unmute_video_sound_tip": "视频播放时自动开启声音",
+  "unmute_video_sound": "Un-mute video sound"
 }

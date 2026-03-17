@@ -319,5 +319,6 @@
   "delete_post": "Supprimer la publication",
   "delete_post_confirm": "Supprimer définitivement cette publication ? Cette action est irréversible.",
   "app_p2p_info": "Tu peux toujours te connecter à n'importe quel board, entièrement P2P, personne ne peut t'en empêcher. Colle simplement son adresse dans le champ de recherche ci-dessus.",
-  "unmute_video_sound_tip": "Activer le son automatiquement lors de la lecture vidéo"
+  "unmute_video_sound_tip": "Activer le son automatiquement lors de la lecture vidéo",
+  "unmute_video_sound": "Un-mute video sound"
 }
