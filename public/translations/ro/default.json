@@ -320,5 +320,5 @@
   "delete_post_confirm": "Șterge definitiv această postare? Această acțiune nu poate fi anulată.",
   "app_p2p_info": "Poți oricând să te conectezi la orice board, complet P2P, nimeni nu te poate opri. Pur și simplu lipește adresa în câmpul de căutare de mai sus.",
   "unmute_video_sound_tip": "Activează automat sunetul la redarea videoclipului",
-  "unmute_video_sound": "Un-mute video sound"
+  "unmute_video_sound": "Activează automat sunetul la redarea videoclipului"
 }

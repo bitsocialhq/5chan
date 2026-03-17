@@ -320,5 +320,5 @@
   "delete_post_confirm": "Excluir esta publicação permanentemente? Isso não pode ser desfeito.",
   "app_p2p_info": "Podes sempre conectar a qualquer board, totalmente P2P, ninguém te pode impedir. Basta colar o endereço no campo de pesquisa acima.",
   "unmute_video_sound_tip": "Ativar o som automaticamente na reprodução de vídeo",
-  "unmute_video_sound": "Ativar som do vídeo"
+  "unmute_video_sound": "Ativar o som automaticamente na reprodução de vídeo"
 }

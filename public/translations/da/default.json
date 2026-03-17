@@ -320,5 +320,5 @@
   "delete_post_confirm": "Slet dette opslag permanent? Dette kan ikke fortrydes.",
   "app_p2p_info": "Du kan altid forbinde til ethvert board, fuldt P2P, ingen kan stoppe dig. Indsæt blot dens adresse i søgefeltet ovenfor.",
   "unmute_video_sound_tip": "Slå automatisk lyd til under videoafspilning",
-  "unmute_video_sound": "Slå lyd til på video"
+  "unmute_video_sound": "Slå automatisk lyd til under videoafspilning"
 }

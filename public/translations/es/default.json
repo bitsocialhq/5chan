@@ -320,5 +320,5 @@
   "delete_post_confirm": "¿Eliminar esta publicación permanentemente? Esto no se puede deshacer.",
   "app_p2p_info": "Siempre puedes conectarte a cualquier tablón, totalmente P2P, nadie puede impedírtelo. Simplemente pega su dirección en el campo de búsqueda de arriba.",
   "unmute_video_sound_tip": "Activar el sonido automáticamente al reproducir vídeo",
-  "unmute_video_sound": "Un-mute video sound"
+  "unmute_video_sound": "Activar el sonido automáticamente al reproducir vídeo"
 }

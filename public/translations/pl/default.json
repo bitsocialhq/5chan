@@ -320,5 +320,5 @@
   "delete_post_confirm": "Usunąć ten post na stałe? Tej operacji nie można cofnąć.",
   "app_p2p_info": "Zawsze możesz połączyć się z dowolnym boardem, w pełni P2P, nikt nie może cię powstrzymać. Wklej po prostu jego adres w pole wyszukiwania powyżej.",
   "unmute_video_sound_tip": "Automatycznie włączaj dźwięk podczas odtwarzania wideo",
-  "unmute_video_sound": "Un-mute video sound"
+  "unmute_video_sound": "Automatycznie włączaj dźwięk podczas odtwarzania wideo"
 }

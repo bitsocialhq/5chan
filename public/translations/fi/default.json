@@ -320,5 +320,5 @@
   "delete_post_confirm": "Poistetaanko tämä julkaisu pysyvästi? Tätä ei voi perua.",
   "app_p2p_info": "Voit aina yhdistää mihin tahansa boardiin, täysin P2P, kukaan ei voi estää sinua. Liitä vain sen osoite yllä olevaan hakukenttään.",
   "unmute_video_sound_tip": "Ota ääni automaattisesti päälle videotoiston yhteydessä",
-  "unmute_video_sound": "Un-mute video sound"
+  "unmute_video_sound": "Ota ääni automaattisesti päälle videotoiston yhteydessä"
 }
