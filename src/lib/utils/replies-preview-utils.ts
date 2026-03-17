@@ -54,6 +54,22 @@ export function computeOmittedCount({ totalReplyCount, visibleCount }: ComputeOm
   return Math.max(0, totalReplyCount - visibleCount);
 }
 
+interface HasEnoughPreviewRepliesParams {
+  replyCount: number | undefined;
+  loadedCount: number;
+  visibleCount: number;
+}
+
+/**
+ * Board previews can skip a live fetch when cached replies already cover all
+ * replies that could be shown. If total reply count is unknown, require a full
+ * visible slice so UX matches the current live-preview behavior.
+ */
+export function hasEnoughPreviewReplies({ replyCount, loadedCount, visibleCount }: HasEnoughPreviewRepliesParams): boolean {
+  const requiredCount = typeof replyCount === 'number' && replyCount >= 0 ? Math.min(visibleCount, replyCount) : visibleCount;
+  return requiredCount === 0 || loadedCount >= requiredCount;
+}
+
 interface GetTotalReplyCountParams {
   replyCount: number | undefined;
   fullLoadedCount: number;

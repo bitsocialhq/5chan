@@ -49,7 +49,13 @@ import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
 import useFreshReplies from '../../hooks/use-fresh-replies';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
-import { computeOmittedCount, filterRepliesForDisplay, getPreviewDisplayReplies, getTotalReplyCount } from '../../lib/utils/replies-preview-utils';
+import {
+  computeOmittedCount,
+  filterRepliesForDisplay,
+  getPreviewDisplayReplies,
+  getTotalReplyCount,
+  hasEnoughPreviewReplies,
+} from '../../lib/utils/replies-preview-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import useDeleteFailedPost from '../../hooks/use-delete-failed-post';
@@ -821,11 +827,27 @@ const PostDesktop = ({
 
   const { showOmittedReplies, setShowOmittedReplies } = useShowOmittedReplies();
 
-  const shouldFetchPreview = showReplies && !isModQueue && !showAllReplies && showOmittedReplies[cid] !== true;
+  const shouldUsePreview = showReplies && !isModQueue && !showAllReplies;
   const shouldFetchFull = showReplies && !isModQueue && (showAllReplies || showOmittedReplies[cid]);
 
+  const cachedPreviewRepliesResult = useReplies({
+    comment: shouldUsePreview ? resolvedPost : undefined,
+    onlyIfCached: true,
+    sortType: 'new',
+    flat: true,
+    repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
+    accountComments: { newerThan: Infinity, append: true },
+  });
+  const cachedPreviewReplies = (cachedPreviewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
+    ? (cachedPreviewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
+    : cachedPreviewRepliesResult.replies || [];
+  const hasEnoughCachedPreview = hasEnoughPreviewReplies({
+    replyCount: resolvedPost?.replyCount,
+    loadedCount: cachedPreviewReplies.length,
+    visibleCount: BOARD_REPLIES_PREVIEW_VISIBLE_COUNT,
+  });
   const previewRepliesResult = useReplies({
-    comment: shouldFetchPreview ? resolvedPost : undefined,
+    comment: shouldUsePreview && !showOmittedReplies[cid] && !hasEnoughCachedPreview ? resolvedPost : undefined,
     sortType: 'new',
     flat: true,
     repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
@@ -839,9 +861,10 @@ const PostDesktop = ({
     accountComments: { newerThan: Infinity, append: true },
   });
 
-  const previewReplies = (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
+  const livePreviewReplies = (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
     ? (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
     : previewRepliesResult.replies || [];
+  const previewReplies = hasEnoughCachedPreview ? cachedPreviewReplies : livePreviewReplies;
   const fullReplies = (fullRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
     ? (fullRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
     : fullRepliesResult.replies || [];
@@ -875,7 +898,7 @@ const PostDesktop = ({
   const totalReplyCount = getTotalReplyCount({
     replyCount: resolvedPost?.replyCount,
     fullLoadedCount: fullReplies.length,
-    previewLoadedCount: previewReplies.length,
+    previewLoadedCount: Math.max(cachedPreviewReplies.length, livePreviewReplies.length),
   });
   const repliesCount = computeOmittedCount({
     totalReplyCount,

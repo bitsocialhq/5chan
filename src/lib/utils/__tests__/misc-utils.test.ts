@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { copyToClipboard } from '../clipboard-utils';
 import { hashStringToColor, getTextColorForBackground, removeMarkdown } from '../post-utils';
 import { preloadReplyModal, preloadThemeAssets, resolveAssetUrl } from '../preload-utils';
-import { computeOmittedCount, filterRepliesForDisplay, getPreviewDisplayReplies, getTotalReplyCount } from '../replies-preview-utils';
+import { computeOmittedCount, filterRepliesForDisplay, getPreviewDisplayReplies, getTotalReplyCount, hasEnoughPreviewReplies } from '../replies-preview-utils';
 import { getQuotedCidsFromContent, mergeQuotedCids } from '../reply-quote-utils';
 import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../string-utils';
 import { getFormattedDate, getFormattedTimeAgo, isChristmas } from '../time-utils';
@@ -186,6 +186,10 @@ describe('misc utils', () => {
 
     expect(computeOmittedCount({ totalReplyCount: 2, visibleCount: 5 })).toBe(0);
     expect(computeOmittedCount({ totalReplyCount: 9, visibleCount: 5 })).toBe(4);
+    expect(hasEnoughPreviewReplies({ replyCount: 2, loadedCount: 2, visibleCount: 5 })).toBe(true);
+    expect(hasEnoughPreviewReplies({ replyCount: 9, loadedCount: 4, visibleCount: 5 })).toBe(false);
+    expect(hasEnoughPreviewReplies({ replyCount: undefined, loadedCount: 5, visibleCount: 5 })).toBe(true);
+    expect(hasEnoughPreviewReplies({ replyCount: undefined, loadedCount: 4, visibleCount: 5 })).toBe(false);
     expect(getTotalReplyCount({ replyCount: undefined, fullLoadedCount: 7, previewLoadedCount: 5 })).toBe(7);
     expect(getTotalReplyCount({ replyCount: 12, fullLoadedCount: 7, previewLoadedCount: 5 })).toBe(12);
   });

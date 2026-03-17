@@ -44,7 +44,7 @@ import useProgressiveRender from '../../hooks/use-progressive-render';
 import useFreshReplies from '../../hooks/use-fresh-replies';
 import { BOARD_REPLIES_PREVIEW_FETCH_SIZE, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT, REPLIES_PER_PAGE } from '../../lib/constants';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
-import { filterRepliesForDisplay, getPreviewDisplayReplies } from '../../lib/utils/replies-preview-utils';
+import { filterRepliesForDisplay, getPreviewDisplayReplies, hasEnoughPreviewReplies } from '../../lib/utils/replies-preview-utils';
 import { getRenderableMobileBacklinks } from '../../lib/utils/reply-backlink-utils';
 import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import useDeleteFailedPost from '../../hooks/use-delete-failed-post';
@@ -564,8 +564,25 @@ const PostMobile = ({
   const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
   const linksCount = useCountLinksInReplies(resolvedPost);
   const shouldFetchReplies = showReplies && !isModQueue;
+  const shouldUsePreview = shouldFetchReplies && !showAllReplies;
+  const cachedPreviewRepliesResult = useReplies({
+    comment: shouldUsePreview ? resolvedPost : undefined,
+    onlyIfCached: true,
+    sortType: 'new',
+    flat: true,
+    repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
+    accountComments: { newerThan: Infinity, append: true },
+  });
+  const cachedPreviewReplies = (cachedPreviewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
+    ? (cachedPreviewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
+    : cachedPreviewRepliesResult.replies || [];
+  const hasEnoughCachedPreview = hasEnoughPreviewReplies({
+    replyCount: resolvedPost?.replyCount,
+    loadedCount: cachedPreviewReplies.length,
+    visibleCount: BOARD_REPLIES_PREVIEW_VISIBLE_COUNT,
+  });
   const previewRepliesResult = useReplies({
-    comment: shouldFetchReplies && !showAllReplies ? resolvedPost : undefined,
+    comment: shouldUsePreview && !hasEnoughCachedPreview ? resolvedPost : undefined,
     sortType: 'new',
     flat: true,
     repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
@@ -578,7 +595,11 @@ const PostMobile = ({
     repliesPerPage: REPLIES_PER_PAGE,
     accountComments: { newerThan: Infinity, append: true },
   });
-  const repliesResult = showAllReplies ? fullRepliesResult : previewRepliesResult;
+  const livePreviewReplies = (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
+    ? (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
+    : previewRepliesResult.replies || [];
+  const previewReplies = hasEnoughCachedPreview ? cachedPreviewReplies : livePreviewReplies;
+  const repliesResult = showAllReplies ? fullRepliesResult : { ...previewRepliesResult, replies: previewReplies };
   const { replies, hasMore, loadMore } = repliesResult;
   const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
   const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
