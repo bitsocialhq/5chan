@@ -1,5 +1,7 @@
 import { THEME_BUTTON_IMAGES, THEME_BACKGROUND_IMAGES } from '../../generated/asset-manifest';
 
+export const resolveAssetUrl = (path: string, baseUrl = import.meta.env.BASE_URL): string => `${baseUrl}${path}`;
+
 /**
  * Preloads an array of image URLs by creating Image objects.
  * Images are loaded in the background and cached by the browser.
@@ -7,7 +9,7 @@ import { THEME_BUTTON_IMAGES, THEME_BACKGROUND_IMAGES } from '../../generated/as
 const preloadImages = (imagePaths: readonly string[]): void => {
   imagePaths.forEach((path) => {
     const img = new Image();
-    img.src = `${import.meta.env.BASE_URL}${path}`;
+    img.src = resolveAssetUrl(path);
   });
 };
 
