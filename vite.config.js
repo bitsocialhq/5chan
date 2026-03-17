@@ -1,7 +1,32 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
+import { readFileSync } from 'fs';
 import { VitePWA } from 'vite-plugin-pwa';
+
+const { version: appVersion } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+
+function appVersionMetadataPlugin() {
+  const payload = `${JSON.stringify({ version: appVersion })}\n`;
+
+  return {
+    name: 'fivechan-version-metadata',
+    configureServer(server) {
+      server.middlewares.use('/version.json', (_req, res) => {
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.end(payload);
+      });
+    },
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'version.json',
+        source: payload,
+      });
+    },
+  };
+}
 
 function adaptReactPluginForRolldown(plugin) {
   if (!plugin?.config || plugin.name !== 'vite:react-babel') {
@@ -41,6 +66,7 @@ function adaptReactPluginForRolldown(plugin) {
 
 export default defineConfig({
   plugins: [
+    appVersionMetadataPlugin(),
     ...react({
       babel: {
         plugins: [
@@ -58,6 +84,7 @@ export default defineConfig({
       strategies: 'injectManifest',
       injectManifest: {
         maximumFileSizeToCacheInBytes: 20000000,
+        globIgnores: ['**/version.json'],
       },
       srcDir: 'src',
       filename: 'sw.ts',
@@ -103,9 +130,10 @@ export default defineConfig({
           // Fix index.html not refreshing on new versions
           {
             urlPattern: ({ url }) => url.pathname === '/' || url.pathname === '/index.html',
-            handler: 'StaleWhileRevalidate',
+            handler: 'NetworkFirst',
             options: {
               cacheName: 'html-cache',
+              networkTimeoutSeconds: 3,
             },
           },
           // PNG caching

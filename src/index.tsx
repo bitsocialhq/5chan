@@ -7,6 +7,7 @@ import { HashRouter as Router } from 'react-router-dom';
 import './lib/init-translations';
 import './index.css';
 import './themes.css';
+import AppUpdateRegistration from './components/app-update-registration';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Analytics } from '@vercel/analytics/react';
 
@@ -19,6 +20,7 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
   <React.StrictMode>
     <Router>
+      <AppUpdateRegistration />
       <App />
       {isVercelDeployment && <Analytics />}
     </Router>

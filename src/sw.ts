@@ -3,12 +3,24 @@
 
 import { clientsClaim } from 'workbox-core';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
+import { registerRoute } from 'workbox-routing';
+import { NetworkFirst } from 'workbox-strategies';
 
 declare const self: ServiceWorkerGlobalScope;
 
-// Precache all assets specified in the manifest
+const precacheEntries = self.__WB_MANIFEST.filter((entry) => (typeof entry === 'string' ? entry !== 'index.html' : entry.url !== 'index.html'));
+
+// Precache revisioned assets, but let navigations fetch fresh HTML first.
 cleanupOutdatedCaches();
-precacheAndRoute(self.__WB_MANIFEST);
+precacheAndRoute(precacheEntries);
+
+registerRoute(
+  ({ request, url }) => request.mode === 'navigate' && !url.pathname.startsWith('/api') && !/^\/_\(.*\)/.test(url.pathname),
+  new NetworkFirst({
+    cacheName: 'html-cache',
+    networkTimeoutSeconds: 3,
+  }),
+);
 
 // Standard SW lifecycle methods
 self.skipWaiting();

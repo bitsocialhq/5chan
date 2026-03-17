@@ -7,12 +7,14 @@ import packageJson from '../../../../../package.json';
 import InterfaceSettings from '../interface-settings';
 import useFeedViewSettingsStore from '../../../../stores/use-feed-view-settings-store';
 import { INTERFACE_LANGUAGE_STORAGE_KEY } from '../../../../lib/constants';
+import useAppUpdateStore from '../../../../stores/use-app-update-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
   alertMock: vi.fn(),
+  applyAppUpdateMock: vi.fn(),
   changeLanguageMock: vi.fn(),
   fetchMock: vi.fn(),
   fitExpandedImagesToScreen: false,
@@ -79,11 +81,17 @@ describe('InterfaceSettings', () => {
     vi.clearAllMocks();
     localStorage.removeItem(STORAGE_KEY);
     testState.alertMock.mockReset();
+    testState.applyAppUpdateMock.mockReset();
     testState.changeLanguageMock.mockReset();
     testState.fetchMock.mockReset();
     testState.fitExpandedImagesToScreen = false;
     testState.setFitExpandedImagesToScreenMock.mockReset();
     useFeedViewSettingsStore.getState().setEnableInfiniteScroll(false);
+    useAppUpdateStore.setState({
+      needRefresh: false,
+      updateServiceWorker: null,
+      applyAppUpdate: testState.applyAppUpdateMock,
+    });
     vi.stubGlobal('alert', testState.alertMock);
     vi.stubGlobal('fetch', testState.fetchMock);
     setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
@@ -188,7 +196,7 @@ describe('InterfaceSettings', () => {
     expect(testState.alertMock).toHaveBeenCalledWith(expect.stringContaining('latest_stable_version'));
   });
 
-  it('alerts when a newer stable version is available', async () => {
+  it('applies the app update when a newer stable version is available', async () => {
     testState.fetchMock.mockResolvedValueOnce(createFetchResponse({ version: '9.9.9' }));
 
     render(createElement(InterfaceSettings));
@@ -201,9 +209,8 @@ describe('InterfaceSettings', () => {
       await Promise.resolve();
     });
 
-    const message = String(testState.alertMock.mock.calls.at(-1)?.[0] ?? '');
-    expect(message).toContain('new_stable_version');
-    expect(message).toContain('refresh_to_update');
+    expect(testState.applyAppUpdateMock).toHaveBeenCalledTimes(1);
+    expect(testState.alertMock).not.toHaveBeenCalled();
   });
 
   it('alerts when already on the latest stable version', async () => {
@@ -220,6 +227,32 @@ describe('InterfaceSettings', () => {
     });
 
     expect(testState.alertMock).toHaveBeenCalledWith(expect.stringContaining('latest_stable_version'));
+  });
+
+  it('renders an update button when a service worker refresh is ready', () => {
+    useAppUpdateStore.setState({ needRefresh: true });
+
+    render(createElement(InterfaceSettings));
+
+    const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'update');
+    expect(button).toBeTruthy();
+  });
+
+  it('applies the waiting service worker when the update button is pressed', async () => {
+    useAppUpdateStore.setState({ needRefresh: true });
+
+    render(createElement(InterfaceSettings));
+
+    const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'update');
+    expect(button).toBeTruthy();
+
+    await act(async () => {
+      button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(testState.applyAppUpdateMock).toHaveBeenCalledTimes(1);
+    expect(testState.fetchMock).not.toHaveBeenCalled();
   });
 
   it('alerts when fetching the latest version info fails', async () => {
