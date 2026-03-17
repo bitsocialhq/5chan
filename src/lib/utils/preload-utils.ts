@@ -7,7 +7,7 @@ import { THEME_BUTTON_IMAGES, THEME_BACKGROUND_IMAGES } from '../../generated/as
 const preloadImages = (imagePaths: readonly string[]): void => {
   imagePaths.forEach((path) => {
     const img = new Image();
-    img.src = `/${path}`;
+    img.src = `${import.meta.env.BASE_URL}${path}`;
   });
 };
 

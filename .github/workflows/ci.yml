@@ -212,6 +212,9 @@ jobs:
           ls -la build/electron/preload.cjs || exit 1
           ls -la build/index.html || exit 1
 
+      - name: Rebuild and verify Electron native modules
+        run: yarn electron:prepare-package
+
       - name: Package Electron app
         timeout-minutes: 30
         run: |
@@ -273,6 +276,9 @@ jobs:
           ls -la build/ || exit 1
           ls -la build/electron/preload.cjs || exit 1
           ls -la build/index.html || exit 1
+
+      - name: Rebuild and verify Electron native modules
+        run: yarn electron:prepare-package
 
       - name: Package Electron app
         timeout-minutes: 30
@@ -336,6 +342,9 @@ jobs:
           ls -la build/electron/preload.cjs || exit 1
           ls -la build/index.html || exit 1
 
+      - name: Rebuild and verify Electron native modules
+        run: yarn electron:prepare-package
+
       - name: Package Electron app
         timeout-minutes: 30
         run: |
@@ -398,6 +407,10 @@ jobs:
           ls -la build/ || exit 1
           ls -la build/electron/preload.cjs || exit 1
           ls -la build/index.html || exit 1
+
+      - name: Rebuild and verify Electron native modules
+        shell: bash
+        run: yarn electron:prepare-package
 
       - name: Package Electron app
         shell: bash

@@ -116,7 +116,11 @@ describe('misc utils', () => {
 
     preloadThemeAssets();
 
-    expect(loadedSources).toEqual(['/buttons/default.png', '/buttons/hover.png', '/backgrounds/wallpaper.png']);
+    expect(loadedSources).toEqual([
+      `${import.meta.env.BASE_URL}buttons/default.png`,
+      `${import.meta.env.BASE_URL}buttons/hover.png`,
+      `${import.meta.env.BASE_URL}backgrounds/wallpaper.png`,
+    ]);
   });
 
   it('schedules reply modal preload with requestIdleCallback when available', () => {
