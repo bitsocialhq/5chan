@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.util.Locale;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -29,6 +31,8 @@ import okhttp3.Response;
 public class AppUpdaterPlugin extends Plugin {
     private static final String TAG = "AppUpdaterPlugin";
     private static final String EMULATOR_HOST = "10.0.2.2";
+    private static final String GITHUB_HOST = "github.com";
+    private static final String GITHUB_CONTENT_HOST = "githubusercontent.com";
 
     @PluginMethod
     public void downloadAndInstallUpdate(PluginCall call) {
@@ -63,36 +67,59 @@ public class AppUpdaterPlugin extends Plugin {
         return (getContext().getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
     }
 
-    private String sanitizeUrl(String value) {
+    static boolean isAllowedDownloadUrl(
+            String value, boolean allowGitHubContentHosts, boolean allowDebugHosts) {
         if (value == null) {
-            return null;
+            return false;
         }
 
         String sanitized = value.trim();
-        Uri uri = Uri.parse(sanitized);
+        if (sanitized.isEmpty()) {
+            return false;
+        }
+
+        final URI uri;
+        try {
+            uri = URI.create(sanitized);
+        } catch (IllegalArgumentException exception) {
+            return false;
+        }
+
         String scheme = uri.getScheme();
         String host = uri.getHost();
 
         if (scheme == null || host == null) {
-            return null;
+            return false;
         }
 
-        String normalizedScheme = scheme.toLowerCase();
-        String normalizedHost = host.toLowerCase();
+        String normalizedScheme = scheme.toLowerCase(Locale.ROOT);
+        String normalizedHost = host.toLowerCase(Locale.ROOT);
 
-        if ("https".equals(normalizedScheme) && "github.com".equals(normalizedHost)) {
-            return sanitized;
+        if ("https".equals(normalizedScheme)
+                && (GITHUB_HOST.equals(normalizedHost)
+                        || (allowGitHubContentHosts
+                                && (GITHUB_CONTENT_HOST.equals(normalizedHost)
+                                        || normalizedHost.endsWith("." + GITHUB_CONTENT_HOST))))) {
+            return true;
         }
 
-        if (isDebugBuild()
+        if (allowDebugHosts
                 && ("http".equals(normalizedScheme) || "https".equals(normalizedScheme))
                 && (EMULATOR_HOST.equals(normalizedHost)
                         || "127.0.0.1".equals(normalizedHost)
                         || "localhost".equals(normalizedHost))) {
-            return sanitized;
+            return true;
         }
 
-        return null;
+        return false;
+    }
+
+    private String sanitizeUrl(String value) {
+        if (!isAllowedDownloadUrl(value, false, isDebugBuild())) {
+            return null;
+        }
+
+        return value.trim();
     }
 
     private String sanitizeFileName(String value) {
@@ -124,6 +151,11 @@ public class AppUpdaterPlugin extends Plugin {
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful() || response.body() == null) {
                 throw new IOException("Unexpected response " + response.code());
+            }
+
+            String finalUrl = response.request().url().toString();
+            if (!isAllowedDownloadUrl(finalUrl, true, isDebugBuild())) {
+                throw new IOException("Unexpected redirected download host");
             }
 
             try (InputStream inputStream = response.body().byteStream();
