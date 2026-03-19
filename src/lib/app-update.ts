@@ -103,7 +103,25 @@ const hasArmArchitecture = (value: string): boolean => {
   return normalized.includes('arm64') || normalized.includes('aarch64');
 };
 
-const hasX64Architecture = (value: string): boolean => !hasArmArchitecture(value);
+const hasX64Architecture = (value: string): boolean => {
+  const normalized = value.toLowerCase();
+  return normalized.includes('x64') || normalized.includes('x86_64') || normalized.includes('amd64');
+};
+
+const isArchitectureAgnostic = (value: string): boolean => !hasArmArchitecture(value) && !hasX64Architecture(value);
+
+const matchesPreferredArchitecture = (value: string, prefersArm: boolean, prefersX64: boolean): boolean =>
+  (prefersArm && hasArmArchitecture(value)) || (prefersX64 && hasX64Architecture(value));
+
+const findCompatibleAsset = (
+  assets: GitHubReleaseAsset[],
+  predicate: (asset: GitHubReleaseAsset) => boolean,
+  prefersArm: boolean,
+  prefersX64: boolean,
+): GitHubReleaseAsset | null =>
+  assets.find((asset) => predicate(asset) && matchesPreferredArchitecture(asset.name, prefersArm, prefersX64)) ||
+  assets.find((asset) => predicate(asset) && isArchitectureAgnostic(asset.name)) ||
+  null;
 
 const getReleaseUrl = (version: string): string => getDefaultReleaseUrl(normalizeVersion(version));
 
@@ -118,30 +136,17 @@ const findMatchingElectronAsset = async (assets: GitHubReleaseAsset[]): Promise<
   const prefersX64 = hasX64Architecture(arch);
 
   if (platform === 'darwin') {
-    return (
-      assets.find((asset) => asset.name.endsWith('.zip') && ((prefersArm && hasArmArchitecture(asset.name)) || (prefersX64 && hasX64Architecture(asset.name)))) ||
-      assets.find((asset) => asset.name.endsWith('.zip')) ||
-      assets.find((asset) => asset.name.endsWith('.dmg') && ((prefersArm && hasArmArchitecture(asset.name)) || (prefersX64 && hasX64Architecture(asset.name)))) ||
-      null
-    );
+    const matchingZip = findCompatibleAsset(assets, (asset) => asset.name.endsWith('.zip'), prefersArm, prefersX64);
+    const matchingDmg = findCompatibleAsset(assets, (asset) => asset.name.endsWith('.dmg'), prefersArm, prefersX64);
+    return matchingZip || matchingDmg;
   }
 
   if (platform === 'linux') {
-    return (
-      assets.find((asset) => asset.name.endsWith('.AppImage') && ((prefersArm && hasArmArchitecture(asset.name)) || (prefersX64 && hasX64Architecture(asset.name)))) ||
-      null
-    );
+    return findCompatibleAsset(assets, (asset) => asset.name.endsWith('.AppImage'), prefersArm, prefersX64);
   }
 
   if (platform === 'win32') {
-    return (
-      assets.find(
-        (asset) =>
-          asset.name.toLowerCase().endsWith('.exe') &&
-          asset.name.toLowerCase().includes('setup') &&
-          ((prefersArm && hasArmArchitecture(asset.name)) || (prefersX64 && hasX64Architecture(asset.name))),
-      ) || null
-    );
+    return findCompatibleAsset(assets, (asset) => asset.name.toLowerCase().endsWith('.exe') && asset.name.toLowerCase().includes('setup'), prefersArm, prefersX64);
   }
 
   return null;

@@ -173,6 +173,78 @@ describe('app-update', () => {
     });
   });
 
+  it('prefers a matching mac dmg over an incompatible zip fallback', async () => {
+    window.electronApi = {
+      isElectron: true,
+      getPlatform: () => testState.electronGetPlatformMock(),
+      downloadAndInstallUpdate: (options) => testState.electronDownloadAndInstallUpdateMock(options),
+      copyToClipboard: vi.fn(),
+      automateUploadMedia: vi.fn(),
+    } as Window['electronApi'];
+    testState.electronGetPlatformMock.mockResolvedValue({
+      platform: 'darwin',
+      arch: 'arm64',
+      version: 'v20.0.0',
+    });
+    testState.fetchMock.mockResolvedValueOnce(
+      createFetchResponse({
+        tag_name: 'v9.9.9',
+        assets: [
+          {
+            name: '5chan-9.9.9-x64.zip',
+            browser_download_url: 'https://github.com/bitsocialnet/5chan/releases/download/v9.9.9/5chan-9.9.9-x64.zip',
+          },
+          {
+            name: '5chan-9.9.9-arm64.dmg',
+            browser_download_url: 'https://github.com/bitsocialnet/5chan/releases/download/v9.9.9/5chan-9.9.9-arm64.dmg',
+          },
+        ],
+      }),
+    );
+
+    const { resolveAvailableAppUpdate } = await loadModule();
+    const result = await resolveAvailableAppUpdate();
+
+    expect(result).toEqual({
+      runtime: 'electron',
+      targetVersion: '9.9.9',
+      assetName: '5chan-9.9.9-arm64.dmg',
+      downloadUrl: 'https://github.com/bitsocialnet/5chan/releases/download/v9.9.9/5chan-9.9.9-arm64.dmg',
+      releaseUrl: 'https://github.com/bitsocialnet/5chan/releases/tag/v9.9.9',
+    });
+  });
+
+  it('returns no mac update when the only zip asset targets the wrong architecture', async () => {
+    window.electronApi = {
+      isElectron: true,
+      getPlatform: () => testState.electronGetPlatformMock(),
+      downloadAndInstallUpdate: (options) => testState.electronDownloadAndInstallUpdateMock(options),
+      copyToClipboard: vi.fn(),
+      automateUploadMedia: vi.fn(),
+    } as Window['electronApi'];
+    testState.electronGetPlatformMock.mockResolvedValue({
+      platform: 'darwin',
+      arch: 'x64',
+      version: 'v20.0.0',
+    });
+    testState.fetchMock.mockResolvedValueOnce(
+      createFetchResponse({
+        tag_name: 'v9.9.9',
+        assets: [
+          {
+            name: '5chan-9.9.9-arm64.zip',
+            browser_download_url: 'https://github.com/bitsocialnet/5chan/releases/download/v9.9.9/5chan-9.9.9-arm64.zip',
+          },
+        ],
+      }),
+    );
+
+    const { resolveAvailableAppUpdate } = await loadModule();
+    const result = await resolveAvailableAppUpdate();
+
+    expect(result).toBeNull();
+  });
+
   it('selects the latest android apk release asset', async () => {
     testState.capacitorPlatform = 'android';
     testState.fetchMock.mockResolvedValueOnce(

@@ -233,6 +233,7 @@ const main = async () => {
   } finally {
     await sleep(1000);
     await fixtureServer.close();
+    await fs.promises.rm(workspace, { recursive: true, force: true }).catch(() => undefined);
   }
 };
 

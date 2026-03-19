@@ -5,12 +5,29 @@ import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { spawn } from 'node:child_process';
 
+const isTrustedGitHubHost = (hostname) => hostname === 'github.com' || hostname === 'githubusercontent.com' || hostname.endsWith('.githubusercontent.com');
+
 const LOCAL_TEST_HOSTS = new Set(
   `${process.env.APP_UPDATE_ALLOWED_DOWNLOAD_HOSTS || ''}`
     .split(',')
     .map((host) => host.trim().toLowerCase())
     .filter(Boolean),
 );
+
+const logUpdateDebug = (...args) => {
+  if (process.env.APP_UPDATE_DEBUG === '1') {
+    const message = `[app-updater] ${args.map((value) => (typeof value === 'string' ? value : JSON.stringify(value))).join(' ')}`;
+    console.log(message);
+    const debugLogPath = process.env.APP_UPDATE_DEBUG_LOG_PATH;
+    if (debugLogPath) {
+      try {
+        fs.appendFileSync(debugLogPath, `${message}\n`, 'utf8');
+      } catch {
+        // Ignore debug log write failures so they never affect the updater flow.
+      }
+    }
+  }
+};
 
 const sanitizeFileName = (fileName) => {
   const safeName = `${fileName || ''}`.split(/[\\/]/).pop()?.trim();
@@ -49,7 +66,7 @@ const runCommand = (command, args) =>
 
 const isAllowedDownloadHost = (parsedUrl) => {
   const hostname = parsedUrl.hostname.toLowerCase();
-  if (parsedUrl.protocol === 'https:' && hostname === 'github.com') {
+  if (parsedUrl.protocol === 'https:' && isTrustedGitHubHost(hostname)) {
     return true;
   }
 
@@ -67,6 +84,7 @@ const validateDownloadUrl = (url) => {
 };
 
 const downloadReleaseAsset = async ({ url, fileName }) => {
+  logUpdateDebug('starting asset download', { url, fileName });
   validateDownloadUrl(url);
 
   const updatesDirectory = path.join(app.getPath('temp'), '5chan-updates');
@@ -79,6 +97,7 @@ const downloadReleaseAsset = async ({ url, fileName }) => {
   const response = await fetch(url, {
     redirect: 'follow',
   });
+  validateDownloadUrl(response.url);
 
   if (!response.ok || !response.body) {
     throw new Error(`Failed to download update (${response.status})`);
@@ -87,6 +106,7 @@ const downloadReleaseAsset = async ({ url, fileName }) => {
   await pipeline(Readable.fromWeb(response.body), createWriteStream(tempPath));
   await fs.promises.rm(targetPath, { force: true });
   await fs.promises.rename(tempPath, targetPath);
+  logUpdateDebug('downloaded release asset', { url: response.url, targetPath });
 
   return targetPath;
 };
@@ -136,12 +156,14 @@ const scheduleMacAppBundleInstall = async (zipPath) => {
 
   const stagingRoot = path.join(app.getPath('temp'), '5chan-updates', `staged-mac-${Date.now()}`);
   await fs.promises.mkdir(stagingRoot, { recursive: true });
+  logUpdateDebug('extracting mac update zip', { zipPath, stagingRoot });
   await runCommand('/usr/bin/ditto', ['-x', '-k', zipPath, stagingRoot]);
 
   const stagedAppBundlePath = await findExtractedAppBundle(stagingRoot);
   if (!stagedAppBundlePath) {
     throw new Error('Downloaded update does not contain a macOS app bundle');
   }
+  logUpdateDebug('resolved staged mac app bundle', { stagedAppBundlePath });
 
   const installerScriptPath = path.join(stagingRoot, 'install-update.sh');
   const script = `#!/bin/sh
@@ -157,15 +179,28 @@ for _ in $(seq 1 120); do
   sleep 1
 done
 
-rm -rf "$TARGET_APP"
-/usr/bin/ditto "$SOURCE_APP" "$TARGET_APP"
+STAGED_TARGET="${TARGET_APP}.new"
+PREVIOUS_TARGET="${TARGET_APP}.old"
+rm -rf "$STAGED_TARGET" "$PREVIOUS_TARGET"
+/usr/bin/ditto "$SOURCE_APP" "$STAGED_TARGET"
+if [ -e "$TARGET_APP" ]; then
+  mv "$TARGET_APP" "$PREVIOUS_TARGET"
+fi
+if ! mv "$STAGED_TARGET" "$TARGET_APP"; then
+  if [ -e "$PREVIOUS_TARGET" ]; then
+    mv "$PREVIOUS_TARGET" "$TARGET_APP"
+  fi
+  exit 1
+fi
 /usr/bin/open -n "$TARGET_APP"
-rm -rf "$(dirname "$SOURCE_APP")"
+rm -rf "$PREVIOUS_TARGET" "$(dirname "$SOURCE_APP")"
 `;
   await fs.promises.writeFile(installerScriptPath, script, 'utf8');
   await fs.promises.chmod(installerScriptPath, 0o755);
+  logUpdateDebug('wrote mac installer script', { installerScriptPath });
 
   runDetachedCommand('/bin/sh', [installerScriptPath, currentAppBundlePath, stagedAppBundlePath, `${process.pid}`]);
+  logUpdateDebug('spawned mac installer helper', { currentAppBundlePath, stagedAppBundlePath, currentPid: process.pid });
 };
 
 const resolveCurrentLinuxAppImagePath = () => {
@@ -229,6 +264,7 @@ const openDownloadedUpdate = async (installerPath) => {
 };
 
 const downloadAndInstallUpdate = async ({ url, fileName }) => {
+  logUpdateDebug('received update install request', { url, fileName });
   if (typeof url !== 'string' || url.trim().length === 0) {
     throw new Error('Update url is required');
   }
@@ -239,10 +275,12 @@ const downloadAndInstallUpdate = async ({ url, fileName }) => {
   });
 
   const installMode = await openDownloadedUpdate(installerPath);
+  logUpdateDebug('prepared update install', { installMode, installerPath });
 
   if (installMode === 'quit-and-relaunch') {
     setTimeout(() => {
-      app.exit(0);
+      logUpdateDebug('quitting app for update');
+      app.quit();
     }, 200);
   }
 };

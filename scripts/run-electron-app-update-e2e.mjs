@@ -6,6 +6,7 @@ import { copyPath, createTempWorkspace, findFirstMatchingPath, logStep, repoRoot
 const OLD_VERSION = '0.7.1';
 const NEW_VERSION = '0.7.3';
 const SETTINGS_HASH = '#/all/settings#interface-settings';
+const MAC_ARCH = process.arch === 'x64' ? 'x64' : 'arm64';
 
 const findPackagedMacApp = async () => {
   const outDirectory = path.join(repoRoot, 'out');
@@ -57,7 +58,7 @@ const main = async () => {
       fixturePort: fixtureServer.port,
     });
 
-    const zippedNewAppPath = path.join(workspace, `5chan-darwin-arm64-v${NEW_VERSION}.zip`);
+    const zippedNewAppPath = path.join(workspace, `5chan-darwin-${MAC_ARCH}-v${NEW_VERSION}.zip`);
     await zipMacApp(packagedNewAppPath, zippedNewAppPath);
 
     fixtureServer.setRelease(NEW_VERSION, [
@@ -69,6 +70,7 @@ const main = async () => {
 
     const versionMetadataPath = path.join(installedAppPath, 'Contents', 'Resources', 'app', 'build', 'version.json');
     const sandboxHome = path.join(workspace, 'home');
+    const updaterDebugLogPath = path.join(workspace, 'app-updater.log');
     const plebbitDataPath = path.join(sandboxHome, 'Library', 'Application Support', 'plebbit');
     await fs.promises.mkdir(plebbitDataPath, { recursive: true });
     await fs.promises.writeFile(path.join(plebbitDataPath, 'auth-key'), 'e2e-auth-key', 'utf8');
@@ -78,11 +80,17 @@ const main = async () => {
       env: {
         ...process.env,
         APP_UPDATE_ALLOWED_DOWNLOAD_HOSTS: '127.0.0.1',
+        APP_UPDATE_DEBUG: '1',
+        APP_UPDATE_DEBUG_LOG_PATH: updaterDebugLogPath,
         HOME: sandboxHome,
       },
     });
 
     const firstWindow = await electronApp.firstWindow();
+    firstWindow.on('dialog', async (dialog) => {
+      logStep(`electron app dialog: ${dialog.message()}`);
+      await dialog.dismiss();
+    });
     await firstWindow.waitForLoadState('domcontentloaded');
     await firstWindow.getByRole('button', { name: 'Check' }).waitFor({
       timeout: 120000,
@@ -94,7 +102,9 @@ const main = async () => {
     await firstWindow.getByText(`v${NEW_VERSION}`).waitFor({
       timeout: 120000,
     });
-    await firstWindow.getByRole('button', { name: 'Download' }).click();
+    await firstWindow.getByRole('button', { name: 'Download' }).evaluate((button) => {
+      button.click();
+    });
 
     await waitFor(
       async () => {
@@ -130,6 +140,7 @@ const main = async () => {
   } finally {
     await sleep(2000);
     await fixtureServer.close();
+    await fs.promises.rm(workspace, { recursive: true, force: true }).catch(() => undefined);
   }
 };
 

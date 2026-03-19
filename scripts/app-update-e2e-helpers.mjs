@@ -3,6 +3,7 @@ import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -179,7 +180,19 @@ const startFixtureServer = async () => {
         'Content-Type': 'application/octet-stream',
         'Cache-Control': 'no-store',
       });
-      fs.createReadStream(matchedAsset.filePath).pipe(response);
+      try {
+        await pipeline(fs.createReadStream(matchedAsset.filePath), response);
+      } catch (error) {
+        logStep(`fixture asset stream failed for ${matchedAsset.filePath}: ${error instanceof Error ? error.message : String(error)}`);
+        if (!response.headersSent) {
+          response.writeHead(500, {
+            'Content-Type': 'text/plain; charset=utf-8',
+          });
+        }
+        if (!response.writableEnded) {
+          response.end('asset stream failed');
+        }
+      }
       return;
     }
 
@@ -198,6 +211,8 @@ const startFixtureServer = async () => {
   if (!address || typeof address === 'string') {
     throw new Error('Could not resolve fixture server port');
   }
+
+  logStep(`fixture server listening at http://127.0.0.1:${address.port} (android emulator: http://10.0.2.2:${address.port})`);
 
   return {
     port: address.port,
