@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useEditedComment, useReplies, useAccount, useAccountComment } from '@bitsocialnet/bitsocial-react-hooks';
+import { Comment, useEditedComment, useReplies, useAccount } from '@bitsocialnet/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
@@ -22,6 +22,7 @@ import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useHide from '../../hooks/use-hide';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
+import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import { useCurrentTime } from '../../hooks/use-current-time';
 import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
 import CommentContent from '../comment-content';
@@ -713,7 +714,7 @@ const Reply = ({
   directRepliesByParentCid,
   postsByAuthorInThread,
 }: PostProps & { directRepliesByParentCid?: Map<string, Comment[]>; postsByAuthorInThread?: Map<string, number> }) => {
-  const accountReply = useAccountComment({
+  const accountReply = useSafeAccountComment({
     commentIndex: typeof reply?.index === 'number' ? reply.index : undefined,
   });
   const hasReplyIndex = typeof reply?.index === 'number';

@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import { useAccount, useAccountComment, useCommunity } from '@bitsocialnet/bitsocial-react-hooks';
+import { useAccount, useCommunity } from '@bitsocialnet/bitsocial-react-hooks';
 import { initSnow, removeSnow } from './lib/snow';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
 import { preloadReplyModal, preloadThemeAssets } from './lib/utils/preload-utils';
@@ -13,6 +13,7 @@ import { useAccountCommunityAddresses } from './hooks/use-account-community-addr
 import useTheme from './hooks/use-theme';
 import { useDirectories } from './hooks/use-directories';
 import { useResolvedCommunityAddress } from './hooks/use-resolved-community-address';
+import useSafeAccountComment from './hooks/use-safe-account-comment';
 import {
   getBoardPath,
   getSubplebbitAddress,
@@ -71,7 +72,7 @@ const BoardLayout = () => {
   const isInModView = isModView(location.pathname);
   const directories = useDirectories();
   const communityAddress = boardIdentifier ? getSubplebbitAddress(boardIdentifier, directories) : undefined;
-  const pendingPost = useAccountComment({ commentIndex: accountCommentIndex ? parseInt(accountCommentIndex) : undefined });
+  const pendingPost = useSafeAccountComment({ commentIndex: accountCommentIndex });
   const pendingPostCommunityAddress = pendingPost?.communityAddress || pendingPost?.subplebbitAddress;
   const { closeCreateBoardModal } = useCreateBoardModalStore();
   const isOnPostRoute = isPostRoute(location.pathname);

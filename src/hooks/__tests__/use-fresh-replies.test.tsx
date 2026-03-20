@@ -7,15 +7,38 @@ import useFreshReplies from '../use-fresh-replies';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
+type TestComment = {
+  cid?: string;
+  content?: string;
+  index?: number;
+  number?: number;
+  subplebbitAddress?: string;
+};
+
 const testState = vi.hoisted(() => ({
-  accountComments: [] as Array<Record<string, unknown>>,
-  replies: [] as Array<Record<string, unknown>>,
+  accountComments: [] as TestComment[],
+  accountCommentsCalls: [] as Array<{ commentIndices?: number[] } | undefined>,
+  replies: [] as TestComment[],
 }));
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
-  useAccountComments: () => ({
-    accountComments: testState.accountComments,
-  }),
+  useAccountComments: (options?: { commentIndices?: number[] }) => {
+    testState.accountCommentsCalls.push(options);
+
+    if (!options?.commentIndices?.length) {
+      return {
+        accountComments: testState.accountComments,
+      };
+    }
+
+    const normalizedCommentIndices = options.commentIndices.filter((commentIndex) => Number.isInteger(commentIndex) && commentIndex >= 0);
+
+    return {
+      accountComments: normalizedCommentIndices
+        .map((commentIndex) => testState.accountComments.find((accountComment) => accountComment.index === commentIndex))
+        .filter(Boolean),
+    };
+  },
 }));
 
 let container: HTMLDivElement;
@@ -36,6 +59,7 @@ const renderHook = () => {
 describe('useFreshReplies', () => {
   beforeEach(() => {
     testState.accountComments = [];
+    testState.accountCommentsCalls = [];
     testState.replies = [];
 
     container = document.createElement('div');
@@ -78,6 +102,7 @@ describe('useFreshReplies', () => {
     expect(latestValue[0]).toBe(testState.accountComments[0] as never);
     expect(latestValue[0]?.number).toBe(27);
     expect(latestValue[1]).toBe(testState.replies[1] as never);
+    expect(testState.accountCommentsCalls).toContainEqual({ commentIndices: [3] });
 
     testState.accountComments = [
       {

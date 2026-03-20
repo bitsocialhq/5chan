@@ -1,15 +1,16 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAccountComment, useAccountComments } from '@bitsocialnet/bitsocial-react-hooks';
+import { useAccountComments } from '@bitsocialnet/bitsocial-react-hooks';
 import { useDirectories } from '../../hooks/use-directories';
+import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { Post } from '../post';
 
 const PendingPost = () => {
   const { accountComments } = useAccountComments();
   const { accountCommentIndex } = useParams<{ accountCommentIndex?: string }>();
-  const commentIndex = accountCommentIndex ? parseInt(accountCommentIndex) : undefined;
-  const post = useAccountComment({ commentIndex });
+  const commentIndex = accountCommentIndex ? parseInt(accountCommentIndex, 10) : undefined;
+  const post = useSafeAccountComment({ commentIndex });
   const navigate = useNavigate();
   const directories = useDirectories();
 

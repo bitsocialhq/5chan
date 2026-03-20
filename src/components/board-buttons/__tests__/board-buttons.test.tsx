@@ -71,6 +71,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
+  useAccount: () => undefined,
   useAccountComment: () => testState.accountComment,
   useComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.commentsByCid[commentCid] : undefined),
   useSubscribe: () => ({

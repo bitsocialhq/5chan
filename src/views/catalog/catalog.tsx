@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Comment, useAccount, useCommunity, useFeed, useAccountComments } from '@bitsocialnet/bitsocial-react-hooks';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import useCatalogFeedRows from '../../hooks/use-catalog-feed-rows';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
@@ -27,6 +26,9 @@ import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { sortCatalogFeedForDisplay } from '../../lib/utils/catalog-sort';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
+const RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS = 60 * 60;
+// Keep the hook on its indexed fast path when this view should not inject local posts.
+const EMPTY_ACCOUNT_COMMENT_LOOKUP = { commentIndices: [-1] };
 
 interface CatalogFooterProps {
   communityAddresses: string[];
@@ -281,7 +283,18 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   }, [communityAddresses, feedSortType, isMultiboard, paginationFeedPostsPerPage, filterItems, searchText, communityAddress, handleFilterMatch]);
 
   const { feed, hasMore, loadMore, reset } = useFeed(feedOptions);
-  const { accountComments } = useAccountComments();
+  const accountCommentLookupOptions = useMemo(
+    () =>
+      communityAddress
+        ? {
+            communityAddress,
+            newerThan: RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS,
+            sortType: 'old' as const,
+          }
+        : EMPTY_ACCOUNT_COMMENT_LOOKUP,
+    [communityAddress],
+  );
+  const { accountComments: recentAccountComments } = useAccountComments(accountCommentLookupOptions);
 
   const resetTriggeredRef = useRef(false);
 
@@ -289,7 +302,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const feedCids = useMemo(() => new Set(feed.map((f) => f.cid)), [feed]);
   const filteredComments = useMemo(
     () =>
-      accountComments.filter((comment) => {
+      recentAccountComments.filter((comment) => {
         const { cid, deleted, postCid, removed, state, timestamp } = comment || {};
         const commentCommunityAddress = comment?.communityAddress || comment?.subplebbitAddress;
 
@@ -297,7 +310,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
         const basicConditions =
           !deleted &&
           !removed &&
-          timestamp > Date.now() / 1000 - 60 * 60 &&
+          timestamp > Date.now() / 1000 - RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS &&
           state === 'succeeded' &&
           cid &&
           cid === postCid &&
@@ -315,7 +328,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
         return basicConditions;
       }),
-    [accountComments, communityAddress, feedCids, searchText],
+    [recentAccountComments, communityAddress, feedCids, searchText],
   );
 
   // show newest account comment at the top of the feed but after pinned posts
@@ -427,7 +440,17 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return [...topPosts, ...regularPosts];
   }, [sortedFeed, filterItems]);
 
-  const rows = useCatalogFeedRows(columnCount, processedFeed, isFeedLoaded, community);
+  const rows = useMemo(() => {
+    if (!isFeedLoaded) {
+      return [];
+    }
+
+    const nextRows = [];
+    for (let i = 0; i < processedFeed.length; i += columnCount) {
+      nextRows.push(processedFeed.slice(i, i + columnCount));
+    }
+    return nextRows;
+  }, [columnCount, isFeedLoaded, processedFeed]);
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
   const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${sortType}` : `${location.pathname}-${sortType}-catalog`;

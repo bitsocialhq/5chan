@@ -22,6 +22,7 @@ type TestComment = {
 const testState = vi.hoisted(() => ({
   account: { subscriptions: [] as string[] },
   accountComments: [] as TestComment[],
+  accountCommentsCalls: [] as Array<{ commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' } | undefined>,
   accountCommunityAddresses: [] as string[],
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
   directoryByAddress: {
@@ -64,9 +65,36 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+const getScopedAccountComments = (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
+  let scopedComments = [...testState.accountComments];
+
+  if (options?.commentIndices?.length) {
+    const normalizedCommentIndices = options.commentIndices.filter((commentIndex) => Number.isInteger(commentIndex) && commentIndex >= 0);
+    scopedComments = normalizedCommentIndices.map((commentIndex) => testState.accountComments[commentIndex]).filter(Boolean) as TestComment[];
+  } else if (options?.communityAddress) {
+    scopedComments = scopedComments.filter(
+      (comment) => (comment.communityAddress || (comment as TestComment & { subplebbitAddress?: string }).subplebbitAddress) === options.communityAddress,
+    );
+  }
+
+  if (typeof options?.newerThan === 'number') {
+    const newerThanTimestamp = Math.floor(Date.now() / 1000) - options.newerThan;
+    scopedComments = scopedComments.filter((comment) => (comment.timestamp || 0) > newerThanTimestamp);
+  }
+
+  if (options?.sortType === 'new') {
+    scopedComments = [...scopedComments].reverse();
+  }
+
+  return scopedComments;
+};
+
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
-  useAccountComments: () => ({ accountComments: testState.accountComments }),
+  useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
+    testState.accountCommentsCalls.push(options);
+    return { accountComments: getScopedAccountComments(options) };
+  },
   useFeed: () => ({
     feed: testState.feed,
     hasMore: testState.hasMore,
@@ -236,6 +264,7 @@ describe('Board', () => {
     latestLocation = '';
     testState.account = { subscriptions: [] };
     testState.accountComments = [];
+    testState.accountCommentsCalls = [];
     testState.accountCommunityAddresses = [];
     testState.directories = [{ address: 'music-posting.eth', title: '/mu/ - Music' }];
     testState.directoryByAddress = {
@@ -302,6 +331,13 @@ describe('Board', () => {
         communityAddress: 'music-posting.eth',
         timestamp: currentTimestamp,
       },
+      {
+        cid: 'fresh-reply',
+        postCid: 'another-post',
+        state: 'succeeded',
+        communityAddress: 'music-posting.eth',
+        timestamp: currentTimestamp,
+      },
     ];
     testState.hasMore = true;
 
@@ -309,6 +345,11 @@ describe('Board', () => {
 
     expect(document.title).toBe('/mu/ - 5chan');
     expect(testState.setResetFunctionMock).toHaveBeenCalledWith(testState.resetMock);
+    expect(testState.accountCommentsCalls).toContainEqual({
+      communityAddress: 'music-posting.eth',
+      newerThan: 3600,
+      sortType: 'old',
+    });
     expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['pinned-post', 'fresh-post']);
     expect(container.querySelector('[data-testid="board-pagination"]')?.textContent).toBe('/mu:1:2');
 

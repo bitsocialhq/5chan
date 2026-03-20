@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Comment, useAccount, useAccountComments } from '@bitsocialnet/bitsocial-react-hooks';
+import { Comment, useAccount } from '@bitsocialnet/bitsocial-react-hooks';
 import { useFloating, offset, shift, size, autoUpdate, Placement } from '@floating-ui/react';
 import { useDirectories } from '../../hooks/use-directories';
+import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { formatQuoteNumber, getQuoteTargetAvailability, shouldShowFloatingQuotePreview } from '../../lib/utils/quote-link-utils';
 import { findPreferredScrollTarget, getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
@@ -78,6 +79,13 @@ const scrollToReplyOnPage = (cid: string) => {
   el.scrollIntoView({ behavior: 'auto', block: 'center' });
   el.classList.add('scroll-highlight');
   return true;
+};
+
+const useIsOwnQuotelink = (quotelinkReply?: Comment) => {
+  const account = useAccount();
+  const ownQuotelink = useSafeAccountComment({ commentCid: quotelinkReply?.cid });
+
+  return Boolean((quotelinkReply?.cid && ownQuotelink?.cid) || quotelinkReply?.author?.address === account?.author?.address);
 };
 
 const DesktopQuotePreview = ({
@@ -204,10 +212,6 @@ const DesktopQuotePreview = ({
         )}
     </>
   );
-
-  const account = useAccount();
-  const { accountComments } = useAccountComments();
-
   const resolvedQuotelinkNumber = normalizedQuotelinkReply?.number ?? quotelinkNumber;
   const resolvedQuotelinkCid = normalizedQuotelinkReply?.cid;
   const resolvedQuotelinkCommunityAddress = getCommentCommunityAddress(normalizedQuotelinkReply);
@@ -227,9 +231,7 @@ const DesktopQuotePreview = ({
     quoteCid: resolvedQuotelinkCid,
     isUnavailable: quotelinkUnavailable,
   });
-  const isOwnQuotelink =
-    (resolvedQuotelinkCid ? accountComments.some((comment) => comment.cid === resolvedQuotelinkCid) : false) ||
-    normalizedQuotelinkReply?.author?.address === account?.author?.address;
+  const isOwnQuotelink = useIsOwnQuotelink(normalizedQuotelinkReply);
   const quotelinkLabel = (
     <>
       {formatQuoteNumber(resolvedQuotelinkNumber)}
@@ -374,9 +376,6 @@ const MobileQuotePreview = ({
         )}
     </>
   );
-
-  const account = useAccount();
-  const { accountComments } = useAccountComments();
   const resolvedQuotelinkNumber = normalizedQuotelinkReply?.number ?? quotelinkNumber;
   const resolvedQuotelinkCid = normalizedQuotelinkReply?.cid;
   const resolvedQuotelinkCommunityAddress = getCommentCommunityAddress(normalizedQuotelinkReply);
@@ -390,9 +389,7 @@ const MobileQuotePreview = ({
     quoteCid: resolvedQuotelinkCid,
     isUnavailable: quotelinkUnavailable,
   });
-  const isOwnQuotelink =
-    (resolvedQuotelinkCid ? accountComments.some((comment) => comment.cid === resolvedQuotelinkCid) : false) ||
-    normalizedQuotelinkReply?.author?.address === account?.author?.address;
+  const isOwnQuotelink = useIsOwnQuotelink(normalizedQuotelinkReply);
 
   const replyQuotelink = (
     <>

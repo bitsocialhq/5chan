@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import { useAccountComment } from '@bitsocialnet/bitsocial-react-hooks';
 import useAccountsStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/accounts';
 import useCommunitiesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/communities';
 import getShortAddress from '../../lib/get-short-address';
@@ -11,6 +10,7 @@ import { isArchiveRoute } from '../../lib/utils/route-utils';
 import styles from './board-header.module.css';
 import { useDirectoriesMetadata, useDirectories } from '../../hooks/use-directories';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
+import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useIsCommunityOffline from '../../hooks/use-is-community-offline';
 import { shouldShowSnow } from '../../lib/snow';
@@ -53,7 +53,7 @@ const BoardHeader = () => {
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const isInModView = isModView(location.pathname);
   const isInArchiveView = isArchiveRoute(location.pathname);
-  const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
+  const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
 

@@ -1,8 +1,16 @@
 import { useMemo } from 'react';
 import { Comment, useAccountComments } from '@bitsocialnet/bitsocial-react-hooks';
 
+// Keep the hook on its indexed fast path when there are no reply indices to resolve.
+const EMPTY_ACCOUNT_COMMENT_LOOKUP = { commentIndices: [-1] };
+
 const useFreshReplies = (replies: Comment[] = []) => {
-  const { accountComments } = useAccountComments();
+  const replyIndices = useMemo(
+    () => Array.from(new Set(replies.map((reply) => reply?.index).filter((replyIndex): replyIndex is number => typeof replyIndex === 'number'))),
+    [replies],
+  );
+  const accountCommentLookupOptions = useMemo(() => (replyIndices.length > 0 ? { commentIndices: replyIndices } : EMPTY_ACCOUNT_COMMENT_LOOKUP), [replyIndices]);
+  const { accountComments } = useAccountComments(accountCommentLookupOptions);
 
   return useMemo(() => {
     if (!replies.length || !accountComments?.length) {

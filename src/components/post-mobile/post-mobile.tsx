@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useEditedComment, useReplies, useAccount, usePublishCommentModeration, useAccountComment } from '@bitsocialnet/bitsocial-react-hooks';
+import { Comment, useEditedComment, useReplies, useAccount, usePublishCommentModeration } from '@bitsocialnet/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { shouldShowSnow } from '../../lib/snow';
@@ -21,6 +21,7 @@ import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useHide from '../../hooks/use-hide';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
+import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import { useCurrentTime } from '../../hooks/use-current-time';
 import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
 import CommentContent from '../comment-content';
@@ -495,7 +496,7 @@ const Reply = ({
   directRepliesByParentCid,
   postsByAuthorInThread,
 }: PostProps & { directRepliesByParentCid?: Map<string, Comment[]>; postsByAuthorInThread?: Map<string, number> }) => {
-  const accountReply = useAccountComment({
+  const accountReply = useSafeAccountComment({
     commentIndex: typeof reply?.index === 'number' ? reply.index : undefined,
   });
   const hasReplyIndex = typeof reply?.index === 'number';

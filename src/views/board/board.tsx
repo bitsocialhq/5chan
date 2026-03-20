@@ -27,6 +27,9 @@ import { PageFooterDesktop, PageFooterMobile } from '../../components/footer';
 import { Post } from '../post';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
+const RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS = 60 * 60;
+// Keep the hook on its indexed fast path when this view should not inject local posts.
+const EMPTY_ACCOUNT_COMMENT_LOOKUP = { commentIndices: [-1] };
 
 /** Board feed always uses 'active' sort; catalog dropdown does not affect board ordering. */
 const BOARD_SORT_TYPE = 'active' as const;
@@ -160,7 +163,18 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   );
 
   const { feed, hasMore, loadMore, reset } = useFeed(feedOptions);
-  const { accountComments } = useAccountComments();
+  const accountCommentLookupOptions = useMemo(
+    () =>
+      communityAddress
+        ? {
+            communityAddress,
+            newerThan: RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS,
+            sortType: 'old' as const,
+          }
+        : EMPTY_ACCOUNT_COMMENT_LOOKUP,
+    [communityAddress],
+  );
+  const { accountComments: recentAccountComments } = useAccountComments(accountCommentLookupOptions);
 
   const pathWithoutSettings = location.pathname.replace(/\/settings$/, '');
   const currentPage = getPageFromFeedPath(pathWithoutSettings);
@@ -179,13 +193,13 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   const feedCids = useMemo(() => new Set(feed.map((f) => f.cid)), [feed]);
   const filteredComments = useMemo(
     () =>
-      accountComments.filter((comment) => {
+      recentAccountComments.filter((comment) => {
         const { cid, deleted, postCid, removed, state, timestamp } = comment || {};
         const commentCommunityAddress = comment?.communityAddress || comment?.subplebbitAddress;
         return (
           !deleted &&
           !removed &&
-          timestamp > Date.now() / 1000 - 60 * 60 &&
+          timestamp > Date.now() / 1000 - RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS &&
           state === 'succeeded' &&
           cid &&
           cid === postCid &&
@@ -193,7 +207,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
           !feedCids.has(cid)
         );
       }),
-    [accountComments, communityAddress, feedCids],
+    [recentAccountComments, communityAddress, feedCids],
   );
 
   // show newest account comment at the top of the feed but after pinned posts

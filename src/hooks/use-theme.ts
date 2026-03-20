@@ -4,10 +4,10 @@ import { isAllView, isModView, isSubscriptionsView } from '../lib/utils/view-uti
 import useThemeStore from '../stores/use-theme-store';
 import { useDirectories } from './use-directories';
 import { useResolvedCommunityAddress } from './use-resolved-community-address';
-import { useAccountComment } from '@bitsocialnet/bitsocial-react-hooks';
 import useSpecialThemeStore from '../stores/use-special-theme-store';
 import { isChristmas } from '../lib/utils/time-utils';
 import { isSfwBoard, updateFavicon } from '../lib/update-favicon';
+import useSafeAccountComment from './use-safe-account-comment';
 
 const themeClasses = ['yotsuba', 'yotsuba-b', 'futaba', 'burichan', 'tomorrow', 'photon'];
 
@@ -23,7 +23,7 @@ const useTheme = (): [string, (theme: string) => void] => {
   const params = useParams<{ boardIdentifier?: string; subplebbitAddress?: string }>();
   const pendingPostParams = useParams<{ accountCommentIndex?: string }>();
   const pendingPostCommentIndex = pendingPostParams?.accountCommentIndex ? parseInt(pendingPostParams.accountCommentIndex, 10) : undefined;
-  const pendingPost = useAccountComment({ commentIndex: pendingPostCommentIndex });
+  const pendingPost = useSafeAccountComment({ commentIndex: pendingPostCommentIndex });
   const pendingPostCommunityAddress =
     (pendingPost as { communityAddress?: string }).communityAddress ||
     // compatibility fallback for legacy inbound/persisted comment payloads

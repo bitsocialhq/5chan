@@ -34,6 +34,7 @@ type FilterItem = {
 const testState = vi.hoisted(() => ({
   account: { subscriptions: [] as string[] },
   accountComments: [] as TestComment[],
+  accountCommentsCalls: [] as Array<{ commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' } | undefined>,
   clearMatchedFiltersMock: vi.fn(),
   directoryByAddress: {
     'music-posting.eth': {
@@ -92,9 +93,36 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+const getScopedAccountComments = (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
+  let scopedComments = [...testState.accountComments];
+
+  if (options?.commentIndices?.length) {
+    const normalizedCommentIndices = options.commentIndices.filter((commentIndex) => Number.isInteger(commentIndex) && commentIndex >= 0);
+    scopedComments = normalizedCommentIndices.map((commentIndex) => testState.accountComments[commentIndex]).filter(Boolean) as TestComment[];
+  } else if (options?.communityAddress) {
+    scopedComments = scopedComments.filter(
+      (comment) => (comment.communityAddress || (comment as TestComment & { subplebbitAddress?: string }).subplebbitAddress) === options.communityAddress,
+    );
+  }
+
+  if (typeof options?.newerThan === 'number') {
+    const newerThanTimestamp = Math.floor(Date.now() / 1000) - options.newerThan;
+    scopedComments = scopedComments.filter((comment) => (comment.timestamp || 0) > newerThanTimestamp);
+  }
+
+  if (options?.sortType === 'new') {
+    scopedComments = [...scopedComments].reverse();
+  }
+
+  return scopedComments;
+};
+
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
-  useAccountComments: () => ({ accountComments: testState.accountComments }),
+  useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
+    testState.accountCommentsCalls.push(options);
+    return { accountComments: getScopedAccountComments(options) };
+  },
   useFeed: (options: { filter?: { filter: (comment: TestComment) => boolean } }) => ({
     feed: options.filter ? testState.feed.filter((comment) => options.filter?.filter(comment)) : testState.feed,
     hasMore: testState.hasMore,
@@ -271,6 +299,7 @@ describe('Catalog', () => {
     latestLocation = '';
     testState.account = { subscriptions: [] };
     testState.accountComments = [];
+    testState.accountCommentsCalls = [];
     testState.directories = [{ address: 'music-posting.eth', title: '/mu/ - Music' }];
     testState.directoryByAddress = {
       'music-posting.eth': {
@@ -331,7 +360,7 @@ describe('Catalog', () => {
     expect(document.title).toBe('/mu/ - catalog - 5chan');
     expect(testState.setCurrentCommunityAddressMock).toHaveBeenCalledWith('music-posting.eth');
     expect(testState.clearMatchedFiltersMock).toHaveBeenCalled();
-    expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:top-post', 'row:boring-post']);
+    expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:top-post,boring-post']);
     expect(testState.incrementFilterCountMock).toHaveBeenCalledWith(0, 'hidden-post', 'music-posting.eth');
     expect(testState.incrementFilterCountMock).toHaveBeenCalledWith(1, 'top-post', 'music-posting.eth');
     expect(testState.setMatchedFilterMock).toHaveBeenCalledWith('top-post', 'red');
@@ -374,5 +403,40 @@ describe('Catalog', () => {
 
     expect(container.textContent).toContain('not_subscribed_to_any_board');
     expect(container.querySelector('[data-testid="catalog-first-row"]')?.textContent).toBe('music-posting.eth');
+  });
+
+  it('queries scoped recent account posts and still applies local search filtering before injecting them', async () => {
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    testState.feed = [{ cid: 'network-post', title: 'cats on stage', communityAddress: 'music-posting.eth' }];
+    testState.searchText = 'cats';
+    testState.accountComments = [
+      {
+        cid: 'local-cats-post',
+        content: 'cats local thread',
+        postCid: 'local-cats-post',
+        state: 'succeeded',
+        communityAddress: 'music-posting.eth',
+        timestamp: currentTimestamp,
+        title: 'cats local',
+      },
+      {
+        cid: 'local-dogs-post',
+        content: 'dogs local thread',
+        postCid: 'local-dogs-post',
+        state: 'succeeded',
+        communityAddress: 'music-posting.eth',
+        timestamp: currentTimestamp,
+        title: 'dogs local',
+      },
+    ];
+
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+
+    expect(testState.accountCommentsCalls).toContainEqual({
+      communityAddress: 'music-posting.eth',
+      newerThan: 3600,
+      sortType: 'old',
+    });
+    expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:local-cats-post,network-post']);
   });
 });

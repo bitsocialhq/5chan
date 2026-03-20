@@ -19,11 +19,13 @@ type TestComment = {
 
 const testState = vi.hoisted(() => ({
   account: {
+    id: 'account-1',
     author: {
       address: '0xme',
     },
   },
-  accountComments: [] as Array<{ cid?: string }>,
+  accountCommentByCid: {} as Record<string, { cid?: string }>,
+  accountCommentCalls: [] as Array<{ commentCid?: string } | undefined>,
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
   isMobile: false,
   locationPath: '/mu/thread/thread-cid',
@@ -59,7 +61,10 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
-  useAccountComments: () => ({ accountComments: testState.accountComments }),
+  useAccountComment: (options?: { commentCid?: string }) => {
+    testState.accountCommentCalls.push(options);
+    return (options?.commentCid && testState.accountCommentByCid[options.commentCid]) || {};
+  },
 }));
 
 vi.mock('@floating-ui/react', () => ({
@@ -171,11 +176,13 @@ describe('ReplyQuotePreview', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.account = {
+      id: 'account-1',
       author: {
         address: '0xme',
       },
     };
-    testState.accountComments = [];
+    testState.accountCommentByCid = {};
+    testState.accountCommentCalls = [];
     testState.directories = [{ address: 'music-posting.eth', title: '/mu/ - Music' }];
     testState.isMobile = false;
     testState.locationPath = '/mu/thread/thread-cid';
@@ -392,6 +399,35 @@ describe('ReplyQuotePreview', () => {
 
     expect(document.querySelector('[data-testid="post-preview"]')).toBeNull();
     outOfView.remove();
+  });
+
+  it('marks quotelinks as your own via the direct account comment lookup before author fallback', async () => {
+    testState.account = {
+      id: 'account-1',
+      author: {
+        address: '0xsomeone-else',
+      },
+    };
+    testState.accountCommentByCid = {
+      'reply-cid': {
+        cid: 'reply-cid',
+      },
+    };
+
+    await renderPreview({
+      isQuotelinkReply: true,
+      quotelinkReply: {
+        author: {
+          address: '0xother',
+        },
+        cid: 'reply-cid',
+        number: 11,
+        communityAddress: 'music-posting.eth',
+      },
+    });
+
+    expect(container.textContent).toContain('>>11 (You)');
+    expect(testState.accountCommentCalls).toContainEqual({ commentCid: 'reply-cid' });
   });
 
   it('renders unavailable desktop quotelinks without navigation and includes OP/You labels', async () => {

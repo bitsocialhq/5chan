@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useAccountComment, useComment, useSubscribe } from '@bitsocialnet/bitsocial-react-hooks';
+import { useComment, useSubscribe } from '@bitsocialnet/bitsocial-react-hooks';
 import { isAllView, isCatalogView, isModView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { usePostPageNumber } from '../../hooks/use-post-page-number';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { getBoardPath, isDirectoryBoard } from '../../lib/utils/route-utils';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
+import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
@@ -394,7 +395,7 @@ export const MobileBoardButtons = () => {
   const isInModView = isModView(location.pathname);
   const isInModQueueView = isModQueueView(location.pathname);
 
-  const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
+  const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
 
@@ -497,7 +498,7 @@ export const PostPageStats = () => {
   const location = useLocation();
   const commentCid = params?.commentCid as string | undefined;
   const resolvedAddress = useResolvedCommunityAddress();
-  const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
+  const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
 
   const comment = useComment({ commentCid });
@@ -541,7 +542,7 @@ export const DesktopBoardButtons = () => {
   const { t } = useTranslation();
   const params = useParams();
   const location = useLocation();
-  const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
+  const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
   const isInCatalogView = isCatalogView(location.pathname, params);

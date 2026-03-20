@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Comment, setAccount, useAccount, useAccountComment, useEditedComment } from '@bitsocialnet/bitsocial-react-hooks';
+import { Comment, setAccount, useAccount, useEditedComment } from '@bitsocialnet/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import useCommunitiesPagesStore from '@bitsocialnet/bitsocial-react-hooks/dist/stores/communities-pages';
 import { getLinkMediaInfo } from '../../lib/utils/media-utils';
@@ -11,6 +11,7 @@ import { useAccountCommunityAddresses } from '../../hooks/use-account-community-
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
+import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
@@ -300,7 +301,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const [url, setUrl] = useState('');
   const author = account?.author || {};
   const { displayName } = author || {};
-  const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
+  const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
   const { setPublishPostOptions, postIndex, publishPost, publishPostOptions, resetPublishPostOptions } = usePublishPost({ subplebbitAddress: communityAddress });
@@ -532,7 +533,7 @@ const PostForm = () => {
 
   const [showForm, setShowForm] = useState(false);
 
-  const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
+  const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
 
