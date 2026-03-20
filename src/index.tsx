@@ -8,6 +8,7 @@ import './lib/init-translations';
 import './index.css';
 import './themes.css';
 import AppUpdateRegistration from './components/app-update-registration';
+import ThreadAutoUpdateHarness from './e2e/thread-auto-update-harness';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Analytics } from '@vercel/analytics/react';
 
@@ -16,6 +17,8 @@ import { Analytics } from '@vercel/analytics/react';
 const isVercelDeployment =
   typeof window !== 'undefined' && (window.location.hostname === '5chan.app' || window.location.hostname === 'www.5chan.app') && !window.isElectron;
 const e2eStartHash = import.meta.env.VITE_E2E_START_HASH?.trim();
+const shouldRenderThreadAutoUpdateHarness =
+  import.meta.env.DEV && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('e2e') === 'thread-auto-update';
 
 if (typeof window !== 'undefined' && e2eStartHash && window.location.hash.length === 0) {
   window.location.hash = e2eStartHash.startsWith('#') ? e2eStartHash : `#${e2eStartHash}`;
@@ -24,11 +27,15 @@ if (typeof window !== 'undefined' && e2eStartHash && window.location.hash.length
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <Router>
-      <AppUpdateRegistration />
-      <App />
-      {isVercelDeployment && <Analytics />}
-    </Router>
+    {shouldRenderThreadAutoUpdateHarness ? (
+      <ThreadAutoUpdateHarness />
+    ) : (
+      <Router>
+        <AppUpdateRegistration />
+        <App />
+        {isVercelDeployment && <Analytics />}
+      </Router>
+    )}
   </React.StrictMode>,
 );
 

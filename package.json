@@ -79,6 +79,7 @@
     "electron:before:delete-data": "node -e \"fs.rmSync('.plebbit', { recursive: true, force: true })\"",
     "test:update:e2e:electron": "node scripts/run-electron-app-update-e2e.mjs",
     "test:update:e2e:android": "node scripts/run-android-app-update-e2e.mjs",
+    "test:thread-auto-update:e2e": "node scripts/run-thread-auto-update-e2e.mjs --start-dev",
     "android:build:icons": "cordova-res android --skip-config --copy --resources /tmp/plebbit-react-android-icons --icon-source ./android/icons/icon.png --splash-source ./android/icons/splash.png --icon-foreground-source ./android/icons/icon-foreground.png --icon-background-source '#ffffee'",
     "knip": "knip --production --include dependencies,unlisted,binaries --no-progress",
     "knip:full": "knip --no-progress --no-exit-code",

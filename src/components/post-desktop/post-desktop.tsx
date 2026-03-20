@@ -42,6 +42,7 @@ import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
+import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import useRegisterFreshReplies from '../../hooks/use-register-fresh-replies';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import { usePublishCommentModeration } from '@bitsocialnet/bitsocial-react-hooks';
@@ -884,6 +885,8 @@ const PostDesktop = ({
   const freshRepliesForRender = useFreshReplies(repliesForRender);
   useRegisterFreshReplies(resolvedPost, freshRepliesForRender);
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
+  const repliesResetRequestId = useThreadLiveUpdatesStore((state) => state.repliesResetRequestId);
+  const lastHandledRepliesResetRequestIdRef = useRef(0);
   useEffect(() => {
     if ((isInPostPageView || isInPendingPostView) && reset) {
       setResetFunction(() => {
@@ -891,6 +894,11 @@ const PostDesktop = ({
       });
     }
   }, [isInPostPageView, isInPendingPostView, reset, setResetFunction]);
+  useEffect(() => {
+    if (!reset || repliesResetRequestId === 0 || repliesResetRequestId === lastHandledRepliesResetRequestIdRef.current) return;
+    lastHandledRepliesResetRequestIdRef.current = repliesResetRequestId;
+    void reset();
+  }, [repliesResetRequestId, reset]);
   const visiblelinksCount = useCountLinksInReplies(resolvedPost, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
   const totalLinksCount = useCountLinksInReplies(resolvedPost);
   const replyCount = freshRepliesForRender.length;

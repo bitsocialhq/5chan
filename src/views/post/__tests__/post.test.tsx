@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostPage, { Post } from '../post';
+import useThreadLiveUpdatesStore from '../../../stores/use-thread-live-updates-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -48,6 +49,7 @@ const testState = vi.hoisted(() => ({
       '0xmod': { role: 'admin' },
     },
   } as { roles?: Record<string, unknown> },
+  useCommentCalls: [] as Array<{ commentCid?: string; autoUpdate?: boolean }>,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -65,7 +67,10 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
-  useComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.commentsByCid[commentCid] : undefined),
+  useComment: ({ commentCid, autoUpdate }: { commentCid?: string; autoUpdate?: boolean }) => {
+    testState.useCommentCalls.push({ commentCid, autoUpdate });
+    return commentCid ? testState.commentsByCid[commentCid] : undefined;
+  },
   useEditedComment: ({ comment }: { comment?: TestComment }) => ({
     editedComment: comment?.cid ? testState.editedCommentsByCid[comment.cid] : undefined,
   }),
@@ -196,6 +201,8 @@ describe('Post', () => {
     testState.editedCommentsByCid = {};
     testState.isMobile = false;
     testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.useCommentCalls = [];
+    useThreadLiveUpdatesStore.getState().resetState();
     testState.community = {
       error: undefined,
       shortAddress: 'music-posting.eth',
@@ -439,5 +446,35 @@ describe('Post', () => {
 
     expect(Array.from(container.querySelectorAll('[data-testid="error-display"]')).map((node) => node.textContent)).toEqual(['board failed', 'missing comment']);
     expect(container.querySelector('[data-testid="thread-footer-first-row"]')).toBeNull();
+  });
+
+  it('uses frozen useComment subscriptions when thread auto updates are disabled', async () => {
+    testState.commentsByCid = {
+      'reply-cid': {
+        cid: 'reply-cid',
+        communityAddress: 'music-posting.eth',
+        parentCid: 'root-cid',
+        postCid: 'root-cid',
+        replyCount: 0,
+        timestamp: 2,
+      },
+      'root-cid': {
+        cid: 'root-cid',
+        communityAddress: 'music-posting.eth',
+        postCid: 'root-cid',
+        replyCount: 4,
+        timestamp: 1,
+      },
+    };
+    useThreadLiveUpdatesStore.getState().setEnabled(false);
+
+    await renderPostPage('/mu/thread/reply-cid');
+
+    expect(testState.useCommentCalls).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ commentCid: 'reply-cid', autoUpdate: false }),
+        expect.objectContaining({ commentCid: 'root-cid', autoUpdate: false }),
+      ]),
+    );
   });
 });

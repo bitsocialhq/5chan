@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DesktopBoardButtons, MobileBoardButtons } from '../board-buttons';
+import useThreadLiveUpdatesStore from '../../../stores/use-thread-live-updates-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -237,6 +238,7 @@ describe('BoardButtons', () => {
     testState.sortType = 'active';
     testState.subscribed = false;
     testState.viewMode = 'compact';
+    useThreadLiveUpdatesStore.getState().resetState();
     Object.defineProperty(globalThis, 'alert', {
       configurable: true,
       value: vi.fn(),
@@ -321,7 +323,7 @@ describe('BoardButtons', () => {
     expect(testState.resetMock).toHaveBeenCalledTimes(1);
   });
 
-  it('renders thread actions and post stats, then updates, auto-alerts, and scrolls to the bottom', async () => {
+  it('renders thread actions and post stats, then requests refreshes, toggles auto updates, and scrolls to the bottom', async () => {
     testState.commentsByCid = {
       'comment-1': {
         cid: 'comment-1',
@@ -345,11 +347,36 @@ describe('BoardButtons', () => {
 
     await clickButton('bottom');
     await clickButton('update');
-    await clickButton('Auto');
+    const autoCheckbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    expect(autoCheckbox?.checked).toBe(false);
+    await act(async () => {
+      autoCheckbox?.click();
+    });
 
     expect(window.scrollTo).toHaveBeenCalledWith({ behavior: 'instant', top: 2400 });
-    expect(testState.resetMock).toHaveBeenCalledTimes(1);
-    expect(globalThis.alert).toHaveBeenCalledWith('posts_auto_update_info');
+    expect(useThreadLiveUpdatesStore.getState().updateRequestId).toBe(1);
+    expect(useThreadLiveUpdatesStore.getState().enabled).toBe(true);
+    expect(autoCheckbox?.checked).toBe(true);
+  });
+
+  it('keeps the update button enabled while a manual thread refresh is in progress', async () => {
+    testState.commentsByCid = {
+      'comment-1': {
+        cid: 'comment-1',
+        postCid: 'comment-1',
+        replyCount: 9,
+      },
+    };
+    useThreadLiveUpdatesStore.getState().startUpdate();
+
+    await renderWithRoute(createElement(DesktopBoardButtons), '/mu/thread/comment-1');
+
+    const updateButton = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'update');
+    expect(updateButton?.hasAttribute('disabled')).toBe(false);
+
+    await clickButton('update');
+
+    expect(useThreadLiveUpdatesStore.getState().updateRequestId).toBe(1);
   });
 
   it('renders mobile mod-queue controls and clamps alert threshold updates', async () => {

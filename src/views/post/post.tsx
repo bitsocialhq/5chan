@@ -16,18 +16,32 @@ import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFo
 import PostDesktop from '../../components/post-desktop';
 import PostMobile from '../../components/post-mobile';
 import { getRequestedThreadTopCid, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
+import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import styles from './post.module.css';
+
+type CommentWithRefresh = Comment & {
+  refresh?: () => Promise<void>;
+  state?: string;
+  error?: Error;
+  errors?: Error[];
+};
 
 // useComment may not return cached feed data immediately due to its updatedAt comparison logic.
 // This hook falls back to the communities pages store (populated by useFeed) so content
 // from the catalog appears instantly instead of going through a loading phase.
-const useCommentWithFeedCache = (options: { commentCid: string | undefined }) => {
+const useCommentWithFeedCache = (options: { commentCid: string | undefined; autoUpdate?: boolean }): CommentWithRefresh | undefined => {
   const comment = useComment(options);
   const cachedComment = useCommunitiesPagesStore((state) => state.comments[options?.commentCid || '']);
 
   return useMemo(() => {
     if (!cachedComment || comment?.timestamp) return comment;
-    return { ...cachedComment, state: comment?.state, error: comment?.error, errors: comment?.errors } as Comment;
+    return {
+      ...cachedComment,
+      refresh: comment?.refresh,
+      state: comment?.state,
+      error: comment?.error,
+      errors: comment?.errors,
+    } as CommentWithRefresh;
   }, [comment, cachedComment]);
 };
 
@@ -134,13 +148,20 @@ const PostPage = () => {
   const params = useParams();
   const location = useLocation();
   const { commentCid } = params;
+  const autoUpdateEnabled = useThreadLiveUpdatesStore((state) => state.enabled);
+  const updateRequestId = useThreadLiveUpdatesStore((state) => state.updateRequestId);
+  const startUpdate = useThreadLiveUpdatesStore((state) => state.startUpdate);
+  const finishUpdate = useThreadLiveUpdatesStore((state) => state.finishUpdate);
+  const resetThreadLiveUpdates = useThreadLiveUpdatesStore((state) => state.resetState);
   const resolvedCommunityAddress = useResolvedCommunityAddress();
   const isInAllView = isAllView(location.pathname);
 
-  const comment = useCommentWithFeedCache({ commentCid });
+  const comment = useCommentWithFeedCache({ commentCid, autoUpdate: autoUpdateEnabled });
   const commentCommunityAddress = getCommentCommunityAddress(comment);
   const communityAddress = resolvedCommunityAddress ?? commentCommunityAddress;
   const consumedThreadTopScrollRef = useRef<string | null>(null);
+  const previousThreadCidRef = useRef<string>();
+  const lastProcessedUpdateRequestIdRef = useRef(0);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -154,13 +175,8 @@ const PostPage = () => {
   const directories = useDirectories();
 
   // if the comment is a reply, return the post comment instead, then the reply will be highlighted in the thread
-  const postComment = useCommentWithFeedCache({ commentCid: comment?.postCid });
-  let post: Comment;
-  if (comment.parentCid) {
-    post = postComment;
-  } else {
-    post = comment;
-  }
+  const postComment = useCommentWithFeedCache({ commentCid: comment?.postCid, autoUpdate: autoUpdateEnabled });
+  const post = comment?.parentCid ? postComment : comment;
   const requestedThreadTopCid = getRequestedThreadTopCid(location.state);
 
   const { error } = post || {};
@@ -211,6 +227,54 @@ const PostPage = () => {
   const shouldShowCommunityError = communityError?.message && !post?.cid;
 
   const targetReplyCid = comment?.parentCid ? comment?.cid : undefined;
+
+  useEffect(() => {
+    return () => {
+      resetThreadLiveUpdates();
+    };
+  }, [resetThreadLiveUpdates]);
+
+  useEffect(() => {
+    if (!post?.cid) return;
+    if (previousThreadCidRef.current && previousThreadCidRef.current !== post.cid) {
+      resetThreadLiveUpdates();
+    }
+    previousThreadCidRef.current = post.cid;
+  }, [post?.cid, resetThreadLiveUpdates]);
+
+  useEffect(() => {
+    if (!post?.cid || updateRequestId <= lastProcessedUpdateRequestIdRef.current) return;
+
+    const refreshByCid = new Map<string, () => Promise<void>>();
+    if (comment?.cid && typeof comment.refresh === 'function') {
+      refreshByCid.set(comment.cid, comment.refresh);
+    }
+    if (post?.cid && typeof post.refresh === 'function') {
+      refreshByCid.set(post.cid, post.refresh);
+    }
+    if (refreshByCid.size === 0) return;
+
+    lastProcessedUpdateRequestIdRef.current = updateRequestId;
+    let cancelled = false;
+    startUpdate();
+
+    void (async () => {
+      const results = await Promise.allSettled(Array.from(refreshByCid.values(), (refresh) => refresh()));
+      if (cancelled) return;
+
+      const hasSuccessfulRefresh = results.some((result) => result.status === 'fulfilled');
+      finishUpdate(updateRequestId, hasSuccessfulRefresh);
+
+      const rejectedResult = results.find((result) => result.status === 'rejected');
+      if (rejectedResult?.status === 'rejected') {
+        console.error('Failed to refresh thread comments:', rejectedResult.reason);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [comment?.cid, comment?.refresh, finishUpdate, post?.cid, post?.refresh, startUpdate, updateRequestId]);
 
   return (
     <div className={styles.content}>

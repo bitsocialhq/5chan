@@ -7,6 +7,7 @@ import StyleSelector from '../style-selector/style-selector';
 import { ReturnButton, CatalogButton, TopButton, UpdateButton, AutoButton, PostPageStats, RefreshButton } from '../board-buttons/board-buttons';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
+import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import { usePostPageNumber } from '../../hooks/use-post-page-number';
 import { useDirectoryByAddress } from '../../hooks/use-directories';
@@ -205,12 +206,13 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, is
   const location = useLocation();
   const params = useParams();
   const { openReplyModalEmpty } = useReplyModalStore();
+  const autoUpdateEnabled = useThreadLiveUpdatesStore((state) => state.enabled);
 
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInModView = isModView(location.pathname);
 
-  const post = useComment({ commentCid: postCid });
+  const post = useComment({ commentCid: postCid, autoUpdate: autoUpdateEnabled });
   const { replyCount } = post || {};
   const linkCount = useCountLinksInReplies(post);
   const directoryEntry = useDirectoryByAddress(communityAddress);

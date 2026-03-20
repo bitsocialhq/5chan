@@ -37,6 +37,7 @@ import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
+import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import useRegisterFreshReplies from '../../hooks/use-register-fresh-replies';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
@@ -608,6 +609,8 @@ const PostMobile = ({
   useRegisterFreshReplies(resolvedPost, freshRepliesForRender);
   const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
+  const repliesResetRequestId = useThreadLiveUpdatesStore((state) => state.repliesResetRequestId);
+  const lastHandledRepliesResetRequestIdRef = useRef(0);
   useEffect(() => {
     if ((isInPostView || isInPendingPostView) && reset) {
       setResetFunction(() => {
@@ -615,6 +618,11 @@ const PostMobile = ({
       });
     }
   }, [isInPostView, isInPendingPostView, reset, setResetFunction]);
+  useEffect(() => {
+    if (!reset || repliesResetRequestId === 0 || repliesResetRequestId === lastHandledRepliesResetRequestIdRef.current) return;
+    lastHandledRepliesResetRequestIdRef.current = repliesResetRequestId;
+    void reset();
+  }, [repliesResetRequestId, reset]);
 
   const isInPostPageView = isPostPageView(location.pathname, params);
   const { hidden, unhide } = useHide({ cid });

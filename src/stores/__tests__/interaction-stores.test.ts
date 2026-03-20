@@ -8,6 +8,7 @@ import usePostNumberStore from '../use-post-number-store';
 import useReplyModalStore from '../use-reply-modal-store';
 import useSelectedTextStore from '../use-selected-text-store';
 import useSortingStore from '../use-sorting-store';
+import useThreadLiveUpdatesStore from '../use-thread-live-updates-store';
 
 const resetReplyModalStore = () => {
   useReplyModalStore.setState({
@@ -41,6 +42,7 @@ describe('interaction stores', () => {
     usePostNumberStore.setState({ numberToCid: {}, cidToNumber: {} });
     useSelectedTextStore.getState().resetSelectedText();
     useSortingStore.getState().setSortType('active');
+    useThreadLiveUpdatesStore.getState().resetState();
     resetReplyModalStore();
 
     Object.defineProperty(window, 'innerWidth', {
@@ -84,6 +86,43 @@ describe('interaction stores', () => {
     expect(useSortingStore.getState().sortType).toBe('active');
     useSortingStore.getState().setSortType('replyCount');
     expect(useSortingStore.getState().sortType).toBe('replyCount');
+  });
+
+  it('tracks thread live update toggle state and queues manual refresh requests', () => {
+    const store = useThreadLiveUpdatesStore.getState();
+
+    expect(store.enabled).toBe(false);
+    expect(store.isUpdating).toBe(false);
+    expect(store.updateRequestId).toBe(0);
+    expect(store.repliesResetRequestId).toBe(0);
+
+    store.setEnabled(true);
+    expect(useThreadLiveUpdatesStore.getState().enabled).toBe(true);
+
+    store.toggleEnabled();
+    expect(useThreadLiveUpdatesStore.getState().enabled).toBe(false);
+
+    store.requestUpdate();
+    expect(useThreadLiveUpdatesStore.getState().updateRequestId).toBe(1);
+
+    store.startUpdate();
+    expect(useThreadLiveUpdatesStore.getState().isUpdating).toBe(true);
+
+    store.finishUpdate(1);
+    expect(useThreadLiveUpdatesStore.getState()).toMatchObject({
+      isUpdating: false,
+      repliesResetRequestId: 1,
+    });
+
+    store.requestUpdate();
+    expect(useThreadLiveUpdatesStore.getState().updateRequestId).toBe(2);
+
+    store.startUpdate();
+    store.finishUpdate(2, false);
+    expect(useThreadLiveUpdatesStore.getState()).toMatchObject({
+      isUpdating: false,
+      repliesResetRequestId: 1,
+    });
   });
 
   it('queues challenges, abandons the current one, and logs abandon failures', async () => {

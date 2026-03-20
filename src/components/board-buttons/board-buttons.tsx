@@ -13,6 +13,7 @@ import useSortingStore from '../../stores/use-sorting-store';
 import useAllFeedFilterStore from '../../stores/use-all-feed-filter-store';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
+import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useIsMobile from '../../hooks/use-is-mobile';
 import CatalogFilters from '../catalog-filters';
@@ -35,7 +36,6 @@ interface BoardButtonsProps {
 
 export const CatalogButton = ({ address, isInAllView, isInSubscriptionsView, isInModView }: BoardButtonsProps) => {
   const { t } = useTranslation();
-  const params = useParams();
   const directories = useDirectories();
 
   const createCatalogLink = () => {
@@ -158,9 +158,9 @@ export const RefreshButton = () => {
 
 export const UpdateButton = () => {
   const { t } = useTranslation();
-  const reset = useFeedResetStore((state) => state.reset);
+  const requestUpdate = useThreadLiveUpdatesStore((state) => state.requestUpdate);
   return (
-    <button className='button' onClick={() => reset?.()}>
+    <button className='button' onClick={() => requestUpdate()}>
       {t('update')}
     </button>
   );
@@ -169,26 +169,19 @@ export const UpdateButton = () => {
 export const AutoButton = () => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
-  const handleAutoClick = () => {
-    window.alert(t('posts_auto_update_info'));
-  };
-
+  const autoUpdateEnabled = useThreadLiveUpdatesStore((state) => state.enabled);
+  const setAutoUpdateEnabled = useThreadLiveUpdatesStore((state) => state.setEnabled);
   return (
-    <>
-      {isMobile ? (
-        <button className='button' onClick={handleAutoClick}>
-          <label>
-            <input type='checkbox' className={styles.autoCheckbox} checked disabled />
-            {t('Auto')}
-          </label>
-        </button>
-      ) : (
-        <label onClick={handleAutoClick}>
-          {' '}
-          <input type='checkbox' className={styles.autoCheckbox} checked disabled /> {t('Auto')}
-        </label>
-      )}
-    </>
+    <label className={isMobile ? 'button' : undefined}>
+      <input
+        type='checkbox'
+        aria-label={t('Auto')}
+        className={styles.autoCheckbox}
+        checked={autoUpdateEnabled}
+        onChange={(event) => setAutoUpdateEnabled(event.target.checked)}
+      />{' '}
+      {t('Auto')}
+    </label>
   );
 };
 
@@ -495,14 +488,15 @@ export const PostPageStats = () => {
   const { t } = useTranslation();
   const params = useParams();
   const location = useLocation();
+  const autoUpdateEnabled = useThreadLiveUpdatesStore((state) => state.enabled);
   const commentCid = params?.commentCid as string | undefined;
   const resolvedAddress = useResolvedCommunityAddress();
   const accountComment = useAccountComment({ commentIndex: params?.accountCommentIndex as any });
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
 
-  const comment = useComment({ commentCid });
+  const comment = useComment({ commentCid, autoUpdate: autoUpdateEnabled });
   const postCid = comment?.postCid ?? commentCid;
-  const post = useComment({ commentCid: postCid });
+  const post = useComment({ commentCid: postCid, autoUpdate: autoUpdateEnabled });
 
   const archived = isCommentArchived(post);
   const { closed, pinned, replyCount } = post || {};
