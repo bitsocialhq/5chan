@@ -123,6 +123,24 @@ describe('interaction stores', () => {
       isUpdating: false,
       repliesResetRequestId: 1,
     });
+
+    store.requestUpdate();
+    store.startUpdate();
+    store.requestUpdate();
+    store.startUpdate();
+    store.finishUpdate(3);
+    expect(useThreadLiveUpdatesStore.getState()).toMatchObject({
+      isUpdating: true,
+      repliesResetRequestId: 3,
+      updateRequestId: 4,
+    });
+
+    store.finishUpdate(4);
+    expect(useThreadLiveUpdatesStore.getState()).toMatchObject({
+      isUpdating: false,
+      repliesResetRequestId: 4,
+      updateRequestId: 4,
+    });
   });
 
   it('queues challenges, abandons the current one, and logs abandon failures', async () => {

@@ -610,7 +610,7 @@ const PostMobile = ({
   const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
   const repliesResetRequestId = useThreadLiveUpdatesStore((state) => state.repliesResetRequestId);
-  const lastHandledRepliesResetRequestIdRef = useRef(0);
+  const lastHandledRepliesResetRequestIdRef = useRef(repliesResetRequestId);
   useEffect(() => {
     if ((isInPostView || isInPendingPostView) && reset) {
       setResetFunction(() => {

@@ -6,9 +6,11 @@ import { chromium } from 'playwright';
 
 const PAGE_TIMEOUT_MS = 30_000;
 const SERVER_TIMEOUT_MS = 60_000;
-const DEV_HOST = process.env.THREAD_AUTO_UPDATE_E2E_HOST || '127.0.0.1';
-const DEV_PORT = process.env.THREAD_AUTO_UPDATE_E2E_PORT || '4174';
-const HARNESS_URL = process.env.THREAD_AUTO_UPDATE_E2E_URL || `http://${DEV_HOST}:${DEV_PORT}/?e2e=thread-auto-update`;
+const HARNESS_URL =
+  process.env.THREAD_AUTO_UPDATE_E2E_URL || `http://${process.env.THREAD_AUTO_UPDATE_E2E_HOST || '127.0.0.1'}:${process.env.THREAD_AUTO_UPDATE_E2E_PORT || '4174'}/?e2e=thread-auto-update`;
+const harnessOrigin = new URL(HARNESS_URL);
+const DEV_HOST = harnessOrigin.hostname;
+const DEV_PORT = harnessOrigin.port || (harnessOrigin.protocol === 'https:' ? '443' : '80');
 const shouldStartDevServer = process.argv.includes('--start-dev');
 const viteCommand = process.platform === 'win32' ? 'vite.cmd' : 'vite';
 const viteBin = join(process.cwd(), 'node_modules', '.bin', viteCommand);

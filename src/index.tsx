@@ -8,7 +8,6 @@ import './lib/init-translations';
 import './index.css';
 import './themes.css';
 import AppUpdateRegistration from './components/app-update-registration';
-import ThreadAutoUpdateHarness from './e2e/thread-auto-update-harness';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Analytics } from '@vercel/analytics/react';
 
@@ -25,19 +24,28 @@ if (typeof window !== 'undefined' && e2eStartHash && window.location.hash.length
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
-root.render(
-  <React.StrictMode>
-    {shouldRenderThreadAutoUpdateHarness ? (
-      <ThreadAutoUpdateHarness />
-    ) : (
-      <Router>
-        <AppUpdateRegistration />
-        <App />
-        {isVercelDeployment && <Analytics />}
-      </Router>
-    )}
-  </React.StrictMode>,
-);
+const renderRoot = async () => {
+  let threadAutoUpdateHarness: React.ComponentType | null = null;
+  if (shouldRenderThreadAutoUpdateHarness) {
+    threadAutoUpdateHarness = (await import('./e2e/thread-auto-update-harness')).default;
+  }
+
+  root.render(
+    <React.StrictMode>
+      {threadAutoUpdateHarness ? (
+        React.createElement(threadAutoUpdateHarness)
+      ) : (
+        <Router>
+          <AppUpdateRegistration />
+          <App />
+          {isVercelDeployment && <Analytics />}
+        </Router>
+      )}
+    </React.StrictMode>,
+  );
+};
+
+void renderRoot();
 
 // add back button in android app
 CapacitorApp.addListener('backButton', ({ canGoBack }) => {

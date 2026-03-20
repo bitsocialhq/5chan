@@ -31,7 +31,7 @@ const useThreadLiveUpdatesStore = create<ThreadLiveUpdatesState>((set) => ({
   startUpdate: () => set({ isUpdating: true }),
   finishUpdate: (requestId, shouldResetReplies = true) =>
     set((state) => ({
-      isUpdating: false,
+      isUpdating: state.updateRequestId === requestId ? false : state.isUpdating,
       repliesResetRequestId: shouldResetReplies ? Math.max(state.repliesResetRequestId, requestId) : state.repliesResetRequestId,
     })),
   resetState: () => set(defaultState),

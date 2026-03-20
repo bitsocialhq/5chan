@@ -237,6 +237,8 @@ const PostPage = () => {
   useEffect(() => {
     if (!post?.cid) return;
     if (previousThreadCidRef.current && previousThreadCidRef.current !== post.cid) {
+      lastProcessedUpdateRequestIdRef.current = 0;
+      consumedThreadTopScrollRef.current = null;
       resetThreadLiveUpdates();
     }
     previousThreadCidRef.current = post.cid;
