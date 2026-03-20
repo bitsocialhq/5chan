@@ -31,7 +31,11 @@ const logUpdateDebug = (...args) => {
 
 const sanitizeFileName = (fileName) => {
   const safeName = `${fileName || ''}`.split(/[\\/]/).pop()?.trim();
-  return safeName || '5chan-update';
+  if (!safeName || safeName === '.' || safeName === '..') {
+    return '5chan-update';
+  }
+
+  return safeName;
 };
 
 const runDetachedCommand = (command, args) => {
@@ -285,4 +289,4 @@ const downloadAndInstallUpdate = async ({ url, fileName }) => {
   }
 };
 
-export { downloadAndInstallUpdate };
+export { downloadAndInstallUpdate, sanitizeFileName };
