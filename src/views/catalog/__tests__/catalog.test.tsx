@@ -61,6 +61,7 @@ const testState = vi.hoisted(() => ({
   setMatchedFilterMock: vi.fn(),
   setResetFunctionMock: vi.fn(),
   sortType: 'new' as 'active' | 'new',
+  windowWidth: 900,
   community: {
     error: undefined as Error | undefined,
     shortAddress: 'music-posting.eth',
@@ -163,10 +164,6 @@ vi.mock('react-virtuoso', () => ({
   ),
 }));
 
-vi.mock('../../../hooks/use-catalog-feed-rows', () => ({
-  default: (_columnCount: number, processedFeed: TestComment[]) => processedFeed.map((comment) => [comment]),
-}));
-
 vi.mock('../../../hooks/use-directories', () => ({
   useDirectories: () => testState.directories,
   useDirectoryByAddress: (address: string | undefined) => (address ? testState.directoryByAddress[address] : undefined),
@@ -189,7 +186,7 @@ vi.mock('../../../hooks/use-state-string', () => ({
 }));
 
 vi.mock('../../../hooks/use-window-width', () => ({
-  default: () => 900,
+  default: () => testState.windowWidth,
 }));
 
 vi.mock('../../../stores/use-catalog-style-store', () => ({
@@ -319,6 +316,7 @@ describe('Catalog', () => {
     testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.searchText = '';
     testState.sortType = 'new';
+    testState.windowWidth = 900;
     testState.community = {
       error: undefined,
       shortAddress: 'music-posting.eth',
@@ -438,5 +436,17 @@ describe('Catalog', () => {
       sortType: 'old',
     });
     expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:local-cats-post,network-post']);
+  });
+
+  it('chunks catalog rows safely even when the viewport is narrower than one card', async () => {
+    testState.windowWidth = 0;
+    testState.feed = [
+      { cid: 'first-post', title: 'one', communityAddress: 'music-posting.eth' },
+      { cid: 'second-post', title: 'two', communityAddress: 'music-posting.eth' },
+    ];
+
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+
+    expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:first-post', 'row:second-post']);
   });
 });

@@ -445,9 +445,10 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       return [];
     }
 
+    const effectiveColumnCount = Math.max(columnCount, 1);
     const nextRows = [];
-    for (let i = 0; i < processedFeed.length; i += columnCount) {
-      nextRows.push(processedFeed.slice(i, i + columnCount));
+    for (let i = 0; i < processedFeed.length; i += effectiveColumnCount) {
+      nextRows.push(processedFeed.slice(i, i + effectiveColumnCount));
     }
     return nextRows;
   }, [columnCount, isFeedLoaded, processedFeed]);

@@ -75,6 +75,14 @@ describe('useSafeAccountComment', () => {
     expect(testState.calls).toEqual([{ commentIndex: 7 }]);
   });
 
+  it('falls back to the sentinel lookup for malformed string indices', () => {
+    testState.options = { commentIndex: '7abc' };
+
+    renderHook();
+
+    expect(testState.calls).toEqual([{ commentIndex: -1 }]);
+  });
+
   it('falls back to the sentinel lookup when cid lookup is requested before an account exists', () => {
     testState.options = { commentCid: 'reply-cid' };
 

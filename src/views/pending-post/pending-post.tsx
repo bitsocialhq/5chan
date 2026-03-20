@@ -9,8 +9,9 @@ import { Post } from '../post';
 const PendingPost = () => {
   const { accountComments } = useAccountComments();
   const { accountCommentIndex } = useParams<{ accountCommentIndex?: string }>();
-  const commentIndex = accountCommentIndex ? parseInt(accountCommentIndex, 10) : undefined;
-  const post = useSafeAccountComment({ commentIndex });
+  const normalizedAccountCommentIndex = accountCommentIndex === undefined ? undefined : Number(accountCommentIndex);
+  const hasNormalizedAccountCommentIndex = normalizedAccountCommentIndex !== undefined && !Number.isNaN(normalizedAccountCommentIndex);
+  const post = useSafeAccountComment({ commentIndex: accountCommentIndex });
   const navigate = useNavigate();
   const directories = useDirectories();
 
@@ -18,10 +19,10 @@ const PendingPost = () => {
 
   const isValidAccountCommentIndex =
     !accountCommentIndex ||
-    (!isNaN(parseInt(accountCommentIndex)) &&
-      parseInt(accountCommentIndex) >= 0 &&
-      Number.isInteger(parseFloat(accountCommentIndex)) &&
-      (accountComments?.length === 0 || parseInt(accountCommentIndex) <= accountComments.length));
+    (hasNormalizedAccountCommentIndex &&
+      normalizedAccountCommentIndex >= 0 &&
+      Number.isInteger(normalizedAccountCommentIndex) &&
+      (accountComments?.length === 0 || normalizedAccountCommentIndex < accountComments.length));
 
   useEffect(() => {
     if (!isValidAccountCommentIndex) {

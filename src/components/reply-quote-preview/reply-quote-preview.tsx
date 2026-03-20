@@ -84,8 +84,12 @@ const scrollToReplyOnPage = (cid: string) => {
 const useIsOwnQuotelink = (quotelinkReply?: Comment) => {
   const account = useAccount();
   const ownQuotelink = useSafeAccountComment({ commentCid: quotelinkReply?.cid });
+  const quotedAuthorAddress = quotelinkReply?.author?.address;
+  const accountAuthorAddress = account?.author?.address;
 
-  return Boolean((quotelinkReply?.cid && ownQuotelink?.cid) || quotelinkReply?.author?.address === account?.author?.address);
+  return Boolean(
+    (quotelinkReply?.cid && ownQuotelink?.cid === quotelinkReply.cid) || (quotedAuthorAddress && accountAuthorAddress && quotedAuthorAddress === accountAuthorAddress),
+  );
 };
 
 const DesktopQuotePreview = ({

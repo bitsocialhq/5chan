@@ -118,6 +118,24 @@ describe('PendingPost', () => {
     expect(testState.navigateMock).toHaveBeenCalledWith('/not-found', { replace: true });
   });
 
+  it('redirects malformed pending indices to not found', async () => {
+    testState.accountCommentIndex = '1abc';
+    testState.accountComments = [{}, {}];
+
+    await renderPendingPost();
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/not-found', { replace: true });
+  });
+
+  it('redirects out-of-range pending indices to not found', async () => {
+    testState.accountCommentIndex = '2';
+    testState.accountComments = [{}, {}];
+
+    await renderPendingPost();
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/not-found', { replace: true });
+  });
+
   it('redirects resolved pending posts to the canonical thread route', async () => {
     testState.accountCommentIndex = '1';
     testState.accountComments = [{}, {}];

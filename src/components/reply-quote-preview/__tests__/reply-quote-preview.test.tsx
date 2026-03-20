@@ -23,7 +23,7 @@ const testState = vi.hoisted(() => ({
     author: {
       address: '0xme',
     },
-  },
+  } as { id?: string; author?: { address?: string } },
   accountCommentByCid: {} as Record<string, { cid?: string }>,
   accountCommentCalls: [] as Array<{ commentCid?: string } | undefined>,
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
@@ -428,6 +428,29 @@ describe('ReplyQuotePreview', () => {
 
     expect(container.textContent).toContain('>>11 (You)');
     expect(testState.accountCommentCalls).toContainEqual({ commentCid: 'reply-cid' });
+  });
+
+  it('does not mark quotelinks as your own when the lookup misses and no author address matches', async () => {
+    testState.account = {
+      id: 'account-1',
+      author: { address: undefined } as { address?: string },
+    };
+    testState.accountCommentByCid = {
+      'reply-cid': {
+        cid: 'different-cid',
+      },
+    };
+
+    await renderPreview({
+      isQuotelinkReply: true,
+      quotelinkReply: {
+        cid: 'reply-cid',
+        number: 12,
+        communityAddress: 'music-posting.eth',
+      },
+    });
+
+    expect(container.textContent).not.toContain('(You)');
   });
 
   it('renders unavailable desktop quotelinks without navigation and includes OP/You labels', async () => {
