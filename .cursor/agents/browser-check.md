@@ -1,6 +1,6 @@
 ---
 name: browser-check
-model: composer-1.5
+model: composer-2
 description: Verifies UI changes in the browser using playwright-cli. Use after making visual or interaction changes to React components, CSS, layouts, or routing to confirm they render and behave correctly.
 ---
 

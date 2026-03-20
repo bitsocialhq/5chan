@@ -1,6 +1,6 @@
 ---
 name: react-patterns-enforcer
-model: composer-1.5
+model: composer-2
 description: Reviews React code for anti-pattern violations specific to the 5chan project (useState/useEffect misuse, missing Zustand, copy-pasted logic) and fixes them. Use after writing or modifying React components, hooks, or state management code.
 ---
 
