@@ -12,6 +12,7 @@
     "@capacitor/app": "7.0.1",
     "@capacitor/status-bar": "7.0.1",
     "@capawesome/capacitor-android-edge-to-edge-support": "7.2.2",
+    "@chenglou/pretext": "0.0.3",
     "@floating-ui/react": "0.26.1",
     "@react-spring/web": "10.0.3",
     "@types/node": "20.19.37",

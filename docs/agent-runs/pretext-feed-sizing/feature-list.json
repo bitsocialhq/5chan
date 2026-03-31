@@ -1,0 +1,78 @@
+{
+  "task": "pretext-feed-sizing",
+  "last_updated": "2026-03-31",
+  "items": [
+    {
+      "id": "F001",
+      "priority": 1,
+      "status": "completed",
+      "description": "Benchmark and harden Pretext-backed reply virtualization on the real thread reply Virtuoso path so the branch has trustworthy baseline data.",
+      "verification": [
+        "Open `?e2e=pretext-benchmark&variant=production&mode=dom&count=1200&seed=42` and run the scroll scenario on desktop and mobile.",
+        "Open `?e2e=pretext-benchmark&variant=production&mode=item-size&count=1200&seed=42` and compare rect calls, duration, long tasks, and visible estimate error."
+      ],
+      "files": [
+        "src/components/post-desktop/post-desktop.tsx",
+        "src/components/post-mobile/post-mobile.tsx",
+        "src/e2e/pretext-benchmark-harness.tsx",
+        "src/hooks/use-reply-height-estimates.ts",
+        "src/lib/utils/pretext-height-estimates.ts",
+        "src/views/post/post.tsx"
+      ],
+      "notes": "Reply virtualization is now production-credible on both desktop and mobile. Desktop production harness: `dom` -> `item-size` reduced rect reads from 2875 to 472 while keeping visible error low (`11.3px` mean, `30px` max). Mobile production harness: `dom` -> `item-size` reduced rect reads from 5059 to 1433, duration from 16863ms to 13452ms, max frame from 100.1ms to 59ms, and slow frames over 16ms from 227 to 99. The mobile follow-up audit sampled all 1200 replies and found `722411px` estimated vs `726218px` actual total height, so the Pretext reply tree is within about `0.5%` of the rendered total."
+    },
+    {
+      "id": "F002",
+      "priority": 2,
+      "status": "in_progress",
+      "description": "Add a benchmarkable Pretext experiment for board feed Virtuoso items and determine whether feed cards are a better production target than thread replies.",
+      "verification": [
+        "Run a deterministic board-feed benchmark on `board.tsx` item virtualization for `dom`, `estimates`, and `item-size` modes.",
+        "Confirm whether item measurement reads and frame metrics improve materially on desktop and mobile."
+      ],
+      "files": [
+        "src/lib/utils/pretext-height-estimates.ts",
+        "src/hooks/use-reply-height-estimates.ts",
+        "src/views/board/board.tsx",
+        "src/views/post/post.tsx",
+        "src/components/post-desktop/post-desktop.tsx",
+        "src/components/post-mobile/post-mobile.tsx",
+        "src/e2e/pretext-benchmark-harness.tsx"
+      ],
+      "notes": "The board path is back on strict Pretext sizing instead of the earlier hybrid fallback. After preserving real line breaks and separating preview estimates from thread estimates, desktop board cards now land within about 20px visible mean error and mobile board cards show a clear win: `dom` -> `item-size` reduced rect reads from 8578 to 1899, duration from 32582ms to 27197ms, and the worst frame from 133.3ms to 83.4ms. Desktop board geometry is close, but the synthetic harness still shows `item-size` as measurement-cheaper rather than obviously faster."
+    },
+    {
+      "id": "F003",
+      "priority": 3,
+      "status": "completed",
+      "description": "Evaluate catalog virtualization for a Pretext-backed sizing strategy if board feed results are promising or if catalog-specific card layout needs a separate model.",
+      "verification": [
+        "Benchmark catalog Virtuoso rows under the same `dom` vs Pretext sizing modes.",
+        "Verify desktop and mobile catalog scrolling in a fresh browser session."
+      ],
+      "files": [
+        "src/views/catalog/catalog.tsx",
+        "src/components/catalog-row/catalog-row.tsx",
+        "src/e2e/pretext-benchmark-harness.tsx"
+      ],
+      "notes": "Catalog rows now use a dedicated Pretext estimator plus `item-size` by default, with pure derived matched-filter colors instead of render-time store writes. Benchmark pass: desktop catalog reduced rect reads from 439 to 73 with a small duration win (2272ms -> 2010ms), and mobile reduced rect reads from 1349 to 217 with comparable scroll timing."
+    },
+    {
+      "id": "F004",
+      "priority": 4,
+      "status": "in_progress",
+      "description": "Prepare a production-safe rollout plan once a Pretext path shows a clear performance win, including feature-flag strategy, regression checks, and default-mode decisions.",
+      "verification": [
+        "Run `corepack yarn build`, `corepack yarn lint`, `corepack yarn type-check`, `corepack yarn doctor`, and the relevant browser benchmark flows.",
+        "Document whether the winning mode should remain opt-in, ship mobile-first, or replace DOM sizing by default."
+      ],
+      "files": [
+        "src/lib/utils/pretext-height-estimates.ts",
+        "src/hooks/use-reply-height-estimates.ts",
+        "src/views/board/board.tsx",
+        "src/views/catalog/catalog.tsx"
+      ],
+      "notes": "Rollout is close to ready. The current verification set passes (`corepack yarn build`, `corepack yarn lint` with existing warnings only, `corepack yarn type-check`, `corepack yarn doctor` at the repo baseline `86/100`, `corepack yarn knip`, targeted tests, and deterministic benchmark matrices), and the reply-path mobile blocker has been resolved in the production harness. The remaining caution is environmental rather than code-level: live deep-board/deep-thread validation is still noisy because the dev RPC environment and cached profiles are inconsistent, so the deterministic harness remains the primary source of truth."
+    }
+  ]
+}

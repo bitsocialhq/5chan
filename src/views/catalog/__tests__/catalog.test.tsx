@@ -35,7 +35,6 @@ const testState = vi.hoisted(() => ({
   account: { subscriptions: [] as string[] },
   accountComments: [] as TestComment[],
   accountCommentsCalls: [] as Array<{ commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' } | undefined>,
-  clearMatchedFiltersMock: vi.fn(),
   directoryByAddress: {
     'music-posting.eth': {
       address: 'music-posting.eth',
@@ -47,6 +46,7 @@ const testState = vi.hoisted(() => ({
   filterItems: [] as FilterItem[],
   filteredDirectoryAddresses: ['music-posting.eth'] as string[],
   hasMore: false,
+  imageSize: 'Small' as 'Large' | 'Small',
   incrementFilterCountMock: vi.fn(),
   loadMoreMock: vi.fn(),
   pageSizes: {
@@ -58,8 +58,8 @@ const testState = vi.hoisted(() => ({
   resolvedCommunityAddress: 'music-posting.eth' as string | undefined,
   searchText: '',
   setCurrentCommunityAddressMock: vi.fn(),
-  setMatchedFilterMock: vi.fn(),
   setResetFunctionMock: vi.fn(),
+  showOPComment: true,
   sortType: 'new' as 'active' | 'new',
   windowWidth: 900,
   community: {
@@ -72,12 +72,10 @@ const testState = vi.hoisted(() => ({
 
 function getCatalogFiltersState() {
   return {
-    clearMatchedFilters: testState.clearMatchedFiltersMock,
     filterItems: testState.filterItems,
     incrementFilterCount: testState.incrementFilterCountMock,
     searchText: testState.searchText,
     setCurrentSubplebbitAddress: testState.setCurrentCommunityAddressMock,
-    setMatchedFilter: testState.setMatchedFilterMock,
   };
 }
 
@@ -191,7 +189,8 @@ vi.mock('../../../hooks/use-window-width', () => ({
 
 vi.mock('../../../stores/use-catalog-style-store', () => ({
   default: () => ({
-    imageSize: 'Small',
+    imageSize: testState.imageSize,
+    showOPComment: testState.showOPComment,
   }),
 }));
 
@@ -213,7 +212,8 @@ vi.mock('../../../stores/use-catalog-filters-store', () => ({
 }));
 
 vi.mock('../../../components/catalog-row', () => ({
-  default: ({ row }: { row: TestComment[] }) => createElement('div', { 'data-testid': 'catalog-row' }, `row:${row.map((comment) => comment.cid).join(',')}`),
+  default: ({ estimatedHeight, row }: { estimatedHeight?: number; row: TestComment[] }) =>
+    createElement('div', { 'data-pretext-height': estimatedHeight, 'data-testid': 'catalog-row' }, `row:${row.map((comment) => comment.cid).join(',')}`),
 }));
 
 vi.mock('../../../components/footer', () => ({
@@ -308,6 +308,7 @@ describe('Catalog', () => {
     testState.filterItems = [];
     testState.filteredDirectoryAddresses = ['music-posting.eth'];
     testState.hasMore = false;
+    testState.imageSize = 'Small';
     testState.pageSizes = {
       guiPostsPerPage: 2,
       maxGuiPages: 3,
@@ -315,6 +316,7 @@ describe('Catalog', () => {
     };
     testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.searchText = '';
+    testState.showOPComment = true;
     testState.sortType = 'new';
     testState.windowWidth = 900;
     testState.community = {
@@ -323,12 +325,10 @@ describe('Catalog', () => {
       state: 'ready',
       title: '/mu/ - Music',
     };
-    testState.clearMatchedFiltersMock.mockReset();
     testState.incrementFilterCountMock.mockReset();
     testState.loadMoreMock.mockReset();
     testState.resetMock.mockReset();
     testState.setCurrentCommunityAddressMock.mockReset();
-    testState.setMatchedFilterMock.mockReset();
     testState.setResetFunctionMock.mockReset();
     document.title = 'before';
 
@@ -342,7 +342,7 @@ describe('Catalog', () => {
     container.remove();
   });
 
-  it('applies catalog filters, promotes top matches, and clears board filter state on unmount', async () => {
+  it('applies catalog filters and promotes top matches', async () => {
     testState.feed = [
       { cid: 'boring-post', title: 'plain talk', content: 'nothing special', communityAddress: 'music-posting.eth' },
       { cid: 'hidden-post', title: 'cats and spoilers', content: 'spoiler content', communityAddress: 'music-posting.eth' },
@@ -357,16 +357,13 @@ describe('Catalog', () => {
 
     expect(document.title).toBe('/mu/ - catalog - 5chan');
     expect(testState.setCurrentCommunityAddressMock).toHaveBeenCalledWith('music-posting.eth');
-    expect(testState.clearMatchedFiltersMock).toHaveBeenCalled();
     expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:top-post,boring-post']);
     expect(testState.incrementFilterCountMock).toHaveBeenCalledWith(0, 'hidden-post', 'music-posting.eth');
     expect(testState.incrementFilterCountMock).toHaveBeenCalledWith(1, 'top-post', 'music-posting.eth');
-    expect(testState.setMatchedFilterMock).toHaveBeenCalledWith('top-post', 'red');
 
     act(() => root.unmount());
 
     expect(testState.setCurrentCommunityAddressMock).toHaveBeenLastCalledWith(null);
-    expect(testState.clearMatchedFiltersMock).toHaveBeenCalledTimes(3);
 
     root = createRoot(container);
   });

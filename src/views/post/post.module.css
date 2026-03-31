@@ -507,6 +507,12 @@
   contain-intrinsic-size: auto 120px;
 }
 
+.replyDesktop.pretextVirtualizedReply,
+.replyMobile.pretextVirtualizedReply {
+  content-visibility: visible;
+  contain-intrinsic-size: auto;
+}
+
 .replyMobile .replyContainer {
   background-color: var(--post-mobile-background-color);
   border-bottom: var(--post-mobile-border-bottom);

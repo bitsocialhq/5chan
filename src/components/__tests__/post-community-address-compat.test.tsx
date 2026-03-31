@@ -45,9 +45,11 @@ type TestComment = {
 
 const testState = vi.hoisted(() => ({
   addChallengeMock: vi.fn(),
+  hasMoreReplies: false,
   openReplyModalMock: vi.fn(),
   replyComments: [] as Array<TestComment | undefined>,
   setResetFunctionMock: vi.fn(),
+  virtuosoProps: [] as Array<{ defaultItemHeight?: number; heightEstimates?: number[]; itemSize?: unknown }>,
 }));
 
 const getMockPreloadedReplies = (comment?: TestComment, sortType?: string) => {
@@ -89,7 +91,7 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
   useReplies: ({ comment, sortType }: { comment?: TestComment; sortType?: string }) => {
     testState.replyComments.push(comment);
     return {
-      hasMore: false,
+      hasMore: testState.hasMoreReplies,
       loadMore: vi.fn(),
       replies: getMockPreloadedReplies(comment, sortType),
     };
@@ -102,14 +104,22 @@ vi.mock('react-virtuoso', () => ({
       {
         components,
         data = [],
+        defaultItemHeight,
+        heightEstimates,
+        itemSize,
         itemContent,
       }: {
         components?: { Footer?: React.ComponentType };
         data?: TestComment[];
+        defaultItemHeight?: number;
+        heightEstimates?: number[];
+        itemSize?: unknown;
         itemContent: (index: number, item: TestComment) => React.ReactNode;
       },
       ref: React.ForwardedRef<{ getState: (cb: (snapshot: { ranges: number[]; scrollTop: number }) => void) => void }>,
     ) => {
+      testState.virtuosoProps.push({ defaultItemHeight, heightEstimates, itemSize });
+
       React.useImperativeHandle(ref, () => ({
         getState: (cb) => cb({ ranges: [0], scrollTop: 0 }),
       }));
@@ -315,6 +325,14 @@ vi.mock('../../hooks/use-fresh-replies', () => ({
   default: (replies: TestComment[]) => replies,
 }));
 
+vi.mock('../../hooks/use-reply-height-estimates', () => ({
+  default: ({ isMobile, replies }: { isMobile: boolean; replies: TestComment[] }) => ({
+    defaultItemHeight: isMobile ? 222 : 111,
+    heightEstimates: replies.map((_, index) => (isMobile ? 200 : 100) + index),
+    itemSize: vi.fn(),
+  }),
+}));
+
 vi.mock('../../lib/constants', () => ({
   BOARD_REPLIES_PREVIEW_FETCH_SIZE: 5,
   BOARD_REPLIES_PREVIEW_VISIBLE_COUNT: 3,
@@ -406,10 +424,24 @@ const makeLegacyThread = (): TestComment => ({
   timestamp: 1_710_000_000,
 });
 
+const makeLegacyThreadWithoutReplies = (): TestComment => ({
+  ...makeLegacyThread(),
+  replyCount: 0,
+  replies: {
+    pages: {
+      new: {
+        comments: [],
+      },
+    },
+  },
+});
+
 describe('post community address compatibility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    testState.hasMoreReplies = false;
     testState.replyComments = [];
+    testState.virtuosoProps = [];
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -443,5 +475,40 @@ describe('post community address compatibility', () => {
     expect(document.body.querySelector('a[href="/mu"]')?.textContent).toContain('Board: mu');
     expect(container.querySelector('[data-testid="comment-media"]')).toBeTruthy();
     expect(container.textContent).toContain('reply-1');
+  });
+
+  it('forwards Pretext-backed reply estimates into Virtuoso for desktop and mobile thread views', async () => {
+    testState.hasMoreReplies = true;
+
+    await renderWithRoute(createElement(PostDesktop, { post: makeLegacyThread(), showAllReplies: true }), '/mu/thread/post-1');
+    expect(testState.virtuosoProps.at(-1)).toEqual({
+      defaultItemHeight: 111,
+      heightEstimates: [100],
+      itemSize: expect.any(Function),
+    });
+
+    testState.virtuosoProps = [];
+    await renderWithRoute(createElement(PostMobile, { post: makeLegacyThread(), showAllReplies: true }), '/mu/thread/post-1');
+    expect(testState.virtuosoProps.at(-1)).toEqual({
+      defaultItemHeight: 222,
+      heightEstimates: [200],
+      itemSize: expect.any(Function),
+    });
+  });
+
+  it('keeps board-card Pretext heights when preview replies are rendered', async () => {
+    await renderWithRoute(createElement(PostDesktop, { post: makeLegacyThread() }));
+    expect(container.querySelector('.postDesktop')?.getAttribute('data-pretext-height')).toBeTruthy();
+
+    await renderWithRoute(createElement(PostMobile, { post: makeLegacyThread() }));
+    expect(container.querySelector('.postMobile')?.getAttribute('data-pretext-height')).toBeTruthy();
+  });
+
+  it('keeps board-card Pretext heights for simple cards without preview replies', async () => {
+    await renderWithRoute(createElement(PostDesktop, { post: makeLegacyThreadWithoutReplies() }));
+    expect(container.querySelector('.postDesktop')?.getAttribute('data-pretext-height')).toBeTruthy();
+
+    await renderWithRoute(createElement(PostMobile, { post: makeLegacyThreadWithoutReplies() }));
+    expect(container.querySelector('.postMobile')?.getAttribute('data-pretext-height')).toBeTruthy();
   });
 });

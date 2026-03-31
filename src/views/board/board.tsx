@@ -16,9 +16,11 @@ import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
+import useIsMobile from '../../hooks/use-is-mobile';
 import { getPageSlice } from '../../lib/utils/board-feed-pagination';
 import { getPageFromFeedPath, getSubplebbitAddress, isDirectoryBoard, normalizeMultiboardFeedPath, stripPageFromFeedPath } from '../../lib/utils/route-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
+import { getPretextItemSizeFromElement, resolveFeedVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
 import ErrorDisplay from '../../components/error-display/error-display';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import BoardPagination from '../../components/board-pagination';
@@ -232,6 +234,10 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   );
 
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const feedVirtualizationMode = useMemo(() => resolveFeedVirtualizationMode(location.search, 'item-size'), [location.search]);
+  const boardItemSize = useMemo(() => (feedVirtualizationMode === 'item-size' ? getPretextItemSizeFromElement : undefined), [feedVirtualizationMode]);
+  const defaultBoardItemHeight = feedVirtualizationMode === 'item-size' ? (isMobile ? 360 : 480) : 300;
 
   // Redirect multiboard paths with page-number segments to normalized path (infinite-scroll only)
   useEffect(() => {
@@ -442,7 +448,8 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
         )}
         {effectiveInfiniteScroll ? (
           <Virtuoso
-            defaultItemHeight={300}
+            defaultItemHeight={defaultBoardItemHeight}
+            itemSize={boardItemSize}
             increaseViewportBy={isInAllView || isInSubscriptionsView || isInModView ? { bottom: 600, top: 600 } : { bottom: 1200, top: 1200 }}
             totalCount={displayFeed.length}
             data={displayFeed}

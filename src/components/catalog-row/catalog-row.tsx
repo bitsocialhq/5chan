@@ -11,7 +11,6 @@ import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
 import { getBoardPath } from '../../lib/utils/route-utils';
-import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
 import useEditCommentPrivileges from '../../hooks/use-author-privileges';
 import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
@@ -32,9 +31,11 @@ interface CatalogPostMediaProps {
   isOutOfFeed?: boolean;
   linkWidth?: number;
   linkHeight?: number;
+  matchedFilterColor?: string;
 }
 
-export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight }: CatalogPostMediaProps) => {
+export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight, matchedFilterColor }: CatalogPostMediaProps) => {
+  void cid;
   const { patternThumbnailUrl, thumbnail, type, url } = commentMediaInfo || {};
   const iframeThumbnail = patternThumbnailUrl || thumbnail;
   const { frameUrl: gifFrameUrl, status: gifFrameStatus } = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
@@ -99,8 +100,6 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight 
     thumbnailComponent = <audio src={url} controls />;
   }
 
-  const matchedFilterColor = useCatalogFiltersStore((state) => state.matchedFilters.get(cid || ''));
-
   return (
     <div
       className={hasError ? '' : styles.mediaWrapper}
@@ -117,7 +116,7 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight 
 
 // Memoize CatalogPost to prevent rerenders when parent rerenders due to updatingState
 const CatalogPost = memo(
-  ({ post }: { post: Comment }) => {
+  ({ matchedFilterColor, post }: { matchedFilterColor?: string; post: Comment }) => {
     const { t } = useTranslation();
     const resolvedPost = useMemo(() => withResolvedCommentCommunityAddress(post), [post]);
     const { author, cid, content, link, linkHeight, linkWidth, locked, pinned, replyCount, spoiler, communityAddress, timestamp, title, thumbnailUrl } =
@@ -259,7 +258,13 @@ const CatalogPost = memo(
                     {spoiler ? (
                       <img src='assets/spoiler.png' alt='' />
                     ) : (
-                      <CatalogPostMedia cid={cid} commentMediaInfo={commentMediaInfo} linkWidth={linkWidth} linkHeight={linkHeight} />
+                      <CatalogPostMedia
+                        cid={cid}
+                        commentMediaInfo={commentMediaInfo}
+                        linkWidth={linkWidth}
+                        linkHeight={linkHeight}
+                        matchedFilterColor={matchedFilterColor}
+                      />
                     )}
                   </div>
                 </Link>
@@ -338,21 +343,24 @@ const CatalogPost = memo(
       prev?.thumbnailUrl === next?.thumbnailUrl &&
       prev?.linkWidth === next?.linkWidth &&
       prev?.linkHeight === next?.linkHeight &&
-      prevCommunityAddress === nextCommunityAddress
+      prevCommunityAddress === nextCommunityAddress &&
+      prevProps.matchedFilterColor === nextProps.matchedFilterColor
     );
   },
 );
 
 interface CatalogRowProps {
+  estimatedHeight?: number;
   index?: number;
+  matchedFilterColors?: Map<string, string>;
   row: Comment[];
 }
 
-const CatalogRow = memo(({ row }: CatalogRowProps) => {
+const CatalogRow = memo(({ estimatedHeight, matchedFilterColors, row }: CatalogRowProps) => {
   return (
-    <div className={styles.row}>
+    <div className={styles.row} data-pretext-height={estimatedHeight}>
       {row.map((post, index) => (
-        <CatalogPost key={post?.cid || index} post={post} />
+        <CatalogPost key={post?.cid || index} matchedFilterColor={matchedFilterColors?.get(post?.cid || '')} post={post} />
       ))}
     </div>
   );

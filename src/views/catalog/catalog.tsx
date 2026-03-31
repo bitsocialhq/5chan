@@ -24,6 +24,13 @@ import styles from './catalog.module.css';
 import { commentMatchesPattern } from '../../lib/utils/pattern-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { sortCatalogFeedForDisplay } from '../../lib/utils/catalog-sort';
+import {
+  getCatalogRowHeightEstimates,
+  getPretextItemSizeFromElement,
+  getTypicalCatalogRowHeight,
+  readReplyTypographyMetrics,
+  resolveCatalogVirtualizationMode,
+} from '../../lib/utils/pretext-height-estimates';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
 const RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS = 60 * 60;
@@ -34,9 +41,6 @@ interface CatalogFooterProps {
   communityAddresses: string[];
   hasMore: boolean;
   combinedFeedLength: number;
-  isInAllView: boolean;
-  isInSubscriptionsView: boolean;
-  isInModView: boolean;
   /** When false, suppress the loading ellipsis (e.g. non-infinite mode) */
   showLoadingEllipsis?: boolean;
 }
@@ -44,15 +48,7 @@ interface CatalogFooterProps {
 // Defined outside Catalog to preserve component identity across renders (Virtuoso optimization)
 // The useFeedStateString hook is called here instead of in Catalog to isolate re-renders
 // caused by backend IPFS state changes to just this footer component
-const CatalogFooter = ({
-  communityAddresses,
-  hasMore,
-  combinedFeedLength,
-  isInAllView,
-  isInSubscriptionsView,
-  isInModView,
-  showLoadingEllipsis = true,
-}: CatalogFooterProps) => {
+const CatalogFooter = ({ communityAddresses, hasMore, combinedFeedLength, showLoadingEllipsis = true }: CatalogFooterProps) => {
   const { t } = useTranslation();
 
   const loadingStateString = useFeedStateString(communityAddresses) || (combinedFeedLength === 0 ? t('loading_feed') : t('looking_for_more_posts'));
@@ -141,11 +137,6 @@ const createContentFilter = (
               // Fallback to the store method if no callback provided
               useCatalogFiltersStore.getState().incrementFilterCount(filterIndex, comment.cid, communityAddress);
             }
-
-            // If the filter has a color, track it in the matchedFilters map
-            if (item.color) {
-              useCatalogFiltersStore.getState().setMatchedFilter(comment.cid, item.color);
-            }
           }
 
           // If this filter is set to hide, filter out the comment
@@ -222,7 +213,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return resolvedAddressFromUrl;
   }, [boardIdentifierProp, directories, resolvedAddressFromUrl]);
 
-  const { filterItems, searchText, clearMatchedFilters } = useCatalogFiltersStore();
+  const { filterItems, searchText } = useCatalogFiltersStore();
 
   const account = useAccount();
   const subscriptions = account?.subscriptions;
@@ -239,11 +230,10 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return communityAddress ? [communityAddress] : [];
   }, [isInAllView, isInSubscriptionsView, communityAddress, filteredDirectoryAddresses, subscriptions]);
 
-  const { imageSize } = useCatalogStyleStore();
+  const { imageSize, showOPComment } = useCatalogStyleStore();
   const columnWidth = imageSize === 'Large' ? 270 : 180;
-
-  const columnCount = Math.floor(useWindowWidth() / columnWidth);
-  const postsPerPage = columnCount <= 2 ? 10 : columnCount === 3 ? 15 : columnCount === 4 ? 20 : 25;
+  const windowWidth = useWindowWidth();
+  const columnCount = Math.floor(windowWidth / columnWidth);
 
   const communityDirectory = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
   const { guiPostsPerPage: boardPostsPerPage, maxGuiPages, paginationFeedPostsPerPage } = useBoardFeedPageSize(communityDirectory);
@@ -259,6 +249,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
 
   const { sortType } = useSortingStore();
   const feedSortType = sortType === 'new' ? 'new' : 'active';
+  const catalogVirtualizationMode = useMemo(() => resolveCatalogVirtualizationMode(location.search, 'item-size'), [location.search]);
+  const themeKey = typeof document !== 'undefined' ? document.body.className : '';
 
   // Create a stable callback for filter matching
   const handleFilterMatch = useCallback((filterIndex: number, cid: string, communityAddress: string) => {
@@ -372,15 +364,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     () => ({
       Footer: () => (
         <>
-          <CatalogFooter
-            communityAddresses={communityAddresses}
-            hasMore={hasMore}
-            combinedFeedLength={cappedFeed.length}
-            isInAllView={isInAllView}
-            isInSubscriptionsView={isInSubscriptionsView}
-            isInModView={isInModView}
-            showLoadingEllipsis={effectiveInfiniteScroll}
-          />
+          <CatalogFooter communityAddresses={communityAddresses} hasMore={hasMore} combinedFeedLength={cappedFeed.length} showLoadingEllipsis={effectiveInfiniteScroll} />
           <PageFooterDesktop
             firstRow={
               <CatalogFooterFirstRow
@@ -440,6 +424,29 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return [...topPosts, ...regularPosts];
   }, [sortedFeed, filterItems]);
 
+  const matchedFilterColors = useMemo(() => {
+    const nextMatchedFilterColors = new Map<string, string>();
+    const activeColoredFilters = filterItems.filter((item) => item.enabled && item.text.trim() !== '' && item.color);
+
+    if (activeColoredFilters.length === 0) {
+      return nextMatchedFilterColors;
+    }
+
+    for (const comment of processedFeed) {
+      const cid = comment?.cid;
+      if (!cid) {
+        continue;
+      }
+
+      const firstMatch = activeColoredFilters.find((item) => commentMatchesPattern(comment, item.text));
+      if (firstMatch?.color) {
+        nextMatchedFilterColors.set(cid, firstMatch.color);
+      }
+    }
+
+    return nextMatchedFilterColors;
+  }, [filterItems, processedFeed]);
+
   const rows = useMemo(() => {
     if (!isFeedLoaded) {
       return [];
@@ -452,6 +459,22 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     }
     return nextRows;
   }, [columnCount, isFeedLoaded, processedFeed]);
+
+  const catalogMetrics = useMemo(() => readReplyTypographyMetrics(), [themeKey, windowWidth]);
+  const rowHeightEstimates = useMemo(
+    () =>
+      catalogVirtualizationMode === 'off'
+        ? []
+        : getCatalogRowHeightEstimates({
+            imageSize,
+            metrics: catalogMetrics,
+            rows,
+            showOPComment,
+          }),
+    [catalogMetrics, catalogVirtualizationMode, imageSize, rows, showOPComment],
+  );
+  const defaultCatalogRowHeight = useMemo(() => getTypicalCatalogRowHeight(rowHeightEstimates, imageSize), [imageSize, rowHeightEstimates]);
+  const catalogItemSize = useMemo(() => (catalogVirtualizationMode === 'item-size' ? getPretextItemSizeFromElement : undefined), [catalogVirtualizationMode]);
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
   const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${sortType}` : `${location.pathname}-${sortType}-catalog`;
@@ -501,37 +524,6 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     document.title = documentTitle + ` - ${t('catalog')} - 5chan`;
   }, [title, shortAddress, communityAddress, isInAllView, isInSubscriptionsView, t, isVisible, params.boardIdentifier, boardIdentifierProp, directories]);
 
-  // Clear matched filters when component mounts or when community changes
-  useEffect(() => {
-    clearMatchedFilters();
-    return () => {
-      clearMatchedFilters();
-    };
-  }, [clearMatchedFilters, communityAddress]);
-
-  // Memoize filter color application to avoid redundant iterations
-  useMemo(() => {
-    if (cappedFeed.length > 0 && filterItems.length > 0) {
-      // Clear existing matched filters
-      clearMatchedFilters();
-
-      // Apply colors to posts that match filters
-      cappedFeed.forEach((comment) => {
-        if (!comment?.cid) return;
-
-        // Check each filter
-        for (const item of filterItems) {
-          if (item.enabled && item.text.trim() !== '' && item.color) {
-            if (commentMatchesPattern(comment, item.text)) {
-              useCatalogFiltersStore.getState().setMatchedFilter(comment.cid, item.color);
-              break; // Use the first matching filter's color
-            }
-          }
-        }
-      });
-    }
-  }, [cappedFeed, filterItems, clearMatchedFilters]);
-
   return (
     <div className={styles.content}>
       <hr />
@@ -539,11 +531,13 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
         {processedFeed?.length !== 0 ? (
           <>
             <Virtuoso
-              defaultItemHeight={imageSize === 'Large' ? 320 : 200}
+              defaultItemHeight={defaultCatalogRowHeight}
+              heightEstimates={catalogVirtualizationMode === 'off' ? undefined : rowHeightEstimates}
               increaseViewportBy={isInAllView || isInSubscriptionsView || isInModView ? { bottom: 600, top: 600 } : { bottom: 1200, top: 1200 }}
+              itemSize={catalogItemSize}
               totalCount={rows?.length || 0}
               data={rows}
-              itemContent={(index, row) => <CatalogRow index={index} row={row} />}
+              itemContent={(index, row) => <CatalogRow estimatedHeight={rowHeightEstimates[index]} index={index} matchedFilterColors={matchedFilterColors} row={row} />}
               useWindowScroll={true}
               components={footerComponents}
               endReached={effectiveInfiniteScroll && hasMore ? loadMore : undefined}

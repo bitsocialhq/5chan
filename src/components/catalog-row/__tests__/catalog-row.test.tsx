@@ -54,7 +54,6 @@ const testState = vi.hoisted(() => ({
   hiddenCids: new Set<string>(),
   imageSize: 'Small' as 'Large' | 'Small',
   linkCount: 0,
-  matchedFilters: new Map<string, string>(),
   mediaInfoByLink: {} as Record<string, { patternThumbnailUrl?: string; thumbnail?: string; type: string; url: string }>,
   lastRepliesComment: undefined as TestComment | undefined,
   replies: [] as TestComment[],
@@ -62,12 +61,6 @@ const testState = vi.hoisted(() => ({
   showOPComment: true,
   showSnow: false,
 }));
-
-function getCatalogFiltersState() {
-  return {
-    matchedFilters: testState.matchedFilters,
-  };
-}
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -156,13 +149,6 @@ vi.mock('../../../hooks/use-directories', () => ({
   useDirectories: () => testState.directories,
 }));
 
-vi.mock('../../../stores/use-catalog-filters-store', () => ({
-  default: <T,>(selector?: (state: ReturnType<typeof getCatalogFiltersState>) => T) => {
-    const state = getCatalogFiltersState();
-    return selector ? selector(state) : (state as T);
-  },
-}));
-
 vi.mock('../../../stores/use-catalog-style-store', () => ({
   default: () => ({
     imageSize: testState.imageSize,
@@ -232,7 +218,6 @@ describe('CatalogRow', () => {
     testState.hiddenCids = new Set<string>();
     testState.imageSize = 'Small';
     testState.linkCount = 0;
-    testState.matchedFilters = new Map<string, string>();
     testState.mediaInfoByLink = {};
     testState.lastRepliesComment = undefined;
     testState.replies = [];
@@ -253,7 +238,6 @@ describe('CatalogRow', () => {
   it('renders gif frames with matched filter borders and falls back to deleted media on load errors', async () => {
     testState.gifFrameStatus = 'ready';
     testState.gifFrameUrl = 'https://cdn.example/frame.png';
-    testState.matchedFilters = new Map([['post-1', 'red']]);
 
     await act(async () => {
       root.render(
@@ -262,6 +246,7 @@ describe('CatalogRow', () => {
           commentMediaInfo: { type: 'gif', url: 'https://example.com/source.gif' },
           linkHeight: 200,
           linkWidth: 400,
+          matchedFilterColor: 'red',
         }),
       );
     });
@@ -397,7 +382,7 @@ describe('CatalogRow', () => {
     expect(container.textContent).toContain('/ I: 3');
     expect(container.textContent).not.toContain('/ L: 3');
     expect(document.body.querySelector('a[href="/mu/thread/post-alias"]')).toBeTruthy();
-    expect(container.querySelector('[title=\"(R)eplies / (I)mage Replies\"]')).toBeTruthy();
+    expect(container.querySelector('[title="(R)eplies / (I)mage Replies"]')).toBeTruthy();
   });
 
   it('normalizes legacy board addresses before fetching hover preview replies', async () => {
@@ -475,5 +460,17 @@ describe('CatalogRow', () => {
     expect(links).toContain('/mu/thread/text-1');
     expect(container.textContent).toContain('(hidden)');
     expect(container.textContent).toContain('Text title: Plain thread body');
+  });
+
+  it('applies the estimated row height to the virtualization wrapper', async () => {
+    const post: TestComment = {
+      cid: 'estimated-post',
+      content: 'Estimated row body',
+      communityAddress: 'music-posting.eth',
+    };
+
+    await renderWithRouter(createElement(CatalogRow, { estimatedHeight: 246, row: [post] }), '/mu/catalog');
+
+    expect(container.querySelector('[data-pretext-height="246"]')).toBeTruthy();
   });
 });
