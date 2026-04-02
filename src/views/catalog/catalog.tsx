@@ -8,6 +8,7 @@ import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useFeedStateString } from '../../hooks/use-state-string';
+import useIsMobile from '../../hooks/use-is-mobile';
 import useWindowWidth from '../../hooks/use-window-width';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
@@ -233,6 +234,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const { imageSize, showOPComment } = useCatalogStyleStore();
   const columnWidth = imageSize === 'Large' ? 270 : 180;
   const windowWidth = useWindowWidth();
+  const isMobile = useIsMobile();
   const columnCount = Math.floor(windowWidth / columnWidth);
 
   const communityDirectory = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
@@ -477,6 +479,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   // Omit the prop entirely in fallback mode. Passing `itemSize={undefined}` overrides
   // Virtuoso's default DOM measurement path and leaves rows on the fallback height.
   const catalogSizingProps = useMemo(() => (catalogVirtualizationMode === 'item-size' ? { itemSize: getPretextItemSizeFromElement } : {}), [catalogVirtualizationMode]);
+  const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView;
+  const catalogViewportBuffer = isMultiboardView ? (isMobile ? { bottom: 2400, top: 1200 } : { bottom: 1200, top: 900 }) : { bottom: 1200, top: 1200 };
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
   const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${sortType}` : `${location.pathname}-${sortType}-catalog`;
@@ -535,7 +539,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             <Virtuoso
               defaultItemHeight={defaultCatalogRowHeight}
               heightEstimates={catalogVirtualizationMode === 'off' ? undefined : rowHeightEstimates}
-              increaseViewportBy={isInAllView || isInSubscriptionsView || isInModView ? { bottom: 600, top: 600 } : { bottom: 1200, top: 1200 }}
+              increaseViewportBy={catalogViewportBuffer}
               {...catalogSizingProps}
               totalCount={rows?.length || 0}
               data={rows}
