@@ -8,6 +8,7 @@ import styles from './board-pagination.module.css';
 interface BoardPaginationProps {
   basePath: string;
   currentPage: number;
+  search?: string;
   totalPages: number;
   /** When true, renders pagelist: [All] [1] [2] ... [10] Catalog Archive + Style select */
   footerStyle?: boolean;
@@ -15,14 +16,14 @@ interface BoardPaginationProps {
   isMultiboard?: boolean;
 }
 
-const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = false, isMultiboard = false }: BoardPaginationProps) => {
+const BoardPagination = ({ basePath, currentPage, search = '', totalPages, footerStyle = false, isMultiboard = false }: BoardPaginationProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
   const setEnableInfiniteScroll = useFeedViewSettingsStore((state) => state.setEnableInfiniteScroll);
 
-  const pageHref = (page: number) => (page === 1 ? basePath : `${basePath}/${page}`);
-  const catalogHref = `${basePath}/catalog`;
+  const pageHref = (page: number) => ({ pathname: page === 1 ? basePath : `${basePath}/${page}`, search });
+  const catalogHref = { pathname: `${basePath}/catalog`, search };
 
   if (totalPages <= 1 && !footerStyle) {
     return null;
@@ -30,7 +31,7 @@ const BoardPagination = ({ basePath, currentPage, totalPages, footerStyle = fals
 
   if (footerStyle) {
     const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
-    const archiveHref = `${basePath}/archive`;
+    const archiveHref = { pathname: `${basePath}/archive`, search };
 
     return (
       <div className={`${footerStyles.footerRow} ${isMultiboard ? footerStyles.footerRowRightOnly : ''}`}>

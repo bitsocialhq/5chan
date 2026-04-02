@@ -79,8 +79,8 @@ describe('BoardPagination', () => {
       buttons[1]?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(testState.navigateMock).toHaveBeenNthCalledWith(1, '/mu');
-    expect(testState.navigateMock).toHaveBeenNthCalledWith(2, '/mu/3');
+    expect(testState.navigateMock).toHaveBeenNthCalledWith(1, { pathname: '/mu', search: '' });
+    expect(testState.navigateMock).toHaveBeenNthCalledWith(2, { pathname: '/mu/3', search: '' });
   });
 
   it('shows the footer pagelist, catalog links, and enables infinite scroll from the all shortcut', async () => {
@@ -104,7 +104,7 @@ describe('BoardPagination', () => {
       nextButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(testState.navigateMock).toHaveBeenCalledWith('/mu/2');
+    expect(testState.navigateMock).toHaveBeenCalledWith({ pathname: '/mu/2', search: '' });
   });
 
   it('hides the footer pagelist for multiboards or when infinite scroll is already enabled', () => {
