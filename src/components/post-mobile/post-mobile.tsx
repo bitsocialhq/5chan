@@ -543,6 +543,7 @@ const Reply = ({
 };
 
 const PostMobile = ({
+  feedVirtualizationModeOverride,
   post,
   roles,
   replyPaginationOverride,
@@ -651,11 +652,11 @@ const PostMobile = ({
   const failedPublishNotice = canDeleteFailedPost ? <FailedPublishNotice isDeleting={isDeletingFailedPost} onDelete={onDeleteFailedPost} /> : undefined;
 
   // Author-deleted replies are hidden from thread replies; moderator removals still render their placeholder.
-  const filteredReplies = filterRepliesForDisplay(freshRepliesForRender);
-  const postsByAuthorInThread = getThreadPostCountsByAuthor(resolvedPost, filteredReplies);
-  const previewDisplayReplies = getPreviewDisplayReplies(filteredReplies, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
+  const filteredReplies = useMemo(() => filterRepliesForDisplay(freshRepliesForRender), [freshRepliesForRender]);
+  const postsByAuthorInThread = useMemo(() => getThreadPostCountsByAuthor(resolvedPost, filteredReplies), [resolvedPost, filteredReplies]);
+  const previewDisplayReplies = useMemo(() => getPreviewDisplayReplies(filteredReplies, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT), [filteredReplies]);
 
-  const directRepliesByParentCid = (() => {
+  const directRepliesByParentCid = useMemo(() => {
     const map = new Map<string, Comment[]>();
     for (const reply of filteredReplies) {
       const directParentCid = reply?.parentCid;
@@ -668,7 +669,7 @@ const PostMobile = ({
       }
     }
     return map;
-  })();
+  }, [filteredReplies]);
 
   const quotedByMap = useQuotedByMap(filteredReplies, communityAddress);
   const {
@@ -679,6 +680,7 @@ const PostMobile = ({
     windowWidth,
   } = useReplyHeightEstimates({
     directRepliesByParentCid,
+    enabled: showAllReplies,
     isMobile: true,
     maxContentChars: showAllReplies ? 2000 : 1000,
     mode: replyVirtualizationModeOverride,
@@ -686,9 +688,10 @@ const PostMobile = ({
     replies: filteredReplies,
   });
   const replyVirtualizationProps = replyItemSize ? { itemSize: replyItemSize } : {};
+  const shouldUseFeedHeightEstimate = !showAllReplies && feedVirtualizationModeOverride !== 'off';
   const previewReplyHeightEstimates = useMemo(
     () =>
-      showAllReplies || previewDisplayReplies.length === 0
+      !shouldUseFeedHeightEstimate || previewDisplayReplies.length === 0
         ? []
         : getReplyHeightEstimates({
             context: 'preview',
@@ -700,12 +703,11 @@ const PostMobile = ({
             replies: previewDisplayReplies,
             windowWidth,
           }),
-    [directRepliesByParentCid, metrics, previewDisplayReplies, quotedByMap, showAllReplies, windowWidth],
+    [directRepliesByParentCid, metrics, previewDisplayReplies, quotedByMap, shouldUseFeedHeightEstimate, windowWidth],
   );
-  const shouldUseFeedHeightEstimate = !showAllReplies;
   const getPreviewReplyDebugProps = useCallback(
-    (index: number) => (import.meta.env.DEV ? { 'data-pretext-reply-estimate': previewReplyHeightEstimates[index] } : {}),
-    [previewReplyHeightEstimates],
+    (index: number) => (import.meta.env.DEV && shouldUseFeedHeightEstimate ? { 'data-pretext-reply-estimate': previewReplyHeightEstimates[index] } : {}),
+    [previewReplyHeightEstimates, shouldUseFeedHeightEstimate],
   );
   const feedHeightEstimate = useMemo(
     () =>
@@ -787,7 +789,7 @@ const PostMobile = ({
           </span>
         </>
       ) : (
-        <div className={styles.postMobile} data-pretext-height={feedHeightEstimate}>
+        <div className={styles.postMobile} data-pretext-height={shouldUseFeedHeightEstimate ? feedHeightEstimate : undefined}>
           {(showReplies || isModQueue) && (
             <div className={styles.hrWrapper}>
               <hr />
@@ -941,6 +943,7 @@ const PostMobile = ({
               previewDisplayReplies.map((reply, index) => (
                 <div key={reply.cid} className={styles.replyContainer} {...getPreviewReplyDebugProps(index)}>
                   <Reply
+                    disableDeferredLayout={feedVirtualizationModeOverride === 'item-size'}
                     postReplyCount={replyCount}
                     reply={reply}
                     postsByAuthorInThread={postsByAuthorInThread}

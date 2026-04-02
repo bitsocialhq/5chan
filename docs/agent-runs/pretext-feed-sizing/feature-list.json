@@ -1,6 +1,6 @@
 {
   "task": "pretext-feed-sizing",
-  "last_updated": "2026-03-31",
+  "last_updated": "2026-04-02",
   "items": [
     {
       "id": "F001",
@@ -24,7 +24,7 @@
     {
       "id": "F002",
       "priority": 2,
-      "status": "in_progress",
+      "status": "completed",
       "description": "Add a benchmarkable Pretext experiment for board feed Virtuoso items and determine whether feed cards are a better production target than thread replies.",
       "verification": [
         "Run a deterministic board-feed benchmark on `board.tsx` item virtualization for `dom`, `estimates`, and `item-size` modes.",
@@ -39,7 +39,7 @@
         "src/components/post-mobile/post-mobile.tsx",
         "src/e2e/pretext-benchmark-harness.tsx"
       ],
-      "notes": "The board path is back on strict Pretext sizing instead of the earlier hybrid fallback. After preserving real line breaks and separating preview estimates from thread estimates, desktop board cards now land within about 20px visible mean error and mobile board cards show a clear win: `dom` -> `item-size` reduced rect reads from 8578 to 1899, duration from 32582ms to 27197ms, and the worst frame from 133.3ms to 83.4ms. Desktop board geometry is close, but the synthetic harness still shows `item-size` as measurement-cheaper rather than obviously faster."
+      "notes": "The board path was the hardest rollout surface, but it is now in a shippable state. Earlier live profiling found multiple board issues that are now addressed: desktop feed cards were still subtracting `14px` per preview reply even after the preview-reply estimator itself had become accurate, board preview replies were still rendering under `content-visibility:auto` while the feed card relied on Pretext sizing, the branch had lost `master` commit `99c0bbfac perf(board): reduce mobile reverse-scroll jank`, the mobile board-card preview calibration was massively over-subtracting once preview replies were present, and mobile multiboard `off` mode was still passing `itemSize={undefined}`, which overrides React Virtuoso's default DOM measurer. Board and catalog now only pass `itemSize` when explicit `item-size` mode is active, so the fallback path measures correctly again. Final matched live mobile A/B probes show the worktree no longer trails master on `/all`, and `/biz` keeps the Pretext sizing path active while matching the same visible card heights and total scroll height as master."
     },
     {
       "id": "F003",
@@ -60,7 +60,7 @@
     {
       "id": "F004",
       "priority": 4,
-      "status": "in_progress",
+      "status": "completed",
       "description": "Prepare a production-safe rollout plan once a Pretext path shows a clear performance win, including feature-flag strategy, regression checks, and default-mode decisions.",
       "verification": [
         "Run `corepack yarn build`, `corepack yarn lint`, `corepack yarn type-check`, `corepack yarn doctor`, and the relevant browser benchmark flows.",
@@ -72,7 +72,7 @@
         "src/views/board/board.tsx",
         "src/views/catalog/catalog.tsx"
       ],
-      "notes": "Rollout is close to ready. The current verification set passes (`corepack yarn build`, `corepack yarn lint` with existing warnings only, `corepack yarn type-check`, `corepack yarn doctor` at the repo baseline `86/100`, `corepack yarn knip`, targeted tests, and deterministic benchmark matrices), and the reply-path mobile blocker has been resolved in the production harness. The remaining caution is environmental rather than code-level: live deep-board/deep-thread validation is still noisy because the dev RPC environment and cached profiles are inconsistent, so the deterministic harness remains the primary source of truth."
+      "notes": "The rollout decision is now clear. The current verification set passes (`corepack yarn build`, `corepack yarn lint` with existing warnings only, `corepack yarn type-check`, `corepack yarn doctor` at the repo baseline `86/100`, and `corepack yarn test --run`), deterministic benchmark matrices still show the Pretext wins on catalog/replies/board, and the last board-specific fallback bug on mobile multiboard feeds is fixed. Final live A/B on the RPC-backed mobile `/all` sessions shows the worktree at parity or slightly better than master on the same visible cards, while `/biz` keeps the Pretext path active without the earlier stutter regression. The retained query flags (`pretextFeed`, `pretextCatalog`, `pretextReplies`) still provide an escape hatch, but the branch itself is ready for merge review."
     }
   ]
 }

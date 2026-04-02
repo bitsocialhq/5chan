@@ -790,6 +790,7 @@ const Reply = ({
 };
 
 const PostDesktop = ({
+  feedVirtualizationModeOverride,
   post,
   roles,
   replyPaginationOverride,
@@ -933,9 +934,9 @@ const PostDesktop = ({
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
 
   // Author-deleted replies are hidden from thread replies; moderator removals still render their placeholder.
-  const filteredReplies = filterRepliesForDisplay(freshRepliesForRender);
-  const postsByAuthorInThread = getThreadPostCountsByAuthor(resolvedPost, filteredReplies);
-  const directRepliesByParentCid = (() => {
+  const filteredReplies = useMemo(() => filterRepliesForDisplay(freshRepliesForRender), [freshRepliesForRender]);
+  const postsByAuthorInThread = useMemo(() => getThreadPostCountsByAuthor(resolvedPost, filteredReplies), [resolvedPost, filteredReplies]);
+  const directRepliesByParentCid = useMemo(() => {
     const map = new Map<string, Comment[]>();
     for (const reply of filteredReplies) {
       const directParentCid = reply?.parentCid;
@@ -950,7 +951,7 @@ const PostDesktop = ({
       }
     }
     return map;
-  })();
+  }, [filteredReplies]);
 
   const quotedByMap = useQuotedByMap(filteredReplies, communityAddress);
   const {
@@ -961,6 +962,7 @@ const PostDesktop = ({
     windowWidth,
   } = useReplyHeightEstimates({
     directRepliesByParentCid,
+    enabled: showAllReplies,
     isMobile: false,
     maxContentChars: showAllReplies ? 2000 : 1000,
     mode: replyVirtualizationModeOverride,
@@ -968,9 +970,11 @@ const PostDesktop = ({
     replies: filteredReplies,
   });
   const replyVirtualizationProps = replyItemSize ? { itemSize: replyItemSize } : {};
+  const shouldUseFeedHeightEstimate = !showAllReplies;
+  const shouldUsePretextFeedHeightEstimate = shouldUseFeedHeightEstimate && feedVirtualizationModeOverride !== 'off';
   const previewReplyHeightEstimates = useMemo(
     () =>
-      showAllReplies || filteredReplies.length === 0
+      !shouldUsePretextFeedHeightEstimate || filteredReplies.length === 0
         ? []
         : getReplyHeightEstimates({
             context: 'preview',
@@ -982,16 +986,28 @@ const PostDesktop = ({
             replies: filteredReplies,
             windowWidth,
           }),
-    [directRepliesByParentCid, filteredReplies, metrics, quotedByMap, showAllReplies, windowWidth],
+    [directRepliesByParentCid, filteredReplies, metrics, quotedByMap, shouldUsePretextFeedHeightEstimate, windowWidth],
   );
-  const shouldUseFeedHeightEstimate = !showAllReplies;
   const getPreviewReplyDebugProps = useCallback(
-    (index: number) => (import.meta.env.DEV ? { 'data-pretext-reply-estimate': previewReplyHeightEstimates[index] } : {}),
-    [previewReplyHeightEstimates],
+    (index: number) => {
+      if (!import.meta.env.DEV || !shouldUsePretextFeedHeightEstimate) {
+        return {};
+      }
+
+      const reply = filteredReplies[index];
+      return {
+        'data-pretext-reply-estimate': previewReplyHeightEstimates[index],
+        'data-pretext-reply-content-length': reply?.content?.length || 0,
+        'data-pretext-reply-has-media': reply?.link ? '1' : '0',
+        'data-pretext-reply-number': reply?.number,
+        'data-pretext-reply-title-length': reply?.title?.trim().length || 0,
+      };
+    },
+    [filteredReplies, previewReplyHeightEstimates, shouldUsePretextFeedHeightEstimate],
   );
   const feedHeightEstimate = useMemo(
     () =>
-      !shouldUseFeedHeightEstimate
+      !shouldUsePretextFeedHeightEstimate
         ? undefined
         : getFeedPostHeightEstimate({
             directRepliesByParentCid,
@@ -1001,6 +1017,7 @@ const PostDesktop = ({
             previewReplies: filteredReplies,
             previewReplyEstimates: previewReplyHeightEstimates,
             quotedByMap,
+            showBoardLabel: isMultiboardView && Boolean(boardPath),
             showSummary: showReplies && repliesCount > 0 && !isInPostPageView,
             windowWidth,
           }),
@@ -1009,12 +1026,14 @@ const PostDesktop = ({
       filteredReplies,
       isInPostPageView,
       metrics,
+      boardPath,
       previewReplyHeightEstimates,
       quotedByMap,
       repliesCount,
       resolvedPost,
-      shouldUseFeedHeightEstimate,
+      shouldUsePretextFeedHeightEstimate,
       showReplies,
+      isMultiboardView,
       windowWidth,
     ],
   );
@@ -1060,7 +1079,7 @@ const PostDesktop = ({
   const virtuosoFooter = useCallback(() => <RepliesFooter hasMore={hasMore} loadingString={t('loading')} />, [hasMore, t]);
 
   return (
-    <div className={styles.postDesktop} data-pretext-height={feedHeightEstimate}>
+    <div className={styles.postDesktop} data-pretext-height={shouldUsePretextFeedHeightEstimate ? feedHeightEstimate : undefined}>
       {showReplies || isModQueue ? (
         <div className={styles.hrWrapper}>
           <hr />
@@ -1232,6 +1251,7 @@ const PostDesktop = ({
           filteredReplies.map((reply, index) => (
             <div key={reply.cid} className={styles.replyContainer} {...getPreviewReplyDebugProps(index)}>
               <Reply
+                disableDeferredLayout={feedVirtualizationModeOverride === 'item-size'}
                 reply={reply}
                 roles={roles}
                 postReplyCount={replyCount}

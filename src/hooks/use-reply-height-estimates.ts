@@ -13,6 +13,7 @@ import {
 
 interface UseReplyHeightEstimatesOptions {
   directRepliesByParentCid?: Map<string, Comment[]>;
+  enabled?: boolean;
   isMobile: boolean;
   maxContentChars?: number;
   mode?: ReplyVirtualizationMode;
@@ -20,7 +21,7 @@ interface UseReplyHeightEstimatesOptions {
   replies: Comment[];
 }
 
-const useReplyHeightEstimates = ({ directRepliesByParentCid, isMobile, maxContentChars, mode, quotedByMap, replies }: UseReplyHeightEstimatesOptions) => {
+const useReplyHeightEstimates = ({ directRepliesByParentCid, enabled = true, isMobile, maxContentChars, mode, quotedByMap, replies }: UseReplyHeightEstimatesOptions) => {
   const windowWidth = useWindowWidth();
   const themeKey = typeof document !== 'undefined' ? document.body.className : '';
   const effectiveMode = useMemo(() => mode ?? resolveReplyVirtualizationMode(typeof window !== 'undefined' ? window.location.search : undefined), [mode]);
@@ -29,17 +30,19 @@ const useReplyHeightEstimates = ({ directRepliesByParentCid, isMobile, maxConten
 
   const rawHeightEstimates = useMemo(
     () =>
-      getReplyHeightEstimates({
-        context: 'thread',
-        directRepliesByParentCid,
-        isMobile,
-        maxContentChars,
-        metrics,
-        quotedByMap,
-        replies,
-        windowWidth,
-      }),
-    [directRepliesByParentCid, isMobile, maxContentChars, metrics, quotedByMap, replies, windowWidth],
+      !enabled
+        ? []
+        : getReplyHeightEstimates({
+            context: 'thread',
+            directRepliesByParentCid,
+            isMobile,
+            maxContentChars,
+            metrics,
+            quotedByMap,
+            replies,
+            windowWidth,
+          }),
+    [directRepliesByParentCid, enabled, isMobile, maxContentChars, metrics, quotedByMap, replies, windowWidth],
   );
 
   const heightEstimates = effectiveMode === 'off' ? undefined : rawHeightEstimates;

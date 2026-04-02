@@ -27,10 +27,13 @@ interface MediaProps {
   setShowThumbnail: (showThumbnail: boolean) => void;
 }
 
+type GifFrameState = ReturnType<typeof useFetchGifFirstFrame>;
+
 const Thumbnail = ({
   commentMediaInfo,
   deleted,
   displayHeight,
+  gifFrameState,
   displayWidth,
   isFloatingEmbed,
   isOutOfFeed,
@@ -39,13 +42,13 @@ const Thumbnail = ({
   removed,
   spoiler,
   setShowThumbnail,
-}: MediaProps) => {
+}: MediaProps & { gifFrameState: GifFrameState }) => {
   const isMobile = useIsMobile();
   const { patternThumbnailUrl, thumbnail, type, url } = commentMediaInfo || {};
 
   let thumbnailComponent: React.ReactNode = null;
   const iframeThumbnail = patternThumbnailUrl || thumbnail;
-  const { frameUrl: gifFrameUrl, status: gifFrameStatus } = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
+  const { frameUrl: gifFrameUrl, status: gifFrameStatus } = gifFrameState;
   const hasThumbnail = getHasThumbnail(commentMediaInfo, url);
   const gifThumbnailButtonProps =
     gifFrameStatus === 'loading'
@@ -421,8 +424,9 @@ const CommentMedia = ({
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const { thumbnailHeight, thumbnailWidth, url } = commentMediaInfo || {};
+  const gifFrameState = useFetchGifFirstFrame(commentMediaInfo?.type === 'gif' ? url : undefined);
   let type = commentMediaInfo?.type;
-  const { status: gifFrameStatus } = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
+  const { status: gifFrameStatus } = gifFrameState;
 
   if (type === 'gif' && gifFrameStatus === 'ready') {
     type = 'animated gif';
@@ -477,6 +481,7 @@ const CommentMedia = ({
               <Thumbnail
                 commentMediaInfo={commentMediaInfo}
                 displayHeight={displayHeight}
+                gifFrameState={gifFrameState}
                 displayWidth={displayWidth}
                 isFloatingEmbed={isFloatingEmbed}
                 isOutOfFeed={isOutOfFeed}

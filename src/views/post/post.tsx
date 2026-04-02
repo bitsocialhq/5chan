@@ -54,6 +54,7 @@ const useCommentWithFeedCache = (options: { commentCid: string | undefined; auto
 };
 
 export interface PostProps {
+  feedVirtualizationModeOverride?: ReplyVirtualizationMode;
   index?: number;
   isHidden?: boolean;
   hasThumbnail?: boolean;
@@ -88,6 +89,7 @@ export const Post = memo(
     isPublishing,
     onApprove,
     onReject,
+    feedVirtualizationModeOverride,
     replyPaginationOverride,
     replyVirtualizationModeOverride,
   }: PostProps) => {
@@ -109,6 +111,7 @@ export const Post = memo(
         <div className={styles.postContainer}>
           {isMobile ? (
             <PostMobile
+              feedVirtualizationModeOverride={feedVirtualizationModeOverride}
               post={comment}
               replyPaginationOverride={replyPaginationOverride}
               replyVirtualizationModeOverride={replyVirtualizationModeOverride}
@@ -125,6 +128,7 @@ export const Post = memo(
             />
           ) : (
             <PostDesktop
+              feedVirtualizationModeOverride={feedVirtualizationModeOverride}
               post={comment}
               replyPaginationOverride={replyPaginationOverride}
               replyVirtualizationModeOverride={replyVirtualizationModeOverride}
@@ -160,6 +164,7 @@ export const Post = memo(
       prevProps.showAllReplies === nextProps.showAllReplies &&
       prevProps.showReplies === nextProps.showReplies &&
       prevProps.targetReplyCid === nextProps.targetReplyCid &&
+      prevProps.feedVirtualizationModeOverride === nextProps.feedVirtualizationModeOverride &&
       prevProps.replyPaginationOverride === nextProps.replyPaginationOverride &&
       prevProps.replyVirtualizationModeOverride === nextProps.replyVirtualizationModeOverride &&
       prevProps.isModQueue === nextProps.isModQueue &&

@@ -31,8 +31,10 @@ const DESKTOP_REPLY_SIDE_ARROWS_WIDTH = 24;
 const DESKTOP_REPLY_CONTENT_PADDING_X = 80;
 const DESKTOP_FEED_CARD_BASE_HEIGHT = 56;
 const DESKTOP_FEED_CARD_HR_HEIGHT = 14;
+const DESKTOP_FEED_CARD_BOARD_LABEL_HEIGHT = 18;
 const DESKTOP_FEED_CARD_SUMMARY_HEIGHT = 25;
 const DESKTOP_FEED_CARD_BASE_CALIBRATION = -59;
+const DESKTOP_POST_MESSAGE_VERTICAL_PADDING = 26;
 const DESKTOP_PREVIEW_REPLY_TEXT_CALIBRATION = 6;
 const DESKTOP_PREVIEW_REPLY_MEDIA_CALIBRATION = -17;
 const MOBILE_REPLY_BASE_HEIGHT = 64;
@@ -41,9 +43,7 @@ const MOBILE_REPLY_CONTENT_PADDING_X = 20;
 const MOBILE_FEED_CARD_BASE_HEIGHT = 84;
 const MOBILE_FEED_CARD_OUTER_GAP_HEIGHT = 60;
 const MOBILE_FEED_CARD_LINK_BAR_HEIGHT = 36;
-const MOBILE_FEED_CARD_BASE_CALIBRATION = 75;
-const MOBILE_FEED_CARD_PREVIEW_REPLY_LINEAR_CALIBRATION = 60;
-const MOBILE_FEED_CARD_PREVIEW_REPLY_QUADRATIC_CALIBRATION = 7;
+const MOBILE_FEED_CARD_PREVIEW_COUNT_CALIBRATIONS = [105, 85, 95, 120, 150, 180] as const;
 const DESKTOP_THREAD_REPLY_CALIBRATION = 0;
 const CATALOG_ROW_PADDING_TOP = 20;
 const CATALOG_CARD_MARGIN_Y = 4;
@@ -64,6 +64,7 @@ const MIN_ESTIMATE_HEIGHT = 72;
 const MIN_TEXT_WIDTH = 48;
 const MOBILE_BACKLINK_FULL_COST_COUNT = 16;
 const MOBILE_BACKLINK_TAIL_COST = 14;
+const COMMENT_TOO_LONG_NOTICE = 'Comment too long. Click here to view the full text.';
 const DEFAULT_REPLY_VIRTUALIZATION_MODE: ReplyVirtualizationMode = 'item-size';
 const REPLY_VIRTUALIZATION_MODES: ReplyVirtualizationMode[] = ['off', 'estimates', 'item-size'];
 
@@ -105,6 +106,7 @@ interface FeedPostHeightEstimateOptions extends ReplyBacklinkMaps {
   post: Comment | undefined;
   previewReplies: Comment[];
   previewReplyEstimates?: number[];
+  showBoardLabel?: boolean;
   showSummary?: boolean;
   windowWidth: number;
 }
@@ -132,6 +134,8 @@ interface CatalogRowHeightEstimateOptions {
 
 const preparedTextCache = new Map<string, PreparedText>();
 const preparedSegmentCache = new Map<string, PreparedTextWithSegments>();
+const paragraphHeightCache = new WeakMap<PreparedText, Map<string, number>>();
+const paragraphFloatHeightCache = new WeakMap<PreparedTextWithSegments, Map<string, number>>();
 const nestedPretextElementCache = new WeakMap<HTMLElement, HTMLElement | null>();
 
 let pretextSupport: boolean | undefined;
@@ -178,6 +182,38 @@ const getPreparedSegmentText = (text: string, font: string, usePreWrap: boolean)
   const preparedText = prepareWithSegments(text, font, usePreWrap ? { whiteSpace: 'pre-wrap' } : undefined);
   preparedSegmentCache.set(cacheKey, preparedText);
   return preparedText;
+};
+
+const getCachedParagraphHeight = (preparedText: PreparedText, cacheKey: string, compute: () => number): number => {
+  const cachedByMeasurement = paragraphHeightCache.get(preparedText);
+  const cachedHeight = cachedByMeasurement?.get(cacheKey);
+  if (cachedHeight !== undefined) {
+    return cachedHeight;
+  }
+
+  const measuredHeight = compute();
+  const nextCache = cachedByMeasurement ?? new Map<string, number>();
+  nextCache.set(cacheKey, measuredHeight);
+  if (!cachedByMeasurement) {
+    paragraphHeightCache.set(preparedText, nextCache);
+  }
+  return measuredHeight;
+};
+
+const getCachedParagraphFloatHeight = (preparedText: PreparedTextWithSegments, cacheKey: string, compute: () => number): number => {
+  const cachedByMeasurement = paragraphFloatHeightCache.get(preparedText);
+  const cachedHeight = cachedByMeasurement?.get(cacheKey);
+  if (cachedHeight !== undefined) {
+    return cachedHeight;
+  }
+
+  const measuredHeight = compute();
+  const nextCache = cachedByMeasurement ?? new Map<string, number>();
+  nextCache.set(cacheKey, measuredHeight);
+  if (!cachedByMeasurement) {
+    paragraphFloatHeightCache.set(preparedText, nextCache);
+  }
+  return measuredHeight;
 };
 
 const canUsePretext = (): boolean => {
@@ -358,7 +394,7 @@ const normalizeRenderedCommentText = (rawContent: string): string =>
     .join('\n')
     .trim();
 
-const getVisibleCommentText = (comment: Comment | undefined, maxContentChars: number): string => {
+const getVisibleCommentBodyText = (comment: Comment | undefined, maxContentChars: number): string => {
   if (!comment) {
     return '';
   }
@@ -367,8 +403,8 @@ const getVisibleCommentText = (comment: Comment | undefined, maxContentChars: nu
   const deleted = comment.deleted;
   const removed = comment.removed;
   const reason = comment.reason?.trim();
-  const title = comment.title?.trim();
-  const content = normalizeRenderedCommentText((comment.content || '').slice(0, maxContentChars));
+  const rawContent = comment.content || '';
+  const content = normalizeRenderedCommentText(rawContent.slice(0, maxContentChars));
 
   if (purged) {
     return 'This post was purged';
@@ -381,6 +417,21 @@ const getVisibleCommentText = (comment: Comment | undefined, maxContentChars: nu
   if (deleted) {
     return reason ? `User deleted this post. Reason: ${reason}` : 'User deleted this post';
   }
+
+  if (rawContent.length > maxContentChars && content) {
+    return `${content}\n\n${COMMENT_TOO_LONG_NOTICE}`;
+  }
+
+  return content;
+};
+
+const getVisibleCommentText = (comment: Comment | undefined, maxContentChars: number): string => {
+  if (!comment) {
+    return '';
+  }
+
+  const title = comment.title?.trim();
+  const content = getVisibleCommentBodyText(comment, maxContentChars);
 
   if (title && content) {
     return `${title}: ${content}`;
@@ -435,7 +486,8 @@ const measureParagraphHeight = (text: string, font: string, width: number, lineH
 
   const safeWidth = Math.max(MIN_TEXT_WIDTH, Math.floor(width));
   const usePreWrap = text.includes('\n');
-  return layout(getPreparedText(text, font, usePreWrap), safeWidth, lineHeight).height;
+  const preparedText = getPreparedText(text, font, usePreWrap);
+  return getCachedParagraphHeight(preparedText, `${safeWidth}:${lineHeight}`, () => layout(preparedText, safeWidth, lineHeight).height);
 };
 
 const measureParagraphWithFloatHeight = (text: string, font: string, width: number, floatWidth: number, floatHeight: number, lineHeight: number): number => {
@@ -448,21 +500,22 @@ const measureParagraphWithFloatHeight = (text: string, font: string, width: numb
   const safeFloatHeight = Math.max(0, Math.floor(floatHeight));
   const usePreWrap = text.includes('\n');
   const preparedText = getPreparedSegmentText(text, font, usePreWrap);
+  return getCachedParagraphFloatHeight(preparedText, `${safeWidth}:${safeFloatWidth}:${safeFloatHeight}:${lineHeight}`, () => {
+    let cursor = { graphemeIndex: 0, segmentIndex: 0 };
+    let currentHeight = 0;
 
-  let cursor = { graphemeIndex: 0, segmentIndex: 0 };
-  let currentHeight = 0;
-
-  while (true) {
-    const currentLineWidth = currentHeight < safeFloatHeight ? Math.max(MIN_TEXT_WIDTH, safeWidth - safeFloatWidth) : safeWidth;
-    const line = layoutNextLine(preparedText, cursor, currentLineWidth);
-    if (line === null) {
-      break;
+    while (true) {
+      const currentLineWidth = currentHeight < safeFloatHeight ? Math.max(MIN_TEXT_WIDTH, safeWidth - safeFloatWidth) : safeWidth;
+      const line = layoutNextLine(preparedText, cursor, currentLineWidth);
+      if (line === null) {
+        break;
+      }
+      cursor = line.end;
+      currentHeight += lineHeight;
     }
-    cursor = line.end;
-    currentHeight += lineHeight;
-  }
 
-  return currentHeight;
+    return currentHeight;
+  });
 };
 
 const estimateDesktopReplyHeight = (
@@ -551,6 +604,11 @@ const getDesktopOpBacklinkLabels = (post: Comment | undefined, quotedByMap?: Map
     .map((candidateReply) => `>>${candidateReply.number}`);
 };
 
+const getMobileFeedCardCalibration = (previewReplyCount: number): number => {
+  const calibrationIndex = Math.max(0, Math.min(previewReplyCount, MOBILE_FEED_CARD_PREVIEW_COUNT_CALIBRATIONS.length - 1));
+  return MOBILE_FEED_CARD_PREVIEW_COUNT_CALIBRATIONS[calibrationIndex];
+};
+
 export const getFeedPostHeightEstimate = ({
   directRepliesByParentCid,
   isMobile,
@@ -559,6 +617,7 @@ export const getFeedPostHeightEstimate = ({
   previewReplies,
   previewReplyEstimates,
   quotedByMap,
+  showBoardLabel = false,
   showSummary = false,
   windowWidth,
 }: FeedPostHeightEstimateOptions): number => {
@@ -600,10 +659,7 @@ export const getFeedPostHeightEstimate = ({
       backlinksHeight +
       previewRepliesHeight;
     // Mobile board cards render preview replies more compactly than the thread-reply estimator assumes.
-    const mobileCalibration =
-      MOBILE_FEED_CARD_BASE_CALIBRATION +
-      previewReplyCount * MOBILE_FEED_CARD_PREVIEW_REPLY_LINEAR_CALIBRATION +
-      previewReplyCount * previewReplyCount * MOBILE_FEED_CARD_PREVIEW_REPLY_QUADRATIC_CALIBRATION;
+    const mobileCalibration = getMobileFeedCardCalibration(previewReplyCount);
 
     return clampEstimateHeight(rawEstimate - mobileCalibration);
   }
@@ -611,12 +667,13 @@ export const getFeedPostHeightEstimate = ({
   const fontSizePx = metrics.bodyFontSizePx;
   const font = `${fontSizePx}px ${metrics.bodyFontFamily}`;
   const lineHeight = getLineHeight(fontSizePx);
-  const postText = getVisibleCommentText(post, 1000);
+  const postText = getVisibleCommentBodyText(post, 1000);
   const mediaMetrics = getFeedPostMediaMetrics(post, false);
   const contentWidth = Math.max(MIN_TEXT_WIDTH, windowWidth - DESKTOP_REPLY_CONTENT_PADDING_X);
-  const textHeight = mediaMetrics
-    ? measureParagraphWithFloatHeight(postText, font, contentWidth, mediaMetrics.floatWidth, mediaMetrics.floatHeight, lineHeight)
-    : measureParagraphHeight(postText, font, contentWidth, lineHeight);
+  const textHeight =
+    (mediaMetrics
+      ? measureParagraphWithFloatHeight(postText, font, contentWidth, mediaMetrics.floatWidth, mediaMetrics.floatHeight, lineHeight)
+      : measureParagraphHeight(postText, font, contentWidth, lineHeight)) + (postText.trim().length > 0 ? DESKTOP_POST_MESSAGE_VERTICAL_PADDING : 0);
   const mediaHeight = mediaMetrics ? mediaMetrics.floatHeight + DESKTOP_REPLY_FILE_TEXT_HEIGHT : 0;
   const opBacklinks = getDesktopOpBacklinkLabels(post, quotedByMap);
   const backlinkFontSizePx = metrics.abbrFontSizePx;
@@ -625,12 +682,14 @@ export const getFeedPostHeightEstimate = ({
     0,
     measureParagraphHeight(opBacklinks.join(' '), `${backlinkFontSizePx}px ${metrics.bodyFontFamily}`, contentWidth, backlinkLineHeight) - backlinkLineHeight,
   );
+  const boardLabelHeight = showBoardLabel && !post.link && !post.parentCid && post.communityAddress ? DESKTOP_FEED_CARD_BOARD_LABEL_HEIGHT : 0;
 
   const rawEstimate =
     DESKTOP_FEED_CARD_HR_HEIGHT +
     DESKTOP_FEED_CARD_BASE_HEIGHT +
     Math.max(textHeight, mediaHeight) +
     backlinksHeight +
+    boardLabelHeight +
     (showSummary ? DESKTOP_FEED_CARD_SUMMARY_HEIGHT : 0) +
     previewRepliesHeight;
 

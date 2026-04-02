@@ -474,7 +474,9 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     [catalogMetrics, catalogVirtualizationMode, imageSize, rows, showOPComment],
   );
   const defaultCatalogRowHeight = useMemo(() => getTypicalCatalogRowHeight(rowHeightEstimates, imageSize), [imageSize, rowHeightEstimates]);
-  const catalogItemSize = useMemo(() => (catalogVirtualizationMode === 'item-size' ? getPretextItemSizeFromElement : undefined), [catalogVirtualizationMode]);
+  // Omit the prop entirely in fallback mode. Passing `itemSize={undefined}` overrides
+  // Virtuoso's default DOM measurement path and leaves rows on the fallback height.
+  const catalogSizingProps = useMemo(() => (catalogVirtualizationMode === 'item-size' ? { itemSize: getPretextItemSizeFromElement } : {}), [catalogVirtualizationMode]);
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
   const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${sortType}` : `${location.pathname}-${sortType}-catalog`;
@@ -534,7 +536,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
               defaultItemHeight={defaultCatalogRowHeight}
               heightEstimates={catalogVirtualizationMode === 'off' ? undefined : rowHeightEstimates}
               increaseViewportBy={isInAllView || isInSubscriptionsView || isInModView ? { bottom: 600, top: 600 } : { bottom: 1200, top: 1200 }}
-              itemSize={catalogItemSize}
+              {...catalogSizingProps}
               totalCount={rows?.length || 0}
               data={rows}
               itemContent={(index, row) => <CatalogRow estimatedHeight={rowHeightEstimates[index]} index={index} matchedFilterColors={matchedFilterColors} row={row} />}
