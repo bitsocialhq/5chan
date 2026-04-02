@@ -57,3 +57,23 @@ If uncertain, ask the developer before adding an entry.
 - **Impact:** The local RPC server on `ws://localhost:9138` never starts, so the desktop app cannot load boards, posts, or comments even though node stats look healthy.
 - **Mitigation:** Before any Electron package/build job, run `yarn electron:prepare-package` so `better-sqlite3` is rebuilt for Electron and immediately verified via `ELECTRON_RUN_AS_NODE=1 electron`.
 - **Status:** confirmed
+
+### Plain Vite fallback used to hard-fail on port 1355
+
+- **Date:** 2026-03-30
+- **Observed by:** Codex
+- **Context:** Running `PORTLESS=0 yarn start` while another local service already owned port `1355`
+- **What was surprising:** The non-Portless dev fallback forced Vite onto `5chan.localhost:1355` with `--strictPort`, so the fallback path could fail immediately even though the main Portless flow is collision-safe.
+- **Impact:** Contributors could lose the fallback dev path or interrupt their startup flow when `1355` was already busy.
+- **Mitigation:** Keep the fallback behind `scripts/start-dev.js`, which now probes from `1355` upward and starts Vite on the next free port instead of exiting.
+- **Status:** confirmed
+
+### Fixed Portless app names collide across 5chan worktrees
+
+- **Date:** 2026-03-30
+- **Observed by:** Codex
+- **Context:** Starting `yarn start` in one 5chan worktree while another 5chan worktree was already serving through Portless
+- **What was surprising:** Using the literal Portless app name `5chan` in every worktree makes the route itself collide, even when the backing ports are different, so the second process fails with `"5chan.localhost" is already registered`.
+- **Impact:** Parallel 5chan branches can block each other even though Portless is meant to let them coexist safely.
+- **Mitigation:** Keep Portless startup behind `scripts/start-dev.js`, which now uses a branch-scoped `*.5chan.localhost:1355` route outside the canonical case and automatically increments a `-2`, `-3`, ... suffix when that branch-scoped route is already occupied.
+- **Status:** confirmed

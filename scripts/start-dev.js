@@ -36,7 +36,7 @@ function getCurrentBranch() {
   return branch || null;
 }
 
-function isCanonicalRouteBusy() {
+function getActivePortlessRoutes() {
   const result = spawnSync(portlessBin, ['list'], {
     cwd: process.cwd(),
     encoding: 'utf8',
@@ -44,13 +44,19 @@ function isCanonicalRouteBusy() {
   });
 
   if (result.status !== 0) {
-    return false;
+    return new Set();
   }
 
-  return result.stdout.includes('http://5chan.localhost:1355');
+  const matches = result.stdout.match(/http:\/\/[a-z0-9.-]+\.localhost:1355/g) || [];
+
+  return new Set(matches);
 }
 
-function getPortlessAppName() {
+function isRouteBusy(activeRoutes, appName) {
+  return activeRoutes.has(`http://${appName}.localhost:1355`);
+}
+
+function getPreferredPortlessAppName(activeRoutes) {
   const branch = getCurrentBranch();
   const branchLabel = sanitizeLabel(branch || 'current');
 
@@ -58,11 +64,30 @@ function getPortlessAppName() {
     return `${branchLabel}.5chan`;
   }
 
-  if (isCanonicalRouteBusy()) {
+  if (isRouteBusy(activeRoutes, '5chan')) {
     return `${branchLabel}.5chan`;
   }
 
   return '5chan';
+}
+
+function getPortlessAppName() {
+  const activeRoutes = getActivePortlessRoutes();
+  const preferredAppName = getPreferredPortlessAppName(activeRoutes);
+
+  if (!isRouteBusy(activeRoutes, preferredAppName)) {
+    return preferredAppName;
+  }
+
+  for (let suffix = 2; suffix < 1000; suffix += 1) {
+    const candidate = `${preferredAppName}-${suffix}`;
+
+    if (!isRouteBusy(activeRoutes, candidate)) {
+      return candidate;
+    }
+  }
+
+  return `${preferredAppName}-${Date.now()}`;
 }
 
 const command = usePortless && existsSync(portlessBin) ? portlessBin : viteBin;

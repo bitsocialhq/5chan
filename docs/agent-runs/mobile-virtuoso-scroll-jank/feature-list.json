@@ -1,0 +1,28 @@
+{
+  "task": "mobile-virtuoso-scroll-jank",
+  "last_updated": "2026-03-31",
+  "items": [
+    {
+      "id": "F001",
+      "priority": 1,
+      "status": "completed",
+      "description": "Reproduce, profile, and fix mobile-only scroll jank on Virtuoso-backed board feeds, starting with /all using the custom Node RPC.",
+      "verification": [
+        "./scripts/agent-init.sh --smoke",
+        "playwright-cli mobile verification on /all with the custom RPC configured",
+        "yarn build",
+        "yarn lint",
+        "yarn type-check",
+        "yarn doctor"
+      ],
+      "files": [
+        "src/components/comment-media/comment-media.tsx",
+        "src/views/board/board.tsx",
+        "src/views/board/__tests__/board.test.tsx",
+        "docs/agent-runs/mobile-virtuoso-scroll-jank/feature-list.json",
+        "docs/agent-runs/mobile-virtuoso-scroll-jank/progress.md"
+      ],
+      "notes": "Work stayed isolated in a dedicated worktree/branch. Profiling confirmed the mobile multiboard Virtuoso feed was underestimating row height and remounting tall rows too aggressively on reverse scroll. A second pass removed board-state snapshotting from the hot scroll path, added stronger reverse-direction overscan for mobile multiboards, and deduplicated GIF first-frame work in CommentMedia. Desktop comparison remained partially inconclusive because fresh desktop sessions sometimes failed to hydrate feed rows."
+    }
+  ]
+}

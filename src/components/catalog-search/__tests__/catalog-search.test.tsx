@@ -121,6 +121,25 @@ describe('CatalogSearch', () => {
     expect(queryInput()?.getAttribute('value')).toBe('linux');
   });
 
+  it('clears the catalog search filter when navigation removes the query param', async () => {
+    testState.location = {
+      pathname: '/mu/catalog',
+      search: '?q=linux',
+    };
+
+    await renderSearch();
+
+    testState.location = {
+      pathname: '/mu/catalog',
+      search: '',
+    };
+
+    await renderSearch();
+
+    expect(testState.clearSearchFilterMock).toHaveBeenCalled();
+    expect(queryInput()).toBeNull();
+  });
+
   it('toggles the search UI, updates the filter and URL, and closes via Escape', async () => {
     await renderSearch();
 

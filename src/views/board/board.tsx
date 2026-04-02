@@ -141,6 +141,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
 
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
   const setEnableInfiniteScroll = useFeedViewSettingsStore((state) => state.setEnableInfiniteScroll);
+  const isMobile = useIsMobile();
   const isForcedInfiniteScroll = isInAllView || isInSubscriptionsView || isInModView;
   const effectiveInfiniteScroll = enableInfiniteScroll || isForcedInfiniteScroll;
   const communityDirectory = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
@@ -234,7 +235,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, i
   );
 
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
   const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView;
   const defaultFeedVirtualizationMode = isMobile && isMultiboardView ? 'off' : 'item-size';
   const feedVirtualizationMode = useMemo(

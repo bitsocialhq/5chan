@@ -35,6 +35,9 @@ const testState = vi.hoisted(() => ({
   feedStateString: 'syncing',
   filteredDirectoryAddresses: ['music-posting.eth'] as string[],
   hasMore: false,
+  lastVirtuosoDefaultItemHeight: undefined as number | undefined,
+  lastVirtuosoIncreaseViewportBy: undefined as { top: number; bottom: number } | undefined,
+  lastVirtuosoMinOverscanItemCount: undefined as { top: number; bottom: number } | undefined,
   loadMoreMock: vi.fn(),
   pageSizes: {
     guiPostsPerPage: 2,
@@ -114,16 +117,25 @@ vi.mock('react-virtuoso', () => ({
       {
         components,
         data = [],
+        defaultItemHeight,
+        increaseViewportBy,
+        minOverscanItemCount,
         endReached,
         itemContent,
       }: {
         components?: { Footer?: React.ComponentType };
         data?: TestComment[];
+        defaultItemHeight?: number;
+        increaseViewportBy?: { top: number; bottom: number };
+        minOverscanItemCount?: { top: number; bottom: number };
         endReached?: ((index: number) => void) | undefined;
         itemContent: (index: number, item: TestComment) => React.ReactNode;
       },
       ref: React.ForwardedRef<{ getState: (cb: (snapshot: { ranges: number[]; scrollTop: number }) => void) => void }>,
     ) => {
+      testState.lastVirtuosoDefaultItemHeight = defaultItemHeight;
+      testState.lastVirtuosoIncreaseViewportBy = increaseViewportBy;
+      testState.lastVirtuosoMinOverscanItemCount = minOverscanItemCount;
       React.useImperativeHandle(ref, () => ({
         getState: (cb) => cb({ ranges: [0], scrollTop: 42 }),
       }));
@@ -277,6 +289,9 @@ describe('Board', () => {
     testState.feedStateString = 'syncing';
     testState.filteredDirectoryAddresses = ['music-posting.eth'];
     testState.hasMore = false;
+    testState.lastVirtuosoDefaultItemHeight = undefined;
+    testState.lastVirtuosoIncreaseViewportBy = undefined;
+    testState.lastVirtuosoMinOverscanItemCount = undefined;
     testState.pageSizes = {
       guiPostsPerPage: 2,
       infiniteFeedPostsPerPage: 2,
@@ -392,6 +407,29 @@ describe('Board', () => {
     await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
 
     expect(testState.registerCommentsMock).toHaveBeenCalledWith(testState.feed);
+  });
+
+  it('uses a taller Virtuoso default item height on mobile feeds', async () => {
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 480,
+      writable: true,
+    });
+
+    testState.feed = [
+      { cid: 'first-post', communityAddress: 'music-posting.eth' },
+      { cid: 'second-post', communityAddress: 'music-posting.eth' },
+    ];
+
+    await renderBoard({
+      boardProps: { viewType: 'all' },
+      initialEntry: '/all',
+      routePath: '/all/*',
+    });
+
+    expect(testState.lastVirtuosoDefaultItemHeight).toBe(420);
+    expect(testState.lastVirtuosoIncreaseViewportBy).toEqual({ top: 2400, bottom: 1400 });
+    expect(testState.lastVirtuosoMinOverscanItemCount).toEqual({ top: 8, bottom: 4 });
   });
 
   it('canonicalizes multiboard paths and shows the subscriptions empty state', async () => {

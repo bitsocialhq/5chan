@@ -19,8 +19,11 @@ const CatalogSearch = () => {
   useEffect(() => {
     if (queryParam) {
       setSearchFilter(queryParam);
+      return;
     }
-  }, [queryParam, setSearchFilter]);
+
+    clearSearchFilter();
+  }, [queryParam, setSearchFilter, clearSearchFilter]);
 
   const updateURL = useCallback(
     (searchText: string) => {

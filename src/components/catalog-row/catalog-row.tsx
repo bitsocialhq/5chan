@@ -64,8 +64,9 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight,
     displayHeight = '54px';
   }
 
-  const numericWidth = parseInt(displayWidth) || undefined;
-  const numericHeight = parseInt(displayHeight) || undefined;
+  const hasKnownMediaDimensions = Boolean(linkWidth && linkHeight);
+  const numericWidth = hasKnownMediaDimensions ? parseInt(displayWidth) || undefined : undefined;
+  const numericHeight = hasKnownMediaDimensions ? parseInt(displayHeight) || undefined : undefined;
 
   const maxWidth = imageSize === 'Large' ? '250px' : '150px';
   const maxHeight = imageSize === 'Large' ? '250px' : '150px';

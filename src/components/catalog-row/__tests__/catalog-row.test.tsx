@@ -256,6 +256,8 @@ describe('CatalogRow', () => {
 
     expect(wrapper?.style.border).toContain('red');
     expect(frameImage).toBeTruthy();
+    expect(frameImage?.getAttribute('width')).toBe('150');
+    expect(frameImage?.getAttribute('height')).toBe('75');
 
     await act(async () => {
       frameImage?.dispatchEvent(new Event('error', { bubbles: true }));
@@ -305,6 +307,23 @@ describe('CatalogRow', () => {
     });
 
     expect(container.querySelector<HTMLVideoElement>('video[src="https://example.com/file.mp4#t=0.001"]')).toBeTruthy();
+  });
+
+  it('does not force square dimensions on images when media metadata is missing', async () => {
+    await act(async () => {
+      root.render(
+        createElement(CatalogPostMedia, {
+          cid: 'image-post',
+          commentMediaInfo: { type: 'image', url: 'https://example.com/file.png' },
+        }),
+      );
+    });
+
+    const image = container.querySelector<HTMLImageElement>('img[src="https://example.com/file.png"]');
+
+    expect(image).toBeTruthy();
+    expect(image?.getAttribute('width')).toBeNull();
+    expect(image?.getAttribute('height')).toBeNull();
   });
 
   it('renders media posts with board links, counts, and hover previews in all view', async () => {
