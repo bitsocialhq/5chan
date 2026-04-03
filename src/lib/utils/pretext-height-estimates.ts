@@ -137,6 +137,8 @@ const preparedSegmentCache = new Map<string, PreparedTextWithSegments>();
 const paragraphHeightCache = new WeakMap<PreparedText, Map<string, number>>();
 const paragraphFloatHeightCache = new WeakMap<PreparedTextWithSegments, Map<string, number>>();
 const nestedPretextElementCache = new WeakMap<HTMLElement, HTMLElement | null>();
+const catalogPostHeightEstimateCache = new Map<string, number>();
+const catalogRowHeightEstimateCache = new Map<string, number>();
 
 let pretextSupport: boolean | undefined;
 
@@ -241,6 +243,9 @@ const getLineHeight = (fontSizePx: number): number => Math.ceil(fontSizePx * 1.3
 const getCatalogCardWidth = (imageSize: CatalogImageSize): number => (imageSize === 'Large' ? LARGE_CATALOG_CARD_WIDTH : SMALL_CATALOG_CARD_WIDTH);
 
 const getCatalogMediaMaxSize = (imageSize: CatalogImageSize): number => (imageSize === 'Large' ? LARGE_CATALOG_MEDIA_SIZE : SMALL_CATALOG_MEDIA_SIZE);
+
+const getCatalogEstimateCachePrefix = (imageSize: CatalogImageSize, metrics: ReplyTypographyMetrics, showOPComment: boolean): string =>
+  [imageSize, showOPComment ? '1' : '0', metrics.bodyFontFamily, metrics.bodyFontSizePx].join('\u0000');
 
 const clampEstimateHeight = (value: number): number => Math.max(MIN_ESTIMATE_HEIGHT, Math.ceil(value));
 
@@ -701,6 +706,12 @@ export const getCatalogPostHeightEstimate = ({ imageSize, metrics, post, showOPC
     return DEFAULT_CATALOG_ROW_HEIGHT - CATALOG_ROW_PADDING_TOP;
   }
 
+  const cacheKey = post.cid ? `${getCatalogEstimateCachePrefix(imageSize, metrics, showOPComment)}\u0000post\u0000${post.cid}` : undefined;
+  const cachedHeight = cacheKey ? catalogPostHeightEstimateCache.get(cacheKey) : undefined;
+  if (cachedHeight !== undefined) {
+    return cachedHeight;
+  }
+
   const cardWidth = getCatalogCardWidth(imageSize);
   const fontSizePx = metrics.bodyFontSizePx;
   const font = `${fontSizePx}px ${metrics.bodyFontFamily}`;
@@ -717,16 +728,30 @@ export const getCatalogPostHeightEstimate = ({ imageSize, metrics, post, showOPC
     CATALOG_CARD_MAX_HEIGHT,
     CATALOG_CARD_MARGIN_Y + CATALOG_CARD_PADDING_TOP + CATALOG_CARD_PADDING_BOTTOM + mediaHeight + CATALOG_CARD_META_HEIGHT + textHeight,
   );
-
-  return Math.max(MIN_ESTIMATE_HEIGHT, Math.ceil(rawHeight));
+  const estimatedHeight = Math.max(MIN_ESTIMATE_HEIGHT, Math.ceil(rawHeight));
+  if (cacheKey) {
+    catalogPostHeightEstimateCache.set(cacheKey, estimatedHeight);
+  }
+  return estimatedHeight;
 };
 
 export const getCatalogRowHeightEstimate = ({ imageSize, metrics, row, showOPComment }: CatalogSingleRowHeightEstimateOptions): number => {
+  const cacheKey =
+    row.length > 0 ? `${getCatalogEstimateCachePrefix(imageSize, metrics, showOPComment)}\u0000row\u0000${row.map((post) => post?.cid || '').join(',')}` : undefined;
+  const cachedHeight = cacheKey ? catalogRowHeightEstimateCache.get(cacheKey) : undefined;
+  if (cachedHeight !== undefined) {
+    return cachedHeight;
+  }
+
   const tallestCardHeight = row.reduce((maxHeight, post) => {
     return Math.max(maxHeight, getCatalogPostHeightEstimate({ imageSize, metrics, post, showOPComment }));
   }, DEFAULT_CATALOG_ROW_HEIGHT - CATALOG_ROW_PADDING_TOP);
 
-  return clampEstimateHeight(CATALOG_ROW_PADDING_TOP + tallestCardHeight);
+  const estimatedHeight = clampEstimateHeight(CATALOG_ROW_PADDING_TOP + tallestCardHeight);
+  if (cacheKey) {
+    catalogRowHeightEstimateCache.set(cacheKey, estimatedHeight);
+  }
+  return estimatedHeight;
 };
 
 export const getCatalogRowHeightEstimates = ({ imageSize, metrics, rows, showOPComment }: CatalogRowHeightEstimateOptions): number[] => {

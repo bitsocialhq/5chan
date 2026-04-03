@@ -43,6 +43,7 @@ const testState = vi.hoisted(() => ({
   } as Record<string, { address: string; features?: Record<string, unknown> }>,
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
   feed: [] as TestComment[],
+  feedOptionsCalls: [] as Array<{ postsPerPage?: number }>,
   filterItems: [] as FilterItem[],
   filteredDirectoryAddresses: ['music-posting.eth'] as string[],
   hasMore: false,
@@ -122,12 +123,15 @@ vi.mock('@bitsocialnet/bitsocial-react-hooks', () => ({
     testState.accountCommentsCalls.push(options);
     return { accountComments: getScopedAccountComments(options) };
   },
-  useFeed: (options: { filter?: { filter: (comment: TestComment) => boolean } }) => ({
-    feed: options.filter ? testState.feed.filter((comment) => options.filter?.filter(comment)) : testState.feed,
-    hasMore: testState.hasMore,
-    loadMore: testState.loadMoreMock,
-    reset: testState.resetMock,
-  }),
+  useFeed: (options: { filter?: { filter: (comment: TestComment) => boolean }; postsPerPage?: number }) => {
+    testState.feedOptionsCalls.push({ postsPerPage: options.postsPerPage });
+    return {
+      feed: options.filter ? testState.feed.filter((comment) => options.filter?.filter(comment)) : testState.feed,
+      hasMore: testState.hasMore,
+      loadMore: testState.loadMoreMock,
+      reset: testState.resetMock,
+    };
+  },
   useCommunity: () => testState.community,
 }));
 
@@ -305,6 +309,7 @@ describe('Catalog', () => {
       },
     };
     testState.feed = [];
+    testState.feedOptionsCalls = [];
     testState.filterItems = [];
     testState.filteredDirectoryAddresses = ['music-posting.eth'];
     testState.hasMore = false;
@@ -379,12 +384,36 @@ describe('Catalog', () => {
     });
 
     expect(latestLocation).toBe('/all/catalog');
+    expect(testState.feedOptionsCalls.at(-1)?.postsPerPage).toBe(24);
 
     await act(async () => {
       container.querySelector<HTMLButtonElement>('[data-testid="end-reached"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
     expect(testState.loadMoreMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('captures Virtuoso state on pagehide instead of wiring a scroll hot-path listener', async () => {
+    testState.feed = [{ cid: 'all-post', title: 'one', communityAddress: 'music-posting.eth' }];
+    const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
+    const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
+
+    await renderCatalog({
+      catalogProps: { viewType: 'all' },
+      initialEntry: '/all/catalog',
+      routePath: '/all/*',
+    });
+
+    expect(addEventListenerSpy.mock.calls.some(([eventName]) => String(eventName) === 'pagehide')).toBe(true);
+
+    act(() => root.unmount());
+
+    expect(removeEventListenerSpy.mock.calls.some(([eventName]) => String(eventName) === 'pagehide')).toBe(true);
+
+    addEventListenerSpy.mockRestore();
+    removeEventListenerSpy.mockRestore();
+
+    root = createRoot(container);
   });
 
   it('shows the empty subscriptions state when there are no subscribed boards to browse', async () => {

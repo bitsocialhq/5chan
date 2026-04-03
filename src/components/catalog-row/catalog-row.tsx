@@ -357,14 +357,36 @@ interface CatalogRowProps {
   row: Comment[];
 }
 
-const CatalogRow = memo(({ estimatedHeight, matchedFilterColors, row }: CatalogRowProps) => {
-  return (
-    <div className={styles.row} data-pretext-height={estimatedHeight}>
-      {row.map((post, index) => (
-        <CatalogPost key={post?.cid || index} matchedFilterColor={matchedFilterColors?.get(post?.cid || '')} post={post} />
-      ))}
-    </div>
-  );
-});
+const CatalogRow = memo(
+  ({ estimatedHeight, matchedFilterColors, row }: CatalogRowProps) => {
+    return (
+      <div className={styles.row} data-pretext-height={estimatedHeight}>
+        {row.map((post, index) => (
+          <CatalogPost key={post?.cid || index} matchedFilterColor={matchedFilterColors?.get(post?.cid || '')} post={post} />
+        ))}
+      </div>
+    );
+  },
+  (prevProps, nextProps) => {
+    if (prevProps.estimatedHeight !== nextProps.estimatedHeight || prevProps.row.length !== nextProps.row.length) {
+      return false;
+    }
+
+    for (let index = 0; index < prevProps.row.length; index += 1) {
+      const prevPost = prevProps.row[index];
+      const nextPost = nextProps.row[index];
+      if (prevPost !== nextPost) {
+        return false;
+      }
+
+      const cid = prevPost?.cid || '';
+      if (prevProps.matchedFilterColors?.get(cid) !== nextProps.matchedFilterColors?.get(cid)) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+);
 
 export default CatalogRow;

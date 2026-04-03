@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useCallback } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Comment, useAccount, useCommunity, useFeed, useAccountComments } from '@bitsocialnet/bitsocial-react-hooks';
@@ -236,6 +236,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const windowWidth = useWindowWidth();
   const isMobile = useIsMobile();
   const columnCount = Math.floor(windowWidth / columnWidth);
+  const multiboardCatalogPostsPerPage = Math.max(18, Math.min(24, Math.max(columnCount, 1) * 5));
 
   const communityDirectory = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
   const { guiPostsPerPage: boardPostsPerPage, maxGuiPages, paginationFeedPostsPerPage } = useBoardFeedPageSize(communityDirectory);
@@ -271,10 +272,20 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return {
       communityAddresses,
       sortType: feedSortType,
-      postsPerPage: isMultiboard ? 10 : paginationFeedPostsPerPage,
+      postsPerPage: isMultiboard ? multiboardCatalogPostsPerPage : paginationFeedPostsPerPage,
       filter: createCombinedFilter(filterItems, searchText, communityAddress || 'all', handleFilterMatch),
     };
-  }, [communityAddresses, feedSortType, isMultiboard, paginationFeedPostsPerPage, filterItems, searchText, communityAddress, handleFilterMatch]);
+  }, [
+    communityAddresses,
+    feedSortType,
+    isMultiboard,
+    paginationFeedPostsPerPage,
+    multiboardCatalogPostsPerPage,
+    filterItems,
+    searchText,
+    communityAddress,
+    handleFilterMatch,
+  ]);
 
   const { feed, hasMore, loadMore, reset } = useFeed(feedOptions);
   const accountCommentLookupOptions = useMemo(
@@ -426,6 +437,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return [...topPosts, ...regularPosts];
   }, [sortedFeed, filterItems]);
 
+  const deferredProcessedFeed = useDeferredValue(processedFeed);
+
   const matchedFilterColors = useMemo(() => {
     const nextMatchedFilterColors = new Map<string, string>();
     const activeColoredFilters = filterItems.filter((item) => item.enabled && item.text.trim() !== '' && item.color);
@@ -434,7 +447,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       return nextMatchedFilterColors;
     }
 
-    for (const comment of processedFeed) {
+    for (const comment of deferredProcessedFeed) {
       const cid = comment?.cid;
       if (!cid) {
         continue;
@@ -447,20 +460,29 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     }
 
     return nextMatchedFilterColors;
-  }, [filterItems, processedFeed]);
+  }, [deferredProcessedFeed, filterItems]);
 
+  const rowCacheRef = useRef(new Map<string, Comment[]>());
   const rows = useMemo(() => {
     if (!isFeedLoaded) {
+      rowCacheRef.current.clear();
       return [];
     }
 
     const effectiveColumnCount = Math.max(columnCount, 1);
-    const nextRows = [];
-    for (let i = 0; i < processedFeed.length; i += effectiveColumnCount) {
-      nextRows.push(processedFeed.slice(i, i + effectiveColumnCount));
+    const nextRows: Comment[][] = [];
+    const nextRowCache = new Map<string, Comment[]>();
+    for (let i = 0; i < deferredProcessedFeed.length; i += effectiveColumnCount) {
+      const nextRow = deferredProcessedFeed.slice(i, i + effectiveColumnCount);
+      const rowKey = nextRow.map((post) => post?.cid || '').join('\u0000');
+      const cachedRow = rowCacheRef.current.get(rowKey);
+      const stableRow = cachedRow && cachedRow.length === nextRow.length && cachedRow.every((post, index) => post === nextRow[index]) ? cachedRow : nextRow;
+      nextRowCache.set(rowKey, stableRow);
+      nextRows.push(stableRow);
     }
+    rowCacheRef.current = nextRowCache;
     return nextRows;
-  }, [columnCount, isFeedLoaded, processedFeed]);
+  }, [columnCount, deferredProcessedFeed, isFeedLoaded]);
 
   const catalogMetrics = useMemo(() => readReplyTypographyMetrics(), [themeKey, windowWidth]);
   const rowHeightEstimates = useMemo(
@@ -480,7 +502,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   // Virtuoso's default DOM measurement path and leaves rows on the fallback height.
   const catalogSizingProps = useMemo(() => (catalogVirtualizationMode === 'item-size' ? { itemSize: getPretextItemSizeFromElement } : {}), [catalogVirtualizationMode]);
   const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView;
-  const catalogViewportBuffer = isMultiboardView ? (isMobile ? { bottom: 2400, top: 1200 } : { bottom: 1200, top: 900 }) : { bottom: 1200, top: 1200 };
+  const catalogViewportBuffer = isMultiboardView ? (isMobile ? { bottom: 2400, top: 1200 } : { bottom: 900, top: 600 }) : { bottom: 1200, top: 1200 };
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
   const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${sortType}` : `${location.pathname}-${sortType}-catalog`;
@@ -500,17 +522,26 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     if (!isVisible) return;
 
     const currentKey = virtuosoStateKey;
-    const setLastVirtuosoState = () =>
+    // Avoid pulling Virtuoso state on every scroll tick in the catalog hot path.
+    const saveVirtuosoState = () =>
       virtuosoRef.current?.getState((snapshot: StateSnapshot) => {
         if (snapshot?.ranges?.length) {
           lastVirtuosoStates[currentKey] = snapshot;
         }
       });
-    window.addEventListener('scroll', setLastVirtuosoState);
-    return () => window.removeEventListener('scroll', setLastVirtuosoState);
+    window.addEventListener('pagehide', saveVirtuosoState);
+    return () => {
+      saveVirtuosoState();
+      window.removeEventListener('pagehide', saveVirtuosoState);
+    };
   }, [virtuosoStateKey, isVisible]);
 
   const lastVirtuosoState = navigationType === 'POP' ? lastVirtuosoStates?.[virtuosoStateKey] : undefined;
+
+  const renderCatalogRow = useCallback(
+    (index: number, row: Comment[]) => <CatalogRow estimatedHeight={rowHeightEstimates[index]} index={index} matchedFilterColors={matchedFilterColors} row={row} />,
+    [matchedFilterColors, rowHeightEstimates],
+  );
 
   useEffect(() => {
     if (!isVisible) return;
@@ -543,7 +574,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
               {...catalogSizingProps}
               totalCount={rows?.length || 0}
               data={rows}
-              itemContent={(index, row) => <CatalogRow estimatedHeight={rowHeightEstimates[index]} index={index} matchedFilterColors={matchedFilterColors} row={row} />}
+              itemContent={renderCatalogRow}
               useWindowScroll={true}
               components={footerComponents}
               endReached={effectiveInfiniteScroll && hasMore ? loadMore : undefined}
