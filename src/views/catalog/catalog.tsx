@@ -401,6 +401,32 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     }),
     [communityAddresses, hasMore, cappedFeed.length, communityAddress, isInAllView, isInSubscriptionsView, isInModView, effectiveInfiniteScroll],
   );
+  const catalogFooter = useMemo(
+    () => (
+      <>
+        <CatalogFooter communityAddresses={communityAddresses} hasMore={hasMore} combinedFeedLength={cappedFeed.length} showLoadingEllipsis={effectiveInfiniteScroll} />
+        <PageFooterDesktop
+          firstRow={
+            <CatalogFooterFirstRow
+              communityAddress={communityAddress}
+              isInAllView={isInAllView}
+              isInSubscriptionsView={isInSubscriptionsView}
+              isInModView={isInModView}
+            />
+          }
+        />
+        <PageFooterMobile>
+          <div className={mobileFooterStyles.mobileFooterButtons}>
+            <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+            <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+            <TopButton />
+            <RefreshButton />
+          </div>
+        </PageFooterMobile>
+      </>
+    ),
+    [communityAddresses, hasMore, cappedFeed.length, communityAddress, isInAllView, isInSubscriptionsView, isInModView, effectiveInfiniteScroll],
+  );
 
   const isFeedLoaded = feed.length > 0 || state === 'failed';
 
@@ -502,6 +528,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   // Virtuoso's default DOM measurement path and leaves rows on the fallback height.
   const catalogSizingProps = useMemo(() => (catalogVirtualizationMode === 'item-size' ? { itemSize: getPretextItemSizeFromElement } : {}), [catalogVirtualizationMode]);
   const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView;
+  const shouldVirtualizeCatalog = isMultiboardView;
   const catalogViewportBuffer = isMultiboardView ? (isMobile ? { bottom: 2400, top: 1200 } : { bottom: 900, top: 600 }) : { bottom: 1200, top: 1200 };
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
@@ -519,7 +546,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   }, [isVisible, navigationType]);
 
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || !shouldVirtualizeCatalog) return;
 
     const currentKey = virtuosoStateKey;
     // Avoid pulling Virtuoso state on every scroll tick in the catalog hot path.
@@ -534,9 +561,9 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       saveVirtuosoState();
       window.removeEventListener('pagehide', saveVirtuosoState);
     };
-  }, [virtuosoStateKey, isVisible]);
+  }, [virtuosoStateKey, isVisible, shouldVirtualizeCatalog]);
 
-  const lastVirtuosoState = navigationType === 'POP' ? lastVirtuosoStates?.[virtuosoStateKey] : undefined;
+  const lastVirtuosoState = shouldVirtualizeCatalog && navigationType === 'POP' ? lastVirtuosoStates?.[virtuosoStateKey] : undefined;
 
   const renderCatalogRow = useCallback(
     (index: number, row: Comment[]) => <CatalogRow estimatedHeight={rowHeightEstimates[index]} index={index} matchedFilterColors={matchedFilterColors} row={row} />,
@@ -567,21 +594,36 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       <div className={styles.catalog}>
         {processedFeed?.length !== 0 ? (
           <>
-            <Virtuoso
-              defaultItemHeight={defaultCatalogRowHeight}
-              heightEstimates={catalogVirtualizationMode === 'off' ? undefined : rowHeightEstimates}
-              increaseViewportBy={catalogViewportBuffer}
-              {...catalogSizingProps}
-              totalCount={rows?.length || 0}
-              data={rows}
-              itemContent={renderCatalogRow}
-              useWindowScroll={true}
-              components={footerComponents}
-              endReached={effectiveInfiniteScroll && hasMore ? loadMore : undefined}
-              ref={virtuosoRef}
-              restoreStateFrom={lastVirtuosoState}
-              initialScrollTop={lastVirtuosoState?.scrollTop}
-            />
+            {shouldVirtualizeCatalog ? (
+              <Virtuoso
+                defaultItemHeight={defaultCatalogRowHeight}
+                heightEstimates={catalogVirtualizationMode === 'off' ? undefined : rowHeightEstimates}
+                increaseViewportBy={catalogViewportBuffer}
+                {...catalogSizingProps}
+                totalCount={rows?.length || 0}
+                data={rows}
+                itemContent={renderCatalogRow}
+                useWindowScroll={true}
+                components={footerComponents}
+                endReached={effectiveInfiniteScroll && hasMore ? loadMore : undefined}
+                ref={virtuosoRef}
+                restoreStateFrom={lastVirtuosoState}
+                initialScrollTop={lastVirtuosoState?.scrollTop}
+              />
+            ) : (
+              <>
+                {rows.map((row, index) => (
+                  <CatalogRow
+                    key={row.map((post) => post?.cid || '').join('\u0000') || `row-${index}`}
+                    estimatedHeight={rowHeightEstimates[index]}
+                    index={index}
+                    matchedFilterColors={matchedFilterColors}
+                    row={row}
+                  />
+                ))}
+                {catalogFooter}
+              </>
+            )}
           </>
         ) : (
           <>

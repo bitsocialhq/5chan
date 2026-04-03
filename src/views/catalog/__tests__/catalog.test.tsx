@@ -373,6 +373,18 @@ describe('Catalog', () => {
     root = createRoot(container);
   });
 
+  it('renders single-board catalogs without Virtuoso virtualization', async () => {
+    testState.feed = [
+      { cid: 'board-post-1', title: 'one', communityAddress: 'music-posting.eth' },
+      { cid: 'board-post-2', title: 'two', communityAddress: 'music-posting.eth' },
+    ];
+
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+
+    expect(container.querySelector('[data-testid="virtuoso"]')).toBeNull();
+    expect(Array.from(container.querySelectorAll('[data-testid="catalog-row"]')).map((element) => element.textContent)).toEqual(['row:board-post-1,board-post-2']);
+  });
+
   it('canonicalizes multiboard catalog paths and keeps load-more wired for infinite scrolling', async () => {
     testState.feed = [{ cid: 'all-post', title: 'one', communityAddress: 'music-posting.eth' }];
     testState.hasMore = true;
