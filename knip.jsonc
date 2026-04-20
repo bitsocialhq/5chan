@@ -33,7 +33,10 @@
     "stream-browserify",
     // The PWA service worker entry is injected by vite-plugin-pwa, which Knip does not trace here.
     "workbox-core",
-    "workbox-precaching"
+    "workbox-expiration",
+    "workbox-precaching",
+    "workbox-routing",
+    "workbox-strategies"
   ],
   "ignoreIssues": {
     // This import is intentionally satisfied transitively through bitsocial-react-hooks.

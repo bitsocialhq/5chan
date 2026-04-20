@@ -2,6 +2,7 @@
 /* eslint-disable no-restricted-globals */
 
 import { clientsClaim } from 'workbox-core';
+import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
@@ -29,6 +30,13 @@ registerRoute(
     (runtimeAssetDestinations.has(request.destination) || url.pathname.startsWith('/assets/') || url.pathname.startsWith('/translations/')),
   new StaleWhileRevalidate({
     cacheName: 'runtime-static-assets',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 200,
+        maxAgeSeconds: 60 * 60 * 24 * 30,
+        purgeOnQuotaError: true,
+      }),
+    ],
   }),
 );
 

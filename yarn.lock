@@ -90,7 +90,10 @@ __metadata:
     wait-on: "npm:9.0.3"
     workbox-build: "npm:7.4.0"
     workbox-core: "npm:7.4.0"
+    workbox-expiration: "npm:7.4.0"
     workbox-precaching: "npm:7.4.0"
+    workbox-routing: "npm:7.4.0"
+    workbox-strategies: "npm:7.4.0"
     workbox-window: "npm:7.4.0"
     zustand: "npm:4.4.3"
   dependenciesMeta:
