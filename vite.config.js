@@ -6,7 +6,12 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 const { version: packageVersion } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 const appVersion = `${process.env.VITE_APP_VERSION || packageVersion}`.trim() || packageVersion;
+const publicBase = process.env.PUBLIC_URL || '/';
 const buildOutDir = 'build';
+const basePathPrefix = (() => {
+  const pathname = new URL(publicBase, 'https://example.invalid/').pathname;
+  return pathname === '/' ? '' : pathname.replace(/^\/+|\/+$/g, '');
+})();
 const neverPrecacheUrls = new Set(['index.html', 'version.json']);
 const vitePwaManagedAssetUrls = new Set(['manifest.webmanifest', 'favicon.ico', 'favicon2.ico', 'robots.txt', 'apple-touch-icon.png']);
 const baselineAppShellUrls = new Set([
@@ -22,7 +27,13 @@ const baselineAppShellUrls = new Set([
 ]);
 
 function normalizePrecacheUrl(url) {
-  return url.split('?')[0].replace(/^[./]+/, '');
+  const normalizedUrl = url.split('?')[0].replace(/^[./]+/, '');
+
+  if (basePathPrefix && normalizedUrl.startsWith(`${basePathPrefix}/`)) {
+    return normalizedUrl.slice(basePathPrefix.length + 1);
+  }
+
+  return normalizedUrl;
 }
 
 function collectIndexAssetUrls() {
@@ -298,7 +309,7 @@ export default defineConfig({
       },
     },
   },
-  base: process.env.PUBLIC_URL || '/',
+  base: publicBase,
   optimizeDeps: {
     include: ['ethers', 'assert', 'buffer', 'process', 'util', 'stream-browserify', 'isomorphic-fetch', 'workbox-core', 'workbox-precaching'],
   },
