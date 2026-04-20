@@ -13,7 +13,15 @@ const basePathPrefix = (() => {
   return pathname === '/' ? '' : pathname.replace(/^\/+|\/+$/g, '');
 })();
 const neverPrecacheUrls = new Set(['index.html', 'version.json']);
-const vitePwaManagedAssetUrls = new Set(['manifest.webmanifest', 'favicon.ico', 'favicon2.ico', 'robots.txt', 'apple-touch-icon.png']);
+const vitePwaManagedAssetUrls = new Set([
+  'manifest.webmanifest',
+  'favicon.ico',
+  'favicon2.ico',
+  'robots.txt',
+  'apple-touch-icon.png',
+  'manifest-icon-192x192.png',
+  'manifest-icon-512x512.png',
+]);
 const baselineAppShellUrls = new Set([
   'registerSW.js',
   'manifest.json',
@@ -22,8 +30,8 @@ const baselineAppShellUrls = new Set([
   'favicon2.ico',
   'robots.txt',
   'apple-touch-icon.png',
-  'android-chrome-192x192.png',
-  'android-chrome-512x512.png',
+  'manifest-icon-192x192.png',
+  'manifest-icon-512x512.png',
 ]);
 
 function normalizePrecacheUrl(url) {
@@ -164,17 +172,17 @@ export default defineConfig({
         display: 'standalone',
         icons: [
           {
-            src: '/android-chrome-192x192.png',
+            src: 'manifest-icon-192x192.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: '/android-chrome-512x512.png',
+            src: 'manifest-icon-512x512.png',
             sizes: '512x512',
             type: 'image/png',
           },
           {
-            src: '/android-chrome-512x512.png',
+            src: 'manifest-icon-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable',

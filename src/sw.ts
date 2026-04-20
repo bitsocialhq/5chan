@@ -13,16 +13,18 @@ const precacheEntries = self.__WB_MANIFEST.filter((entry) => (typeof entry === '
 const runtimeAssetDestinations = new Set<RequestDestination>(['font', 'image', 'manifest', 'script', 'style']);
 const scopeRoot = self.registration.scope.endsWith('/') ? self.registration.scope : `${self.registration.scope}/`;
 const scopePath = (path: string) => new URL(path, scopeRoot).pathname;
-const apiPathPrefix = scopePath('api');
+const apiPath = scopePath('api');
+const apiPathPrefix = scopePath('api/');
 const internalPathPrefix = scopePath('_(');
 const runtimeAssetPathPrefixes = ['assets/', 'translations/'].map(scopePath);
+const isApiPath = (pathname: string) => pathname === apiPath || pathname.startsWith(apiPathPrefix);
 
 // Precache revisioned assets, but let navigations fetch fresh HTML first.
 cleanupOutdatedCaches();
 precacheAndRoute(precacheEntries);
 
 registerRoute(
-  ({ request, url }) => request.mode === 'navigate' && !url.pathname.startsWith(apiPathPrefix) && !url.pathname.startsWith(internalPathPrefix),
+  ({ request, url }) => request.mode === 'navigate' && !isApiPath(url.pathname) && !url.pathname.startsWith(internalPathPrefix),
   new NetworkFirst({
     cacheName: 'html-cache',
     networkTimeoutSeconds: 3,
