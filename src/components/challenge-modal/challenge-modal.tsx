@@ -191,8 +191,7 @@ const IframeChallenge = ({
         <iframe
           ref={iframeRef}
           src={iframeUrlState}
-          sandbox='allow-scripts allow-forms allow-popups allow-same-origin'
-          allow=''
+          sandbox='allow-scripts allow-forms allow-popups allow-same-origin allow-top-navigation-by-user-activation'
           onLoad={handleIframeLoad}
           className={styles.iframe}
           title='Challenge authentication'

@@ -271,6 +271,7 @@ describe('ChallengeModal', () => {
     const iframe = container.querySelector('iframe');
     expect(iframe).not.toBeNull();
     expect(iframe?.getAttribute('src')).toContain('https://mintpass.org/auth?user=0xabc123&theme=dark');
+    expect(iframe?.getAttribute('sandbox')).toBe('allow-scripts allow-forms allow-popups allow-same-origin allow-top-navigation-by-user-activation');
 
     await act(async () => {
       iframe?.dispatchEvent(new Event('load', { bubbles: true }));
