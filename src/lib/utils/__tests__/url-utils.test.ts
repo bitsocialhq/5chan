@@ -43,6 +43,10 @@ describe('url-utils', () => {
     expect(isPrivateNetworkHostname('192.168.1.1')).toBe(true);
     expect(isPrivateNetworkHostname('[::1]')).toBe(true);
     expect(isPrivateNetworkHostname('[::ffff:7f00:1]')).toBe(true);
+    expect(isPrivateNetworkHostname('fc00::1')).toBe(true);
+    expect(isPrivateNetworkHostname('fd12:3456:789a::1')).toBe(true);
+    expect(isPrivateNetworkHostname('fcbarcelona.com')).toBe(false);
+    expect(isPrivateNetworkHostname('fdic.gov')).toBe(false);
     expect(isPrivateNetworkHostname('example.com')).toBe(false);
   });
 

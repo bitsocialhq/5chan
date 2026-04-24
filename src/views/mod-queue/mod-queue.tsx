@@ -841,7 +841,7 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
   }
 
   const alertThresholdSeconds = getAlertThresholdSeconds();
-  // Use key to reset statusMap state when switching boards (prevents stale counts from previous board)
+  // Remount when switching boards so memoized counts reset cleanly.
   const contentKey = communityAddresses.join(',');
   return <ModQueueButtonContent key={contentKey} feed={feed} alertThresholdSeconds={alertThresholdSeconds} boardIdentifier={boardIdentifier} isMobile={isMobile} />;
 };

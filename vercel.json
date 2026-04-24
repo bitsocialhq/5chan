@@ -43,7 +43,7 @@
         { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'none'; frame-ancestors 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-kF+BgNpp0e7WM8m8a9eRaLHmLrSQGQVmaFYjvPYU1/8=' 'sha256-kiz84y15tsP8n+Qo/YHYAPLBR6nQyVSqHO4BWcVVOik=' https://platform.twitter.com https://embed.reddit.com https://www.tiktok.com https://www.instagram.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: http: data: blob:; media-src 'self' https: http: blob:; connect-src 'self' https: http: wss: ws: blob:; frame-src https: http://localhost:* http://*.localhost:* http://127.0.0.1:* http://[::1]:*; child-src https: http://localhost:* http://*.localhost:* http://127.0.0.1:* http://[::1]:*; worker-src 'self' blob:; manifest-src 'self'"
+          "value": "default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; frame-ancestors 'none'; script-src 'self' 'wasm-unsafe-eval' 'sha256-kF+BgNpp0e7WM8m8a9eRaLHmLrSQGQVmaFYjvPYU1/8=' 'sha256-kiz84y15tsP8n+Qo/YHYAPLBR6nQyVSqHO4BWcVVOik=' https://platform.twitter.com https://embed.reddit.com https://www.tiktok.com https://www.instagram.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: http: data: blob:; media-src 'self' https: http: blob:; connect-src 'self' https: http: wss: ws: blob:; frame-src https: http://localhost:* http://*.localhost:* http://127.0.0.1:* http://[::1]:*; child-src https: http://localhost:* http://*.localhost:* http://127.0.0.1:* http://[::1]:*; worker-src 'self' blob:; manifest-src 'self'"
         },
         { "key": "X-DNS-Prefetch-Control", "value": "off" }
       ]

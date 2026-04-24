@@ -181,6 +181,7 @@ const fetchWebpageThumbnail = async (url: string): Promise<string | undefined> =
         readTimeout: TIMEOUT,
         connectTimeout: TIMEOUT,
         responseType: 'text',
+        disableRedirects: true,
         headers: { Accept: 'text/html', Range: `bytes=0-${MAX_HTML_SIZE - 1}` },
       });
       html = response.data.slice(0, MAX_HTML_SIZE);
@@ -191,6 +192,7 @@ const fetchWebpageThumbnail = async (url: string): Promise<string | undefined> =
 
       const response = await fetch(parsedUrl.href, {
         signal: controller.signal,
+        redirect: 'manual',
         headers: { Accept: 'text/html' },
       });
 
@@ -216,7 +218,8 @@ const fetchWebpageThumbnail = async (url: string): Promise<string | undefined> =
     const ogImage = doc.querySelector('meta[property="og:image"]');
     const ogImageContent = ogImage?.getAttribute('content');
     if (ogImageContent) {
-      return getAllowedThumbnailUrl(ogImageContent, parsedUrl.href);
+      const ogImageUrl = getAllowedThumbnailUrl(ogImageContent, parsedUrl.href);
+      if (ogImageUrl) return ogImageUrl;
     }
 
     // If no Open Graph image, try to find the first image

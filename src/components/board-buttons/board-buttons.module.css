@@ -7,7 +7,7 @@
 }
 
 .mobileBoardButtons button,
-.mobileBoardButtons a.button {
+.mobileBoardButtons a[class~='button'] {
   text-transform: capitalize;
   margin: 5px 2px;
 }

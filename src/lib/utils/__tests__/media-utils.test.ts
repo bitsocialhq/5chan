@@ -234,12 +234,35 @@ describe('media-utils', () => {
       url: 'https://example.com/og-page',
     });
 
-    expect(testState.fetchMock).toHaveBeenCalledWith('https://example.com/og-page', expect.objectContaining({ headers: { Accept: 'text/html' } }));
+    expect(testState.fetchMock).toHaveBeenCalledWith('https://example.com/og-page', expect.objectContaining({ headers: { Accept: 'text/html' }, redirect: 'manual' }));
     expect(testState.localForageSetItemMock).toHaveBeenCalledWith('https://example.com/og-page', 'https://cdn.example/og.png');
     expect(result).toEqual({
       thumbnail: 'https://cdn.example/og.png',
       type: 'webpage',
       url: 'https://example.com/og-page',
+    });
+  });
+
+  it('falls back to the first image when og:image is not allowed', async () => {
+    testState.fetchMock.mockResolvedValue(
+      createFetchResponse(`
+        <html>
+          <head><meta property="og:image" content="http://127.0.0.1/og.png" /></head>
+          <body><img src="https://cdn.example/fallback.png" /></body>
+        </html>
+      `),
+    );
+
+    const result = await fetchWebpageThumbnailIfNeeded({
+      type: 'webpage',
+      url: 'https://example.com/fallback-page',
+    });
+
+    expect(testState.localForageSetItemMock).toHaveBeenCalledWith('https://example.com/fallback-page', 'https://cdn.example/fallback.png');
+    expect(result).toEqual({
+      thumbnail: 'https://cdn.example/fallback.png',
+      type: 'webpage',
+      url: 'https://example.com/fallback-page',
     });
   });
 
@@ -261,6 +284,7 @@ describe('media-utils', () => {
     expect(testState.capacitorHttpGetMock).toHaveBeenCalledWith(
       expect.objectContaining({
         connectTimeout: 5000,
+        disableRedirects: true,
         headers: { Accept: 'text/html', Range: 'bytes=0-1048575' },
         readTimeout: 5000,
         responseType: 'text',

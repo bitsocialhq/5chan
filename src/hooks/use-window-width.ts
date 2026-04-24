@@ -49,12 +49,9 @@ const subscribe = (listener: Listener) => {
   };
 };
 
-const getWindowWidthSnapshot = () => {
-  windowWidth = readWindowWidth();
-  return windowWidth;
-};
+const getWindowWidthSnapshot = () => windowWidth;
 const getServerWindowWidthSnapshot = () => SERVER_WIDTH;
-const getIsMobileSnapshot = () => getWindowWidthSnapshot() < MOBILE_BREAKPOINT_WIDTH;
+const getIsMobileSnapshot = () => windowWidth < MOBILE_BREAKPOINT_WIDTH;
 const getServerIsMobileSnapshot = () => SERVER_WIDTH < MOBILE_BREAKPOINT_WIDTH;
 
 const useWindowWidth = () => useSyncExternalStore(subscribe, getWindowWidthSnapshot, getServerWindowWidthSnapshot);
