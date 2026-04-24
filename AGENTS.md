@@ -96,6 +96,7 @@ src/
 - If the user asks for a reviewable feature/fix and the current branch is `master`, create a short-lived task branch before making code changes unless the user explicitly asks to work directly on `master`.
 - Name short-lived AI task branches by intent under the Codex prefix: `codex/feature/*`, `codex/fix/*`, `codex/docs/*`, `codex/chore/*`.
 - Open PRs from task branches into `master` so review bots can run against the actual change.
+- Open PRs as ready for review, not draft. Draft PRs prevent CodeRabbit, Cursor Bugbot, and similar review bots from running.
 - Prefer short-lived task branches over a long-lived `develop` branch unless the user explicitly asks for a staging branch workflow.
 - Use worktrees only when parallel tasks need isolated checkouts. One active task branch per worktree.
 - If a new task is unrelated to the currently checked out branch, do not stack it on that branch. Create a new worktree from `master` and create a separate short-lived task branch there.
