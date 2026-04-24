@@ -245,7 +245,7 @@ describe('AccountSettings', () => {
     expect(hookMocks.exportAccount).toHaveBeenCalledOnce();
     expect(createObjectUrlSpy).toHaveBeenCalledOnce();
     expect(anchorClickSpy).toHaveBeenCalledOnce();
-    expect(createdAnchor?.download).toBe('Account 1.json');
+    expect(createdAnchor?.download).toBe('Account_1.json');
     expect(revokeObjectUrlSpy).toHaveBeenCalledWith('blob:test-account');
   });
 

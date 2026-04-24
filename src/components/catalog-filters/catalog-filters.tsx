@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useShallow } from 'zustand/react/shallow';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import FiltersProtip from './filters-protip';
@@ -47,11 +48,13 @@ const toCatalogFilterItem = (item: CatalogFilterItemInput): CatalogFilterItemSto
 
 const FiltersTable = ({ onSave }: { onSave: () => void }) => {
   const { t } = useTranslation();
-  const { currentCommunityAddress, filterItems, saveAndApplyFilters } = useCatalogFiltersStore((state) => ({
-    currentCommunityAddress: state.currentCommunityAddress,
-    filterItems: state.filterItems as CatalogFilterItemInput[],
-    saveAndApplyFilters: state.saveAndApplyFilters,
-  }));
+  const { currentCommunityAddress, filterItems, saveAndApplyFilters } = useCatalogFiltersStore(
+    useShallow((state) => ({
+      currentCommunityAddress: state.currentCommunityAddress,
+      filterItems: state.filterItems as CatalogFilterItemInput[],
+      saveAndApplyFilters: state.saveAndApplyFilters,
+    })),
+  );
   const resetFeed = useFeedResetStore((state) => state.reset);
 
   const [localFilterItems, setLocalFilterItems] = useState(() =>

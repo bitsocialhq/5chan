@@ -80,9 +80,9 @@ export const CatalogButton = ({ address, isInAllView, isInSubscriptionsView, isI
   };
 
   return (
-    <button className='button'>
-      <Link to={createCatalogLink()}>{t('catalog')}</Link>
-    </button>
+    <Link className='button' to={createCatalogLink()}>
+      {t('catalog')}
+    </Link>
   );
 };
 
@@ -151,9 +151,9 @@ export const ReturnButton = ({ address, isInAllView, isInSubscriptionsView, isIn
   };
 
   return (
-    <button className='button'>
-      <Link to={createReturnLink()}>{t('return')}</Link>
-    </button>
+    <Link className='button' to={createReturnLink()}>
+      {t('return')}
+    </Link>
   );
 };
 

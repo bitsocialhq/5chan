@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { useAccount, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { initSnow, removeSnow } from './lib/snow';
@@ -31,9 +32,7 @@ import {
 } from './lib/utils/route-utils';
 import styles from './app.module.css';
 import { DesktopBoardButtons, MobileAllFeedFilter, MobileBoardButtons } from './components/board-buttons';
-import Board from './views/board';
 import Blotter from './views/blotter';
-import Catalog from './views/catalog';
 import FAQ from './views/faq';
 import Home from './views/home';
 import Archive from './views/archive/archive';
@@ -180,7 +179,27 @@ const BoardLayout = () => {
 const GlobalLayout = () => {
   useTheme();
 
-  const { activeCid, parentNumber, threadNumber, threadCid, communityAddress: activeCommunityAddress, closeModal, showReplyModal, scrollY } = useReplyModalStore();
+  const {
+    activeCid,
+    parentNumber,
+    threadNumber,
+    threadCid,
+    communityAddress: activeCommunityAddress,
+    closeModal,
+    showReplyModal,
+    scrollY,
+  } = useReplyModalStore(
+    useShallow((state) => ({
+      activeCid: state.activeCid,
+      parentNumber: state.parentNumber,
+      threadNumber: state.threadNumber,
+      threadCid: state.threadCid,
+      communityAddress: state.communityAddress,
+      closeModal: state.closeModal,
+      showReplyModal: state.showReplyModal,
+      scrollY: state.scrollY,
+    })),
+  );
 
   const location = useLocation();
   const isInSettingsView = location.pathname.endsWith('/settings');
@@ -213,34 +232,6 @@ const GlobalLayout = () => {
       <Outlet />
     </>
   );
-};
-
-/** Wraps Board with viewType/boardIdentifier derived from current route. Used when infinite scroll is OFF. */
-const BoardFeedRoute = () => {
-  const location = useLocation();
-  const params = useParams();
-  const viewType: 'all' | 'subs' | 'mod' | 'board' = isAllView(location.pathname)
-    ? 'all'
-    : isSubscriptionsView(location.pathname, params)
-      ? 'subs'
-      : isModView(location.pathname)
-        ? 'mod'
-        : 'board';
-  return <Board viewType={viewType} boardIdentifier={params.boardIdentifier} />;
-};
-
-/** Wraps Catalog with viewType/boardIdentifier derived from current route. Used when infinite scroll is OFF. */
-const CatalogFeedRoute = () => {
-  const location = useLocation();
-  const params = useParams();
-  const viewType: 'all' | 'subs' | 'mod' | 'board' = isAllView(location.pathname)
-    ? 'all'
-    : isSubscriptionsView(location.pathname, params)
-      ? 'subs'
-      : isModView(location.pathname)
-        ? 'mod'
-        : 'board';
-  return <Catalog viewType={viewType} boardIdentifier={params.boardIdentifier} />;
 };
 
 const ModQueueRoute = () => {

@@ -6,7 +6,7 @@ import { useFloating, offset, size, Placement } from '@floating-ui/react';
 import { Comment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import { shouldShowSnow } from '../../lib/snow';
-import { getHasThumbnail } from '../../lib/utils/media-utils';
+import { CommentMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import { getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isAllView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
@@ -27,7 +27,7 @@ import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from 
 
 interface CatalogPostMediaProps {
   cid: string;
-  commentMediaInfo: any;
+  commentMediaInfo: CommentMediaInfo | undefined;
   isOutOfFeed?: boolean;
   linkWidth?: number;
   linkHeight?: number;

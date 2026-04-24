@@ -34,6 +34,7 @@ import LoadingEllipsis from '../loading-ellipsis';
 import PostMenuDesktop from './post-menu-desktop';
 import ReplyQuotePreview from '../reply-quote-preview';
 import Tooltip from '../tooltip';
+import TimeAgoTooltip from '../time-ago-tooltip';
 import { PostProps } from '../../views/post/post';
 import { create } from 'zustand';
 import capitalize from 'lodash/capitalize';
@@ -244,8 +245,8 @@ const PostInfo = ({
   const location = useLocation();
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInModQueueView = isModQueueView(location.pathname);
-  const { getAlertThresholdSeconds } = useModQueueStore();
-  const currentTime = useCurrentTime();
+  const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
+  const currentTime = useCurrentTime(isInModQueueView ? 60 : false);
   const account = useAccount();
   const accountAddress = account?.author?.address;
 
@@ -282,22 +283,26 @@ const PostInfo = ({
     return Math.max(postsByAuthorInThread?.get(shortAddress) ?? 0, 1);
   })();
 
-  const { hidden } = useHide(post);
+  const { hidden } = useHide({ cid: cid || '' });
 
   const { openReplyModal } = useReplyModalStore();
 
   const onReplyModalClick = () => {
-    deleted
-      ? isReply
-        ? alert(t('this_reply_was_deleted'))
-        : alert(t('this_thread_was_deleted'))
-      : removed || purged
-        ? isReply
-          ? alert(t('this_reply_was_removed'))
-          : alert(t('this_thread_was_removed'))
-        : archived && !isReply
-          ? alert(t('thread_archived'))
-          : openReplyModal && openReplyModal(cid, post?.number, postCid, threadNumber, communityAddress);
+    if (deleted) {
+      alert(t(isReply ? 'this_reply_was_deleted' : 'this_thread_was_deleted'));
+      return;
+    }
+    if (removed || purged) {
+      alert(t(isReply ? 'this_reply_was_removed' : 'this_thread_was_removed'));
+      return;
+    }
+    if (archived && !isReply) {
+      alert(t('thread_archived'));
+      return;
+    }
+    if (cid && postCid && communityAddress && openReplyModal) {
+      openReplyModal(cid, post?.number, postCid, threadNumber, communityAddress);
+    }
   };
 
   const threadRoute = cid ? (boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`) : undefined;
@@ -329,7 +334,7 @@ const PostInfo = ({
 
   return (
     <div className={styles.postInfo} data-post-info-cid={cid}>
-      {isHidden ? parentCid && <span className={styles.hiddenReplyEditMenuSpacer} /> : <EditMenu post={post} />}
+      {isHidden ? parentCid && <span className={styles.hiddenReplyEditMenuSpacer} /> : post ? <EditMenu post={post} /> : null}
       <span className={(hidden || ((removed || deleted || purged) && !reason)) && parentCid ? styles.postDesktopHidden : ''}>
         {title &&
           (title.length <= 75 ? (
@@ -410,15 +415,15 @@ const PostInfo = ({
         <span className={styles.dateTime}>
           {isInModQueueView && isOverThreshold ? (
             <>
-              <Tooltip content={getFormattedTimeAgo(timestamp)}>
+              <TimeAgoTooltip timestamp={timestamp}>
                 <span>{getFormattedDate(timestamp)}</span>
-              </Tooltip>{' '}
+              </TimeAgoTooltip>{' '}
               (<span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>)
             </>
           ) : (
-            <Tooltip content={getFormattedTimeAgo(timestamp)}>
+            <TimeAgoTooltip timestamp={timestamp}>
               <span>{getFormattedDate(timestamp)}</span>
-            </Tooltip>
+            </TimeAgoTooltip>
           )}{' '}
         </span>
         <span className={styles.postNum}>
@@ -529,7 +534,7 @@ const PostInfo = ({
           {shouldShowPendingApprovalButtons && communityAddress && cid && <PendingModerationActions cid={cid} communityAddress={communityAddress} post={post} />}
         </span>
         {!(removed || deleted || purged) && !isModQueue && <PostMenuDesktop postMenu={postMenuProps} />}
-        {cid && parentCid && <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />}
+        {post && cid && parentCid && <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />}
         {cid && !parentCid && <OpBacklinks cid={cid} quotedByMap={quotedByMap} />}
       </span>
     </div>
@@ -589,13 +594,13 @@ const OpBacklinks = ({ cid, quotedByMap }: { cid: string; quotedByMap?: Map<stri
 interface PostMediaProps {
   commentMediaInfo: CommentMediaInfo | undefined;
   hasThumbnail: boolean;
-  spoiler: boolean;
-  deleted: boolean;
+  spoiler?: boolean;
+  deleted?: boolean;
   purged: boolean;
-  removed: boolean;
-  linkHeight: number;
-  linkWidth: number;
-  parentCid: string;
+  removed?: boolean;
+  linkHeight?: number;
+  linkWidth?: number;
+  parentCid?: string;
   communityAddress?: string;
   isInAllView: boolean;
   isInSubscriptionsView: boolean;
@@ -659,7 +664,8 @@ const PostMedia = ({
             if (spoiler) return capitalize(t('spoiler'));
             if (requirePostLinkIsMedia && url) {
               try {
-                const filename = new URL(url).pathname.split('/').pop();
+                const pathParts = new URL(url).pathname.split('/');
+                const filename = pathParts[pathParts.length - 1];
                 if (filename && /\.\w+$/.test(filename)) return truncateWithEllipsisInMiddle(filename);
               } catch {}
             }
@@ -809,7 +815,7 @@ const Reply = ({
             isInModView={isInModView}
           />
         )}
-        {!hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && (
+        {post && !hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && (
           <CommentContent comment={post} prependContent={failedPublishNotice} />
         )}
       </div>
@@ -836,8 +842,7 @@ const PostDesktop = ({
 }: PostProps) => {
   const { t } = useTranslation();
   const resolvedPost = withResolvedCommentCommunityAddress(post);
-  const { author, cid, content, deleted, link, linkHeight, linkWidth, pinned, postCid, removed, spoiler, state, communityAddress, thumbnailUrl, parentCid } =
-    resolvedPost || {};
+  const { author, cid, content, deleted, link, linkHeight, linkWidth, postCid, removed, spoiler, state, communityAddress, thumbnailUrl, parentCid } = resolvedPost || {};
   const purged = resolvedPost?.commentModeration?.purged;
   const params = useParams();
   const location = useLocation();
@@ -876,9 +881,7 @@ const PostDesktop = ({
     repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
     accountComments: { newerThan: Infinity, append: true },
   });
-  const cachedPreviewReplies = (cachedPreviewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
-    ? (cachedPreviewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
-    : cachedPreviewRepliesResult.replies || [];
+  const cachedPreviewReplies = cachedPreviewRepliesResult.updatedReplies?.length ? cachedPreviewRepliesResult.updatedReplies : cachedPreviewRepliesResult.replies || [];
   const hasEnoughCachedPreview = hasEnoughPreviewReplies({
     replyCount: resolvedPost?.replyCount,
     loadedCount: cachedPreviewReplies.length,
@@ -899,14 +902,12 @@ const PostDesktop = ({
     accountComments: { newerThan: Infinity, append: true },
   });
 
-  const livePreviewReplies = (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
-    ? (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
-    : previewRepliesResult.replies || [];
+  const livePreviewReplies = previewRepliesResult.updatedReplies?.length ? previewRepliesResult.updatedReplies : previewRepliesResult.replies || [];
   const previewReplies = hasReplyPaginationOverride ? replyPaginationOverride.replies : hasEnoughCachedPreview ? cachedPreviewReplies : livePreviewReplies;
   const fullReplies = hasReplyPaginationOverride
     ? replyPaginationOverride.replies
-    : (fullRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
-      ? (fullRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
+    : fullRepliesResult.updatedReplies?.length
+      ? fullRepliesResult.updatedReplies
       : fullRepliesResult.replies || [];
 
   const hasMore = replyPaginationOverride?.hasMore ?? fullRepliesResult.hasMore;
@@ -1191,7 +1192,7 @@ const PostDesktop = ({
             directRepliesByParentCid={directRepliesByParentCid}
           />
           {!isHidden && !content && !(deleted || removed || purged) && <div className={styles.spacer} />}
-          {!isHidden && <CommentContent comment={resolvedPost} prependContent={failedPublishNotice} />}
+          {resolvedPost && !isHidden && <CommentContent comment={resolvedPost} prependContent={failedPublishNotice} />}
         </div>
         {!isHidden && !isInPendingPostView && showReplies && repliesCount > 0 && !isInPostPageView && (
           <span className={styles.summary}>

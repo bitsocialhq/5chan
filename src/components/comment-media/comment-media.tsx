@@ -1,7 +1,7 @@
 import React, { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
-import { getHostname } from '../../lib/utils/url-utils';
+import { getHostname, parseHttpUrl } from '../../lib/utils/url-utils';
 import useExpandedMediaStore from '../../stores/use-expanded-media-store';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -47,6 +47,7 @@ const Thumbnail = ({
   const { patternThumbnailUrl, thumbnail, type, url } = commentMediaInfo || {};
 
   let thumbnailComponent: React.ReactNode = null;
+  const thumbnailDimensions = { '--width': displayWidth, '--height': displayHeight } as React.CSSProperties;
   const iframeThumbnail = patternThumbnailUrl || thumbnail;
   const { frameUrl: gifFrameUrl, status: gifFrameStatus } = gifFrameState;
   const hasThumbnail = getHasThumbnail(commentMediaInfo, url);
@@ -139,9 +140,8 @@ const Thumbnail = ({
   }
 
   const thumbnailSmallPadding = isMobile ? styles.thumbnailMobile : styles.thumbnailReplyDesktop;
-  const thumbnailDimensions = { '--width': displayWidth, '--height': displayHeight } as React.CSSProperties;
 
-  const linkWithoutThumbnail = url && new URL(url);
+  const linkWithoutThumbnail = url ? parseHttpUrl(url) : null;
   const fallbackLinkLabel = url ? getHostname(url) || (url.length > 30 ? `${url.slice(0, 30)}...` : url) : '';
   const noThumbnailLink =
     !hasThumbnail && linkWithoutThumbnail ? (
@@ -160,7 +160,7 @@ const Thumbnail = ({
           {fallbackLinkLabel}
         </span>
       ) : (
-        <a href={url} target='_blank' rel='noreferrer'>
+        <a href={url} target='_blank' rel='noopener noreferrer'>
           {fallbackLinkLabel}
         </a>
       )

@@ -141,14 +141,14 @@
 .mediaMobile video,
 .mediaMobile iframe,
 .mediaMobile audio {
-  padding: 3px 0 5px 0;
+  padding: 0;
 }
 
 .mediaDesktopReply img,
 .mediaDesktopReply video,
 .mediaDesktopReply iframe,
 .mediaDesktopReply audio {
-  padding: 3px 20px 5px 20px;
+  padding: 0;
 }
 
 .mediaDesktopOp {
@@ -160,7 +160,7 @@
 .mediaDesktopOp video,
 .mediaDesktopOp iframe,
 .mediaDesktopOp audio {
-  padding: 3px 20px 5px 20px;
+  padding: 0;
   max-width: 100%;
   box-sizing: border-box;
 }

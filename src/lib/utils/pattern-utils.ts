@@ -6,6 +6,37 @@ type CommunityLike = {
   roles?: Record<string, { role?: string }>;
 };
 
+const compiledRegexCache = new Map<string, RegExp>();
+const commentTextCache = new WeakMap<Comment, string>();
+const MAX_COMPILED_REGEX_CACHE_SIZE = 500;
+
+const getCompiledRegex = (pattern: string, flags = ''): RegExp => {
+  const cacheKey = `${pattern}\u0000${flags}`;
+  const cachedRegex = compiledRegexCache.get(cacheKey);
+  if (cachedRegex) return cachedRegex;
+
+  const regex = new RegExp(pattern, flags);
+  if (compiledRegexCache.size >= MAX_COMPILED_REGEX_CACHE_SIZE) {
+    compiledRegexCache.clear();
+  }
+  compiledRegexCache.set(cacheKey, regex);
+  return regex;
+};
+
+const testRegex = (regex: RegExp, text: string): boolean => {
+  regex.lastIndex = 0;
+  return regex.test(text);
+};
+
+const getCommentSearchText = (comment: Comment): string => {
+  const cachedText = commentTextCache.get(comment);
+  if (cachedText !== undefined) return cachedText;
+
+  const searchText = `${comment?.title?.toLowerCase() || ''} ${comment?.content?.toLowerCase() || ''}`;
+  commentTextCache.set(comment, searchText);
+  return searchText;
+};
+
 /**
  * Checks if a text matches a pattern according to various pattern matching rules:
  * - Whole word matching: 'feel' matches 'feel' but not 'feeling'
@@ -31,8 +62,7 @@ export const matchesPattern = (text: string, pattern: string): boolean => {
       const lastSlashIndex = pattern.lastIndexOf('/');
       const regexPattern = pattern.substring(1, lastSlashIndex);
       const flags = pattern.substring(lastSlashIndex + 1);
-      const regex = new RegExp(regexPattern, flags);
-      return regex.test(textLower);
+      return testRegex(getCompiledRegex(regexPattern, flags), textLower);
     }
     // Check if it's an exact match pattern (surrounded by quotes)
     else if (pattern.startsWith('"') && pattern.endsWith('"') && pattern.length > 2) {
@@ -50,12 +80,10 @@ export const matchesPattern = (text: string, pattern: string): boolean => {
           // Handle wildcards in OR terms
           if (term.includes('*')) {
             const regexPattern = term.replace(/\*/g, '.*').toLowerCase();
-            const regex = new RegExp(`\\b${regexPattern}\\b`, 'i');
-            return regex.test(textLower);
+            return testRegex(getCompiledRegex(`\\b${regexPattern}\\b`, 'i'), textLower);
           } else {
             // Match whole word only
-            const regex = new RegExp(`\\b${term}\\b`, 'i');
-            return regex.test(textLower);
+            return testRegex(getCompiledRegex(`\\b${term}\\b`, 'i'), textLower);
           }
         });
       });
@@ -70,25 +98,21 @@ export const matchesPattern = (text: string, pattern: string): boolean => {
         // Handle wildcards in AND terms
         if (term.includes('*')) {
           const regexPattern = term.replace(/\*/g, '.*').toLowerCase();
-          const regex = new RegExp(`\\b${regexPattern}\\b`, 'i');
-          return regex.test(textLower);
+          return testRegex(getCompiledRegex(`\\b${regexPattern}\\b`, 'i'), textLower);
         } else {
           // Match whole word only
-          const regex = new RegExp(`\\b${term}\\b`, 'i');
-          return regex.test(textLower);
+          return testRegex(getCompiledRegex(`\\b${term}\\b`, 'i'), textLower);
         }
       });
     }
     // Handle wildcard patterns
     else if (pattern.includes('*')) {
       const regexPattern = pattern.replace(/\*/g, '.*').toLowerCase();
-      const regex = new RegExp(`\\b${regexPattern}\\b`, 'i');
-      return regex.test(textLower);
+      return testRegex(getCompiledRegex(`\\b${regexPattern}\\b`, 'i'), textLower);
     }
     // Simple whole word match
     else {
-      const regex = new RegExp(`\\b${pattern.toLowerCase()}\\b`, 'i');
-      return regex.test(textLower);
+      return testRegex(getCompiledRegex(`\\b${pattern.toLowerCase()}\\b`, 'i'), textLower);
     }
   } catch (error) {
     // If regex parsing fails, fall back to simple includes
@@ -233,7 +257,7 @@ export const commentMatchesPattern = (comment: Comment, pattern: string): boolea
 
       // If there's also a content filter, check if the comment matches it as well
       if (contentFilter) {
-        return allSpecialFiltersMatch && matchesPattern((comment?.title || '') + ' ' + (comment?.content || ''), contentFilter);
+        return allSpecialFiltersMatch && matchesPattern(getCommentSearchText(comment), contentFilter);
       }
 
       return allSpecialFiltersMatch;
@@ -260,9 +284,5 @@ export const commentMatchesPattern = (comment: Comment, pattern: string): boolea
   }
 
   // Regular content matching
-  const titleLower = comment?.title?.toLowerCase() || '';
-  const contentLower = comment?.content?.toLowerCase() || '';
-  const textToMatch = titleLower + ' ' + contentLower;
-
-  return matchesPattern(textToMatch, pattern);
+  return matchesPattern(getCommentSearchText(comment), pattern);
 };

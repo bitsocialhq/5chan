@@ -108,6 +108,14 @@ const useModQueueStore = create<ModQueueState>()(
         };
         return current as ModQueueState;
       },
+      partialize: (state): PersistedModQueueData => ({
+        alertThresholdValue: state.alertThresholdValue,
+        alertThresholdUnit: state.alertThresholdUnit,
+        dismissedCommentCids: state.dismissedCommentCids,
+        queuedCommentHistory: state.queuedCommentHistory,
+        selectedBoardFilter: state.selectedBoardFilter,
+        viewMode: state.viewMode,
+      }),
     },
   ),
 );

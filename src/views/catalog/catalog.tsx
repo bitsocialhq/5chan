@@ -272,7 +272,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return resolvedAddressFromUrl;
   }, [boardIdentifierProp, directories, resolvedAddressFromUrl]);
 
-  const { filterItems, searchText } = useCatalogFiltersStore();
+  const filterItems = useCatalogFiltersStore((state) => state.filterItems);
+  const searchText = useCatalogFiltersStore((state) => state.searchText);
 
   const account = useAccount();
   const subscriptions = account?.subscriptions;
@@ -306,7 +307,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const communities = useCommunityIdentifiers(communityAddresses);
   const communityIdentifier = useCommunityIdentifier(communityAddress);
 
-  const { imageSize, showOPComment } = useCatalogStyleStore();
+  const imageSize = useCatalogStyleStore((state) => state.imageSize);
+  const showOPComment = useCatalogStyleStore((state) => state.showOPComment);
   const columnWidth = imageSize === 'Large' ? 270 : 180;
   const windowWidth = useWindowWidth();
   const isMobile = useIsMobile();
@@ -325,7 +327,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     }
   }, [isInAllView, isInSubscriptionsView, isInModView, location.pathname, location.search, navigate]);
 
-  const { sortType } = useSortingStore();
+  const sortType = useSortingStore((state) => state.sortType);
   const feedSortType = sortType === 'new' ? 'new' : 'active';
   const catalogVirtualizationMode = useMemo(() => resolveCatalogVirtualizationMode(location.search, 'item-size'), [location.search]);
   const themeKey = typeof document !== 'undefined' ? document.body.className : '';
@@ -632,7 +634,6 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       effectiveInfiniteScroll,
     ],
   );
-
   const isFeedLoaded = feed.length > 0 || state === 'failed';
 
   // Process the feed to move "top" posts to the top (applied after display sort)

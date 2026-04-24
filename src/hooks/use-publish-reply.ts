@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Comment, useAccount, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
+import { useShallow } from 'zustand/react/shallow';
 import { useDirectories } from './use-directories';
 import usePublishReplyStore from '../stores/use-publish-reply-store';
 import usePostNumberStore, { getScopedNumberToCidMap } from '../stores/use-post-number-store';
@@ -22,13 +23,15 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const account = useAccount();
   const directories = useDirectories();
 
-  const { author, content, link, spoiler, publishCommentOptions } = usePublishReplyStore((state) => ({
-    author: state.author[parentCid],
-    content: state.content[parentCid] || undefined,
-    link: state.link[parentCid] || undefined,
-    spoiler: state.spoiler[parentCid] || false,
-    publishCommentOptions: state.publishCommentOptions[parentCid],
-  }));
+  const { author, content, link, spoiler, publishCommentOptions } = usePublishReplyStore(
+    useShallow((state) => ({
+      author: state.author[parentCid],
+      content: state.content[parentCid] || undefined,
+      link: state.link[parentCid] || undefined,
+      spoiler: state.spoiler[parentCid] || false,
+      publishCommentOptions: state.publishCommentOptions[parentCid],
+    })),
+  );
 
   const setPublishReplyStore = usePublishReplyStore((state) => state.setPublishReplyStore);
   const resetPublishReplyStore = usePublishReplyStore((state) => state.resetPublishReplyStore);

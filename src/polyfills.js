@@ -16,14 +16,6 @@ if (!window.fetch) {
   console.warn('Fetch API is not available, using polyfill');
 }
 
-// For crypto support
-if (typeof window.crypto === 'undefined') {
-  window.crypto = {};
-}
-if (typeof window.crypto.getRandomValues === 'undefined') {
-  window.crypto.getRandomValues = function (array) {
-    for (let i = 0; i < array.length; i++) {
-      array[i] = Math.floor(Math.random() * 256);
-    }
-  };
+if (typeof window.crypto === 'undefined' || typeof window.crypto.getRandomValues !== 'function') {
+  throw new Error('crypto.getRandomValues is required for secure account and signature operations.');
 }

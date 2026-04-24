@@ -46,6 +46,8 @@ interface EmbedComponentProps {
   parsedUrl: URL;
 }
 
+const srcDocSandbox = 'allow-scripts allow-popups allow-popups-to-escape-sandbox';
+
 const youtubeHosts = new Set<string>([
   'youtube.com',
   'www.youtube.com',
@@ -116,6 +118,7 @@ const XEmbed = ({ parsedUrl }: EmbedComponentProps) => {
       width='100%'
       referrerPolicy='no-referrer'
       allow='accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share'
+      sandbox={srcDocSandbox}
       title={parsedUrl.href}
       srcDoc={`
       <blockquote class="twitter-tweet" data-theme="dark">
@@ -137,6 +140,7 @@ const RedditEmbed = ({ parsedUrl }: EmbedComponentProps) => {
       width='100%'
       referrerPolicy='no-referrer'
       allow='accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share'
+      sandbox={srcDocSandbox}
       title={parsedUrl.href}
       srcDoc={`
       <style>
@@ -190,6 +194,7 @@ const TiktokEmbed = ({ parsedUrl }: EmbedComponentProps) => {
       width='100%'
       referrerPolicy='no-referrer'
       allow='accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share'
+      sandbox={srcDocSandbox}
       title={parsedUrl.href}
       srcDoc={`
       <blockquote class="tiktok-embed" data-video-id="${videoId}">
@@ -218,8 +223,9 @@ const InstagramEmbed = ({ parsedUrl }: EmbedComponentProps) => {
       <blockquote class="instagram-media">
         <a href="https://www.instagram.com/p/${id}/"></a>
       </blockquote>
-      <script async src="//www.instagram.com/embed.js"></script>
+      <script async src="https://www.instagram.com/embed.js"></script>
     `}
+      sandbox={srcDocSandbox}
     />
   );
 };

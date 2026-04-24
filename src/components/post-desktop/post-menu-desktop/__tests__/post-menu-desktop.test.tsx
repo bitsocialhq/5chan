@@ -215,9 +215,9 @@ describe('PostMenuDesktop', () => {
     const hrefs = Array.from(document.body.querySelectorAll('a')).map((link) => link.getAttribute('href'));
     expect(hrefs).toEqual(
       expect.arrayContaining([
-        'https://lens.google.com/uploadbyurl?url=https://cdn.example/image.png',
-        'https://www.yandex.com/images/search?img_url=https://cdn.example/image.png&rpt=imageview',
-        'https://saucenao.com/search.php?url=https://cdn.example/image.png',
+        'https://lens.google.com/uploadbyurl?url=https%3A%2F%2Fcdn.example%2Fimage.png',
+        'https://www.yandex.com/images/search?img_url=https%3A%2F%2Fcdn.example%2Fimage.png&rpt=imageview',
+        'https://saucenao.com/search.php?url=https%3A%2F%2Fcdn.example%2Fimage.png',
       ]),
     );
   });

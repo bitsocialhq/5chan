@@ -145,7 +145,6 @@
     "concurrently": "8.0.1",
     "conventional-changelog-cli": "4.1.0",
     "cordova-res": "0.15.4",
-    "cross-env": "7.0.3",
     "crypto-browserify": "3.12.1",
     "cz-conventional-changelog": "3.3.0",
     "decompress": "4.2.1",

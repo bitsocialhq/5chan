@@ -6,7 +6,8 @@
   margin-bottom: 7px;
 }
 
-.mobileBoardButtons button {
+.mobileBoardButtons button,
+.mobileBoardButtons a.button {
   text-transform: capitalize;
   margin: 5px 2px;
 }
@@ -33,7 +34,7 @@
   cursor: not-allowed !important;
 }
 
-.mobileBoardButtons a, .desktopBoardButtons a {
+.mobileBoardButtons a:not([class~='button']), .desktopBoardButtons a:not([class~='button']) {
   all: unset;
 }
 

@@ -47,27 +47,39 @@ describe('browser hooks', () => {
     vi.useRealTimers();
   });
 
-  it('tracks the window width across resize events', () => {
+  it('tracks the window width across resize events', async () => {
     expect(renderHookValue(() => useWindowWidth())).toBe(1024);
 
-    act(() => {
+    await act(async () => {
       window.innerWidth = 480;
       window.dispatchEvent(new Event('resize'));
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
     });
 
     expect(latestValue).toBe(480);
   });
 
-  it('derives the mobile breakpoint from the current window width', () => {
+  it('derives the mobile breakpoint from the current window width', async () => {
     renderHookValue(() => useIsMobile());
     expect(latestValue).toBe(false);
 
-    act(() => {
+    await act(async () => {
       window.innerWidth = 639;
       window.dispatchEvent(new Event('resize'));
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
     });
 
     expect(latestValue).toBe(true);
+  });
+
+  it('reads the current width when remounted after a resize with no subscribers', () => {
+    expect(renderHookValue(() => useWindowWidth())).toBe(1024);
+
+    act(() => root.unmount());
+    window.innerWidth = 480;
+    root = createRoot(container);
+
+    expect(renderHookValue(() => useWindowWidth())).toBe(480);
   });
 
   it('updates the current time on the configured interval', () => {

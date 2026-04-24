@@ -1,11 +1,12 @@
 import i18next from 'i18next';
 
-export const getFormattedDate = (commentTimestamp: number) => {
-  if (commentTimestamp === undefined || isNaN(commentTimestamp)) {
-    return '';
-  }
-  const locale = i18next.language || 'en';
-  const string = new Intl.DateTimeFormat(locale, {
+const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
+
+const getDateTimeFormatter = (locale: string) => {
+  const cachedFormatter = dateTimeFormatters.get(locale);
+  if (cachedFormatter) return cachedFormatter;
+
+  const formatter = new Intl.DateTimeFormat(locale, {
     hour12: false,
     year: '2-digit',
     month: '2-digit',
@@ -14,7 +15,23 @@ export const getFormattedDate = (commentTimestamp: number) => {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-  }).format(new Date(commentTimestamp * 1000));
+  });
+  dateTimeFormatters.set(locale, formatter);
+  return formatter;
+};
+
+if (typeof i18next.on === 'function') {
+  i18next.on('languageChanged', () => {
+    dateTimeFormatters.clear();
+  });
+}
+
+export const getFormattedDate = (commentTimestamp: number) => {
+  if (commentTimestamp === undefined || isNaN(commentTimestamp)) {
+    return '';
+  }
+  const locale = i18next.language || 'en';
+  const string = getDateTimeFormatter(locale).format(new Date(commentTimestamp * 1000));
   if (locale.startsWith('ar')) {
     return string;
   }

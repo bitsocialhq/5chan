@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useCommunity, useAccount } from '@bitsocial/bitsocial-react-hooks';
+import useAccountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js';
 import { Virtuoso } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
 import useModQueueStore from '../../stores/use-mod-queue-store';
@@ -45,6 +46,62 @@ const getBoardDisplayPath = (address: string, path: string): string => {
   if (path !== address) return path;
   if (address.includes('.')) return address;
   return getShortAddress(address) || address;
+};
+
+type LocalModerationEditSummary = Record<string, { timestamp?: number; value: unknown } | undefined>;
+type LocalModerationEditSummaries = Record<string, LocalModerationEditSummary | undefined>;
+
+const LOCAL_MODERATION_EDIT_FIELDS = ['approved', 'removed'] as const;
+const LOCAL_EDIT_PENDING_SECONDS = 20 * 60;
+
+const shouldApplyLocalModerationEdit = (
+  comment: Comment,
+  propertyName: (typeof LOCAL_MODERATION_EDIT_FIELDS)[number],
+  edit: { timestamp?: number; value: unknown },
+  now: number,
+) => {
+  const editTimestamp = edit.timestamp ?? 0;
+  const updatedAt = (comment as { updatedAt?: number }).updatedAt;
+  const currentValue = (comment as Record<string, unknown>)[propertyName];
+
+  if (!updatedAt) {
+    return Object.is(currentValue, edit.value) || editTimestamp > now - LOCAL_EDIT_PENDING_SECONDS;
+  }
+
+  if (updatedAt < editTimestamp || Object.is(currentValue, edit.value)) {
+    return true;
+  }
+
+  return editTimestamp > now - LOCAL_EDIT_PENDING_SECONDS || updatedAt - editTimestamp < LOCAL_EDIT_PENDING_SECONDS;
+};
+
+const applyLocalModerationEdits = (comment: Comment, editSummary: LocalModerationEditSummary | undefined, now: number): Comment => {
+  if (!editSummary) {
+    return comment;
+  }
+
+  let editedComment: Comment | undefined;
+  for (const propertyName of LOCAL_MODERATION_EDIT_FIELDS) {
+    const edit = editSummary[propertyName];
+    if (!edit || edit.value === undefined || !shouldApplyLocalModerationEdit(comment, propertyName, edit, now)) {
+      continue;
+    }
+    editedComment = { ...(editedComment ?? comment), [propertyName]: edit.value } as Comment;
+  }
+
+  return editedComment ?? comment;
+};
+
+const useLocallyModeratedModQueueFeed = (feed: Comment[], currentTime: number) => {
+  const accountId = useAccountsStore((state) => state.activeAccountId);
+  const editSummaries = useAccountsStore((state) => (accountId ? state.accountsEditsSummaries[accountId] : undefined)) as LocalModerationEditSummaries | undefined;
+
+  return useMemo(() => {
+    if (!editSummaries) {
+      return feed;
+    }
+    return feed.map((comment) => (comment.cid ? applyLocalModerationEdits(comment, editSummaries[comment.cid], currentTime) : comment));
+  }, [currentTime, editSummaries, feed]);
 };
 
 interface ModQueueViewProps {
@@ -305,7 +362,7 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
 
 const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath, boardDisplayPath }: ModQueueRowProps) => {
   const { t } = useTranslation();
-  const { getAlertThresholdSeconds } = useModQueueStore();
+  const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const isMobile = useIsMobile();
   const currentTime = useCurrentTime();
 
@@ -319,7 +376,7 @@ const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath
   const isOverThreshold = timeWaiting > alertThresholdSeconds;
 
   // Only show alert animation for comments awaiting approval (not approved or rejected)
-  const isAwaitingApproval = isPendingApprovalAwaiting(comment);
+  const isAwaitingApproval = isPendingApprovalAwaiting(displayComment);
 
   const { status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove } = useModQueueActions(comment);
   const hasTitle = title && title.trim().length > 0;
@@ -413,7 +470,7 @@ interface ModQueueCardProps {
 
 const ModQueueCard = memo(({ comment, showBoard = false, boardPath, boardDisplayPath }: ModQueueCardProps) => {
   const { t } = useTranslation();
-  const { getAlertThresholdSeconds } = useModQueueStore();
+  const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const currentTime = useCurrentTime();
 
   const { editedComment } = useEditedComment({ comment });
@@ -424,7 +481,7 @@ const ModQueueCard = memo(({ comment, showBoard = false, boardPath, boardDisplay
   const timeWaiting = currentTime - timestamp;
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = timeWaiting > alertThresholdSeconds;
-  const isAwaitingApproval = isPendingApprovalAwaiting(comment);
+  const isAwaitingApproval = isPendingApprovalAwaiting(displayComment);
 
   const { status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove } = useModQueueActions(comment);
   const hasTitle = title && title.trim().length > 0;
@@ -533,17 +590,20 @@ const findBoardAddressByCode = (code: string, dirs: DirectoryCommunity[]): strin
 
 const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses }: ModQueueBoardSummaryProps) => {
   const { t } = useTranslation();
-  const { selectedBoardFilter, setSelectedBoardFilter, getAlertThresholdSeconds } = useModQueueStore();
+  const selectedBoardFilter = useModQueueStore((state) => state.selectedBoardFilter);
+  const setSelectedBoardFilter = useModQueueStore((state) => state.setSelectedBoardFilter);
+  const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const currentTime = useCurrentTime();
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const modAddressSet = useMemo(() => new Set(accountCommunityAddresses), [accountCommunityAddresses]);
+  const locallyModeratedFeed = useLocallyModeratedModQueueFeed(feed, currentTime);
 
   const boardCounts = useMemo(() => {
     const counts = new Map<string, { normal: number; urgent: number }>();
     for (const address of accountCommunityAddresses) {
       counts.set(address, { normal: 0, urgent: 0 });
     }
-    for (const item of feed) {
+    for (const item of locallyModeratedFeed) {
       const addr = getCommentCommunityAddress(item);
       if (!addr) continue;
       const entry = counts.get(addr);
@@ -556,7 +616,7 @@ const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses }: 
       else entry.normal++;
     }
     return counts;
-  }, [feed, accountCommunityAddresses, currentTime, alertThresholdSeconds]);
+  }, [locallyModeratedFeed, accountCommunityAddresses, currentTime, alertThresholdSeconds]);
 
   const { totalNormal, totalUrgent } = useMemo(() => {
     let normal = 0;
@@ -663,29 +723,6 @@ interface ModQueueButtonProps {
   isMobile?: boolean;
 }
 
-interface ModQueueCountItemProps {
-  comment: Comment;
-  alertThresholdSeconds: number;
-  onStatusChange: (cid: string, status: { awaiting: boolean; urgent: boolean }) => void;
-}
-
-const ModQueueCountItem = ({ comment, alertThresholdSeconds, onStatusChange }: ModQueueCountItemProps) => {
-  const { editedComment } = useEditedComment({ comment });
-  const displayComment = editedComment || comment;
-  const currentTime = useCurrentTime();
-
-  const { cid, timestamp } = displayComment;
-  const isAwaiting = isPendingApprovalAwaiting(displayComment);
-  const timeWaiting = currentTime - timestamp;
-  const isUrgent = isAwaiting && timeWaiting > alertThresholdSeconds;
-
-  useEffect(() => {
-    onStatusChange(cid, { awaiting: isAwaiting, urgent: isUrgent });
-  }, [cid, isAwaiting, isUrgent, onStatusChange]);
-
-  return null;
-};
-
 interface ModQueueButtonContentProps {
   feed: Comment[];
   alertThresholdSeconds: number;
@@ -695,84 +732,54 @@ interface ModQueueButtonContentProps {
 
 const ModQueueButtonContent = ({ feed, alertThresholdSeconds, boardIdentifier, isMobile }: ModQueueButtonContentProps) => {
   const { t } = useTranslation();
-  const [statusMap, setStatusMap] = useState<Map<string, { awaiting: boolean; urgent: boolean }>>(new Map());
-
-  const handleStatusChange = React.useCallback((cid: string, status: { awaiting: boolean; urgent: boolean }) => {
-    setStatusMap((prev) => {
-      const next = new Map(prev);
-      next.set(cid, status);
-      return next;
-    });
-  }, []);
-
-  // Clean up stale entries when comments leave the feed to prevent memory leaks
-  const feedCids = useMemo(() => new Set(feed.map((item) => item.cid)), [feed]);
-  useEffect(() => {
-    setStatusMap((prev) => {
-      const staleKeys = [...prev.keys()].filter((cid) => !feedCids.has(cid));
-      if (staleKeys.length === 0) return prev;
-      const next = new Map(prev);
-      for (const key of staleKeys) {
-        next.delete(key);
-      }
-      return next;
-    });
-  }, [feedCids]);
+  const currentTime = useCurrentTime();
+  const locallyModeratedFeed = useLocallyModeratedModQueueFeed(feed, currentTime);
 
   const { normalCount, urgentCount } = useMemo(() => {
     let normal = 0;
     let urgent = 0;
-    for (const { awaiting, urgent: isUrgent } of statusMap.values()) {
-      if (awaiting) {
-        if (isUrgent) urgent++;
-        else normal++;
-      }
+    for (const comment of locallyModeratedFeed) {
+      if (!isPendingApprovalAwaiting(comment)) continue;
+      const timeWaiting = currentTime - (comment.timestamp ?? 0);
+      if (timeWaiting > alertThresholdSeconds) urgent++;
+      else normal++;
     }
     return { normalCount: normal, urgentCount: urgent };
-  }, [statusMap]);
+  }, [alertThresholdSeconds, currentTime, locallyModeratedFeed]);
 
   const totalCount = normalCount + urgentCount;
   const to = boardIdentifier ? `/${boardIdentifier}/mod/queue` : '/mod/queue';
 
   const buttonContent = (
-    <button className='button'>
-      <Link to={to}>
-        {t('mod_queue')}
-        {totalCount > 0 && (
-          <strong>
-            (
-            {urgentCount > 0 && normalCount > 0 ? (
-              <>
-                <span className={styles.modQueueButtonCount}>{normalCount}</span>
-                <span className={`${styles.modQueueButtonCount} ${styles.modQueueButtonCountAlert}`}>
-                  {'+'}
-                  {urgentCount}
-                </span>
-              </>
-            ) : urgentCount > 0 ? (
-              <span className={`${styles.modQueueButtonCount} ${styles.modQueueButtonCountAlert}`}>{urgentCount}</span>
-            ) : (
-              <span className={styles.modQueueButtonCount}>{totalCount}</span>
-            )}
-            )
-          </strong>
-        )}
-      </Link>
-    </button>
+    <Link className='button' to={to}>
+      {t('mod_queue')}
+      {totalCount > 0 && (
+        <strong>
+          (
+          {urgentCount > 0 && normalCount > 0 ? (
+            <>
+              <span className={styles.modQueueButtonCount}>{normalCount}</span>
+              <span className={`${styles.modQueueButtonCount} ${styles.modQueueButtonCountAlert}`}>
+                {'+'}
+                {urgentCount}
+              </span>
+            </>
+          ) : urgentCount > 0 ? (
+            <span className={`${styles.modQueueButtonCount} ${styles.modQueueButtonCountAlert}`}>{urgentCount}</span>
+          ) : (
+            <span className={styles.modQueueButtonCount}>{totalCount}</span>
+          )}
+          )
+        </strong>
+      )}
+    </Link>
   );
 
-  return (
-    <>
-      {feed.map((item) => (
-        <ModQueueCountItem key={item.cid} comment={item} alertThresholdSeconds={alertThresholdSeconds} onStatusChange={handleStatusChange} />
-      ))}
-      {isMobile ? buttonContent : <>[{buttonContent}]</>}
-    </>
-  );
+  return isMobile ? buttonContent : <>[{buttonContent}]</>;
 };
 
 export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProps) => {
-  const { getAlertThresholdSeconds } = useModQueueStore();
+  const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
 
   const account = useAccount();
   const accountAddress = account?.author?.address;
@@ -842,7 +849,11 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
 const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProps) => {
   const { t } = useTranslation();
   const params = useParams();
-  const { selectedBoardFilter, viewMode, dismissedCommentCids, queuedCommentHistory, rememberCommentsInQueue } = useModQueueStore();
+  const selectedBoardFilter = useModQueueStore((state) => state.selectedBoardFilter);
+  const viewMode = useModQueueStore((state) => state.viewMode);
+  const dismissedCommentCids = useModQueueStore((state) => state.dismissedCommentCids);
+  const queuedCommentHistory = useModQueueStore((state) => state.queuedCommentHistory);
+  const rememberCommentsInQueue = useModQueueStore((state) => state.rememberCommentsInQueue);
   const isMobile = useIsMobile();
 
   const accountCommunityAddresses = useAccountCommunityAddresses();

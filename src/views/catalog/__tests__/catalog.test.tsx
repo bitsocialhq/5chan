@@ -233,6 +233,7 @@ vi.mock('../../../hooks/use-state-string', () => ({
 
 vi.mock('../../../hooks/use-window-width', () => ({
   default: () => testState.windowWidth,
+  useIsMobileBreakpoint: () => testState.windowWidth < 640,
 }));
 
 vi.mock('../../../stores/use-catalog-style-store', () => ({
@@ -250,9 +251,10 @@ vi.mock('../../../stores/use-feed-reset-store', () => ({
 }));
 
 vi.mock('../../../stores/use-sorting-store', () => ({
-  default: () => ({
-    sortType: testState.sortType,
-  }),
+  default: (selector?: (state: { sortType: typeof testState.sortType }) => unknown) => {
+    const state = { sortType: testState.sortType };
+    return selector ? selector(state) : state;
+  },
 }));
 
 vi.mock('../../../stores/use-catalog-filters-store', () => ({

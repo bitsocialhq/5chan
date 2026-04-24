@@ -23,11 +23,16 @@ import type { QueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
 import type { ReplyVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
 import styles from './post.module.css';
 
-type CommentWithRefresh = Comment & {
+export type CommentWithRefresh = Comment & {
+  approved?: boolean;
+  communityAddress?: string;
   refresh?: () => Promise<void>;
   state?: string;
+  pendingApproval?: boolean;
   error?: Error;
   errors?: Error[];
+  index?: number;
+  removed?: boolean;
 };
 
 const getRouteUserState = (state: unknown): QueuedCommentRouteState | undefined => {
@@ -134,9 +139,9 @@ export interface PostProps {
   index?: number;
   isHidden?: boolean;
   hasThumbnail?: boolean;
-  post?: any;
+  post?: CommentWithRefresh;
   postReplyCount?: number;
-  reply?: any;
+  reply?: Comment;
   replyPaginationOverride?: ReplyPaginationOverride;
   replyVirtualizationModeOverride?: ReplyVirtualizationMode;
   roles?: Role[];
@@ -364,10 +369,7 @@ const PostPage = () => {
   const queuedReplyHasMore = queuedReplyRepliesResult.hasMore;
   const queuedReplyLoadMore = queuedReplyRepliesResult.loadMore;
   const queuedReplyReset = (queuedReplyRepliesResult as { reset?: () => Promise<void> }).reset;
-  const queuedReplyReplies =
-    ((queuedReplyRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
-      ? (queuedReplyRepliesResult as { updatedReplies?: Comment[] }).updatedReplies
-      : queuedReplyRepliesResult.replies) || [];
+  const queuedReplyReplies = (queuedReplyRepliesResult.updatedReplies?.length ? queuedReplyRepliesResult.updatedReplies : queuedReplyRepliesResult.replies) || [];
   const replyPaginationOverride = useMemo(() => {
     if (!queuedReply || !post?.cid) return undefined;
     return {

@@ -4,7 +4,7 @@ type CommentWithCommunityAddress = {
     pages?: Record<
       string,
       | {
-          comments?: Array<CommentWithCommunityAddress | undefined>;
+          comments?: unknown[];
         }
       | undefined
     >;
@@ -24,15 +24,16 @@ export const getCommentCommunityAddress = (comment?: unknown) => {
   return undefined;
 };
 
-const withResolvedReplyPages = (replies?: CommentWithCommunityAddress['replies']) => {
-  if (!replies?.pages) {
+const withResolvedReplyPages = <T>(replies: T): T => {
+  const replyCollection = replies as CommentWithCommunityAddress['replies'];
+  if (!replyCollection?.pages) {
     return replies;
   }
 
-  let nextPages = replies.pages;
+  let nextPages = replyCollection.pages;
   let pagesChanged = false;
 
-  for (const [sortType, page] of Object.entries(replies.pages)) {
+  for (const [sortType, page] of Object.entries(replyCollection.pages)) {
     if (!page?.comments?.length) {
       continue;
     }
@@ -58,7 +59,7 @@ const withResolvedReplyPages = (replies?: CommentWithCommunityAddress['replies']
     }
 
     if (!pagesChanged) {
-      nextPages = { ...replies.pages };
+      nextPages = { ...replyCollection.pages };
       pagesChanged = true;
     }
 
@@ -73,27 +74,28 @@ const withResolvedReplyPages = (replies?: CommentWithCommunityAddress['replies']
   }
 
   return {
-    ...replies,
+    ...replyCollection,
     pages: nextPages,
-  };
+  } as T;
 };
 
-export const withResolvedCommentCommunityAddress = <T extends CommentWithCommunityAddress | undefined | null>(comment: T): T => {
-  if (!comment) {
+export const withResolvedCommentCommunityAddress = <T>(comment: T): T => {
+  if (!comment || typeof comment !== 'object') {
     return comment;
   }
 
-  const communityAddress = getCommentCommunityAddress(comment);
-  const replies = withResolvedReplyPages(comment.replies);
-  const needsResolvedCommunityAddress = !!communityAddress && comment.communityAddress !== communityAddress;
+  const commentRecord = comment as CommentWithCommunityAddress;
+  const communityAddress = getCommentCommunityAddress(commentRecord);
+  const replies = withResolvedReplyPages(commentRecord.replies);
+  const needsResolvedCommunityAddress = !!communityAddress && commentRecord.communityAddress !== communityAddress;
 
-  if (!needsResolvedCommunityAddress && replies === comment.replies) {
+  if (!needsResolvedCommunityAddress && replies === commentRecord.replies) {
     return comment;
   }
 
   return {
-    ...comment,
+    ...commentRecord,
     ...(needsResolvedCommunityAddress ? { communityAddress } : {}),
-    ...(replies !== comment.replies ? { replies } : {}),
+    ...(replies !== commentRecord.replies ? { replies } : {}),
   } as T;
 };

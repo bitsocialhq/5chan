@@ -31,6 +31,7 @@ import LoadingEllipsis from '../loading-ellipsis';
 import PostMenuMobile from './post-menu-mobile';
 import ReplyQuotePreview from '../reply-quote-preview';
 import Tooltip from '../tooltip';
+import TimeAgoTooltip from '../time-ago-tooltip';
 import { PostProps } from '../../views/post/post';
 import capitalize from 'lodash/capitalize';
 import lowerCase from 'lodash/lowerCase';
@@ -99,8 +100,8 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber, posts
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInModView = isModView(location.pathname);
   const isInModQueueView = isModQueueView(location.pathname);
-  const { getAlertThresholdSeconds } = useModQueueStore();
-  const currentTime = useCurrentTime();
+  const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
+  const currentTime = useCurrentTime(isInModQueueView ? 60 : false);
   const account = useAccount();
   const accountAddress = account?.author?.address;
 
@@ -225,22 +226,26 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber, posts
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 
-  const { hidden } = useHide(resolvedPost);
+  const { hidden } = useHide({ cid: cid || '' });
 
   const { openReplyModal } = useReplyModalStore();
 
   const onReplyModalClick = () => {
-    deleted
-      ? isReply
-        ? alert(t('this_reply_was_deleted'))
-        : alert(t('this_thread_was_deleted'))
-      : removed || purged
-        ? isReply
-          ? alert(t('this_reply_was_removed'))
-          : alert(t('this_thread_was_removed'))
-        : archived && !isReply
-          ? alert(t('thread_archived'))
-          : openReplyModal && openReplyModal(cid, resolvedPost?.number, postCid, threadNumber, communityAddress);
+    if (deleted) {
+      alert(t(isReply ? 'this_reply_was_deleted' : 'this_thread_was_deleted'));
+      return;
+    }
+    if (removed || purged) {
+      alert(t(isReply ? 'this_reply_was_removed' : 'this_thread_was_removed'));
+      return;
+    }
+    if (archived && !isReply) {
+      alert(t('thread_archived'));
+      return;
+    }
+    if (cid && postCid && communityAddress && openReplyModal) {
+      openReplyModal(cid, resolvedPost?.number, postCid, threadNumber, communityAddress);
+    }
   };
 
   const threadRoute = cid ? (boardPath ? `/${boardPath}/thread/${cid}` : `/thread/${cid}`) : undefined;
@@ -371,15 +376,15 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber, posts
             )}
             {isInModQueueView && isOverThreshold ? (
               <>
-                <Tooltip content={getFormattedTimeAgo(timestamp)}>
+                <TimeAgoTooltip timestamp={timestamp}>
                   <span>{getFormattedDate(timestamp)}</span>
-                </Tooltip>{' '}
+                </TimeAgoTooltip>{' '}
                 (<span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>)
               </>
             ) : (
-              <Tooltip content={getFormattedTimeAgo(timestamp)}>
+              <TimeAgoTooltip timestamp={timestamp}>
                 <span>{getFormattedDate(timestamp)}</span>
-              </Tooltip>
+              </TimeAgoTooltip>
             )}{' '}
             {cid ? (
               <span className={styles.postNumLink}>
@@ -441,7 +446,7 @@ const PostInfoAndMedia = ({ post, postReplyCount = 0, roles, threadNumber, posts
   );
 };
 
-const PostMediaContent = ({ post, link }: { post: any; link: string }) => {
+const PostMediaContent = ({ post, link }: { post: Comment | undefined; link: string }) => {
   const [showThumbnail, setShowThumbnail] = useState(true);
   const { thumbnailUrl, linkWidth, linkHeight, spoiler, deleted, removed, parentCid } = post || {};
   const purged = post?.commentModeration?.purged;
@@ -542,10 +547,10 @@ const Reply = ({
           data-post-cid={postCid}
         >
           <PostInfoAndMedia post={post} postReplyCount={postReplyCount} postsByAuthorInThread={postsByAuthorInThread} roles={roles} threadNumber={threadNumber} />
-          {!hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && (
+          {post && !hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && (
             <CommentContent comment={post} prependContent={failedPublishNotice} />
           )}
-          <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />
+          {post && <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />}
         </div>
       </div>
     </div>
@@ -571,7 +576,7 @@ const PostMobile = ({
 }: PostProps) => {
   const { t } = useTranslation();
   const resolvedPost = withResolvedCommentCommunityAddress(post);
-  const { author, cid, parentCid, pinned, postCid, replyCount, state, communityAddress } = resolvedPost || {};
+  const { author, cid, parentCid, postCid, replyCount, state, communityAddress } = resolvedPost || {};
   const params = useParams();
   const location = useLocation();
   const navigationType = useNavigationType();
@@ -601,9 +606,7 @@ const PostMobile = ({
     repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
     accountComments: { newerThan: Infinity, append: true },
   });
-  const cachedPreviewReplies = (cachedPreviewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
-    ? (cachedPreviewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
-    : cachedPreviewRepliesResult.replies || [];
+  const cachedPreviewReplies = cachedPreviewRepliesResult.updatedReplies?.length ? cachedPreviewRepliesResult.updatedReplies : cachedPreviewRepliesResult.replies || [];
   const cachedPreviewDisplayCount = filterRepliesForDisplay(cachedPreviewReplies).length;
   const hasEnoughCachedPreview = hasEnoughPreviewReplies({
     replyCount: resolvedPost?.replyCount,
@@ -624,9 +627,7 @@ const PostMobile = ({
     repliesPerPage: REPLIES_PER_PAGE,
     accountComments: { newerThan: Infinity, append: true },
   });
-  const livePreviewReplies = (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies?.length
-    ? (previewRepliesResult as { updatedReplies?: Comment[] }).updatedReplies!
-    : previewRepliesResult.replies || [];
+  const livePreviewReplies = previewRepliesResult.updatedReplies?.length ? previewRepliesResult.updatedReplies : previewRepliesResult.replies || [];
   const previewReplies = hasReplyPaginationOverride ? replyPaginationOverride.replies : hasEnoughCachedPreview ? cachedPreviewReplies : livePreviewReplies;
   const repliesResult = hasReplyPaginationOverride
     ? {
@@ -640,7 +641,7 @@ const PostMobile = ({
       ? fullRepliesResult
       : { ...previewRepliesResult, replies: previewReplies, updatedReplies: previewReplies };
   const { replies, hasMore, loadMore } = repliesResult;
-  const updatedReplies = (repliesResult as { updatedReplies?: Comment[] }).updatedReplies;
+  const updatedReplies = repliesResult.updatedReplies;
   const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
   const freshRepliesForRender = useFreshReplies(repliesForRender);
   useRegisterFreshReplies(resolvedPost, freshRepliesForRender);
@@ -839,8 +840,8 @@ const PostMobile = ({
                   roles={roles}
                   threadNumber={resolvedPost?.number}
                 />
-                <CommentContent comment={resolvedPost} prependContent={failedPublishNotice} />
-                <ReplyBacklinks post={resolvedPost} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />
+                {resolvedPost && <CommentContent comment={resolvedPost} prependContent={failedPublishNotice} />}
+                {resolvedPost && <ReplyBacklinks post={resolvedPost} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />}
               </div>
               {!isInPostView && !isInPendingPostView && (showReplies || isModQueue) && (
                 <div className={styles.postLink}>

@@ -9,7 +9,7 @@ import { copyShareLinkToClipboard, isValidURL, type ShareLinkType } from '../../
 import { copyToClipboard } from '../../../lib/utils/clipboard-utils';
 import { getBoardPath } from '../../../lib/utils/route-utils';
 import { useDirectories } from '../../../hooks/use-directories';
-import { isAllView, isCatalogView, isPostPageView, isSubscriptionsView } from '../../../lib/utils/view-utils';
+import { isCatalogView, isPostPageView } from '../../../lib/utils/view-utils';
 import useHide from '../../../hooks/use-hide';
 import capitalize from 'lodash/capitalize';
 import { PostMenuProps } from '../../../lib/utils/post-menu-props';
@@ -119,6 +119,7 @@ const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () =
 const ImageSearchButton = ({ url, onClose }: { url: string; onClose: () => void }) => {
   const { t } = useTranslation();
   const [isImageSearchMenuOpen, setIsImageSearchMenuOpen] = useState(false);
+  const encodedUrl = encodeURIComponent(url);
 
   const { refs, floatingStyles } = useFloating({
     placement: 'right-start',
@@ -144,13 +145,13 @@ const ImageSearchButton = ({ url, onClose }: { url: string; onClose: () => void 
       {capitalize(t('image_search'))} »
       {isImageSearchMenuOpen && (
         <div ref={refs.setFloating} style={floatingStyles} className={styles.dropdownMenu}>
-          <a href={`https://lens.google.com/uploadbyurl?url=${url}`} target='_blank' rel='noreferrer'>
+          <a href={`https://lens.google.com/uploadbyurl?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer'>
             <div className={styles.postMenuItem}>Google</div>
           </a>
-          <a href={`https://www.yandex.com/images/search?img_url=${url}&rpt=imageview`} target='_blank' rel='noreferrer'>
+          <a href={`https://www.yandex.com/images/search?img_url=${encodedUrl}&rpt=imageview`} target='_blank' rel='noopener noreferrer'>
             <div className={styles.postMenuItem}>Yandex</div>
           </a>
-          <a href={`https://saucenao.com/search.php?url=${url}`} target='_blank' rel='noreferrer'>
+          <a href={`https://saucenao.com/search.php?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer'>
             <div className={styles.postMenuItem}>SauceNAO</div>
           </a>
         </div>
@@ -174,10 +175,8 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
 
   const location = useLocation();
   const params = useParams();
-  const isInAllView = isAllView(location.pathname);
   const isInCatalogView = isCatalogView(location.pathname, params);
   const isInPostPageView = isPostPageView(location.pathname, params);
-  const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
 
   const { refs, floatingStyles, context } = useFloating({
     placement: 'bottom-start',
@@ -249,13 +248,21 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
                   role='button'
                   tabIndex={0}
                   onClick={() => {
-                    hidden ? unhide() : hide();
+                    if (hidden) {
+                      unhide();
+                    } else {
+                      hide();
+                    }
                     handleClose();
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      hidden ? unhide() : hide();
+                      if (hidden) {
+                        unhide();
+                      } else {
+                        hide();
+                      }
                       handleClose();
                     }
                   }}

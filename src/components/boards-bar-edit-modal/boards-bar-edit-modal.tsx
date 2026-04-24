@@ -125,9 +125,9 @@ const BoardsBarEditModal = () => {
       }}
       onClick={handleBackdropClick}
     >
-      <div className={styles.boardsbarEditDialog}>
+      <div className={styles.boardsbarEditDialog} role='dialog' aria-modal='true' aria-labelledby='boards-bar-edit-modal-title'>
         <div className={styles.hd}>
-          <h2>Custom Board List</h2>
+          <h2 id='boards-bar-edit-modal-title'>Custom Board List</h2>
           <button type='button' className={styles.closeButton} onClick={closeBoardsBarEditModal} title='Close' aria-label='Close' />
         </div>
         <div className={styles.bd}>

@@ -30,10 +30,10 @@ const DirectoryModal = () => {
       }}
       onClick={handleBackdropClick}
     >
-      <div className={styles.directoryDialog}>
+      <div className={styles.directoryDialog} role='dialog' aria-modal='true' aria-labelledby='directory-modal-title'>
         <div className={styles.hd}>
-          <h2>Submit a Board to a Directory</h2>
-          <button className={`${styles.closeButton} ${isHomeView ? styles.closeButtonHome : ''}`} onClick={closeDirectoryModal} title='Close' />
+          <h2 id='directory-modal-title'>Submit a Board to a Directory</h2>
+          <button className={`${styles.closeButton} ${isHomeView ? styles.closeButtonHome : ''}`} onClick={closeDirectoryModal} title='Close' aria-label='Close' />
         </div>
         <div className={styles.bd}>
           <p className={styles.introMessage}>

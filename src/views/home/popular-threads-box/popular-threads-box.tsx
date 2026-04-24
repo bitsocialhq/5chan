@@ -66,7 +66,8 @@ const PopularThreadCard = memo(
 
 const PopularThreadsBox = ({ directories, directoryAddresses }: { directories: DirectoryCommunity[]; directoryAddresses: string[] }) => {
   const { t } = useTranslation();
-  const { showWorksafeContentOnly, showNsfwContentOnly } = usePopularThreadsOptionsStore();
+  const showWorksafeContentOnly = usePopularThreadsOptionsStore((state) => state.showWorksafeContentOnly);
+  const showNsfwContentOnly = usePopularThreadsOptionsStore((state) => state.showNsfwContentOnly);
 
   const filteredBoardAddresses = useMemo(() => {
     return directoryAddresses.flatMap((address) => {

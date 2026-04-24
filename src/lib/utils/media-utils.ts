@@ -1,7 +1,7 @@
 import localForageLru from '@bitsocial/bitsocial-react-hooks/dist/lib/localforage-lru/index.js';
 import { canEmbed } from '../../components/embed';
 import memoize from 'memoizee';
-import { isValidURL } from './url-utils';
+import { isPrivateNetworkHostname, isValidURL, parseHttpUrl } from './url-utils';
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 
 export interface CommentMediaInfo {
@@ -15,7 +15,9 @@ export interface CommentMediaInfo {
   linkHeight?: number;
 }
 
-export const getDisplayMediaInfoType = (type: string, t: any) => {
+type Translate = (key: string) => string;
+
+export const getDisplayMediaInfoType = (type: string, t: Translate) => {
   switch (type) {
     case 'image':
       return t('image');
@@ -95,6 +97,23 @@ const isThumbnailDomainBlacklisted = (link: string | undefined): boolean => {
   }
 };
 
+const parseAllowedThumbnailFetchUrl = (value: string): URL | undefined => {
+  const parsedUrl = parseHttpUrl(value);
+  if (!parsedUrl || parsedUrl.protocol !== 'https:' || isPrivateNetworkHostname(parsedUrl.hostname)) {
+    return undefined;
+  }
+  return parsedUrl;
+};
+
+const getAllowedThumbnailUrl = (value: string, baseUrl: string): string | undefined => {
+  try {
+    const parsedUrl = new URL(value, baseUrl);
+    return parsedUrl.protocol === 'https:' && !isPrivateNetworkHostname(parsedUrl.hostname) ? parsedUrl.href : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 export const getLinkMediaInfo = memoize(
   (link: string): CommentMediaInfo | undefined => {
     if (!isValidURL(link)) {
@@ -148,6 +167,9 @@ export const getLinkMediaInfo = memoize(
 
 const fetchWebpageThumbnail = async (url: string): Promise<string | undefined> => {
   try {
+    const parsedUrl = parseAllowedThumbnailFetchUrl(url);
+    if (!parsedUrl) return undefined;
+
     let html: string;
     const MAX_HTML_SIZE = 1024 * 1024;
     const TIMEOUT = 5000;
@@ -155,7 +177,7 @@ const fetchWebpageThumbnail = async (url: string): Promise<string | undefined> =
     if (Capacitor.isNativePlatform()) {
       // in the native app, the Capacitor HTTP plugin is used to fetch the thumbnail
       const response = await CapacitorHttp.get({
-        url,
+        url: parsedUrl.href,
         readTimeout: TIMEOUT,
         connectTimeout: TIMEOUT,
         responseType: 'text',
@@ -167,7 +189,7 @@ const fetchWebpageThumbnail = async (url: string): Promise<string | undefined> =
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
 
-      const response = await fetch(url, {
+      const response = await fetch(parsedUrl.href, {
         signal: controller.signal,
         headers: { Accept: 'text/html' },
       });
@@ -177,9 +199,10 @@ const fetchWebpageThumbnail = async (url: string): Promise<string | undefined> =
       if (!response.ok) throw new Error('Network response was not ok');
 
       const reader = response.body?.getReader();
+      if (!reader) return undefined;
       let result = '';
       while (true) {
-        const { done, value } = await reader!.read();
+        const { done, value } = await reader.read();
         if (done || result.length >= MAX_HTML_SIZE) break;
         result += new TextDecoder().decode(value);
       }
@@ -191,14 +214,16 @@ const fetchWebpageThumbnail = async (url: string): Promise<string | undefined> =
 
     // Try to find Open Graph image
     const ogImage = doc.querySelector('meta[property="og:image"]');
-    if (ogImage && ogImage.getAttribute('content')) {
-      return ogImage.getAttribute('content')!;
+    const ogImageContent = ogImage?.getAttribute('content');
+    if (ogImageContent) {
+      return getAllowedThumbnailUrl(ogImageContent, parsedUrl.href);
     }
 
     // If no Open Graph image, try to find the first image
     const firstImage = doc.querySelector('img');
-    if (firstImage && firstImage.getAttribute('src')) {
-      return new URL(firstImage.getAttribute('src')!, url).href;
+    const firstImageSrc = firstImage?.getAttribute('src');
+    if (firstImageSrc) {
+      return getAllowedThumbnailUrl(firstImageSrc, parsedUrl.href);
     }
 
     return undefined;
@@ -214,6 +239,7 @@ export const getCommentMediaInfo = (link: string, thumbnailUrl: string, linkWidt
   }
   const linkInfo = link ? getLinkMediaInfo(link) : undefined;
   if (linkInfo) {
+    const safeThumbnailUrl = thumbnailUrl ? getAllowedThumbnailUrl(thumbnailUrl, linkInfo.url) : undefined;
     // Don't show thumbnails for blacklisted domains (e.g., Twitter/X) as they return non-thumbnail images like emojis
     if (isThumbnailDomainBlacklisted(link)) {
       return {
@@ -226,7 +252,7 @@ export const getCommentMediaInfo = (link: string, thumbnailUrl: string, linkWidt
     }
     return {
       ...linkInfo,
-      thumbnail: thumbnailUrl || linkInfo.thumbnail,
+      thumbnail: safeThumbnailUrl || linkInfo.thumbnail,
       linkWidth,
       linkHeight,
     };
@@ -287,8 +313,9 @@ const setCachedThumbnail = async (url: string, thumbnail: string): Promise<void>
 export const fetchWebpageThumbnailIfNeeded = async (commentMediaInfo: CommentMediaInfo): Promise<CommentMediaInfo> => {
   if (commentMediaInfo.type === 'webpage' && !commentMediaInfo.thumbnail) {
     const cachedThumbnail = await getCachedThumbnail(commentMediaInfo.url);
-    if (cachedThumbnail) {
-      return { ...commentMediaInfo, thumbnail: cachedThumbnail };
+    const safeCachedThumbnail = cachedThumbnail ? getAllowedThumbnailUrl(cachedThumbnail, commentMediaInfo.url) : undefined;
+    if (safeCachedThumbnail) {
+      return { ...commentMediaInfo, thumbnail: safeCachedThumbnail };
     }
     const thumbnail = await fetchWebpageThumbnail(commentMediaInfo.url);
     if (thumbnail) {

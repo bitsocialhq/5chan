@@ -24,7 +24,15 @@ interface ChallengeProps {
 
 const TextChallenge = ({ challenge }: { challenge: string }) => <div className={styles.challengeMedia}>{challenge}</div>;
 
-const ImageChallenge = ({ challenge }: { challenge: string }) => <img alt='' className={styles.challengeMedia} src={`data:image/png;base64,${challenge}`} />;
+const MAX_IMAGE_CHALLENGE_BASE64_LENGTH = 2_000_000;
+const isSafeBase64ImageChallenge = (challenge: string) => /^[A-Za-z0-9+/]*={0,2}$/.test(challenge) && challenge.length <= MAX_IMAGE_CHALLENGE_BASE64_LENGTH;
+
+const ImageChallenge = ({ challenge }: { challenge: string }) =>
+  isSafeBase64ImageChallenge(challenge) ? (
+    <img alt='Challenge' className={styles.challengeMedia} src={`data:image/png;base64,${challenge}`} />
+  ) : (
+    <div className={styles.challengeMedia}>Invalid image challenge</div>
+  );
 
 const isLocalIframeHostname = (hostname: string) => hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname.endsWith('.localhost');
 
@@ -98,7 +106,9 @@ const IframeChallenge = ({
       const isHttps = validatedUrl.protocol === 'https:';
       const isLocalHttp = validatedUrl.protocol === 'http:' && isLocalIframeHostname(validatedUrl.hostname);
       if (!isHttps && !isLocalHttp) {
-        throw new Error('Only HTTPS iframe challenges or localhost HTTP challenges are supported');
+        alert('Error: Only HTTPS iframe challenges or localhost HTTP challenges are supported');
+        onCancel();
+        return;
       }
       validatedUrl.pathname = validatedUrl.pathname.replace(/\/{2,}/g, '/');
       validatedUrl.searchParams.set('theme', theme);
@@ -181,7 +191,8 @@ const IframeChallenge = ({
         <iframe
           ref={iframeRef}
           src={iframeUrlState}
-          sandbox='allow-scripts allow-forms allow-popups allow-same-origin allow-top-navigation-by-user-activation'
+          sandbox='allow-scripts allow-forms allow-popups allow-same-origin'
+          allow=''
           onLoad={handleIframeLoad}
           className={styles.iframe}
           title='Challenge authentication'
@@ -358,15 +369,18 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
     <animated.div
       className={containerClasses.join(' ')}
       ref={nodeRef}
+      role='dialog'
+      aria-modal='true'
+      aria-labelledby='challenge-modal-title'
       style={{
         x: isMobile ? mobileX : x.to((value) => Math.round(value)),
         y: isMobile ? mobileY : y.to((value) => Math.round(value)),
         touchAction: 'none',
       }}
     >
-      <div className={`challengeHandle ${styles.title}`} {...(!isMobile ? bind() : {})}>
+      <div id='challenge-modal-title' className={`challengeHandle ${styles.title}`} {...(!isMobile ? bind() : {})}>
         Challenge for {publicationType}
-        <button className={styles.closeIcon} onClick={abandonModal} title='close' />
+        <button type='button' className={styles.closeIcon} onClick={abandonModal} title='close' aria-label={t('close')} />
       </div>
       <div className={styles.publication}>
         {isIframeChallenge ? (

@@ -3,8 +3,4 @@ declare module '*.module.css' {
   export default classes;
 }
 
-declare module 'lodash';
-
-declare module 'react-draggable';
-
 declare module 'react-router-hash-link';

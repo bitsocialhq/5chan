@@ -160,6 +160,20 @@ describe('media-utils', () => {
       type: 'image',
       url: 'https://example.com/file.png',
     });
+    expect(getCommentMediaInfo('https://example.com/file.png', 'http://127.0.0.1/thumb.png', 320, 240)).toEqual({
+      linkHeight: 240,
+      linkWidth: 320,
+      thumbnail: undefined,
+      type: 'image',
+      url: 'https://example.com/file.png',
+    });
+    expect(getCommentMediaInfo('https://example.com/post', '//192.168.1.1/thumb.png', 320, 240)).toEqual({
+      linkHeight: 240,
+      linkWidth: 320,
+      thumbnail: undefined,
+      type: 'webpage',
+      url: 'https://example.com/post',
+    });
     expect(getCommentMediaInfo('https://x.com/post/123', 'https://example.com/thumb.png', 100, 50)).toEqual({
       linkHeight: 50,
       linkWidth: 100,

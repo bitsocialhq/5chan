@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
-import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
 import { commentMatchesPattern } from '../lib/utils/pattern-utils';
 
 interface FilterItem {
@@ -72,6 +71,25 @@ const normalizeFilterItem = (item: RawFilterItem): FilterItem => {
   };
 };
 
+const createCatalogFilter = (get: () => CatalogFiltersStore) => (comment: Comment) => {
+  if (!comment?.cid) return true;
+
+  const state = get();
+  if (state.searchText.trim() !== '' && !commentMatchesPattern(comment, state.searchText)) {
+    return false;
+  }
+
+  let shouldHide = false;
+  for (const item of state.filterItems) {
+    if (item.enabled && item.text.trim() !== '' && item.hide && commentMatchesPattern(comment, item.text)) {
+      shouldHide = true;
+      break;
+    }
+  }
+
+  return !shouldHide;
+};
+
 const useCatalogFiltersStore = create(
   persist<CatalogFiltersStore>(
     (set, get) => ({
@@ -138,9 +156,7 @@ const useCatalogFiltersStore = create(
             };
           });
 
-          // Recalculate the filtered count for the current community
           get().recalcFilteredCount();
-          get().updateFilter();
         } else {
           set({ currentCommunityAddress: address });
         }
@@ -148,11 +164,9 @@ const useCatalogFiltersStore = create(
       searchText: '',
       setSearchFilter: (text: string) => {
         set({ searchText: text });
-        get().updateFilter();
       },
       clearSearchFilter: () => {
         set({ searchText: '' });
-        get().updateFilter();
       },
       setFilterItems: (items: FilterItem[]) => {
         const nonEmptyItems = items.filter((item) => item.text.trim() !== '').map((item) => normalizeFilterItem(item));
@@ -200,57 +214,10 @@ const useCatalogFiltersStore = create(
         });
 
         get().recalcFilteredCount();
-        get().updateFilter();
       },
-      filter: undefined,
-      updateFilter: () => {
-        set((state) => ({
-          filter: (comment: Comment) => {
-            if (!comment?.cid) return true;
-
-            const currentCommunityAddress = state.currentCommunityAddress;
-
-            // Apply search filter
-            if (state.searchText.trim() !== '') {
-              if (!commentMatchesPattern(comment, state.searchText)) {
-                return false;
-              }
-            }
-
-            // Apply content filters
-            const { filterItems } = state;
-            let shouldHide = false;
-            const commentCommunityAddress = getCommentCommunityAddress(comment);
-
-            for (let i = 0; i < filterItems.length; i++) {
-              const item = filterItems[i];
-              if (item.enabled && item.text.trim() !== '') {
-                if (commentMatchesPattern(comment, item.text)) {
-                  // If we have a current community and this is a match, increment the count
-                  if (currentCommunityAddress && commentCommunityAddress && commentCommunityAddress === currentCommunityAddress) {
-                    // We need to use a timeout to avoid modifying state during a state update
-                    setTimeout(() => {
-                      const filterIndex = filterItems.findIndex((f) => f.text === item.text && f.enabled);
-                      if (filterIndex !== -1) {
-                        get().incrementFilterCount(filterIndex, comment.cid, commentCommunityAddress);
-                      }
-                    }, 0);
-                  }
-
-                  if (item.hide) {
-                    shouldHide = true;
-                  }
-                }
-              }
-            }
-
-            return !shouldHide;
-          },
-        }));
-      },
-      initializeFilter: () => {
-        get().updateFilter();
-      },
+      filter: createCatalogFilter(get),
+      updateFilter: () => undefined,
+      initializeFilter: () => undefined,
       incrementFilterCount: (filterIndex: number, cid: string, communityAddress: string) => {
         set((state) => {
           const newFilterItems = [...state.filterItems];
@@ -351,9 +318,6 @@ const useCatalogFiltersStore = create(
             filteredCount: 0,
           };
         });
-
-        // Trigger filter reapplication to start counting again
-        get().updateFilter();
       },
     }),
     {
@@ -365,6 +329,7 @@ const useCatalogFiltersStore = create(
             enabled: item.enabled,
             hide: item.hide,
             top: item.top,
+            color: item.color,
           })),
         } as any;
       },
@@ -394,7 +359,5 @@ const useCatalogFiltersStore = create(
     },
   ),
 );
-
-useCatalogFiltersStore.getState().updateFilter();
 
 export default useCatalogFiltersStore;

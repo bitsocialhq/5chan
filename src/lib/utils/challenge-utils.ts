@@ -1,4 +1,4 @@
-import { ChallengeVerification } from '@bitsocial/bitsocial-react-hooks';
+import type { ChallengeVerification, Comment } from '@bitsocial/bitsocial-react-hooks';
 import { getFallbackDirectoriesData } from '../../hooks/use-directories';
 import { getCommentCommunityAddress } from './comment-utils';
 import { getBoardPath } from './route-utils';
@@ -12,7 +12,20 @@ const resolveBoardIdentifier = (communityAddress: unknown): string => {
   return boardPath === communityAddress ? communityAddress : `/${boardPath}/`;
 };
 
-export const alertChallengeVerificationFailed = (challengeVerification: ChallengeVerification, publication: any) => {
+export type ChallengePublication = Partial<Comment> & {
+  author?: unknown;
+  commentCid?: string;
+  communityAddress?: string;
+  content?: string;
+  link?: string;
+  parentCid?: string;
+  shortCommunityAddress?: string;
+  subplebbitAddress?: string;
+  title?: string;
+  vote?: number;
+};
+
+export const alertChallengeVerificationFailed = (challengeVerification: ChallengeVerification, publication: ChallengePublication | undefined) => {
   if (challengeVerification?.challengeSuccess === false) {
     console.warn('Challenge Verification Failed:', challengeVerification, 'Publication:', publication);
 
@@ -44,7 +57,7 @@ export const alertChallengeVerificationFailed = (challengeVerification: Challeng
   }
 };
 
-export const getPublicationType = (publication: any) => {
+export const getPublicationType = (publication: ChallengePublication | undefined) => {
   if (!publication) {
     return;
   }
@@ -60,7 +73,7 @@ export const getPublicationType = (publication: any) => {
   return 'post';
 };
 
-export const getVotePreview = (publication: any) => {
+export const getVotePreview = (publication: ChallengePublication | undefined) => {
   if (typeof publication?.vote !== 'number') {
     return '';
   }
@@ -73,7 +86,7 @@ export const getVotePreview = (publication: any) => {
   return votePreview;
 };
 
-export const getPublicationPreview = (publication: any) => {
+export const getPublicationPreview = (publication: ChallengePublication | undefined) => {
   if (!publication) {
     return '';
   }

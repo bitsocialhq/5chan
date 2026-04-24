@@ -52,6 +52,11 @@ const rememberImportedAccountAddress = (address: string) => {
   }
 };
 
+const getSafeAccountBackupFileName = (accountName: string | undefined): string => {
+  const safeName = (accountName || 'account').replace(/[^\w.-]/g, '_') || 'account';
+  return `${safeName}.json`;
+};
+
 // Inner component keyed by account id so state resets when user switches account
 const AccountSettingsEditor = ({
   account,
@@ -98,7 +103,7 @@ const AccountSettingsEditor = ({
     const fileUrl = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = fileUrl;
-    link.download = `${account?.name ?? 'account'}.json`;
+    link.download = getSafeAccountBackupFileName(account?.name);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -120,7 +125,7 @@ const AccountSettingsEditor = ({
 
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const fileContent = e.target!.result;
+        const fileContent = e.target?.result ?? reader.result;
         if (typeof fileContent !== 'string') {
           alert('File content is not a string.');
           return;

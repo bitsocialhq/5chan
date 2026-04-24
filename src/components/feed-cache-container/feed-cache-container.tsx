@@ -68,7 +68,8 @@ const CachedFeedWrapper = ({ feed, isVisible }: CachedFeedWrapperProps) => {
 
 const FeedCacheContainer = () => {
   const location = useLocation();
-  const { cachedFeeds, accessFeed } = useFeedCacheStore();
+  const cachedFeeds = useFeedCacheStore((state) => state.cachedFeeds);
+  const accessFeed = useFeedCacheStore((state) => state.accessFeed);
 
   const currentFeedKey = getFeedCacheKey(location.pathname, location.search);
   const isOnFeedRoute = isFeedRoute(location.pathname);

@@ -47,7 +47,7 @@ const sanitizeSingleFeedLoadingState = (stateString?: string): string | undefine
     .replace(/\bloading thread\b/g, 'loading board');
 };
 
-const useStateString = (commentOrCommunity: CommentOrCommunity): string | undefined => {
+const useStateString = (commentOrCommunity: CommentOrCommunity | undefined): string | undefined => {
   const { states: rawStates } = useClientsStates({ comment: commentOrCommunity }) as { states: States };
 
   const debouncedStates = useMemo(() => {

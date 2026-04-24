@@ -14,11 +14,11 @@ import useEditCommentPrivileges from '../../../hooks/use-author-privileges';
 import { useBoardPseudonymityMode } from '../../../hooks/use-board-pseudonymity-mode';
 import useHide from '../../../hooks/use-hide';
 import EditMenu from '../../edit-menu/edit-menu';
-import { isBoardView, isPostPageView } from '../../../lib/utils/view-utils';
+import { isPostPageView } from '../../../lib/utils/view-utils';
 import { useLocation, useParams } from 'react-router-dom';
 import { PostMenuProps } from '../../../lib/utils/post-menu-props';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../../lib/utils/comment-utils';
-import { alertChallengeVerificationFailed } from '../../../lib/utils/challenge-utils';
+import { alertChallengeVerificationFailed, type ChallengePublication } from '../../../lib/utils/challenge-utils';
 import useChallengesStore from '../../../stores/use-challenges-store';
 
 async function copyShareLinkSafe(boardIdentifier: string, linkType: ShareLinkType, cid?: string): Promise<void> {
@@ -133,6 +133,7 @@ const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () =
 
 const ImageSearchButtons = ({ url, onClose }: { url: string; onClose: () => void }) => {
   const { t } = useTranslation();
+  const encodedUrl = encodeURIComponent(url);
   return (
     <div
       role='button'
@@ -145,13 +146,13 @@ const ImageSearchButtons = ({ url, onClose }: { url: string; onClose: () => void
         }
       }}
     >
-      <a href={`https://lens.google.com/uploadbyurl?url=${url}`} target='_blank' rel='noreferrer'>
+      <a href={`https://lens.google.com/uploadbyurl?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer'>
         <div className={styles.postMenuItem}>{t('search_image_on_google')}</div>
       </a>
-      <a href={`https://www.yandex.com/images/search?img_url=${url}&rpt=imageview`} target='_blank' rel='noreferrer'>
+      <a href={`https://www.yandex.com/images/search?img_url=${encodedUrl}&rpt=imageview`} target='_blank' rel='noopener noreferrer'>
         <div className={styles.postMenuItem}>{t('search_image_on_yandex')}</div>
       </a>
-      <a href={`https://saucenao.com/search.php?url=${url}`} target='_blank' rel='noreferrer'>
+      <a href={`https://saucenao.com/search.php?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer'>
         <div className={styles.postMenuItem}>{t('search_image_on_saucenao')}</div>
       </a>
     </div>
@@ -200,6 +201,7 @@ const DeletePostButton = ({ post, onClose }: DeletePostButtonProps) => {
     postCid: resolvedPost?.postCid,
   });
   const signer = isAccountCommentAuthor ? account?.signer : undefined;
+  const signerMatchesAuthor = Boolean(signer?.address && author?.address && signer.address === author.address);
   const latestPostRef = useRef(resolvedPost);
   useEffect(() => {
     latestPostRef.current = resolvedPost;
@@ -216,11 +218,11 @@ const DeletePostButton = ({ post, onClose }: DeletePostButtonProps) => {
       ...(isAccountCommentAuthor && signer
         ? {
             signer,
-            author: signer?.address === author?.address ? { address: signer.address, displayName: resolvedPost?.author?.displayName } : account?.author,
+            author: signerMatchesAuthor ? { address: signer.address, displayName: resolvedPost?.author?.displayName } : account?.author,
           }
         : {}),
       onChallenge,
-      onChallengeVerification: async (challengeVerification: ChallengeVerification, publication: unknown) => {
+      onChallengeVerification: async (challengeVerification: ChallengeVerification, publication: ChallengePublication | undefined) => {
         alertChallengeVerificationFailed(challengeVerification, publication);
       },
       onError: (error: Error) => {
@@ -228,7 +230,7 @@ const DeletePostButton = ({ post, onClose }: DeletePostButtonProps) => {
         alert('Comment edit failed. ' + error.message);
       },
     }),
-    [cid, communityAddress, isAccountCommentAuthor, signer, author?.address, resolvedPost?.author?.displayName, account?.author, onChallenge],
+    [cid, communityAddress, isAccountCommentAuthor, signer, signerMatchesAuthor, resolvedPost?.author?.displayName, account?.author, onChallenge],
   );
 
   const { publishCommentEdit } = usePublishCommentEdit(deleteOptions);
@@ -271,8 +273,12 @@ const HidePostButton = ({ cid, isReply, onClose, postCid }: HideButtonProps) => 
   const isInPostView = isPostPageView(useLocation().pathname, useParams());
 
   const handleClick = () => {
-    hidden ? unhide() : hide();
-    onClose && onClose();
+    if (hidden) {
+      unhide();
+    } else {
+      hide();
+    }
+    onClose?.();
   };
   return (
     (!isInPostView || isReply) && (
@@ -297,7 +303,7 @@ const HidePostButton = ({ cid, isReply, onClose, postCid }: HideButtonProps) => 
 
 type PostMenuMobileProps = {
   postMenu: PostMenuProps;
-  editMenuPost: Comment;
+  editMenuPost?: Comment;
 };
 
 const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
@@ -332,8 +338,6 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
 
   const handleClose = () => setIsMenuOpen(false);
 
-  const isInBoardView = isBoardView(useLocation().pathname, useParams());
-
   return (
     <>
       {!(deleted || removed) && (
@@ -362,7 +366,7 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
                 <div className={styles.postMenu} ref={refs.setFloating} style={floatingStyles} aria-labelledby={headingId} {...getFloatingProps()}>
                   <ReportPostButton onClose={handleClose} />
                   {cid && communityAddress && <HidePostButton cid={cid} isReply={!!parentCid} postCid={postCid} onClose={handleClose} />}
-                  {(isAccountCommentAuthor || canAttemptAuthorDelete) && cid && <DeletePostButton post={editMenuPost} onClose={handleClose} />}
+                  {(isAccountCommentAuthor || canAttemptAuthorDelete) && cid && editMenuPost && <DeletePostButton post={editMenuPost} onClose={handleClose} />}
                   {cid && communityAddress && <CopyLinkButton cid={cid} communityAddress={communityAddress} linkType='thread' onClose={handleClose} />}
                   {cid && <CopyContentIdButton cid={cid} onClose={handleClose} />}
                   {authorAddress && <CopyUserIdButton address={authorAddress} onClose={handleClose} />}
@@ -373,7 +377,7 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
             )}
         </>
       )}
-      {isAccountMod && cid && (
+      {isAccountMod && cid && editMenuPost && (
         <span className={styles.checkbox}>
           <EditMenu post={editMenuPost} />
         </span>

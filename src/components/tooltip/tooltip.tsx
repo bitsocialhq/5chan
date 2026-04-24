@@ -3,7 +3,7 @@ import { useFloating, autoUpdate, offset, shift, useHover, useFocus, useDismiss,
 import styles from './tooltip.module.css';
 
 interface TooltipProps {
-  content: string;
+  content: ReactNode;
   children: ReactNode;
   showTooltip?: boolean;
 }

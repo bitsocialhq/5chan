@@ -209,6 +209,8 @@ const clickButton = async (text: string) => {
   });
 };
 
+const findButtonLink = (text: string) => Array.from(container.querySelectorAll<HTMLAnchorElement>('a.button')).find((candidate) => candidate.textContent === text);
+
 const changeSelect = async (select: HTMLSelectElement, value: string) => {
   await act(async () => {
     select.value = value;
@@ -282,6 +284,7 @@ describe('BoardButtons', () => {
     expect(container.querySelector('[data-testid="mod-queue-button"]')?.textContent).toBe('mu');
     expect(container.textContent).toContain('subscribe');
     expect(container.textContent).toContain('vote');
+    expect(findButtonLink('catalog')?.getAttribute('href')).toBe('/mu/catalog');
 
     const searchInput = container.querySelector<HTMLInputElement>('input[type="text"]');
     expect(searchInput).toBeTruthy();
@@ -317,6 +320,7 @@ describe('BoardButtons', () => {
     expect(container.textContent).not.toContain('archive');
     expect(container.querySelector('[data-testid="catalog-filters"]')?.textContent).toBe('catalog-filters');
     expect(container.querySelector('[data-testid="catalog-search"]')?.textContent).toBe('catalog-search');
+    expect(findButtonLink('return')?.getAttribute('href')).toBe('/all?t=24h');
 
     const selects = Array.from(container.querySelectorAll<HTMLSelectElement>('select'));
     expect(selects).toHaveLength(5);
@@ -429,8 +433,7 @@ describe('BoardButtons', () => {
 
     await renderWithRoute(createElement(MobileBoardButtons), '/mod/queue');
 
-    const returnLink = container.querySelector<HTMLAnchorElement>('a[href="/mod"]');
-    expect(returnLink?.getAttribute('href')).toBe('/mod');
+    expect(findButtonLink('return')?.getAttribute('href')).toBe('/mod');
 
     const thresholdInput = container.querySelector<HTMLInputElement>('input[type="number"]');
     const selects = Array.from(container.querySelectorAll<HTMLSelectElement>('select'));

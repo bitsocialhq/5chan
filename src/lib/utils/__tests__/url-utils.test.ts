@@ -12,6 +12,7 @@ import {
   copyShareLinkToClipboard,
   getHostname,
   is5chanLink,
+  isPrivateNetworkHostname,
   isValidCrossboardPattern,
   isValidPublishURL,
   isValidURL,
@@ -28,7 +29,21 @@ describe('url-utils', () => {
     expect(getHostname('https://www.5chan.app/#/music.eth')).toBe('5chan.app');
     expect(getHostname('not-a-url')).toBe('');
     expect(isValidURL('https://5chan.app')).toBe(true);
+    expect(isValidURL('http://5chan.app')).toBe(true);
+    expect(isValidURL('javascript:alert(1)')).toBe(false);
+    expect(isValidURL('data:text/html,hello')).toBe(false);
+    expect(isValidURL('file:///tmp/pic.png')).toBe(false);
     expect(isValidURL('not-a-url')).toBe(false);
+  });
+
+  it('detects private network hostnames used by URL safety checks', () => {
+    expect(isPrivateNetworkHostname('localhost')).toBe(true);
+    expect(isPrivateNetworkHostname('branch.localhost')).toBe(true);
+    expect(isPrivateNetworkHostname('127.0.0.1')).toBe(true);
+    expect(isPrivateNetworkHostname('192.168.1.1')).toBe(true);
+    expect(isPrivateNetworkHostname('[::1]')).toBe(true);
+    expect(isPrivateNetworkHostname('[::ffff:7f00:1]')).toBe(true);
+    expect(isPrivateNetworkHostname('example.com')).toBe(false);
   });
 
   it('normalizes publish links to the https URLs accepted by communities', () => {

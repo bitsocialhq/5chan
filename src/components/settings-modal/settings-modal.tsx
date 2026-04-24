@@ -23,6 +23,7 @@ const SettingsModal = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const hash = location.hash.slice(1);
+  const hashSection = hashToSection(hash);
 
   const closeModal = useCallback(() => {
     const newPath = location.pathname.replace(/\/settings$/, '');
@@ -43,30 +44,29 @@ const SettingsModal = () => {
   }, [closeModal]);
 
   const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
-    const section = hashToSection(hash);
-    return section ? new Set([section]) : new Set();
+    return hashSection ? new Set([hashSection]) : new Set();
   });
 
-  const showInterfaceSettings = expandedSections.has('interface-settings');
-  const showMediaHostingSettings = expandedSections.has('media-hosting-settings');
-  const showAccountSettings = expandedSections.has('account-settings');
-  const showSubscriptionsSettings = expandedSections.has('subscriptions-settings');
-  const showAdvancedSettings = expandedSections.has('advanced-settings');
+  const visibleExpandedSections = useMemo(() => {
+    if (!hashSection || expandedSections.has(hashSection)) return expandedSections;
+    const nextSections = new Set(expandedSections);
+    nextSections.add(hashSection);
+    return nextSections;
+  }, [expandedSections, hashSection]);
 
-  const allExpanded = useMemo(() => allSectionIds.every((id) => expandedSections.has(id)), [expandedSections]);
+  const showInterfaceSettings = visibleExpandedSections.has('interface-settings');
+  const showMediaHostingSettings = visibleExpandedSections.has('media-hosting-settings');
+  const showAccountSettings = visibleExpandedSections.has('account-settings');
+  const showSubscriptionsSettings = visibleExpandedSections.has('subscriptions-settings');
+  const showAdvancedSettings = visibleExpandedSections.has('advanced-settings');
+
+  const allExpanded = useMemo(() => allSectionIds.every((id) => visibleExpandedSections.has(id)), [visibleExpandedSections]);
 
   const basePath = location.pathname;
 
-  useEffect(() => {
-    const section = hashToSection(hash);
-    if (section && !expandedSections.has(section)) {
-      setExpandedSections((prev) => new Set(prev).add(section));
-    }
-  }, [hash]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const handleCategoryClick = (categoryId: string) => {
-    const isOpening = !expandedSections.has(categoryId);
-    const next = new Set(expandedSections);
+    const isOpening = !visibleExpandedSections.has(categoryId);
+    const next = new Set(visibleExpandedSections);
     if (isOpening) {
       next.add(categoryId);
     } else {
@@ -104,10 +104,20 @@ const SettingsModal = () => {
   return (
     <>
       <div className={styles.overlay} role='button' tabIndex={0} onClick={closeModal} onKeyDown={handleKeyDown(closeModal)} />
-      <div className={styles.settingsModal}>
+      <div className={styles.settingsModal} role='dialog' aria-modal='true' aria-labelledby='settings-modal-title'>
         <div className={styles.header}>
-          <span className={styles.title}>{t('settings')}</span>
-          <span className={styles.closeButton} role='button' tabIndex={0} title='close' onClick={closeModal} onKeyDown={handleKeyDown(closeModal)} />
+          <span id='settings-modal-title' className={styles.title}>
+            {t('settings')}
+          </span>
+          <span
+            className={styles.closeButton}
+            role='button'
+            tabIndex={0}
+            title='close'
+            aria-label={t('close')}
+            onClick={closeModal}
+            onKeyDown={handleKeyDown(closeModal)}
+          />
         </div>
         <div className={styles.expandAllSettings}>
           [

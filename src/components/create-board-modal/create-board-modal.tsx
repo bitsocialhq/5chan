@@ -28,10 +28,10 @@ const CreateBoardModal = () => {
       }}
       onClick={handleBackdropClick}
     >
-      <div className={styles.createBoardDialog}>
+      <div className={styles.createBoardDialog} role='dialog' aria-modal='true' aria-labelledby='create-board-modal-title'>
         <div className={styles.hd}>
-          <h2>Create a Board</h2>
-          <button className={styles.closeButton} onClick={closeCreateBoardModal} title='Close' />
+          <h2 id='create-board-modal-title'>Create a Board</h2>
+          <button className={styles.closeButton} onClick={closeCreateBoardModal} title='Close' aria-label='Close' />
         </div>
         <div className={styles.bd}>
           <div className={styles.section}>

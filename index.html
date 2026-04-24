@@ -55,15 +55,8 @@
     </script>
 
     <title>5chan — Decentralized Imageboard</title>
-    <!-- React Grab: toolbar-only activation; keyboard shortcut disabled to avoid copy/paste conflicts (dev only) -->
-    <script type="module">
-      if (import.meta.env.DEV) {
-        import("react-grab/core").then((m) => m.init({ activationShortcut: () => false }));
-      }
-    </script>
     <script>
-      // Redirect non-hash URLs to hash URLs on initial load
-      // Skip redirect for file:// protocol (Electron) or if pathname ends with index.html
+      // Redirect non-hash URLs before the app bundle is requested.
       if (
         window.location.protocol !== 'file:' &&
         window.location.pathname &&

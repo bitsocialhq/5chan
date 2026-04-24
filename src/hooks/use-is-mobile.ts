@@ -1,8 +1,7 @@
-import useWindowWidth from './use-window-width';
+import { useIsMobileBreakpoint } from './use-window-width';
 
 const useIsMobile = () => {
-  const windowWidth = useWindowWidth();
-  return windowWidth < 640;
+  return useIsMobileBreakpoint();
 };
 
 export default useIsMobile;

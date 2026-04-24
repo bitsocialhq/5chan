@@ -18,7 +18,10 @@ export const useCurrentTime = (updateIntervalSeconds: number | false = 60) => {
 
     // Update periodically
     const intervalId = setInterval(() => {
-      setCurrentTime(Date.now() / 1000);
+      setCurrentTime((previousTime) => {
+        const nextTime = Date.now() / 1000;
+        return Math.floor(nextTime) === Math.floor(previousTime) ? previousTime : nextTime;
+      });
     }, updateIntervalSeconds * 1000);
 
     return () => clearInterval(intervalId);

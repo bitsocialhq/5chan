@@ -1,3 +1,5 @@
+import { isPrivateNetworkHostname } from './utils/url-utils';
+
 const DEFAULT_RELEASE_API_URL = 'https://api.github.com/repos/bitsocialnet/5chan/releases/latest';
 const DEFAULT_RELEASES_BASE_URL = 'https://github.com/bitsocialnet/5chan/releases/tag/';
 
@@ -23,11 +25,15 @@ const isAllowedDownloadUrl = (url: string): boolean => {
     const parsedUrl = new URL(url);
     const hostname = parsedUrl.hostname.toLowerCase();
 
-    if (parsedUrl.protocol === 'https:' && hostname === 'github.com') {
+    if (parsedUrl.protocol === 'https:' && hostname === 'github.com' && parsedUrl.pathname.startsWith('/bitsocialnet/5chan/releases/download/')) {
       return true;
     }
 
-    return configuredDownloadHosts.has(hostname) && (parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:');
+    if (!configuredDownloadHosts.has(hostname)) {
+      return false;
+    }
+
+    return parsedUrl.protocol === 'https:' || (parsedUrl.protocol === 'http:' && isPrivateNetworkHostname(hostname));
   } catch {
     return false;
   }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { isValidPublishURL } from '../../lib/utils/url-utils';
 import { isAllView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
@@ -64,7 +65,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const [lengthError, setLengthError] = useState<string | null>(null);
 
   const checkContentLengthRef = useRef(
-    debounce((content: string, t: Function) => {
+    debounce((content: string, t: TFunction) => {
       const length = content.trim().length;
       if (length > 2000) {
         setError(null);
@@ -291,27 +292,33 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     <animated.div
       className={styles.container}
       ref={nodeRef}
+      role='dialog'
+      aria-modal='true'
+      aria-labelledby='reply-modal-title'
       style={{
         left,
         top,
         touchAction: 'none',
       }}
     >
-      <div className={`replyModalHandle ${styles.title}`} {...(!isMobile ? bind() : {})}>
+      <div id='reply-modal-title' className={`replyModalHandle ${styles.title}`} {...(!isMobile ? bind() : {})}>
         {t('reply_to_no', { no: threadNumber ?? '?' })}
         <button
+          type='button'
           className={styles.closeIcon}
           onClick={(e) => {
             e.stopPropagation();
             closeModal();
           }}
           title='close'
+          aria-label={t('close')}
         />
       </div>
       <div className={styles.replyForm}>
         <div className={styles.name}>
           <input
             type='text'
+            aria-label={t('name')}
             defaultValue={displayName}
             placeholder={displayName ? undefined : capitalize(t('name'))}
             onChange={(e) => {
@@ -324,6 +331,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           <input
             type='text'
             ref={urlRef}
+            aria-label={requirePostLinkIsMedia ? t('link_to_file') : t('link')}
             placeholder={capitalize(requirePostLinkIsMedia ? t('link_to_file') : t('link'))}
             disabled={isUploading}
             onChange={(e) => setPublishReplyOptions({ link: e.target.value })}
@@ -335,6 +343,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             rows={4}
             wrap='soft'
             ref={textRef}
+            aria-label={t('comment')}
             spellCheck={true}
             onInput={handleContentInput}
             onChange={handleContentChange}
@@ -352,7 +361,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           {showUploadControls && (
             <span className={styles.uploadContainer}>
               <span className={styles.uploadButton}>
-                <button onClick={handleUpload} disabled={isUploading}>
+                <button type='button' onClick={handleUpload} disabled={isUploading}>
                   {t('choose_file')}
                 </button>
               </span>
@@ -371,7 +380,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
               ]
             </span>
           )}
-          <button className={styles.publishButton} disabled={isResolvingExternalQuotes} onClick={onPublishReply}>
+          <button className={styles.publishButton} disabled={isResolvingExternalQuotes} type='button' onClick={onPublishReply}>
             {t('post')}
           </button>
         </div>

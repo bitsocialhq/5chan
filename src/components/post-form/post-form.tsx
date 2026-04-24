@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Comment, setAccount, useAccount, useEditedComment } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
@@ -52,7 +53,7 @@ const PostFormActions = ({
 }: {
   disableReplyPublish?: boolean;
   variant: 'reply' | 'post' | 'upload';
-  t: (key: string) => string;
+  t: TFunction;
   isInPostView: boolean;
   onPublishReply: () => void;
   onPublishPost: () => void;
@@ -62,17 +63,21 @@ const PostFormActions = ({
 }) => {
   if (variant === 'reply' && isInPostView) {
     return (
-      <button onClick={onPublishReply} disabled={disableReplyPublish || isUploading}>
+      <button type='button' onClick={onPublishReply} disabled={disableReplyPublish || isUploading}>
         {t('post')}
       </button>
     );
   }
   if (variant === 'post' && !isInPostView) {
-    return <button onClick={onPublishPost}>{t('post')}</button>;
+    return (
+      <button type='button' onClick={onPublishPost}>
+        {t('post')}
+      </button>
+    );
   }
   if (variant === 'upload' && showUploadControls) {
     return (
-      <button onClick={handleUpload} disabled={isUploading}>
+      <button type='button' onClick={handleUpload} disabled={isUploading}>
         {t('choose_file')}
       </button>
     );
@@ -81,7 +86,7 @@ const PostFormActions = ({
 };
 
 interface PostFormFieldsProps {
-  t: (key: string) => string;
+  t: TFunction;
   account: ReturnType<typeof useAccount>;
   displayName: string | undefined;
   isInPostView: boolean;
@@ -151,6 +156,7 @@ const PostFormFields = ({
       <td>
         <input
           type='text'
+          aria-label={t('name')}
           placeholder={!displayName ? capitalize(t('anonymous')) : undefined}
           defaultValue={displayName || undefined}
           onChange={(e) => {
@@ -182,6 +188,7 @@ const PostFormFields = ({
         <td>
           <input
             type='text'
+            aria-label={t('subject')}
             ref={subjectRef}
             onChange={(e) => {
               setPublishPostOptions({ title: e.target.value });
@@ -204,7 +211,7 @@ const PostFormFields = ({
     <tr>
       <td>{t('comment')}</td>
       <td>
-        <textarea cols={48} rows={4} wrap='soft' ref={textRef} onChange={handleContentChange} />
+        <textarea cols={48} rows={4} wrap='soft' ref={textRef} aria-label={t('comment')} onChange={handleContentChange} />
         {lengthError && <div className={styles.error}>{lengthError}</div>}
       </td>
     </tr>
@@ -213,6 +220,7 @@ const PostFormFields = ({
       <td className={styles.linkField}>
         <input
           type='text'
+          aria-label={requirePostLinkIsMedia ? t('link_to_file') : t('link')}
           autoCorrect='off'
           autoComplete='off'
           spellCheck='false'
@@ -269,7 +277,7 @@ const PostFormFields = ({
       <tr>
         <td>{t('board')}</td>
         <td>
-          <select onChange={(e) => setPublishPostOptions({ communityAddress: e.target.value })} value={communityAddress}>
+          <select aria-label={t('board')} onChange={(e) => setPublishPostOptions({ communityAddress: e.target.value })} value={communityAddress}>
             <option value=''>{t('choose_one')}</option>
             {isInAllView &&
               directories
@@ -334,7 +342,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const [lengthError, setLengthError] = useState<string | null>(null);
 
   const checkContentLength = useRef(
-    debounce((content: string, t: Function) => {
+    debounce((content: string, t: TFunction) => {
       const length = content.trim().length;
       if (length > 2000) {
         setLengthError(`${t('error')}: ${t('comment_field_too_long', { length })}`);
@@ -398,7 +406,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
 
   // in post page, publish a reply to the post
   const isInPostView = isPostPageView(location.pathname, params);
-  const cid = params?.commentCid as string;
+  const cid = params?.commentCid || '';
   const { isResolvingExternalQuotes, publishReply, publishReplyError, publishReplyStateMessage, resetPublishReplyOptions, replyIndex, setPublishReplyOptions } =
     usePublishReply({ cid, communityAddress, postCid });
 
@@ -533,8 +541,8 @@ const PostForm = () => {
   const isMobile = useIsMobile();
 
   const commentCid = params?.commentCid;
-  const post = useCommunitiesPagesStore((state) => state.comments[commentCid as string]);
-  let comment: Comment = post;
+  const post = useCommunitiesPagesStore((state) => (commentCid ? state.comments[commentCid] : undefined));
+  let comment: Comment | undefined = post;
   // handle pending mod or author edit
   const { editedComment } = useEditedComment({ comment });
   if (editedComment) {

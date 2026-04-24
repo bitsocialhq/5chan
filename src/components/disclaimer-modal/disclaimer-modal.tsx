@@ -43,10 +43,10 @@ const DisclaimerModal = () => {
       }}
       onClick={handleBackdropClick}
     >
-      <div className={styles.disclaimerDialog}>
+      <div className={styles.disclaimerDialog} role='dialog' aria-modal='true' aria-labelledby='disclaimer-modal-title'>
         <div className={styles.hd}>
-          <h2>Disclaimer</h2>
-          <button className={`${styles.closeButton} ${isHomeView ? styles.closeButtonHome : ''}`} onClick={closeDisclaimerModal} title='Close' />
+          <h2 id='disclaimer-modal-title'>Disclaimer</h2>
+          <button className={`${styles.closeButton} ${isHomeView ? styles.closeButtonHome : ''}`} onClick={closeDisclaimerModal} title='Close' aria-label='Close' />
         </div>
         <div className={styles.bd}>
           <p>This web application may contain content for mature audiences only. By clicking &quot;Accept,&quot; you confirm that:</p>

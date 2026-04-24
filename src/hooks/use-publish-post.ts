@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Comment, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
+import { useShallow } from 'zustand/react/shallow';
 import usePublishPostStore from '../stores/use-publish-post-store';
 import useChallengesStore from '../stores/use-challenges-store';
 import usePublishAuthorDomainGuard, { getPublishAuthorDomainErrorMessage } from './use-publish-author-domain-guard';
@@ -9,14 +10,16 @@ type UsePublishPostOptions = {
 };
 
 const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
-  const { author, title, content, link, spoiler, publishCommentOptions } = usePublishPostStore((state) => ({
-    author: state.author,
-    title: state.title || undefined,
-    content: state.content || undefined,
-    link: state.link || undefined,
-    spoiler: state.spoiler || false,
-    publishCommentOptions: state.publishCommentOptions,
-  }));
+  const { author, title, content, link, spoiler, publishCommentOptions } = usePublishPostStore(
+    useShallow((state) => ({
+      author: state.author,
+      title: state.title || undefined,
+      content: state.content || undefined,
+      link: state.link || undefined,
+      spoiler: state.spoiler || false,
+      publishCommentOptions: state.publishCommentOptions,
+    })),
+  );
 
   const setPublishPostStore = usePublishPostStore((state) => state.setPublishPostStore);
   const resetPublishPostStore = usePublishPostStore((state) => state.resetPublishPostStore);

@@ -32,6 +32,7 @@ vi.mock('../../../lib/utils/media-utils', () => ({
 
 vi.mock('../../../lib/utils/url-utils', () => ({
   getHostname: () => testState.hostname,
+  parseHttpUrl: (value: string) => new URL(value),
 }));
 
 vi.mock('../../../stores/use-expanded-media-store', () => {

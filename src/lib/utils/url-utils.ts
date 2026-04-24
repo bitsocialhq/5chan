@@ -11,12 +11,40 @@ export const getHostname = (url: string) => {
 };
 
 export const isValidURL = (url: string) => {
+  return parseHttpUrl(url) !== null;
+};
+
+export const parseHttpUrl = (url: string): URL | null => {
   try {
-    new URL(url);
-    return true;
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:' ? parsedUrl : null;
   } catch {
-    return false;
+    return null;
   }
+};
+
+export const isPrivateNetworkHostname = (hostname: string): boolean => {
+  const normalizedHostname = hostname.toLowerCase().replace(/^\[|\]$/g, '');
+
+  if (
+    normalizedHostname === 'localhost' ||
+    normalizedHostname.endsWith('.localhost') ||
+    normalizedHostname.endsWith('.local') ||
+    normalizedHostname === '0.0.0.0' ||
+    normalizedHostname === '::1' ||
+    normalizedHostname === '::' ||
+    normalizedHostname.startsWith('::ffff:')
+  ) {
+    return true;
+  }
+
+  const ipv4Parts = normalizedHostname.split('.').map((part) => Number(part));
+  if (ipv4Parts.length === 4 && ipv4Parts.every((part) => Number.isInteger(part) && part >= 0 && part <= 255)) {
+    const [first, second] = ipv4Parts;
+    return first === 10 || first === 127 || (first === 169 && second === 254) || (first === 172 && second >= 16 && second <= 31) || (first === 192 && second === 168);
+  }
+
+  return normalizedHostname.startsWith('fc') || normalizedHostname.startsWith('fd') || normalizedHostname.startsWith('fe80:');
 };
 
 export const normalizePublishURL = (url: string) => {

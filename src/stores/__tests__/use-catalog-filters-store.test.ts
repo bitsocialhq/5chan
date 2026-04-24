@@ -87,7 +87,7 @@ describe('useCatalogFiltersStore', () => {
     expect(persisted).not.toContain('"filteredCids"');
   });
 
-  it('applies search and content filters, hides matching comments, and counts hidden cids only once per board', async () => {
+  it('applies search and content filters without mutating counts from the predicate', async () => {
     const useCatalogFiltersStore = await loadStore();
 
     useCatalogFiltersStore.getState().setFilterItems([createFilterItem('spam', { hide: true }), createFilterItem('highlight', { hide: false, top: true })] as never);
@@ -103,15 +103,13 @@ describe('useCatalogFiltersStore', () => {
     expect(filter?.({ cid: 'cid-3', content: 'topic highlight', communityAddress: 'music.eth' } as never)).toBe(true);
     expect(filter?.({ cid: 'cid-4', content: 'ordinary update', communityAddress: 'music.eth' } as never)).toBe(false);
 
-    vi.runAllTimers();
-
     const state = useCatalogFiltersStore.getState();
     expect(testState.commentMatchesPatternMock).toHaveBeenCalled();
-    expect(state.filterItems[0].count).toBe(1);
-    expect(state.filterItems[0].filteredCids).toEqual(new Set(['cid-1']));
-    expect(state.filterItems[0].communityCounts.get('music.eth')).toBe(1);
-    expect(state.filteredCount).toBe(1);
-    expect(state.getFilteredCountForCurrentCommunity()).toBe(1);
+    expect(state.filterItems[0].count).toBe(0);
+    expect(state.filterItems[0].filteredCids).toEqual(new Set());
+    expect(state.filterItems[0].communityCounts.get('music.eth')).toBe(0);
+    expect(state.filteredCount).toBe(0);
+    expect(state.getFilteredCountForCurrentCommunity()).toBe(0);
   });
 
   it('preserves counts for unchanged filters when saving and clears matched filters', async () => {
