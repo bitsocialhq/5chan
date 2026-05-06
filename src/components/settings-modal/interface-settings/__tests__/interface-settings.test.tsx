@@ -250,8 +250,6 @@ describe('InterfaceSettings', () => {
       availableUpdate: {
         runtime: 'android',
         targetVersion: '9.9.9',
-        assetName: '5chan-9.9.9.apk',
-        downloadUrl: 'https://github.com/bitsocialnet/5chan/releases/download/v9.9.9/5chan-9.9.9.apk',
         releaseUrl: 'https://github.com/bitsocialnet/5chan/releases/tag/v9.9.9',
       },
     });

@@ -24,13 +24,21 @@ interface WebAppUpdateInfo {
   releaseUrl: string;
 }
 
-interface NativeAppUpdateInfo {
-  runtime: 'electron' | 'android';
+interface ElectronAppUpdateInfo {
+  runtime: 'electron';
   targetVersion: string;
   assetName: string;
   downloadUrl: string;
   releaseUrl: string;
 }
+
+interface AndroidAppUpdateInfo {
+  runtime: 'android';
+  targetVersion: string;
+  releaseUrl: string;
+}
+
+type NativeAppUpdateInfo = ElectronAppUpdateInfo | AndroidAppUpdateInfo;
 
 type AvailableAppUpdate = WebAppUpdateInfo | NativeAppUpdateInfo;
 
@@ -160,10 +168,21 @@ const fetchLatestReleaseUpdate = async (runtime: Extract<AppRuntime, 'electron' 
     return null;
   }
 
+  const releaseUrl =
+    typeof releaseData.html_url === 'string' && releaseData.html_url.trim().length > 0 ? releaseData.html_url : getReleaseUrl(releaseData.tag_name || targetVersion);
+
+  if (runtime === 'android') {
+    return {
+      runtime,
+      targetVersion,
+      releaseUrl,
+    };
+  }
+
   const assets = Array.isArray(releaseData.assets)
     ? releaseData.assets.filter((asset) => typeof asset?.name === 'string' && typeof asset?.browser_download_url === 'string')
     : [];
-  const matchedAsset = runtime === 'android' ? assets.find((asset) => asset.name.toLowerCase().endsWith('.apk')) || null : await findMatchingElectronAsset(assets);
+  const matchedAsset = await findMatchingElectronAsset(assets);
 
   if (!matchedAsset || !isAllowedDownloadUrl(matchedAsset.browser_download_url)) {
     return null;
@@ -174,8 +193,7 @@ const fetchLatestReleaseUpdate = async (runtime: Extract<AppRuntime, 'electron' 
     targetVersion,
     assetName: matchedAsset.name,
     downloadUrl: matchedAsset.browser_download_url,
-    releaseUrl:
-      typeof releaseData.html_url === 'string' && releaseData.html_url.trim().length > 0 ? releaseData.html_url : getReleaseUrl(releaseData.tag_name || targetVersion),
+    releaseUrl,
   };
 };
 
@@ -204,6 +222,13 @@ const resolveAvailableAppUpdate = async (): Promise<AvailableAppUpdate | null> =
   return fetchLatestReleaseUpdate(runtime);
 };
 
+const openReleasePage = (url: string): void => {
+  const openedWindow = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!openedWindow) {
+    window.location.assign(url);
+  }
+};
+
 const applyAvailableAppUpdate = async (update: AvailableAppUpdate): Promise<void> => {
   if (!isAppUpdateEnabled) {
     throw new Error('App updates are disabled for this build');
@@ -229,12 +254,8 @@ const applyAvailableAppUpdate = async (update: AvailableAppUpdate): Promise<void
     return;
   }
 
-  const { default: AppUpdater } = await import('../plugins/app-updater');
-  await AppUpdater.downloadAndInstallUpdate({
-    url: update.downloadUrl,
-    fileName: update.assetName,
-  });
+  openReleasePage(update.releaseUrl);
 };
 
-export type { AppRuntime, AvailableAppUpdate, NativeAppUpdateInfo, WebAppUpdateInfo };
+export type { AndroidAppUpdateInfo, AppRuntime, AvailableAppUpdate, ElectronAppUpdateInfo, NativeAppUpdateInfo, WebAppUpdateInfo };
 export { applyAvailableAppUpdate, fetchLatestStableVersion, getAppRuntime, isAppUpdateEnabled, isElectron, refreshServiceWorkerRegistration, resolveAvailableAppUpdate };
