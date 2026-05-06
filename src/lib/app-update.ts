@@ -229,6 +229,11 @@ const openReleasePage = (url: string): void => {
   }
 };
 
+const openAndroidReleasePage = async (url: string): Promise<void> => {
+  const { Browser } = await import('@capacitor/browser');
+  await Browser.open({ url });
+};
+
 const applyAvailableAppUpdate = async (update: AvailableAppUpdate): Promise<void> => {
   if (!isAppUpdateEnabled) {
     throw new Error('App updates are disabled for this build');
@@ -254,7 +259,10 @@ const applyAvailableAppUpdate = async (update: AvailableAppUpdate): Promise<void
     return;
   }
 
-  openReleasePage(update.releaseUrl);
+  await openAndroidReleasePage(update.releaseUrl).catch((error) => {
+    console.error('Failed to open Android release page with native browser', error);
+    openReleasePage(update.releaseUrl);
+  });
 };
 
 export type { AndroidAppUpdateInfo, AppRuntime, AvailableAppUpdate, ElectronAppUpdateInfo, NativeAppUpdateInfo, WebAppUpdateInfo };

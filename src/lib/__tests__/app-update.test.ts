@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const testState = vi.hoisted(() => ({
   capacitorPlatform: 'web',
+  browserOpenMock: vi.fn(),
   electronDownloadAndInstallUpdateMock: vi.fn(),
   electronGetPlatformMock: vi.fn(),
   fetchMock: vi.fn(),
@@ -11,6 +12,12 @@ const testState = vi.hoisted(() => ({
 vi.mock('@capacitor/core', () => ({
   Capacitor: {
     getPlatform: () => testState.capacitorPlatform,
+  },
+}));
+
+vi.mock('@capacitor/browser', () => ({
+  Browser: {
+    open: (options: unknown) => testState.browserOpenMock(options),
   },
 }));
 
@@ -33,6 +40,7 @@ describe('app-update', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.capacitorPlatform = 'web';
+    testState.browserOpenMock.mockReset();
     testState.electronDownloadAndInstallUpdateMock.mockReset();
     testState.electronGetPlatformMock.mockReset();
     testState.fetchMock.mockReset();
@@ -104,6 +112,7 @@ describe('app-update', () => {
     ).rejects.toThrow('App updates are disabled for this build');
     expect(isAppUpdateEnabled).toBe(false);
     expect(testState.fetchMock).not.toHaveBeenCalled();
+    expect(testState.browserOpenMock).not.toHaveBeenCalled();
     expect(testState.openMock).not.toHaveBeenCalled();
   });
 
@@ -361,6 +370,7 @@ describe('app-update', () => {
       url: 'https://github.com/bitsocialnet/5chan/releases/download/v9.9.9/5chan-9.9.9-x64.Setup.exe',
       fileName: '5chan-9.9.9-x64.Setup.exe',
     });
+    expect(testState.browserOpenMock).not.toHaveBeenCalled();
     expect(testState.openMock).not.toHaveBeenCalled();
   });
 
@@ -372,6 +382,9 @@ describe('app-update', () => {
       releaseUrl: 'https://github.com/bitsocialnet/5chan/releases/tag/v9.9.9',
     });
 
-    expect(testState.openMock).toHaveBeenCalledWith('https://github.com/bitsocialnet/5chan/releases/tag/v9.9.9', '_blank', 'noopener,noreferrer');
+    expect(testState.browserOpenMock).toHaveBeenCalledWith({
+      url: 'https://github.com/bitsocialnet/5chan/releases/tag/v9.9.9',
+    });
+    expect(testState.openMock).not.toHaveBeenCalled();
   });
 });

@@ -10,6 +10,7 @@
   "dependencies": {
     "@bitsocial/bitsocial-react-hooks": "0.1.6",
     "@capacitor/app": "7.0.1",
+    "@capacitor/browser": "7.0.5",
     "@capacitor/status-bar": "7.0.1",
     "@capawesome/capacitor-android-edge-to-edge-support": "7.2.2",
     "@chenglou/pretext": "0.0.5",

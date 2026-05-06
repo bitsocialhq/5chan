@@ -12,6 +12,7 @@ __metadata:
     "@bitsocial/bitsocial-react-hooks": "npm:0.1.6"
     "@capacitor/android": "npm:7.4.5"
     "@capacitor/app": "npm:7.0.1"
+    "@capacitor/browser": "npm:7.0.5"
     "@capacitor/cli": "npm:7.4.5"
     "@capacitor/core": "npm:7.4.5"
     "@capacitor/status-bar": "npm:7.0.1"
@@ -1584,6 +1585,15 @@ __metadata:
   peerDependencies:
     "@capacitor/core": ">=7.0.0"
   checksum: 10c0/dded2134a429b3c9fb377233ec6c7f73a6cc66941294c0b8d5ad8f53fa0511a168ed3679daaff111644c85d72f552e3006a809c7ab5550b293316a978a31806c
+  languageName: node
+  linkType: hard
+
+"@capacitor/browser@npm:7.0.5":
+  version: 7.0.5
+  resolution: "@capacitor/browser@npm:7.0.5"
+  peerDependencies:
+    "@capacitor/core": ">=7.0.0"
+  checksum: 10c0/d88cdfb2d0368e8b6edaf894989b1f9d957965d34fd8b5002b0fff05eee1b51d7a7cfa048624f13bd0e41530262655aa632f4cb8621f77ac789a642738081981
   languageName: node
   linkType: hard
 
