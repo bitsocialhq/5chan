@@ -3,11 +3,13 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
 import { createHash } from 'crypto';
+import { execFileSync } from 'child_process';
 import { VitePWA } from 'vite-plugin-pwa';
 
 const { version: packageVersion } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 const appVersion = `${process.env.VITE_APP_VERSION || packageVersion}`.trim() || packageVersion;
 process.env.VITE_APP_VERSION = appVersion;
+const releaseTag = `v${appVersion.replace(/^v/i, '').split('-')[0]}`;
 const publicBase = process.env.PUBLIC_URL || '/';
 const buildOutDir = 'build';
 const basePathPrefix = (() => {
@@ -35,6 +37,72 @@ const baselineAppShellUrls = new Set([
   'manifest-icon-192x192.png',
   'manifest-icon-512x512.png',
 ]);
+
+function readGitRef(args) {
+  try {
+    return execFileSync('git', args, {
+      cwd: new URL('.', import.meta.url),
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+      timeout: 5000,
+    }).trim();
+  } catch {
+    return '';
+  }
+}
+
+function firstNonEmpty(...values) {
+  return values.map((value) => `${value || ''}`.trim()).find(Boolean) || '';
+}
+
+function normalizeCommitRef(ref) {
+  return `${ref || ''}`.trim().toLowerCase();
+}
+
+function isSameCommitRef(left, right) {
+  const normalizedLeft = normalizeCommitRef(left);
+  const normalizedRight = normalizeCommitRef(right);
+
+  if (!normalizedLeft || !normalizedRight) {
+    return false;
+  }
+
+  return normalizedLeft === normalizedRight || normalizedLeft.startsWith(normalizedRight) || normalizedRight.startsWith(normalizedLeft);
+}
+
+function readRemoteTagCommitRef(tagName) {
+  const tagRef = `refs/tags/${tagName}`;
+  const output = readGitRef(['ls-remote', '--tags', 'origin', tagRef, `${tagRef}^{}`]);
+  const lines = output
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const releaseLine = lines.find((line) => line.endsWith(`${tagRef}^{}`)) || lines.find((line) => line.endsWith(tagRef)) || '';
+
+  return releaseLine.split(/\s+/)[0] || '';
+}
+
+function resolveBuildCommitRef() {
+  return firstNonEmpty(process.env.VITE_COMMIT_REF, process.env.VERCEL_GIT_COMMIT_SHA, process.env.GITHUB_SHA, process.env.COMMIT_REF, readGitRef(['rev-parse', 'HEAD']));
+}
+
+function resolveReleaseCommitRef() {
+  const configuredReleaseCommitRef = firstNonEmpty(process.env.VITE_LATEST_RELEASE_COMMIT_REF, process.env.LATEST_RELEASE_COMMIT_REF);
+
+  if (configuredReleaseCommitRef) {
+    return configuredReleaseCommitRef;
+  }
+
+  if (process.env.GITHUB_REF_NAME === releaseTag) {
+    return resolveBuildCommitRef();
+  }
+
+  return firstNonEmpty(readGitRef(['rev-list', '-n', '1', releaseTag]), readRemoteTagCommitRef(releaseTag));
+}
+
+const buildCommitRef = resolveBuildCommitRef();
+const releaseCommitRef = resolveReleaseCommitRef();
+const displayCommitRef = buildCommitRef && !isSameCommitRef(buildCommitRef, releaseCommitRef) ? buildCommitRef : '';
 
 function normalizePrecacheUrl(url) {
   const normalizedUrl = url.split('?')[0].replace(/^[./]+/, '');
@@ -78,7 +146,11 @@ function keepAppShellPrecacheOnly(manifestEntries) {
 }
 
 function appVersionMetadataPlugin() {
-  const payload = `${JSON.stringify({ version: appVersion })}\n`;
+  const payload = `${JSON.stringify({
+    version: appVersion,
+    commitRef: buildCommitRef || undefined,
+    releaseCommitRef: releaseCommitRef || undefined,
+  })}\n`;
 
   return {
     name: 'fivechan-version-metadata',
@@ -375,7 +447,7 @@ export default defineConfig({
   },
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),
-    'process.env.VITE_COMMIT_REF': JSON.stringify(process.env.COMMIT_REF),
+    'import.meta.env.VITE_COMMIT_REF': JSON.stringify(displayCommitRef),
     'process.version': JSON.stringify(''),
     global: 'globalThis',
     __dirname: '""',
