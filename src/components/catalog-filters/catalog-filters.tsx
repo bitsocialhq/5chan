@@ -91,7 +91,12 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
   }, []);
 
   const handleSave = useCallback(() => {
-    const nonEmptyFilters = localFilterItems.filter((item) => item.text.trim() !== '').map(({ id: _id, ...rest }) => rest);
+    const nonEmptyFilters = localFilterItems.reduce<Omit<CatalogFilterItemStore, 'id'>[]>((filters, item) => {
+      if (item.text.trim() === '') return filters;
+      const { id: _id, ...rest } = item;
+      filters.push(rest);
+      return filters;
+    }, []);
 
     saveAndApplyFilters(nonEmptyFilters);
 
@@ -104,19 +109,19 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
     onSave();
   }, [saveAndApplyFilters, localFilterItems, onSave, resetFeed]);
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleSave();
-      }
-    },
-    [handleSave],
-  );
+  const handleSaveRef = useRef(handleSave);
+  handleSaveRef.current = handleSave;
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+    const handleDocumentKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleSaveRef.current();
+      }
+    };
+
+    document.addEventListener('keydown', handleDocumentKeyDown);
+    return () => document.removeEventListener('keydown', handleDocumentKeyDown);
+  }, []);
 
   const updateLocalFilterItem = useCallback((index: number, item: any) => {
     setLocalFilterItems((prev) => prev.map((f, i) => (i === index ? item : f)));

@@ -254,11 +254,10 @@ const getBrowserTransferStats = async (client?: Libp2pClientShape): Promise<Tran
     const helia = client?._helia;
     const counterStats = getTransferStatsFromHeliaCounters(helia);
     const metricSources = [helia?.metrics, helia?.libp2p?.metrics].filter(Boolean);
-    let metricStats: TransferStats = {};
-
-    for (const source of metricSources) {
-      metricStats = mergeTransferStats(metricStats, getTransferStatsFromMetricSnapshot(await getMetricSnapshot(source)));
-    }
+    const metricSnapshots = await Promise.all(metricSources.map((source) => getMetricSnapshot(source)));
+    const metricStats = metricSnapshots
+      .map((snapshot) => getTransferStatsFromMetricSnapshot(snapshot))
+      .reduce<TransferStats>((stats, nextStats) => mergeTransferStats(stats, nextStats), {});
 
     return mergeTransferStats(counterStats, metricStats);
   } catch {

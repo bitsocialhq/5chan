@@ -511,7 +511,7 @@ const ModQueueCard = memo(({ comment, showBoard = false, boardPath, boardDisplay
           <span className={styles.cardNumber}>No. {number ?? 'N/A'}</span>
           {showBoard && boardPath && (
             <>
-              <span className={styles.cardBoardSeparator}> — </span>
+              <span className={styles.cardBoardSeparator}> - </span>
               <span className={styles.cardBoard}>{modQueueUrl ? <Link to={modQueueUrl}>/{boardDisplayPath}/</Link> : <span>/{boardDisplayPath}/</span>}</span>
             </>
           )}
@@ -586,6 +586,27 @@ const findBoardAddressByCode = (code: string, dirs: DirectoryCommunity[]): strin
     return directory === code;
   });
   return entry?.address || null;
+};
+
+const ModQueueBoardCount = ({ normal, urgent }: { normal: number; urgent: number }) => {
+  const total = normal + urgent;
+  if (total === 0) return null;
+  return (
+    <strong>
+      (
+      {urgent > 0 && normal > 0 ? (
+        <>
+          <span className={styles.modQueueButtonCount}>{normal}</span>
+          <span className={`${styles.modQueueButtonCount} ${styles.modQueueButtonCountAlert}`}>+{urgent}</span>
+        </>
+      ) : urgent > 0 ? (
+        <span className={`${styles.modQueueButtonCount} ${styles.modQueueButtonCountAlert}`}>{urgent}</span>
+      ) : (
+        <span className={styles.modQueueButtonCount}>{total}</span>
+      )}
+      )
+    </strong>
+  );
 };
 
 const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses }: ModQueueBoardSummaryProps) => {
@@ -666,32 +687,16 @@ const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses }: 
     return null;
   }
 
-  const renderCount = (normal: number, urgent: number) => {
-    const total = normal + urgent;
-    if (total === 0) return null;
-    return (
-      <strong>
-        (
-        {urgent > 0 && normal > 0 ? (
-          <>
-            <span className={styles.modQueueButtonCount}>{normal}</span>
-            <span className={`${styles.modQueueButtonCount} ${styles.modQueueButtonCountAlert}`}>+{urgent}</span>
-          </>
-        ) : urgent > 0 ? (
-          <span className={`${styles.modQueueButtonCount} ${styles.modQueueButtonCountAlert}`}>{urgent}</span>
-        ) : (
-          <span className={styles.modQueueButtonCount}>{total}</span>
-        )}
-        )
-      </strong>
-    );
-  };
-
   return (
     <span className={styles.boardSummary}>
       <button type='button' className={`${styles.boardSummaryLink} ${!selectedBoardFilter ? styles.boardSummaryLinkSelected : ''}`} onClick={handleSelectAll}>
         {t('all')}
-        {totalNormal + totalUrgent > 0 && <> {renderCount(totalNormal, totalUrgent)}</>}
+        {totalNormal + totalUrgent > 0 && (
+          <>
+            {' '}
+            <ModQueueBoardCount normal={totalNormal} urgent={totalUrgent} />
+          </>
+        )}
       </button>
       {orderedAddresses.map((address) => {
         const boardPath = getBoardPath(address, directories);
@@ -709,7 +714,12 @@ const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses }: 
               onClick={() => handleSelectBoard(address)}
             >
               {displayText}
-              {normal + urgent > 0 && <> {renderCount(normal, urgent)}</>}
+              {normal + urgent > 0 && (
+                <>
+                  {' '}
+                  <ModQueueBoardCount normal={normal} urgent={urgent} />
+                </>
+              )}
             </button>
           </React.Fragment>
         );
@@ -905,7 +915,10 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   }, [queuedCommentSnapshots, rememberCommentsInQueue]);
 
   const feedWithHistory = useMemo(() => {
-    const liveCids = new Set(feed.map((comment) => comment.cid).filter(Boolean));
+    const liveCids = feed.reduce<Set<string>>((cids, comment) => {
+      if (comment.cid) cids.add(comment.cid);
+      return cids;
+    }, new Set());
     return [
       ...feed,
       ...(queuedCommentHistory.filter((comment) => {

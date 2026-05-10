@@ -12,8 +12,12 @@ const stringToDirectories = (str: string): Set<string> => {
   const codes = str
     .trim()
     .split(/\s+/)
-    .filter((code) => code.length > 0)
-    .map((code) => code.toLowerCase());
+    .reduce<string[]>((items, code) => {
+      if (code.length > 0) {
+        items.push(code.toLowerCase());
+      }
+      return items;
+    }, []);
   return new Set(codes);
 };
 
@@ -118,7 +122,7 @@ const BoardsBarEditModal = () => {
       role='button'
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
           e.preventDefault();
           closeBoardsBarEditModal();
         }

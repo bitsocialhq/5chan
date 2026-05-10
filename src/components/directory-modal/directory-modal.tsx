@@ -47,7 +47,7 @@ const DirectoryModal = () => {
               <a href='https://github.com/bitsocialnet/bitsocial-cli' target='_blank' rel='noopener noreferrer'>
                 bitsocial-cli
               </a>
-              . Users can access it anytime via the search bar, direct links, or by subscribing with the &quot;[Subscribe]&quot; button—
+              . Users can access it anytime via the search bar, direct links, or by subscribing with the &quot;[Subscribe]&quot; button;{' '}
               <strong>no directory assignment or dev approval needed</strong>. Directory boards are simply featured in homepage categories (like &quot;Anime &
               Manga&quot;) and are handpicked by devs until directory voting is available.
             </p>

@@ -8,7 +8,7 @@ interface DirectoriesMetadata {
   updatedAt: number;
 }
 
-export interface DirectoryFeatures {
+interface DirectoryFeatures {
   postsPerPage?: number;
   pseudonymityMode?: string;
   nsfw?: boolean;

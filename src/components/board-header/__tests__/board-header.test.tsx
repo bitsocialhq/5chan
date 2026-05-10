@@ -62,7 +62,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts', () => ({
     selector({
       accounts: {
         active: {
-          subscriptions: new Array(testState.subscriptionsCount).fill('sub'),
+          subscriptions: Array.from({ length: testState.subscriptionsCount }, () => 'sub'),
         },
       },
       activeAccountId: 'active',

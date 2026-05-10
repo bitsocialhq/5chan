@@ -83,7 +83,7 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: 999,
+              zIndex: 30,
             }}
             role='button'
             tabIndex={0}
@@ -144,13 +144,6 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
                         className={styles.colorPreview}
                         style={{
                           backgroundColor: customColor || '#fff',
-                          display: 'inline-block',
-                          width: '16px',
-                          height: '16px',
-                          border: '1px solid #aaa',
-                          verticalAlign: 'middle',
-                          marginLeft: '5px',
-                          cursor: 'pointer',
                         }}
                         role='button'
                         tabIndex={0}

@@ -219,6 +219,14 @@ const PureP2PBrowserSettings = ({ pureP2PBrowserRef }: SettingsProps) => {
 
 const isElectron = window.electronApi?.isElectron === true;
 
+const getTrimmedLines = (value: string | undefined): string[] | undefined => {
+  return value?.split('\n').reduce<string[]>((lines, line) => {
+    const trimmedLine = line.trim();
+    if (trimmedLine) lines.push(trimmedLine);
+    return lines;
+  }, []);
+};
+
 const AdvancedSettings = () => {
   const { t } = useTranslation();
   const account = useAccount() as AccountShape | undefined;
@@ -234,27 +242,15 @@ const AdvancedSettings = () => {
   const pureP2PBrowserRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
-    const ipfsGatewayUrls = ipfsGatewayUrlsRef.current?.value
-      .split('\n')
-      .map((url) => url.trim())
-      .filter((url) => url !== '');
+    const ipfsGatewayUrls = getTrimmedLines(ipfsGatewayUrlsRef.current?.value);
 
     const mediaIpfsGatewayUrl = mediaIpfsGatewayUrlRef.current?.value.trim();
 
-    const pubsubKuboRpcClientsOptions = pubsubProvidersRef.current?.value
-      .split('\n')
-      .map((url) => url.trim())
-      .filter((url) => url !== '');
+    const pubsubKuboRpcClientsOptions = getTrimmedLines(pubsubProvidersRef.current?.value);
 
-    const ethRpcUrls = ethRpcRef.current?.value
-      .split('\n')
-      .map((url) => url.trim())
-      .filter((url) => url !== '');
+    const ethRpcUrls = getTrimmedLines(ethRpcRef.current?.value);
 
-    const httpRoutersOptions = httpRoutersRef.current?.value
-      .split('\n')
-      .map((url) => url.trim())
-      .filter((url) => url !== '');
+    const httpRoutersOptions = getTrimmedLines(httpRoutersRef.current?.value);
 
     const pkcRpcClientsOptions = p2pRpcRef.current?.value.trim() ? [p2pRpcRef.current.value.trim()] : undefined;
     const dataPath = p2pDataPathRef.current?.value.trim() || undefined;

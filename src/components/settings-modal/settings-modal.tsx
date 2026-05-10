@@ -32,16 +32,16 @@ const hashToSection = (hash: string, sectionIds = allSectionIds): string | null 
 const SettingsModal = () => {
   const { t } = useTranslation();
   const account = useAccount();
-  const location = useLocation();
+  const { hash: locationHash, pathname } = useLocation();
   const navigate = useNavigate();
-  const hash = location.hash.slice(1);
+  const hash = locationHash.slice(1);
   const sectionIds = useMemo(() => (shouldShowP2PSettingsSection(account) ? [...allSectionIds, P2P_STATS_SECTION_ID] : allSectionIds), [account]);
   const hashSection = hashToSection(hash, sectionIds);
 
   const closeModal = useCallback(() => {
-    const newPath = location.pathname.replace(/\/settings$/, '');
+    const newPath = pathname.replace(/\/settings$/, '');
     navigate(newPath);
-  }, [location.pathname, navigate]);
+  }, [pathname, navigate]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -77,7 +77,7 @@ const SettingsModal = () => {
 
   const allExpanded = useMemo(() => sectionIds.every((id) => visibleExpandedSections.has(id)), [sectionIds, visibleExpandedSections]);
 
-  const basePath = location.pathname;
+  const basePath = pathname;
 
   const handleCategoryClick = (categoryId: string) => {
     const isOpening = !visibleExpandedSections.has(categoryId);

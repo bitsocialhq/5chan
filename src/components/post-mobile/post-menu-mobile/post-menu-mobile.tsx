@@ -64,7 +64,7 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
   const { t } = useTranslation();
   const directories = useDirectories();
   const boardIdentifier = getBoardPath(communityAddress, directories);
-  const handleClick = async () => {
+  const copyDirectLink = async () => {
     await copyShareLinkSafe(boardIdentifier, linkType, linkType === 'thread' ? cid : undefined);
     onClose();
   };
@@ -72,11 +72,11 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
     <div
       role='button'
       tabIndex={0}
-      onClick={handleClick}
+      onClick={copyDirectLink}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          handleClick();
+          copyDirectLink();
         }
       }}
     >
@@ -87,7 +87,7 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
 
 const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => void }) => {
   const { t } = useTranslation();
-  const handleClick = async () => {
+  const copyContentId = async () => {
     await copyContentIdSafe(cid);
     onClose();
   };
@@ -95,11 +95,11 @@ const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => voi
     <div
       role='button'
       tabIndex={0}
-      onClick={handleClick}
+      onClick={copyContentId}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          handleClick();
+          copyContentId();
         }
       }}
     >
@@ -110,7 +110,7 @@ const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => voi
 
 const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () => void }) => {
   const { t } = useTranslation();
-  const handleClick = async () => {
+  const copyUserId = async () => {
     await copyUserIdSafe(address);
     onClose();
   };
@@ -118,11 +118,11 @@ const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () =
     <div
       role='button'
       tabIndex={0}
-      onClick={handleClick}
+      onClick={copyUserId}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          handleClick();
+          copyUserId();
         }
       }}
     >
@@ -163,7 +163,7 @@ const { addChallenge } = useChallengesStore.getState();
 
 const ReportPostButton = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation();
-  const handleClick = () => {
+  const reportPost = () => {
     alert("Reporting isn't available yet.");
     onClose();
   };
@@ -171,11 +171,11 @@ const ReportPostButton = ({ onClose }: { onClose: () => void }) => {
     <div
       role='button'
       tabIndex={0}
-      onClick={handleClick}
+      onClick={reportPost}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          handleClick();
+          reportPost();
         }
       }}
     >
@@ -235,7 +235,7 @@ const DeletePostButton = ({ post, onClose }: DeletePostButtonProps) => {
 
   const { publishCommentEdit } = usePublishCommentEdit(deleteOptions);
 
-  const handleClick = async () => {
+  const deletePost = async () => {
     const confirmed = window.confirm(t('delete_post_confirm'));
     if (!confirmed) {
       return;
@@ -254,11 +254,11 @@ const DeletePostButton = ({ post, onClose }: DeletePostButtonProps) => {
     <div
       role='button'
       tabIndex={0}
-      onClick={handleClick}
+      onClick={deletePost}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          handleClick();
+          deletePost();
         }
       }}
     >
@@ -272,7 +272,7 @@ const HidePostButton = ({ cid, isReply, onClose, postCid }: HideButtonProps) => 
   const { hide, hidden, unhide } = useHide({ cid: cid || '' });
   const isInPostView = isPostPageView(useLocation().pathname, useParams());
 
-  const handleClick = () => {
+  const togglePostHidden = () => {
     if (hidden) {
       unhide();
     } else {
@@ -285,11 +285,11 @@ const HidePostButton = ({ cid, isReply, onClose, postCid }: HideButtonProps) => 
       <div
         role='button'
         tabIndex={0}
-        onClick={handleClick}
+        onClick={togglePostHidden}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            handleClick();
+            togglePostHidden();
           }
         }}
       >

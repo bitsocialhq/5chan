@@ -96,6 +96,18 @@ jobs:
         if: github.event_name == 'pull_request' && steps.react-ui-changes.outputs.changed != 'true'
         run: echo "Skipping React Doctor because this pull request did not change React UI source."
 
+      - name: Write React Doctor badge payload
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: node scripts/write-react-doctor-badge.mjs
+
+      - name: Upload React Doctor badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-doctor-badge
+          path: badges/react-doctor.json
+          if-no-files-found: error
+
       - name: Install Chromium for smoke tests
         run: npx playwright install --with-deps chromium
 
@@ -111,7 +123,7 @@ jobs:
           if-no-files-found: warn
 
   publish-coverage-badge:
-    name: Publish Coverage Badge
+    name: Publish Badges
     runs-on: ubuntu-22.04
     needs: quality
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -132,13 +144,21 @@ jobs:
           name: coverage-badge
           path: ${{ runner.temp }}/coverage-badge
 
+      - name: Download React Doctor badge
+        uses: actions/download-artifact@v4
+        with:
+          name: react-doctor-badge
+          path: ${{ runner.temp }}/react-doctor-badge
+
       - name: Prepare Pages artifact
         env:
           BADGE_SOURCE_PATH: ${{ runner.temp }}/coverage-badge/coverage.json
+          REACT_DOCTOR_BADGE_SOURCE_PATH: ${{ runner.temp }}/react-doctor-badge/react-doctor.json
           PAGES_OUTPUT_PATH: ${{ runner.temp }}/github-pages
         run: |
           mkdir -p "${PAGES_OUTPUT_PATH}/badges"
           cp "${BADGE_SOURCE_PATH}" "${PAGES_OUTPUT_PATH}/badges/coverage.json"
+          cp "${REACT_DOCTOR_BADGE_SOURCE_PATH}" "${PAGES_OUTPUT_PATH}/badges/react-doctor.json"
           touch "${PAGES_OUTPUT_PATH}/.nojekyll"
 
       - name: Upload Pages artifact

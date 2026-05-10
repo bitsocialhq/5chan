@@ -152,9 +152,11 @@ const AccountSettingsEditor = ({
             accountData.account.subscriptions = [];
           }
           const uniqueSubscriptions = [...accountData.account.subscriptions];
+          const knownSubscriptions = new Set(uniqueSubscriptions);
           for (const address of communityAddresses) {
-            if (!uniqueSubscriptions.includes(address)) {
+            if (!knownSubscriptions.has(address)) {
               uniqueSubscriptions.push(address);
+              knownSubscriptions.add(address);
             }
           }
           accountData.account.subscriptions = uniqueSubscriptions;

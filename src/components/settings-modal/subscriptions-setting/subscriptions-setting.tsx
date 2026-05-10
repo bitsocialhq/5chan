@@ -9,7 +9,7 @@ const SubscriptionButton = ({ address }: { address: string }) => {
   const { subscribed, subscribe, unsubscribe } = useSubscribe({ communityAddress: address });
   const [recentlyUnsubscribed, setRecentlyUnsubscribed] = useState(false);
 
-  const handleClick = () => {
+  const toggleSubscription = () => {
     if (recentlyUnsubscribed || !subscribed) {
       subscribe();
       setRecentlyUnsubscribed(false);
@@ -29,10 +29,10 @@ const SubscriptionButton = ({ address }: { address: string }) => {
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            handleClick();
+            toggleSubscription();
           }
         }}
-        onClick={handleClick}
+        onClick={toggleSubscription}
       >
         {recentlyUnsubscribed || !subscribed ? t('subscribe') : t('unsubscribe')}
       </span>

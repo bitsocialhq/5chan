@@ -286,13 +286,13 @@ const PostFormFields = ({
           <select aria-label={t('board')} onChange={(e) => setPublishPostOptions({ communityAddress: e.target.value })} value={communityAddress}>
             <option value=''>{t('choose_one')}</option>
             {isInAllView &&
-              directories
-                .filter((community) => community.title && community.address)
-                .map((community) => (
+              directories.map((community) =>
+                community.title && community.address ? (
                   <option key={community.address} value={community.address}>
                     {community.title}
                   </option>
-                ))}
+                ) : null,
+              )}
             {isInModView &&
               accountCommunityAddresses.map((address: string) => (
                 <option key={address} value={address}>

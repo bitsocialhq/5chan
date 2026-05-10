@@ -4,7 +4,7 @@ import { findDirectoryByAddress, type DirectoryCommunity, useDirectories } from 
 
 const isLikelyCommunityName = (value: string) => value.includes('.');
 
-export const getCommunityIdentifier = (communityAddress: string | undefined, directories: DirectoryCommunity[]): CommunityIdentifier | undefined => {
+const getCommunityIdentifier = (communityAddress: string | undefined, directories: DirectoryCommunity[]): CommunityIdentifier | undefined => {
   if (!communityAddress) {
     return undefined;
   }
@@ -36,7 +36,7 @@ export const getCommunityIdentifier = (communityAddress: string | undefined, dir
       };
 };
 
-export const getCommunityIdentifiers = (communityAddresses: Array<string | undefined>, directories: DirectoryCommunity[]): CommunityIdentifier[] =>
+const getCommunityIdentifiers = (communityAddresses: Array<string | undefined>, directories: DirectoryCommunity[]): CommunityIdentifier[] =>
   communityAddresses.flatMap((communityAddress) => {
     const community = getCommunityIdentifier(communityAddress, directories);
     return community ? [community] : [];

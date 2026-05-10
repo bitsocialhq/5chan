@@ -195,11 +195,13 @@ const buildReplies = (count: number, seed: number): SyntheticReply[] => {
 
   for (let index = 0; index < count; index += 1) {
     const quotedTargets: string[] = [];
+    const quotedTargetSet = new Set<string>();
     const quoteTargetCount = replies.length === 0 ? 0 : Math.floor(random() * 3);
     for (let quoteIndex = 0; quoteIndex < quoteTargetCount; quoteIndex += 1) {
       const targetReply = replies[Math.floor(random() * replies.length)];
-      if (targetReply?.cid && !quotedTargets.includes(targetReply.cid)) {
+      if (targetReply?.cid && !quotedTargetSet.has(targetReply.cid)) {
         quotedTargets.push(targetReply.cid);
+        quotedTargetSet.add(targetReply.cid);
       }
     }
 
@@ -323,9 +325,11 @@ const buildBoardItems = (count: number, seed: number): SyntheticBoardItem[] => {
 
     for (let replyIndex = 0; replyIndex < previewReplyCount; replyIndex += 1) {
       const quotedCids = random() < 0.45 ? [cid] : [];
+      const quotedCidSet = new Set(quotedCids);
       const priorReply = replyIndex > 0 && random() < 0.3 ? previewReplies[Math.floor(random() * replyIndex)] : undefined;
-      if (priorReply?.cid && !quotedCids.includes(priorReply.cid)) {
+      if (priorReply?.cid && !quotedCidSet.has(priorReply.cid)) {
         quotedCids.push(priorReply.cid);
+        quotedCidSet.add(priorReply.cid);
       }
 
       const replyText = `${quotedCids.map((quotedCid) => `>>${quotedCid.split('-').at(-1)}`).join(' ')} ${buildText(random, replyIndex)}`.trim();
@@ -551,7 +555,7 @@ const Harness = () => {
     if (currentHeightEstimates.length === 0) {
       return undefined;
     }
-    const sortedEstimates = [...currentHeightEstimates].sort((leftValue, rightValue) => leftValue - rightValue);
+    const sortedEstimates = currentHeightEstimates.slice().sort((leftValue, rightValue) => leftValue - rightValue);
     return sortedEstimates[Math.floor(sortedEstimates.length / 2)];
   }, [catalogImageSize, catalogRowHeightEstimates, currentHeightEstimates, surface]);
 

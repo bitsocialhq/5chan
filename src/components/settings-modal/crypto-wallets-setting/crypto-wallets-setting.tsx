@@ -177,7 +177,7 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
         <button
           onClick={() => {
             const newIndex = walletsArray.length;
-            setWalletsArray([...walletsArray, defaultWalletObject]);
+            setWalletsArray((currentWallets) => [...currentWallets, defaultWalletObject]);
             setSelectedWallet(newIndex);
           }}
         >

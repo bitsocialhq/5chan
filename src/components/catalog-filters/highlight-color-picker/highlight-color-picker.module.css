@@ -51,6 +51,16 @@
   cursor: pointer;
 }
 
+.colorPreview {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #aaa;
+  vertical-align: middle;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
 .middleTxt input[type="text"] {
   width: 45px;
   margin: 0 2px;

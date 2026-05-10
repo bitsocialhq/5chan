@@ -69,7 +69,7 @@ const COMMENT_TOO_LONG_NOTICE = 'Comment too long. Click here to view the full t
 const DEFAULT_REPLY_VIRTUALIZATION_MODE: ReplyVirtualizationMode = 'item-size';
 const REPLY_VIRTUALIZATION_MODES: ReplyVirtualizationMode[] = ['off', 'estimates', 'item-size'];
 
-export const REPLY_HEIGHT_DATA_ATTRIBUTE = 'data-pretext-height';
+const REPLY_HEIGHT_DATA_ATTRIBUTE = 'data-pretext-height';
 
 type PreparedText = ReturnType<typeof prepare>;
 type PreparedTextWithSegments = ReturnType<typeof prepareWithSegments>;
@@ -744,7 +744,7 @@ export const getFeedPostHeightEstimate = ({
   return desktopResult;
 };
 
-export const getCatalogPostHeightEstimate = ({ imageSize, metrics, post, showOPComment }: CatalogPostHeightEstimateOptions): number => {
+const getCatalogPostHeightEstimate = ({ imageSize, metrics, post, showOPComment }: CatalogPostHeightEstimateOptions): number => {
   if (!canUsePretext() || !post) {
     return DEFAULT_CATALOG_ROW_HEIGHT - CATALOG_ROW_PADDING_TOP;
   }
@@ -778,7 +778,7 @@ export const getCatalogPostHeightEstimate = ({ imageSize, metrics, post, showOPC
   return estimatedHeight;
 };
 
-export const getCatalogRowHeightEstimate = ({ imageSize, metrics, row, showOPComment }: CatalogSingleRowHeightEstimateOptions): number => {
+const getCatalogRowHeightEstimate = ({ imageSize, metrics, row, showOPComment }: CatalogSingleRowHeightEstimateOptions): number => {
   const cacheKey =
     row.length > 0 ? `${getCatalogEstimateCachePrefix(imageSize, metrics, showOPComment)}\u0000row\u0000${row.map((post) => post?.cid || '').join(',')}` : undefined;
   const cachedHeight = cacheKey ? catalogRowHeightEstimateCache.get(cacheKey) : undefined;

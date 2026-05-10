@@ -221,11 +221,11 @@ export const AutoButton = () => {
 
 export const BottomButton = () => {
   const { t } = useTranslation();
-  const handleClick = () => {
+  const scrollToBottom = () => {
     window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
   };
   return (
-    <button className='button' onClick={handleClick}>
+    <button className='button' onClick={scrollToBottom}>
       {t('bottom')}
     </button>
   );
@@ -233,11 +233,11 @@ export const BottomButton = () => {
 
 export const TopButton = () => {
   const { t } = useTranslation();
-  const handleClick = () => {
+  const scrollToTop = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   };
   return (
-    <button className='button' onClick={handleClick}>
+    <button className='button' onClick={scrollToTop}>
       {t('top')}
     </button>
   );
@@ -507,13 +507,13 @@ export const MobileBoardButtons = () => {
           {searchText ? (
             <span className={styles.filteredThreadsCount}>
               {' '}
-              — {t('search_results_for')}: <strong>{searchText}</strong>
+              - {t('search_results_for')}: <strong>{searchText}</strong>
             </span>
           ) : (
             filteredCount > 0 && (
               <span className={styles.filteredThreadsCount}>
                 {' '}
-                — {t('filtered_threads')}: <strong>{filteredCount}</strong>
+                - {t('filtered_threads')}: <strong>{filteredCount}</strong>
               </span>
             )
           )}
@@ -714,14 +714,14 @@ export const DesktopBoardButtons = () => {
             {isInCatalogView && searchText ? (
               <span className={styles.filteredThreadsCount}>
                 {' '}
-                — {t('search_results_for')}: <strong>{searchText}</strong>
+                - {t('search_results_for')}: <strong>{searchText}</strong>
               </span>
             ) : (
               isInCatalogView &&
               filteredCount > 0 && (
                 <span className={styles.filteredThreadsCount}>
                   {' '}
-                  — {t('filtered_threads')}: <strong>{filteredCount}</strong>
+                  - {t('filtered_threads')}: <strong>{filteredCount}</strong>
                 </span>
               )
             )}

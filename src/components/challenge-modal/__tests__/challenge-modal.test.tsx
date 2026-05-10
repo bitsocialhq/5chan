@@ -318,7 +318,7 @@ describe('ChallengeModal', () => {
       'https://mintpass.org',
     );
 
-    await clickButton('Done');
+    await clickButton('Close challenge');
     expect(publication.publishChallengeAnswers).toHaveBeenCalledWith(['']);
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });

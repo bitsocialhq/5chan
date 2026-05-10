@@ -124,7 +124,7 @@ export const isDirectoryBoard = (identifier: string, communities: DirectoryCommu
 
 export const isArchiveRoute = (pathname: string): boolean => {
   const normalizedPath = pathname.replace(/\/settings$/, '').replace(/\/$/, '');
-  return /\/archive$/.test(normalizedPath);
+  return normalizedPath.endsWith('/archive');
 };
 
 export const isFeedRoute = (pathname: string): boolean => {

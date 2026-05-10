@@ -54,7 +54,7 @@ const getEffectiveRouteUserState = (state: unknown): QueuedCommentRouteState | u
   return getRouteUserState(window.history.state);
 };
 
-export interface ReplyPaginationOverride {
+interface ReplyPaginationOverride {
   hasMore?: boolean;
   loadMore?: () => void;
   replies: Comment[];
@@ -273,7 +273,7 @@ export const Post = memo(
 const PostPage = () => {
   const { t } = useTranslation();
   const params = useParams();
-  const location = useLocation();
+  const { key: locationKey, pathname, state: locationState } = useLocation();
   const { commentCid } = params;
   const autoUpdateEnabled = useThreadLiveUpdatesStore((state) => state.enabled);
   const updateRequestId = useThreadLiveUpdatesStore((state) => state.updateRequestId);
@@ -281,8 +281,8 @@ const PostPage = () => {
   const finishUpdate = useThreadLiveUpdatesStore((state) => state.finishUpdate);
   const resetThreadLiveUpdates = useThreadLiveUpdatesStore((state) => state.resetState);
   const resolvedCommunityAddress = useResolvedCommunityAddress();
-  const isInAllView = isAllView(location.pathname);
-  const routeState = useMemo(() => getEffectiveRouteUserState(location.state), [location.key, location.pathname, location.state]);
+  const isInAllView = isAllView(pathname);
+  const routeState = useMemo(() => getEffectiveRouteUserState(locationState), [locationKey, pathname, locationState]);
 
   const resolvedComment = useCommentWithFeedCache({ commentCid, autoUpdate: autoUpdateEnabled });
   const queuedComment = useMemo(() => getQueuedCommentFromRouteState(routeState, commentCid), [routeState, commentCid]);
@@ -314,7 +314,7 @@ const PostPage = () => {
 
   // These two effects split normal opens from explicit OP-top intents:
   // the first keeps ordinary thread visits on `window.scrollTo(0, 0)`, while the
-  // second consumes `requestedThreadTopCid` once per `location.key` via
+  // second consumes `requestedThreadTopCid` once per `locationKey` via
   // `consumedThreadTopScrollRef` so `scrollThreadContainerToTop(commentCid)` only
   // replays for deliberate OP-link clicks and never for route-driven thread opens.
   useEffect(() => {
@@ -327,13 +327,13 @@ const PostPage = () => {
     if (!commentCid || post?.cid !== commentCid) return;
     if (requestedThreadTopCid !== commentCid) return;
 
-    const consumedKey = `${location.key}:${commentCid}`;
+    const consumedKey = `${locationKey}:${commentCid}`;
     if (consumedThreadTopScrollRef.current === consumedKey) return;
 
     if (scrollThreadContainerToTop(commentCid)) {
       consumedThreadTopScrollRef.current = consumedKey;
     }
-  }, [commentCid, location.key, post?.cid, requestedThreadTopCid]);
+  }, [commentCid, locationKey, post?.cid, requestedThreadTopCid]);
 
   useEffect(() => {
     const boardIdentifier = params.boardIdentifier;
@@ -412,8 +412,7 @@ const PostPage = () => {
     let cancelled = false;
     startUpdate();
 
-    void (async () => {
-      const results = await Promise.allSettled(Array.from(refreshByCid.values(), (refresh) => refresh()));
+    void Promise.allSettled(Array.from(refreshByCid.values(), (refresh) => refresh())).then((results) => {
       if (cancelled) return;
 
       const hasSuccessfulRefresh = results.some((result) => result.status === 'fulfilled');
@@ -423,7 +422,7 @@ const PostPage = () => {
       if (rejectedResult?.status === 'rejected') {
         console.error('Failed to refresh thread comments:', rejectedResult.reason);
       }
-    })();
+    });
 
     return () => {
       cancelled = true;

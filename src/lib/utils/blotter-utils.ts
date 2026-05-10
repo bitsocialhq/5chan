@@ -3,7 +3,7 @@
  * Board preview count is fixed at 3 entries to preserve compact block height.
  */
 
-export type BlotterEntryKind = 'release' | 'manual';
+type BlotterEntryKind = 'release' | 'manual';
 
 export interface BlotterEntry {
   id: string;

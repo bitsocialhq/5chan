@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import getShortAddress from '../../lib/get-short-address';
@@ -32,21 +32,18 @@ const SearchBar = ({ setShowSearchBar }: { setShowSearchBar: (show: boolean) => 
     searchInputRef.current?.focus();
   }, []);
 
-  const handleClickOutside = useCallback(
-    (event: MouseEvent) => {
+  useEffect(() => {
+    const closeSearchOnOutsideClick = (event: MouseEvent) => {
       if (searchBarRef.current && !searchBarRef.current.contains(event.target as Node)) {
         setShowSearchBar(false);
       }
-    },
-    [searchBarRef, setShowSearchBar],
-  );
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [handleClickOutside]);
+
+    document.addEventListener('mousedown', closeSearchOnOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', closeSearchOnOutsideClick);
+    };
+  }, [setShowSearchBar]);
 
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
@@ -113,8 +110,7 @@ const BoardsBarDesktop = () => {
       return [...(activeAccount?.subscriptions || [])];
     },
     (prev, next) => {
-      if (prev.length !== next.length) return false;
-      return prev.every((val, idx) => val === next[idx]);
+      return prev.length === next.length && prev.every((val, idx) => val === next[idx]);
     },
   );
 
@@ -146,7 +142,7 @@ const BoardsBarDesktop = () => {
     const address = findBoardAddressByCode(code, directories);
     const isPlaceholder = !address;
 
-    const handleClick = (e: React.MouseEvent) => {
+    const openDirectoryForPlaceholder = (e: React.MouseEvent) => {
       // If no address exists, prevent navigation and open directory modal
       if (!address) {
         e.preventDefault();
@@ -168,13 +164,13 @@ const BoardsBarDesktop = () => {
                 if (!address) openDirectoryModal();
               }
             }}
-            onClick={handleClick}
+            onClick={openDirectoryForPlaceholder}
             style={{ cursor: 'pointer' }}
           >
             {code}
           </span>
         ) : (
-          <Link to={`/${code}${isInCatalogView ? '/catalog' : ''}`} onClick={handleClick}>
+          <Link to={`/${code}${isInCatalogView ? '/catalog' : ''}`} onClick={openDirectoryForPlaceholder}>
             {code}
           </Link>
         )}

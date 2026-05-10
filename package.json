@@ -102,6 +102,7 @@
     "doctor": "react-doctor . -y",
     "doctor:score": "react-doctor . --score -y",
     "doctor:verbose": "react-doctor . --verbose -y",
+    "doctor:badge": "node scripts/write-react-doctor-badge.mjs",
     "contract:imgur": "cd android && ./gradlew :app:connectedDebugAndroidTest -Pandroid.experimental.androidTest.useUnifiedTestPlatform=false -Pandroid.testInstrumentationRunnerArguments.class=fivechan.android.MediaUploadAutomationRunnerTest",
     "smoke:upload-selectors": "node scripts/smoke-upload-selectors.js",
     "test:coverage": "vitest run --coverage.enabled --coverage.provider=istanbul --coverage.reporter=text --coverage.reporter=json --coverage.reporter=json-summary --coverage.reportsDirectory=./coverage",

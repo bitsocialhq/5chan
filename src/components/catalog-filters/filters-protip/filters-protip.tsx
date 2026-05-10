@@ -9,7 +9,7 @@ const FiltersProtip = () => {
           <strong>Matching whole words:</strong>
         </li>
         <li>
-          <code>feel</code> — will match <em>"feel"</em> but not <em>"feeling"</em>. This search is case-insensitive.
+          <code>feel</code>: will match <em>"feel"</em> but not <em>"feeling"</em>. This search is case-insensitive.
         </li>
       </ul>
       <ul>
@@ -17,7 +17,7 @@ const FiltersProtip = () => {
           <strong>AND operator:</strong>
         </li>
         <li>
-          <code>feel girlfriend</code> — will match <em>"feel"</em> AND <em>"girlfriend"</em> in any order.
+          <code>feel girlfriend</code>: will match <em>"feel"</em> AND <em>"girlfriend"</em> in any order.
         </li>
       </ul>
       <ul>
@@ -25,7 +25,7 @@ const FiltersProtip = () => {
           <strong>OR operator:</strong>
         </li>
         <li>
-          <code>feel|girlfriend</code> — will match <em>"feel"</em> OR <em>"girlfriend"</em>.
+          <code>feel|girlfriend</code>: will match <em>"feel"</em> OR <em>"girlfriend"</em>.
         </li>
       </ul>
       <ul>
@@ -33,7 +33,7 @@ const FiltersProtip = () => {
           <strong>Mixing both operators:</strong>
         </li>
         <li>
-          <code>girlfriend|boyfriend feel</code> — matches <em>"feel"</em> AND <em>"girlfriend"</em>, or <em>"feel"</em> AND <em>"boyfriend"</em>.
+          <code>girlfriend|boyfriend feel</code>: matches <em>"feel"</em> AND <em>"girlfriend"</em>, or <em>"feel"</em> AND <em>"boyfriend"</em>.
         </li>
       </ul>
       <ul>
@@ -41,7 +41,7 @@ const FiltersProtip = () => {
           <strong>Exact match search:</strong>
         </li>
         <li>
-          <code>"that feel when"</code> — place double quotes around the pattern to search for an exact string.
+          <code>"that feel when"</code>: place double quotes around the pattern to search for an exact string.
         </li>
       </ul>
       <ul>
@@ -49,10 +49,10 @@ const FiltersProtip = () => {
           <strong>Wildcards:</strong>
         </li>
         <li>
-          <code>feel*</code> — matches expressions such as <em>"feel"</em>, <em>"feels"</em>, <em>"feeling"</em>, <em>"feeler"</em>, etc…
+          <code>feel*</code>: matches expressions such as <em>"feel"</em>, <em>"feels"</em>, <em>"feeling"</em>, <em>"feeler"</em>, etc…
         </li>
         <li>
-          <code>idolm*ster</code> — this can match <em>"idolmaster"</em> or <em>"idolm@ster"</em>, etc…
+          <code>idolm*ster</code>: this can match <em>"idolmaster"</em> or <em>"idolm@ster"</em>, etc…
         </li>
       </ul>
       <ul>
@@ -70,31 +70,31 @@ const FiltersProtip = () => {
       <ul>
         <strong>It is also possible to filter by regular expression:</strong>
         <li>
-          <code>/^(?=.*detachable)(?=.*hats).*$/i</code> — AND operator.
+          <code>/^(?=.*detachable)(?=.*hats).*$/i</code>: AND operator.
         </li>
         <li>
-          <code>/^(?!.*touhou).*$/i</code> — NOT operator.
+          <code>/^(?!.*touhou).*$/i</code>: NOT operator.
         </li>
         <li>
-          <code>{'/^&gt;/'}</code> — threads starting with a quote (<em>{'">"'}</em> character as an html entity).
+          <code>{'/^&gt;/'}</code>: threads starting with a quote (<em>{'">"'}</em> character as an html entity).
         </li>
         <li>
-          <code>/^$/</code> — threads with no text.
+          <code>/^$/</code>: threads with no text.
         </li>
       </ul>
       <h4>Controls</h4>
       <ul>
         <li>
-          <strong>On</strong> — enables or disables the filter.
+          <strong>On</strong>: enables or disables the filter.
         </li>
         <li>
-          <strong>Color</strong> — highlights matched threads with the specified color.
+          <strong>Color</strong>: highlights matched threads with the specified color.
         </li>
         <li>
-          <strong>Hide</strong> — hides matched threads.
+          <strong>Hide</strong>: hides matched threads.
         </li>
         <li>
-          <strong>Top</strong> — moves the filter to the top of the feed.
+          <strong>Top</strong>: moves the filter to the top of the feed.
         </li>
       </ul>
     </div>

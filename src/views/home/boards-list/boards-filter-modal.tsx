@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useBoardsFilterStore from '../../../stores/use-boards-filter-store';
 import { DISCLAIMER_ACCEPTED_KEY } from '../../../stores/use-disclaimer-modal-store';
@@ -23,21 +23,18 @@ const BoardsFilterModal = () => {
 
   const disclaimerAccepted = hasAcceptedDisclaimer();
 
-  const handleClickOutside = useCallback(
-    (event: MouseEvent) => {
+  useEffect(() => {
+    const closeFilterModalOnOutsideClick = (event: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(event.target as Node) && buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
         setShowFilterModal(false);
       }
-    },
-    [modalRef, buttonRef, setShowFilterModal],
-  );
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [handleClickOutside]);
+
+    document.addEventListener('mousedown', closeFilterModalOnOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', closeFilterModalOnOutsideClick);
+    };
+  }, []);
 
   return (
     <>

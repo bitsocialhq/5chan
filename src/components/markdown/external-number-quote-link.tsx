@@ -206,7 +206,7 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
     setPreviewPosition(null);
   };
 
-  const handleClick = async (e: MouseEvent<HTMLAnchorElement>) => {
+  const openExternalQuote = async (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
 
     if (isResolving) {
@@ -273,7 +273,7 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
         aria-busy={isResolving || undefined}
         className={isResolving ? styles.inlineQuoteLinkResolving : undefined}
         href={`#/${boardLabel}`}
-        onClick={handleClick}
+        onClick={openExternalQuote}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         ref={anchorRef}
@@ -289,7 +289,7 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
             className={previewClassName}
             data-thread-scroll-preview='true'
             ref={previewRef}
-            style={{ left: previewPosition.left, position: 'fixed', top: previewPosition.top, zIndex: 1000 }}
+            style={{ left: previewPosition.left, position: 'fixed', top: previewPosition.top, zIndex: 30 }}
           >
             {previewContent}
           </div>,

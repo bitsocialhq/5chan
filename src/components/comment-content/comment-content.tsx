@@ -39,7 +39,7 @@ const useScopedCidToNumber = (cids: string[]) => {
         uniqueCids.add(cid);
       }
     }
-    return [...uniqueCids].sort();
+    return Array.from(uniqueCids).toSorted();
   }, [cids]);
 
   const cidToNumber = usePostNumberStore(

@@ -78,7 +78,7 @@ export const isSettingsView = (pathname: string, params: ParamsType): boolean =>
   );
 };
 
-export const isSubscriptionsView = (pathname: string, params: ParamsType): boolean => {
+export const isSubscriptionsView = (pathname: string, _params: ParamsType): boolean => {
   return pathname === '/subs' || pathname === '/subs/settings' || pathname === '/subs/catalog' || pathname === '/subs/catalog/settings';
 };
 

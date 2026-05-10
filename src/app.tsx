@@ -67,22 +67,22 @@ preloadReplyModal();
 const BoardLayout = () => {
   const params = useParams();
   const { accountCommentIndex, boardIdentifier, pageNumber } = params;
-  const location = useLocation();
+  const { pathname, search } = useLocation();
   const isMobile = useIsMobile();
-  const isInAllView = isAllView(location.pathname);
-  const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
-  const isInModView = isModView(location.pathname);
+  const isInAllView = isAllView(pathname);
+  const isInSubscriptionsView = isSubscriptionsView(pathname, useParams());
+  const isInModView = isModView(pathname);
   const directories = useDirectories();
   const communityAddress = boardIdentifier ? getCommunityAddress(boardIdentifier, directories) : undefined;
   const pendingPost = useSafeAccountComment({ commentIndex: accountCommentIndex });
   const pendingPostCommunityAddress = getCommentCommunityAddress(pendingPost);
   const { closeCreateBoardModal } = useCreateBoardModalStore();
-  const isOnPostRoute = isPostRoute(location.pathname);
-  const isOnPendingPostRoute = isPendingPostRoute(location.pathname);
-  const isOnModQueueRoute = isModQueueRoute(location.pathname);
-  const isOnArchiveRoute = isArchiveRoute(location.pathname);
+  const isOnPostRoute = isPostRoute(pathname);
+  const isOnPendingPostRoute = isPendingPostRoute(pathname);
+  const isOnModQueueRoute = isModQueueRoute(pathname);
+  const isOnArchiveRoute = isArchiveRoute(pathname);
   const shouldRenderOutlet = isOnPostRoute || isOnPendingPostRoute || isOnModQueueRoute || isOnArchiveRoute;
-  const isInCatalogView = isCatalogView(location.pathname, params);
+  const isInCatalogView = isCatalogView(pathname, params);
   // Christmas theme
   const { isEnabled: isSpecialEnabled } = useSpecialThemeStore();
   useEffect(() => {
@@ -97,28 +97,26 @@ const BoardLayout = () => {
   // Close create board modal when navigating to a different page
   useEffect(() => {
     closeCreateBoardModal();
-  }, [location.pathname, closeCreateBoardModal]);
+  }, [pathname, closeCreateBoardModal]);
 
   // force rerender of post form when navigating between pages, except when opening settings modal in current view
-  const key = location.pathname.endsWith('/settings')
-    ? `${communityAddress}-${location.pathname.replace(/\/settings$/, '')}`
-    : `${communityAddress}-${location.pathname}`;
+  const key = pathname.endsWith('/settings') ? `${communityAddress}-${pathname.replace(/\/settings$/, '')}` : `${communityAddress}-${pathname}`;
 
   if (pageNumber === '1') {
     return <Navigate to='/not-found' replace />;
   }
 
   // Invalid /mod/ paths (e.g. /mod/modqueue, /mod/asdoijasd) -> not-found
-  if (location.pathname.startsWith('/mod/') && !isValidModRoute(location.pathname)) {
+  if (pathname.startsWith('/mod/') && !isValidModRoute(pathname)) {
     return <Navigate to='/not-found' replace />;
   }
 
-  if (isLegacyBoardModQueueRoute(location.pathname)) {
+  if (isLegacyBoardModQueueRoute(pathname)) {
     return <Navigate to='/not-found' replace />;
   }
 
   // Invalid board-scoped mod paths (e.g. /biz/mod, /biz/mod/asdoijasd) -> not-found
-  if (isBoardModRoute(location.pathname) && !isValidBoardModRoute(location.pathname)) {
+  if (isBoardModRoute(pathname) && !isValidBoardModRoute(pathname)) {
     return <Navigate to='/not-found' replace />;
   }
 
@@ -126,8 +124,8 @@ const BoardLayout = () => {
   if (boardIdentifier && !isDirectoryBoard(boardIdentifier, directories)) {
     const canonicalBoardIdentifier = getBoardPath(boardIdentifier, directories);
     if (canonicalBoardIdentifier !== boardIdentifier) {
-      const canonicalPath = location.pathname.replace(`/${boardIdentifier}`, `/${canonicalBoardIdentifier}`);
-      return <Navigate to={canonicalPath + (location.search || '')} replace />;
+      const canonicalPath = pathname.replace(`/${boardIdentifier}`, `/${canonicalBoardIdentifier}`);
+      return <Navigate to={canonicalPath + (search || '')} replace />;
     }
   }
 
@@ -201,8 +199,8 @@ const GlobalLayout = () => {
     })),
   );
 
-  const location = useLocation();
-  const isInSettingsView = location.pathname.endsWith('/settings');
+  const { pathname } = useLocation();
+  const isInSettingsView = pathname.endsWith('/settings');
 
   return (
     <>

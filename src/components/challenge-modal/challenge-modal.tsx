@@ -129,6 +129,8 @@ const IframeChallenge = ({
   const attemptedLoadRef = useRef(false);
   const mountedRef = useRef(false);
   const handledAutoCompleteRef = useRef(false);
+  const onAutoCompleteRef = useRef(onAutoComplete);
+  onAutoCompleteRef.current = onAutoComplete;
   const expectedSessionId = getIframeSessionId(challenge);
 
   useEffect(() => {
@@ -239,12 +241,12 @@ const IframeChallenge = ({
       const sessionId = (data as { sessionId?: unknown }).sessionId;
       if (sessionId !== expectedSessionId) return;
       handledAutoCompleteRef.current = true;
-      onAutoComplete(challengeAnswers.filter((answer): answer is string => typeof answer === 'string'));
+      onAutoCompleteRef.current(challengeAnswers.filter((answer): answer is string => typeof answer === 'string'));
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [expectedSessionId, iframeOrigin, onAutoComplete]);
+  }, [expectedSessionId, iframeOrigin]);
 
   if (!iframeUrlState) {
     return (
@@ -289,7 +291,7 @@ const IframeChallenge = ({
       </div>
       <div className={`${styles.challengeFooter} ${styles.iframeFooter}`}>
         <div className={styles.iframeCloseButton}>
-          <button onClick={onDone}>Done</button>
+          <button onClick={onDone}>Close challenge</button>
         </div>
       </div>
     </>
@@ -339,11 +341,9 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
     ({ active, event, offset: [ox, oy] }) => {
       if (active) {
         event.preventDefault();
-        document.body.style.userSelect = 'none';
-        document.body.style.webkitUserSelect = 'none';
+        Object.assign(document.body.style, { userSelect: 'none', webkitUserSelect: 'none' });
       } else {
-        document.body.style.userSelect = '';
-        document.body.style.webkitUserSelect = '';
+        Object.assign(document.body.style, { userSelect: '', webkitUserSelect: '' });
       }
       api.start({ x: ox, y: oy, immediate: true });
     },
@@ -449,21 +449,21 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const publicationDetails = (
     <>
       <div className={styles.name}>
-        <input type='text' value={displayName || capitalize(t('anonymous'))} disabled />
+        <input type='text' value={displayName || capitalize(t('anonymous'))} disabled readOnly />
       </div>
       {title && (
         <div className={styles.subject}>
-          <input type='text' value={title} disabled />
+          <input type='text' value={title} disabled readOnly />
         </div>
       )}
       {content && (
         <div className={styles.content}>
-          <textarea value={content} disabled cols={48} rows={4} wrap='soft' />
+          <textarea value={content} disabled readOnly cols={48} rows={4} wrap='soft' />
         </div>
       )}
       {link && (
         <div className={styles.link}>
-          <input type='text' value={link} disabled />
+          <input type='text' value={link} disabled readOnly />
         </div>
       )}
     </>

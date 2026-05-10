@@ -141,22 +141,24 @@ const normalizeContent = (content: string): string => {
 };
 
 type Token =
-  | { type: 'text'; value: string }
-  | { type: 'url'; href: string }
-  | { type: 'quoteLink'; number: number }
-  | { type: 'crossBoardNumberQuoteLink'; reference: ExternalQuoteReference }
-  | { type: 'crossBoardLink'; display: string; route: string }
-  | { type: 'spoiler'; tokens: Token[] };
+  | { key: string; type: 'text'; value: string }
+  | { key: string; type: 'url'; href: string }
+  | { key: string; type: 'quoteLink'; number: number }
+  | { key: string; type: 'crossBoardNumberQuoteLink'; reference: ExternalQuoteReference }
+  | { key: string; type: 'crossBoardLink'; display: string; route: string }
+  | { key: string; type: 'spoiler'; tokens: Token[] };
 
 const SPOILER_REGEX = /\[[sS][pP][oO][iI][lL][eE][rR]\]([\s\S]*?)\[\/[sS][pP][oO][iI][lL][eE][rR]\]/;
 const CROSSBOARD_REGEX = />>>\/((?:[a-zA-Z0-9]{1,10}\/(?:[a-zA-Z0-9]{46})?|[a-zA-Z0-9\-.]+(?:\/[a-zA-Z0-9]{46})?))[.,:;!?]*/;
 const QUOTE_LINK_REGEX = /(?<![>/\w])>>(\d+)(?![\d/])/;
-const URL_REGEX = /https?:\/\/[^\s<\[\]]*[^\s<\[\].,;:!?\"'\)\]>]/;
+const URL_REGEX = /https?:\/\/[^\s<[\]]*[^\s<[\].,;:!?"')>]/;
 
 const COMBINED_REGEX = new RegExp(
   `(${SPOILER_REGEX.source})|(${CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX.source})|(${CROSSBOARD_REGEX.source})|(${QUOTE_LINK_REGEX.source})|(${URL_REGEX.source})`,
   'g',
 );
+
+const makeTokenKey = (prefix: string, type: Token['type'], start: number, end: number): string => `${prefix}${type}:${start}:${end}`;
 
 function getCrossboardRoute(fullPattern: string): string | null {
   const pathPart = fullPattern.replace(/^>>>\//, '').replace(/[.,:;!?]+$/, '');
@@ -177,7 +179,7 @@ function getCrossboardRoute(fullPattern: string): string | null {
   return `/${pathPart}`;
 }
 
-function tokenize(text: string): Token[] {
+function tokenize(text: string, keyPrefix = ''): Token[] {
   const tokens: Token[] = [];
   let lastIndex = 0;
 
@@ -187,19 +189,26 @@ function tokenize(text: string): Token[] {
   while ((match = regex.exec(text)) !== null) {
     const fullMatch = match[0];
     const matchStart = match.index;
+    const matchEnd = regex.lastIndex;
 
     if (matchStart > lastIndex) {
-      tokens.push({ type: 'text', value: text.slice(lastIndex, matchStart) });
+      tokens.push({
+        key: makeTokenKey(keyPrefix, 'text', lastIndex, matchStart),
+        type: 'text',
+        value: text.slice(lastIndex, matchStart),
+      });
     }
 
     if (match[1] !== undefined) {
       const innerContent = match[2];
-      tokens.push({ type: 'spoiler', tokens: tokenize(innerContent) });
+      const key = makeTokenKey(keyPrefix, 'spoiler', matchStart, matchEnd);
+      tokens.push({ key, type: 'spoiler', tokens: tokenize(innerContent, `${key}/`) });
     } else if (match[3] !== undefined) {
       const boardIdentifier = match[4];
       const number = parseInt(match[5], 10);
       if (boardIdentifier && !Number.isNaN(number)) {
         tokens.push({
+          key: makeTokenKey(keyPrefix, 'crossBoardNumberQuoteLink', matchStart, matchEnd),
           type: 'crossBoardNumberQuoteLink',
           reference: {
             boardIdentifier,
@@ -209,29 +218,33 @@ function tokenize(text: string): Token[] {
           },
         });
       } else {
-        tokens.push({ type: 'text', value: fullMatch });
+        tokens.push({ key: makeTokenKey(keyPrefix, 'text', matchStart, matchEnd), type: 'text', value: fullMatch });
       }
     } else if (match[6] !== undefined) {
       const pathPart = match[7];
       const fullPattern = `>>>/${pathPart}`;
       const route = getCrossboardRoute(fullPattern);
       if (route) {
-        tokens.push({ type: 'crossBoardLink', display: fullPattern, route });
+        tokens.push({ key: makeTokenKey(keyPrefix, 'crossBoardLink', matchStart, matchEnd), type: 'crossBoardLink', display: fullPattern, route });
       } else {
-        tokens.push({ type: 'text', value: fullMatch });
+        tokens.push({ key: makeTokenKey(keyPrefix, 'text', matchStart, matchEnd), type: 'text', value: fullMatch });
       }
     } else if (match[8] !== undefined) {
       const number = parseInt(match[9], 10);
-      tokens.push({ type: 'quoteLink', number });
+      tokens.push({ key: makeTokenKey(keyPrefix, 'quoteLink', matchStart, matchEnd), type: 'quoteLink', number });
     } else if (match[10] !== undefined) {
-      tokens.push({ type: 'url', href: fullMatch });
+      tokens.push({ key: makeTokenKey(keyPrefix, 'url', matchStart, matchEnd), type: 'url', href: fullMatch });
     }
 
     lastIndex = regex.lastIndex;
   }
 
   if (lastIndex < text.length) {
-    tokens.push({ type: 'text', value: text.slice(lastIndex) });
+    tokens.push({
+      key: makeTokenKey(keyPrefix, 'text', lastIndex, text.length),
+      type: 'text',
+      value: text.slice(lastIndex),
+    });
   }
 
   return tokens;
@@ -241,54 +254,6 @@ interface RenderContext {
   isInCatalogView: boolean;
   postCid?: string;
   communityAddress?: string;
-}
-
-function renderTokens(tokens: Token[], context: RenderContext): React.ReactNode[] {
-  const { isInCatalogView, postCid, communityAddress } = context;
-
-  return tokens.map((token, i) => {
-    switch (token.type) {
-      case 'text':
-        return <React.Fragment key={i}>{token.value}</React.Fragment>;
-      case 'url': {
-        const href = token.href;
-        const linkMediaInfo = getLinkMediaInfo(href);
-        const embedUrl = safeParseUrl(href);
-        if (!isInCatalogView && ((embedUrl && canEmbed(embedUrl)) || getHasThumbnail(linkMediaInfo, href))) {
-          return (
-            <ContentLinkEmbed key={i} href={href} linkMediaInfo={linkMediaInfo}>
-              {href}
-            </ContentLinkEmbed>
-          );
-        }
-        return <React.Fragment key={i}>{renderAnchorLink(href, href, postCid, communityAddress)}</React.Fragment>;
-      }
-      case 'quoteLink':
-        return (
-          <span key={i} className={styles.inlineQuoteLink}>
-            <NumberQuoteLink number={token.number} threadPostCid={postCid} communityAddress={communityAddress} />
-          </span>
-        );
-      case 'crossBoardNumberQuoteLink':
-        return (
-          <span key={i} className={styles.inlineQuoteLink}>
-            <ExternalNumberQuoteLink reference={token.reference} />
-          </span>
-        );
-      case 'crossBoardLink':
-        return (
-          <Link key={i} to={token.route}>
-            {token.display}
-          </Link>
-        );
-      case 'spoiler':
-        return (
-          <span key={i} className='spoilertext'>
-            {renderTokens(token.tokens, context)}
-          </span>
-        );
-    }
-  });
 }
 
 interface MarkdownProps {
@@ -329,38 +294,29 @@ const NumberQuoteLink = ({ number, threadPostCid, communityAddress }: { number: 
   return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} quotelinkNumber={number} isOP={isOP} showTrailingBreak={false} />;
 };
 
-const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid?: string, communityAddress?: string) => {
+const AnchorLink = ({ href, text }: { href: string; text: string }) => {
   if (!href) {
-    return <span>{children}</span>;
+    return <span>{text}</span>;
   }
 
   if (is5chanLink(href)) {
     const internalPath = transform5chanLinkToInternal(href);
     if (internalPath) {
-      let shouldReplaceText = false;
-
-      if (typeof children === 'string') {
-        shouldReplaceText = children === href || children.trim() === href.trim();
-      } else if (Array.isArray(children) && children.length === 1 && typeof children[0] === 'string') {
-        shouldReplaceText = children[0] === href || children[0].trim() === href.trim();
-      }
-
-      let displayText: React.ReactNode = children;
-      const childrenText = typeof children === 'string' ? children : Array.isArray(children) ? children[0] : '';
-      const isAutolinkedUrl = shouldReplaceText && typeof childrenText === 'string' && childrenText.startsWith('http');
+      let displayText: React.ReactNode = text;
+      const isAutolinkedUrl = text.startsWith('http');
 
       if (isAutolinkedUrl) {
-        displayText = children;
-      } else if (shouldReplaceText && internalPath.match(/^\/[^/]+$/)) {
+        displayText = text;
+      } else if (internalPath.match(/^\/[^/]+$/)) {
         displayText = internalPath.substring(1);
-      } else if (shouldReplaceText) {
+      } else {
         displayText = internalPath;
       }
 
       return <Link to={internalPath}>{displayText}</Link>;
     } else {
       console.warn('Failed to transform 5chan link to internal path:', href);
-      return <Link to={href}>{children}</Link>;
+      return <Link to={href}>{text}</Link>;
     }
   }
 
@@ -372,13 +328,65 @@ const renderAnchorLink = (children: React.ReactNode, href: string, threadPostCid
     href.match(/^\/[^/]+(\/thread\/[^/]+)?$/) ||
     href.match(/^\/[^/]+\/(catalog|description|rules)(\/settings)?$/)
   ) {
-    return <Link to={href}>{children}</Link>;
+    return <Link to={href}>{text}</Link>;
   }
 
   return (
     <a href={href} target='_blank' rel='noopener noreferrer'>
-      {children}
+      {text}
     </a>
+  );
+};
+
+const TokenNode = ({ token, context }: { token: Token; context: RenderContext }) => {
+  const { isInCatalogView, postCid, communityAddress } = context;
+
+  switch (token.type) {
+    case 'text':
+      return <>{token.value}</>;
+    case 'url': {
+      const href = token.href;
+      const linkMediaInfo = getLinkMediaInfo(href);
+      const embedUrl = safeParseUrl(href);
+      if (!isInCatalogView && ((embedUrl && canEmbed(embedUrl)) || getHasThumbnail(linkMediaInfo, href))) {
+        return (
+          <ContentLinkEmbed href={href} linkMediaInfo={linkMediaInfo}>
+            {href}
+          </ContentLinkEmbed>
+        );
+      }
+      return <AnchorLink href={href} text={href} />;
+    }
+    case 'quoteLink':
+      return (
+        <span className={styles.inlineQuoteLink}>
+          <NumberQuoteLink number={token.number} threadPostCid={postCid} communityAddress={communityAddress} />
+        </span>
+      );
+    case 'crossBoardNumberQuoteLink':
+      return (
+        <span className={styles.inlineQuoteLink}>
+          <ExternalNumberQuoteLink reference={token.reference} />
+        </span>
+      );
+    case 'crossBoardLink':
+      return <Link to={token.route}>{token.display}</Link>;
+    case 'spoiler':
+      return (
+        <span className='spoilertext'>
+          <TokenList tokens={token.tokens} context={context} />
+        </span>
+      );
+  }
+};
+
+const TokenList = ({ tokens, context }: { tokens: Token[]; context: RenderContext }) => {
+  return (
+    <>
+      {tokens.map((token) => (
+        <TokenNode key={token.key} token={token} context={context} />
+      ))}
+    </>
   );
 };
 
@@ -392,6 +400,8 @@ const Markdown = ({ content, title, postCid, communityAddress }: MarkdownProps) 
     const lines = normalized.split('\n');
     const elements: React.ReactNode[] = [];
 
+    const context = { isInCatalogView, postCid, communityAddress };
+
     lines.forEach((line, lineIndex) => {
       if (lineIndex > 0) {
         elements.push(<br key={`br-${lineIndex}`} />);
@@ -402,7 +412,7 @@ const Markdown = ({ content, title, postCid, communityAddress }: MarkdownProps) 
       const isGreentext = /^>[^>]/.test(line) || line === '>';
 
       const tokens = tokenize(line);
-      const lineElements = renderTokens(tokens, { isInCatalogView, postCid, communityAddress });
+      const lineElements = <TokenList tokens={tokens} context={context} />;
 
       if (isGreentext) {
         elements.push(

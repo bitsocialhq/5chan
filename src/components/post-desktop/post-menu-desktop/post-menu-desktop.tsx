@@ -46,7 +46,7 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
   const { t } = useTranslation();
   const directories = useDirectories();
   const boardIdentifier = getBoardPath(communityAddress, directories);
-  const handleClick = async () => {
+  const copyDirectLink = async () => {
     await safeCopyShareLink(boardIdentifier, linkType, linkType === 'thread' ? cid : undefined);
     onClose();
   };
@@ -55,11 +55,11 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
       className={styles.postMenuItem}
       role='button'
       tabIndex={0}
-      onClick={handleClick}
+      onClick={copyDirectLink}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          handleClick();
+          copyDirectLink();
         }
       }}
     >
@@ -70,7 +70,7 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
 
 const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => void }) => {
   const { t } = useTranslation();
-  const handleClick = async () => {
+  const copyContentId = async () => {
     await safeCopyToClipboard(cid, 'content id');
     onClose();
   };
@@ -79,11 +79,11 @@ const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => voi
       className={styles.postMenuItem}
       role='button'
       tabIndex={0}
-      onClick={handleClick}
+      onClick={copyContentId}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          handleClick();
+          copyContentId();
         }
       }}
     >
@@ -94,7 +94,7 @@ const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => voi
 
 const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () => void }) => {
   const { t } = useTranslation();
-  const handleClick = async () => {
+  const copyUserId = async () => {
     await safeCopyToClipboard(address, 'user id');
     onClose();
   };
@@ -103,11 +103,11 @@ const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () =
       className={styles.postMenuItem}
       role='button'
       tabIndex={0}
-      onClick={handleClick}
+      onClick={copyUserId}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          handleClick();
+          copyUserId();
         }
       }}
     >

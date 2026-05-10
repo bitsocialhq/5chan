@@ -41,7 +41,7 @@ const CreateBoardModal = () => {
                 bitsocial-cli
               </a>
               . <strong>Build a following:</strong> Users can subscribe to your board via the &quot;[Subscribe]&quot; button, which adds it to their top bar. You can gain
-              subscribers through direct links, word of mouth, or search—no directory assignment or dev approval needed.
+              subscribers through direct links, word of mouth, or search, no directory assignment or dev approval needed.
             </p>
           </div>
 
@@ -67,7 +67,7 @@ const CreateBoardModal = () => {
           <div className={styles.section}>
             <h3>Decentralization</h3>
             <p>
-              Devs can change directories via commits in the open-source repo. No centralized servers—anyone can fork, modify, and redeploy to their own domain. 5chan is
+              Devs can change directories via commits in the open-source repo. No centralized servers; anyone can fork, modify, and redeploy to their own domain. 5chan is
               adminless with no central authority.
             </p>
           </div>

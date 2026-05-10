@@ -8,11 +8,11 @@ import debounce from 'lodash/debounce';
 
 const CatalogSearch = () => {
   const { t } = useTranslation();
-  const location = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const [searchState, setSearchState] = useState({ open: false, value: '' });
   const { setSearchFilter, clearSearchFilter } = useCatalogFiltersStore();
-  const queryParam = new URLSearchParams(location.search).get('q') ?? '';
+  const queryParam = new URLSearchParams(search).get('q') ?? '';
   const openSearch = !!queryParam || searchState.open;
   const inputValue = searchState.open || searchState.value ? searchState.value : queryParam;
 
@@ -27,17 +27,17 @@ const CatalogSearch = () => {
 
   const updateURL = useCallback(
     (searchText: string) => {
-      const urlParams = new URLSearchParams(location.search);
+      const urlParams = new URLSearchParams(search);
       if (searchText.trim()) {
         urlParams.set('q', searchText);
       } else {
         urlParams.delete('q');
       }
       const newSearch = urlParams.toString();
-      const newPath = location.pathname + (newSearch ? `?${newSearch}` : '');
+      const newPath = pathname + (newSearch ? `?${newSearch}` : '');
       navigate(newPath, { replace: true });
     },
-    [location.pathname, location.search, navigate],
+    [pathname, search, navigate],
   );
 
   const debouncedSetSearchFilter = useMemo(
