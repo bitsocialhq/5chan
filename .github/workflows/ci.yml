@@ -76,8 +76,25 @@ jobs:
       - name: Verify forge config
         run: node -e "import('./forge.config.js').then(c => console.log('Config loaded, makers:', c.default.makers?.length || 0)).catch(e => { console.error(e); process.exit(1); })"
 
+      - name: Detect React UI changes
+        id: react-ui-changes
+        if: github.event_name == 'pull_request'
+        run: |
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD > changed-files.txt
+          cat changed-files.txt
+          if grep -Eq '^(src/(components|views|hooks|stores)/|src/app\.tsx|src/main\.tsx)' changed-files.txt; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run React Doctor
+        if: github.event_name != 'pull_request' || steps.react-ui-changes.outputs.changed == 'true'
         run: yarn doctor
+
+      - name: Skip React Doctor
+        if: github.event_name == 'pull_request' && steps.react-ui-changes.outputs.changed != 'true'
+        run: echo "Skipping React Doctor because this pull request did not change React UI source."
 
       - name: Install Chromium for smoke tests
         run: npx playwright install --with-deps chromium
