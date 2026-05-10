@@ -3,6 +3,7 @@
 bin
 .env
 .deploy-env
+.release-manifest-*.pem
 
 # Logs
 logs
@@ -154,6 +155,7 @@ dev-dist
 
 # production
 /build
+/release-assets
 
 # misc
 .DS_Store

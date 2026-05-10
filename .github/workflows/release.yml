@@ -95,11 +95,17 @@ jobs:
           cp "$APPIMAGE_PATH" "release-assets/5chan-${VERSION}-${{ matrix.arch }}.AppImage"
       - name: Create static HTML release archive
         if: matrix.arch == 'x64'
+        env:
+          RELEASE_MANIFEST_PRIVATE_KEY_PEM: ${{ secrets.RELEASE_MANIFEST_PRIVATE_KEY_PEM }}
+          RELEASE_MANIFEST_KEY_ID: 5chan-release-p256-2026-05
         run: |
           VERSION=$(node -e "console.log(require('./package.json').version)")
           HTML_ARCHIVE_DIR="5chan-$VERSION-html"
           rm -rf "$HTML_ARCHIVE_DIR"
+          yarn release:manifest --build-dir build --out-dir release-assets
           cp -R build "$HTML_ARCHIVE_DIR"
+          cp release-assets/5chan-release-manifest.json "$HTML_ARCHIVE_DIR/5chan-release-manifest.json"
+          cp release-assets/5chan-release-manifest.sig.json "$HTML_ARCHIVE_DIR/5chan-release-manifest.sig.json"
           zip -r "release-assets/${HTML_ARCHIVE_DIR}.zip" "$HTML_ARCHIVE_DIR"
           rm -rf "$HTML_ARCHIVE_DIR"
       - name: List release assets

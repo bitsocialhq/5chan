@@ -53,6 +53,8 @@
   },
   "scripts": {
     "generate:assets": "node scripts/generate-asset-manifest.js",
+    "release:manifest": "node scripts/generate-release-manifest.mjs",
+    "release:manifest:keygen": "node scripts/generate-release-manifest-keypair.mjs",
     "sync:directories": "node scripts/sync-directories.js",
     "postinstall": "node scripts/patch-capacitor-cli-tar.cjs",
     "prebuild": "corepack yarn sync:directories && corepack yarn generate:assets",
