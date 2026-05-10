@@ -167,6 +167,21 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const parentCidRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
+    if (!showReplyModal || isMobile) {
+      return;
+    }
+
+    const closeReplyModalOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeModal();
+      }
+    };
+
+    document.addEventListener('keydown', closeReplyModalOnEscape);
+    return () => document.removeEventListener('keydown', closeReplyModalOnEscape);
+  }, [showReplyModal, isMobile, closeModal]);
+
+  useEffect(() => {
     if (parentCidRef.current) {
       const cidWidth = parentCidRef.current.offsetWidth;
       parentCidRef.current.style.width = `${cidWidth}px`;
@@ -290,11 +305,6 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       role='dialog'
       aria-modal='true'
       aria-labelledby='reply-modal-title'
-      onKeyDown={(e) => {
-        if (!isMobile && e.key === 'Escape') {
-          closeModal();
-        }
-      }}
       style={{
         left,
         top,

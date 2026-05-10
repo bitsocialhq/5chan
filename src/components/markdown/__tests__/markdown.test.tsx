@@ -230,6 +230,31 @@ describe('Markdown', () => {
     expect(links.find((link) => link.getAttribute('href') === '/fit')?.textContent).toBe('>>>/fit/');
   });
 
+  it('preserves trailing punctuation outside cross-board links', async () => {
+    await renderMarkdown({
+      content: 'see >>>/fit/, next',
+    });
+
+    const link = container.querySelector('a');
+    expect(link?.getAttribute('href')).toBe('/fit');
+    expect(link?.textContent).toBe('>>>/fit/');
+    expect(container.textContent).toBe('see >>>/fit/, next');
+  });
+
+  it('normalizes hash-routed 5chan links before passing them to React Router', async () => {
+    testState.internalPathByHref = {
+      'https://5chan.local/#/mu': '#/mu',
+    };
+
+    await renderMarkdown({
+      content: 'https://5chan.local/#/mu',
+    });
+
+    const link = container.querySelector('a');
+    expect(link?.getAttribute('href')).toBe('/mu');
+    expect(link?.textContent).toBe('https://5chan.local/#/mu');
+  });
+
   it('renders number quote links with op and unavailable state derived from cached comments', async () => {
     testState.comments = {
       'comment-42': { cid: 'comment-42', number: 42 },

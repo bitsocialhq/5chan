@@ -493,6 +493,16 @@ describe('ReplyModal', () => {
     expect(modal?.style.touchAction).toBe('none');
   });
 
+  it('closes with Escape from the document on desktop', async () => {
+    await renderReplyModal('/mu/thread/post-1');
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
+    });
+
+    expect(testState.closeModalMock).toHaveBeenCalledTimes(1);
+  });
+
   it('initializes the drag spring once so typing rerenders do not recenter the modal', async () => {
     await renderReplyModal('/mu/thread/post-1');
 

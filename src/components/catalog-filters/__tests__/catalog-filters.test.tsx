@@ -212,7 +212,7 @@ describe('CatalogFilters', () => {
     expect(addedRowInputs[3]?.checked).toBe(false);
   });
 
-  it('reorders, edits, and saves non-empty filters via the document Enter shortcut', async () => {
+  it('reorders, edits, and saves non-empty filters from the form', async () => {
     renderCatalogFilters();
     await openModal();
 
@@ -254,6 +254,11 @@ describe('CatalogFilters', () => {
 
     await act(async () => {
       document.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
+    });
+    expect(testState.saveAndApplyFiltersMock).not.toHaveBeenCalled();
+
+    await act(async () => {
+      container.querySelector('form')?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     });
 
     expect(testState.saveAndApplyFiltersMock).toHaveBeenCalledTimes(1);

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/react/shallow';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
@@ -109,19 +109,13 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
     onSave();
   }, [saveAndApplyFilters, localFilterItems, onSave, resetFeed]);
 
-  const handleSaveRef = useRef(handleSave);
-  handleSaveRef.current = handleSave;
-
-  useEffect(() => {
-    const handleDocumentKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleSaveRef.current();
-      }
-    };
-
-    document.addEventListener('keydown', handleDocumentKeyDown);
-    return () => document.removeEventListener('keydown', handleDocumentKeyDown);
-  }, []);
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      handleSave();
+    },
+    [handleSave],
+  );
 
   const updateLocalFilterItem = useCallback((index: number, item: any) => {
     setLocalFilterItems((prev) => prev.map((f, i) => (i === index ? item : f)));
@@ -141,100 +135,102 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
   }, []);
 
   return (
-    <table className={styles.filtersTable}>
-      <thead>
-        <tr>
-          <th>order</th>
-          <th>on</th>
-          <th>pattern</th>
-          <th>color</th>
-          <th>hide</th>
-          <th>top</th>
-          <th>del</th>
-        </tr>
-      </thead>
-      <tbody>
-        {localFilterItems.map((item, index) => (
-          <tr key={item.id ?? index}>
-            <td>
-              <span
-                className={styles.orderButton}
-                role='button'
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    moveLocalFilterItemUp(index);
-                  }
-                }}
-                onClick={() => moveLocalFilterItemUp(index)}
-              >
-                ↑
-              </span>
-            </td>
-            <td>
-              <input
-                type='checkbox'
-                className={styles.onCheckbox}
-                checked={item.enabled}
-                onChange={(e) => updateLocalFilterItem(index, { ...item, enabled: e.target.checked })}
-              />
-            </td>
-            <td>
-              <input
-                type='text'
-                autoCorrect='off'
-                autoComplete='off'
-                spellCheck='false'
-                value={item.text}
-                onChange={(e) => updateLocalFilterItem(index, { ...item, text: e.target.value })}
-                ref={(el) => (inputRefs.current[index] = el)}
-              />
-            </td>
-            <td>
-              <HighlightColorPicker item={item} index={index} updateLocalFilterItem={updateLocalFilterItem} localFilterItems={localFilterItems} />
-            </td>
-            <td>
-              <input type='checkbox' checked={item.hide} onChange={(e) => updateLocalFilterItem(index, { ...item, hide: e.target.checked })} />
-            </td>
-            <td>
-              <input type='checkbox' checked={item.top} onChange={(e) => updateLocalFilterItem(index, { ...item, top: e.target.checked })} />
-            </td>
-            <td>
-              <span
-                className={styles.deleteButton}
-                role='button'
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    removeLocalFilterItem(index);
-                  }
-                }}
-                onClick={() => removeLocalFilterItem(index)}
-              >
-                ×
-              </span>
-            </td>
-            <td className={styles.filterHits}>
-              {currentCommunityAddress && item.communityFilteredCids?.has(currentCommunityAddress) && `x${item.communityCounts?.get(currentCommunityAddress) ?? 0}`}
+    <form onSubmit={handleSubmit}>
+      <table className={styles.filtersTable}>
+        <thead>
+          <tr>
+            <th>order</th>
+            <th>on</th>
+            <th>pattern</th>
+            <th>color</th>
+            <th>hide</th>
+            <th>top</th>
+            <th>del</th>
+          </tr>
+        </thead>
+        <tbody>
+          {localFilterItems.map((item, index) => (
+            <tr key={item.id ?? index}>
+              <td>
+                <span
+                  className={styles.orderButton}
+                  role='button'
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      moveLocalFilterItemUp(index);
+                    }
+                  }}
+                  onClick={() => moveLocalFilterItemUp(index)}
+                >
+                  ↑
+                </span>
+              </td>
+              <td>
+                <input
+                  type='checkbox'
+                  className={styles.onCheckbox}
+                  checked={item.enabled}
+                  onChange={(e) => updateLocalFilterItem(index, { ...item, enabled: e.target.checked })}
+                />
+              </td>
+              <td>
+                <input
+                  type='text'
+                  autoCorrect='off'
+                  autoComplete='off'
+                  spellCheck='false'
+                  value={item.text}
+                  onChange={(e) => updateLocalFilterItem(index, { ...item, text: e.target.value })}
+                  ref={(el) => (inputRefs.current[index] = el)}
+                />
+              </td>
+              <td>
+                <HighlightColorPicker item={item} index={index} updateLocalFilterItem={updateLocalFilterItem} localFilterItems={localFilterItems} />
+              </td>
+              <td>
+                <input type='checkbox' checked={item.hide} onChange={(e) => updateLocalFilterItem(index, { ...item, hide: e.target.checked })} />
+              </td>
+              <td>
+                <input type='checkbox' checked={item.top} onChange={(e) => updateLocalFilterItem(index, { ...item, top: e.target.checked })} />
+              </td>
+              <td>
+                <span
+                  className={styles.deleteButton}
+                  role='button'
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      removeLocalFilterItem(index);
+                    }
+                  }}
+                  onClick={() => removeLocalFilterItem(index)}
+                >
+                  ×
+                </span>
+              </td>
+              <td className={styles.filterHits}>
+                {currentCommunityAddress && item.communityFilteredCids?.has(currentCommunityAddress) && `x${item.communityCounts?.get(currentCommunityAddress) ?? 0}`}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan={7}>
+              <button type='button' className={styles.addButton} onClick={handleAddFilter}>
+                {t('add')}
+              </button>
+              <button type='submit' className={styles.saveButton}>
+                {t('save')}
+              </button>
             </td>
           </tr>
-        ))}
-      </tbody>
-      <tfoot>
-        <tr>
-          <td colSpan={7}>
-            <button className={styles.addButton} onClick={handleAddFilter}>
-              {t('add')}
-            </button>
-            <button className={styles.saveButton} onClick={handleSave}>
-              {t('save')}
-            </button>
-          </td>
-        </tr>
-      </tfoot>
-    </table>
+        </tfoot>
+      </table>
+    </form>
   );
 };
 

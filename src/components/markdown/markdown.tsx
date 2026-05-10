@@ -160,6 +160,16 @@ const COMBINED_REGEX = new RegExp(
 
 const makeTokenKey = (prefix: string, type: Token['type'], start: number, end: number): string => `${prefix}${type}:${start}:${end}`;
 
+function normalizeInternalRouteHref(href: string): string {
+  if (href.startsWith('/#/')) {
+    return href.slice(2);
+  }
+  if (href.startsWith('#/')) {
+    return href.slice(1);
+  }
+  return href;
+}
+
 function getCrossboardRoute(fullPattern: string): string | null {
   const pathPart = fullPattern.replace(/^>>>\//, '').replace(/[.,:;!?]+$/, '');
   if (!isValidCrossboardPattern(`>>>/${pathPart}`)) {
@@ -225,7 +235,12 @@ function tokenize(text: string, keyPrefix = ''): Token[] {
       const fullPattern = `>>>/${pathPart}`;
       const route = getCrossboardRoute(fullPattern);
       if (route) {
-        tokens.push({ key: makeTokenKey(keyPrefix, 'crossBoardLink', matchStart, matchEnd), type: 'crossBoardLink', display: fullPattern, route });
+        const trailingText = fullMatch.startsWith(fullPattern) ? fullMatch.slice(fullPattern.length) : '';
+        const linkEnd = trailingText ? matchEnd - trailingText.length : matchEnd;
+        tokens.push({ key: makeTokenKey(keyPrefix, 'crossBoardLink', matchStart, linkEnd), type: 'crossBoardLink', display: fullPattern, route });
+        if (trailingText) {
+          tokens.push({ key: makeTokenKey(keyPrefix, 'text', linkEnd, matchEnd), type: 'text', value: trailingText });
+        }
       } else {
         tokens.push({ key: makeTokenKey(keyPrefix, 'text', matchStart, matchEnd), type: 'text', value: fullMatch });
       }
@@ -302,18 +317,19 @@ const AnchorLink = ({ href, text }: { href: string; text: string }) => {
   if (is5chanLink(href)) {
     const internalPath = transform5chanLinkToInternal(href);
     if (internalPath) {
+      const internalRoute = normalizeInternalRouteHref(internalPath);
       let displayText: React.ReactNode = text;
       const isAutolinkedUrl = text.startsWith('http');
 
       if (isAutolinkedUrl) {
         displayText = text;
-      } else if (internalPath.match(/^\/[^/]+$/)) {
-        displayText = internalPath.substring(1);
+      } else if (internalRoute.match(/^\/[^/]+$/)) {
+        displayText = internalRoute.substring(1);
       } else {
-        displayText = internalPath;
+        displayText = internalRoute;
       }
 
-      return <Link to={internalPath}>{displayText}</Link>;
+      return <Link to={internalRoute}>{displayText}</Link>;
     } else {
       console.warn('Failed to transform 5chan link to internal path:', href);
       return <Link to={href}>{text}</Link>;
@@ -328,7 +344,7 @@ const AnchorLink = ({ href, text }: { href: string; text: string }) => {
     href.match(/^\/[^/]+(\/thread\/[^/]+)?$/) ||
     href.match(/^\/[^/]+\/(catalog|description|rules)(\/settings)?$/)
   ) {
-    return <Link to={href}>{text}</Link>;
+    return <Link to={normalizeInternalRouteHref(href)}>{text}</Link>;
   }
 
   return (

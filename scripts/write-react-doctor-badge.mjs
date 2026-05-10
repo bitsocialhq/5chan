@@ -4,18 +4,25 @@ import path from "node:path";
 
 const CWD = process.cwd();
 const BADGE_OUTPUT_PATH = path.join(CWD, "badges", "react-doctor.json");
+const reactDoctorArgs = ["react-doctor", ".", "--json", "--json-compact", "--yes", "--fail-on", "none"];
 
-const reportText = execFileSync(
-  "yarn",
-  ["react-doctor", ".", "--json", "--json-compact", "--yes", "--fail-on", "none"],
-  {
-    cwd: CWD,
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "inherit"],
-  },
-);
+console.log(`[react-doctor-badge] Running "yarn ${reactDoctorArgs.join(" ")}" in "${CWD}".`);
 
-const report = JSON.parse(reportText);
+const reportText = execFileSync("yarn", reactDoctorArgs, {
+  cwd: CWD,
+  encoding: "utf8",
+  stdio: ["ignore", "pipe", "inherit"],
+});
+
+let report;
+try {
+  report = JSON.parse(reportText);
+} catch (error) {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`[react-doctor-badge] Failed to parse React Doctor JSON report: ${message}`);
+  console.error(`[react-doctor-badge] Output preview: ${reportText.slice(0, 500)}`);
+  process.exit(1);
+}
 const score = report?.summary?.score;
 
 if (typeof score !== "number") {
