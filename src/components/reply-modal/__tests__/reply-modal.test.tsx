@@ -32,6 +32,7 @@ const testState = vi.hoisted(() => ({
   quoteInsertNumber: undefined as number | undefined,
   quoteInsertRequestId: 0,
   quoteInsertSelectedText: '',
+  dragHandler: undefined as ((state: { active: boolean; event: Pick<Event, 'preventDefault'>; offset: [number, number] }) => void) | undefined,
   replyIndex: undefined as number | undefined,
   resetPublishReplyOptionsMock: vi.fn(),
   resolvedCommunityAddress: undefined as string | undefined,
@@ -208,7 +209,10 @@ vi.mock('@react-spring/web', async () => {
 });
 
 vi.mock('@use-gesture/react', () => ({
-  useDrag: () => () => ({}),
+  useDrag: (handler: (state: { active: boolean; event: Pick<Event, 'preventDefault'>; offset: [number, number] }) => void) => {
+    testState.dragHandler = handler;
+    return () => ({});
+  },
 }));
 
 let container: HTMLDivElement;
@@ -292,6 +296,7 @@ describe('ReplyModal', () => {
     testState.quoteInsertNumber = undefined;
     testState.quoteInsertRequestId = 0;
     testState.quoteInsertSelectedText = '';
+    testState.dragHandler = undefined;
     testState.replyIndex = undefined;
     testState.resetPublishReplyOptionsMock.mockReset();
     testState.resolvedCommunityAddress = undefined;
@@ -326,6 +331,8 @@ describe('ReplyModal', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    document.body.style.userSelect = '';
+    document.body.style.webkitUserSelect = '';
   });
 
   it('initializes quoted content, display name, upload controls, and shared offline warning on board routes', async () => {
@@ -501,6 +508,31 @@ describe('ReplyModal', () => {
     });
 
     expect(testState.closeModalMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('restores body selection styles if unmounted during a drag', async () => {
+    document.body.style.userSelect = 'text';
+    document.body.style.webkitUserSelect = 'auto';
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    await act(async () => {
+      testState.dragHandler?.({
+        active: true,
+        event: { preventDefault: vi.fn() },
+        offset: [140, 100],
+      });
+    });
+
+    expect(document.body.style.userSelect).toBe('none');
+    expect(document.body.style.webkitUserSelect).toBe('none');
+
+    await act(async () => {
+      root.render(createElement(React.Fragment));
+    });
+
+    expect(document.body.style.userSelect).toBe('text');
+    expect(document.body.style.webkitUserSelect).toBe('auto');
   });
 
   it('initializes the drag spring once so typing rerenders do not recenter the modal', async () => {

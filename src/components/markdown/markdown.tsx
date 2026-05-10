@@ -151,7 +151,7 @@ type Token =
 const SPOILER_REGEX = /\[[sS][pP][oO][iI][lL][eE][rR]\]([\s\S]*?)\[\/[sS][pP][oO][iI][lL][eE][rR]\]/;
 const CROSSBOARD_REGEX = />>>\/((?:[a-zA-Z0-9]{1,10}\/(?:[a-zA-Z0-9]{46})?|[a-zA-Z0-9\-.]+(?:\/[a-zA-Z0-9]{46})?))[.,:;!?]*/;
 const QUOTE_LINK_REGEX = /(?<![>/\w])>>(\d+)(?![\d/])/;
-const URL_REGEX = /https?:\/\/[^\s<[\]]*[^\s<[\].,;:!?"')>]/;
+const URL_REGEX = /https?:\/\/[^\s<>[\]]+/;
 
 const COMBINED_REGEX = new RegExp(
   `(${SPOILER_REGEX.source})|(${CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX.source})|(${CROSSBOARD_REGEX.source})|(${QUOTE_LINK_REGEX.source})|(${URL_REGEX.source})`,
@@ -168,6 +168,34 @@ function normalizeInternalRouteHref(href: string): string {
     return href.slice(1);
   }
   return href;
+}
+
+function splitUrlTrailingText(rawHref: string): { href: string; trailingText: string } {
+  let href = rawHref;
+  let trailingText = '';
+
+  while (href) {
+    const trailingPunctuationMatch = href.match(/[.,;:!?"']+$/);
+    if (trailingPunctuationMatch) {
+      trailingText = `${trailingPunctuationMatch[0]}${trailingText}`;
+      href = href.slice(0, -trailingPunctuationMatch[0].length);
+      continue;
+    }
+
+    if (href.endsWith(')')) {
+      const openingParens = (href.match(/\(/g) || []).length;
+      const closingParens = (href.match(/\)/g) || []).length;
+      if (closingParens > openingParens) {
+        trailingText = `)${trailingText}`;
+        href = href.slice(0, -1);
+        continue;
+      }
+    }
+
+    break;
+  }
+
+  return { href, trailingText };
 }
 
 function getCrossboardRoute(fullPattern: string): string | null {
@@ -248,7 +276,12 @@ function tokenize(text: string, keyPrefix = ''): Token[] {
       const number = parseInt(match[9], 10);
       tokens.push({ key: makeTokenKey(keyPrefix, 'quoteLink', matchStart, matchEnd), type: 'quoteLink', number });
     } else if (match[10] !== undefined) {
-      tokens.push({ key: makeTokenKey(keyPrefix, 'url', matchStart, matchEnd), type: 'url', href: fullMatch });
+      const { href, trailingText } = splitUrlTrailingText(fullMatch);
+      const linkEnd = trailingText ? matchEnd - trailingText.length : matchEnd;
+      tokens.push({ key: makeTokenKey(keyPrefix, 'url', matchStart, linkEnd), type: 'url', href });
+      if (trailingText) {
+        tokens.push({ key: makeTokenKey(keyPrefix, 'text', linkEnd, matchEnd), type: 'text', value: trailingText });
+      }
     }
 
     lastIndex = regex.lastIndex;

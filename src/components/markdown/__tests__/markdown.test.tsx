@@ -255,6 +255,19 @@ describe('Markdown', () => {
     expect(link?.textContent).toBe('https://5chan.local/#/mu');
   });
 
+  it('preserves balanced URL parentheses and leaves unmatched trailing punctuation outside links', async () => {
+    await renderMarkdown({
+      content: 'https://en.wikipedia.org/wiki/Function_(mathematics) https://example.com/path),',
+    });
+
+    const links = Array.from(container.querySelectorAll('a'));
+    expect(links[0]?.textContent).toBe('https://en.wikipedia.org/wiki/Function_(mathematics)');
+    expect(links[0]?.getAttribute('href')).toBe('https://en.wikipedia.org/wiki/Function_(mathematics)');
+    expect(links[1]?.textContent).toBe('https://example.com/path');
+    expect(links[1]?.getAttribute('href')).toBe('https://example.com/path');
+    expect(container.textContent).toBe('https://en.wikipedia.org/wiki/Function_(mathematics) https://example.com/path),');
+  });
+
   it('renders number quote links with op and unavailable state derived from cached comments', async () => {
     testState.comments = {
       'comment-42': { cid: 'comment-42', number: 42 },

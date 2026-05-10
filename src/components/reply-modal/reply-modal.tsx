@@ -136,6 +136,27 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     [],
   );
 
+  const bodySelectionStyleBeforeDragRef = useRef<{ userSelect: string; webkitUserSelect: string } | null>(null);
+
+  const disableBodyTextSelection = () => {
+    if (!bodySelectionStyleBeforeDragRef.current) {
+      bodySelectionStyleBeforeDragRef.current = {
+        userSelect: document.body.style.userSelect,
+        webkitUserSelect: document.body.style.webkitUserSelect,
+      };
+    }
+    Object.assign(document.body.style, { userSelect: 'none', webkitUserSelect: 'none' });
+  };
+
+  const restoreBodyTextSelection = () => {
+    const previousStyle = bodySelectionStyleBeforeDragRef.current;
+    Object.assign(document.body.style, {
+      userSelect: previousStyle?.userSelect ?? '',
+      webkitUserSelect: previousStyle?.webkitUserSelect ?? '',
+    });
+    bodySelectionStyleBeforeDragRef.current = null;
+  };
+
   const bind = useDrag(
     ({ active, event, offset: [ox, oy] }) => {
       const nextLeft = Math.round(ox);
@@ -143,9 +164,9 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
       if (active) {
         event.preventDefault();
-        Object.assign(document.body.style, { userSelect: 'none', webkitUserSelect: 'none' });
+        disableBodyTextSelection();
       } else {
-        Object.assign(document.body.style, { userSelect: '', webkitUserSelect: '' });
+        restoreBodyTextSelection();
       }
       api.start({ left: nextLeft, top: nextTop, immediate: true });
     },
@@ -155,6 +176,12 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       bounds: undefined,
     },
   );
+
+  useEffect(() => {
+    return () => {
+      restoreBodyTextSelection();
+    };
+  }, []);
 
   useEffect(() => {
     if (nodeRef.current && isMobile) {

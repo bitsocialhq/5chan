@@ -183,7 +183,9 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
                   spellCheck='false'
                   value={item.text}
                   onChange={(e) => updateLocalFilterItem(index, { ...item, text: e.target.value })}
-                  ref={(el) => (inputRefs.current[index] = el)}
+                  ref={(el) => {
+                    inputRefs.current[index] = el;
+                  }}
                 />
               </td>
               <td>
