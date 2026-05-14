@@ -7,6 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import startIpfs from './start-ipfs.js';
 import './start-pkc-rpc.js';
+import { createFakeUserAgent } from './user-agent.js';
 import { URL, fileURLToPath } from 'node:url';
 import contextMenu from 'electron-context-menu';
 import { getPkcDataPath } from './pkc-paths.js';
@@ -48,9 +49,7 @@ ipcMain.on('get-pkc-rpc-auth-key', (event) => event.reply('pkc-rpc-auth-key', pk
 // https://www.whatismybrowser.com/guides/the-latest-version/chrome
 // https://www.whatismybrowser.com/guides/the-latest-user-agent/chrome
 // NOTE: eventually should probably fake sec-ch-ua header as well
-let fakeUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36';
-if (process.platform === 'darwin') fakeUserAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36';
-if (process.platform === 'linux') fakeUserAgent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36';
+const fakeUserAgent = createFakeUserAgent();
 const realUserAgent = `5chan/${packageJson.version}`;
 
 // add right click menu
