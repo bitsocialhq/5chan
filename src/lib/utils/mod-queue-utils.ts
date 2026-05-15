@@ -1,5 +1,7 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { getCommentCommunityAddress } from './comment-utils';
+import { isPendingApprovalRejected } from './pending-approval-moderation';
+import { areSameBoardAddress } from './route-utils';
 import { getThreadTopNavigationState } from './thread-scroll-utils';
 
 type ModQueueCommentLike = {
@@ -100,6 +102,27 @@ export const getQueuedCommentRouteState = (comment: ModQueueCommentLike | undefi
     ...(queuedComment.parentCid ? {} : getThreadTopNavigationState(queuedComment.cid)),
     queuedComment,
   };
+};
+
+export const shouldKeepQueuedCommentHistory = (comment: ModQueueCommentLike | undefined): boolean => comment?.approved === true || isPendingApprovalRejected(comment);
+
+export const getVisibleQueuedCommentHistory = <T extends ModQueueCommentLike>(
+  feed: readonly ModQueueCommentLike[],
+  queuedCommentHistory: readonly T[],
+  communityAddresses: readonly string[],
+): T[] => {
+  const liveCids = feed.reduce<Set<string>>((cids, comment) => {
+    if (comment.cid) cids.add(comment.cid);
+    return cids;
+  }, new Set());
+
+  return queuedCommentHistory.filter((comment) => {
+    const commentCommunityAddress = getCommentCommunityAddress(comment);
+    if (!comment.cid || !shouldKeepQueuedCommentHistory(comment) || liveCids.has(comment.cid) || !commentCommunityAddress) {
+      return false;
+    }
+    return communityAddresses.some((communityAddress) => areSameBoardAddress(communityAddress, commentCommunityAddress));
+  });
 };
 
 export const filterVisibleModQueueFeed = <T extends ModQueueCommentLike>(

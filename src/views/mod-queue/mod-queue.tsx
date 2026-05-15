@@ -26,7 +26,14 @@ import useChallengesStore from '../../stores/use-challenges-store';
 import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { formatErrorForDisplay } from '../../lib/utils/error-utils';
-import { filterVisibleModQueueFeed, getModQueueCommentRoute, getQueuedCommentRouteState, getQueuedCommentSnapshot } from '../../lib/utils/mod-queue-utils';
+import {
+  filterVisibleModQueueFeed,
+  getModQueueCommentRoute,
+  getQueuedCommentRouteState,
+  getQueuedCommentSnapshot,
+  getVisibleQueuedCommentHistory,
+  shouldKeepQueuedCommentHistory,
+} from '../../lib/utils/mod-queue-utils';
 import Tooltip from '../../components/tooltip';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
@@ -908,7 +915,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     () =>
       feed.flatMap((comment) => {
         const snapshot = getQueuedCommentSnapshot(comment);
-        return snapshot ? [snapshot] : [];
+        return snapshot && shouldKeepQueuedCommentHistory(snapshot) ? [snapshot] : [];
       }),
     [feed],
   );
@@ -918,24 +925,10 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     }
   }, [queuedCommentSnapshots, rememberCommentsInQueue]);
 
-  const feedWithHistory = useMemo(() => {
-    const liveCids = feed.reduce<Set<string>>((cids, comment) => {
-      if (comment.cid) cids.add(comment.cid);
-      return cids;
-    }, new Set());
-    return [
-      ...feed,
-      ...(queuedCommentHistory.filter((comment) => {
-        const commentCommunityAddress = getCommentCommunityAddress(comment);
-        return (
-          comment.cid &&
-          !liveCids.has(comment.cid) &&
-          commentCommunityAddress &&
-          communityAddresses.some((communityAddress) => areSameBoardAddress(communityAddress, commentCommunityAddress))
-        );
-      }) as Comment[]),
-    ];
-  }, [communityAddresses, feed, queuedCommentHistory]);
+  const feedWithHistory = useMemo(
+    () => [...feed, ...(getVisibleQueuedCommentHistory(feed, queuedCommentHistory, communityAddresses) as Comment[])],
+    [communityAddresses, feed, queuedCommentHistory],
+  );
 
   const dismissedCommentCidSet = useMemo(() => new Set(dismissedCommentCids), [dismissedCommentCids]);
   const filteredFeed = useMemo(
