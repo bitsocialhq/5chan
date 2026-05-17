@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { Link, MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostForm, { LinkTypePreviewer } from '../post-form';
 
@@ -30,6 +30,8 @@ const testState = vi.hoisted(() => ({
   navigateMock: vi.fn(),
   offlineTitle: 'offline board',
   postIndex: undefined as number | undefined,
+  publishedPostOptions: undefined as Record<string, unknown> | undefined,
+  publishPostOptions: {} as Record<string, unknown>,
   publishPostMock: vi.fn(),
   publishReplyMock: vi.fn(),
   publishReplyError: null as string | null,
@@ -124,17 +126,49 @@ vi.mock('../../../hooks/use-publish-post', async () => {
 
   return {
     default: ({ communityAddress }: { communityAddress?: string }) => {
-      const [publishPostOptions, setPublishPostOptionsState] = React.useState<Record<string, unknown>>(communityAddress ? { communityAddress } : {});
+      const [, forceUpdate] = React.useReducer((value: number) => value + 1, 0);
+      const getPublishPostOptions = React.useCallback(
+        () => ({
+          ...(communityAddress ? { communityAddress } : {}),
+          ...testState.publishPostOptions,
+        }),
+        [communityAddress],
+      );
+      const publishPost = React.useCallback(() => {
+        testState.publishedPostOptions = getPublishPostOptions();
+        return testState.publishPostMock();
+      }, [getPublishPostOptions]);
+      const resetPublishPostOptions = React.useCallback(() => {
+        testState.publishPostOptions = {};
+        testState.resetPublishPostOptionsMock();
+        forceUpdate();
+      }, []);
+      const setPublishPostOptions = React.useCallback(
+        (options: Record<string, unknown>) => {
+          const sanitizedOptions = Object.entries(options).reduce(
+            (acc, [key, value]) => {
+              acc[key] = value === '' ? undefined : value;
+              return acc;
+            },
+            {} as Record<string, unknown>,
+          );
+
+          testState.setPublishPostOptionsMock(options);
+          testState.publishPostOptions = {
+            ...getPublishPostOptions(),
+            ...sanitizedOptions,
+          };
+          forceUpdate();
+        },
+        [getPublishPostOptions],
+      );
 
       return {
         postIndex: testState.postIndex,
-        publishPost: testState.publishPostMock,
-        publishPostOptions,
-        resetPublishPostOptions: testState.resetPublishPostOptionsMock,
-        setPublishPostOptions: (options: Record<string, unknown>) => {
-          testState.setPublishPostOptionsMock(options);
-          setPublishPostOptionsState((previous) => ({ ...previous, ...options }));
-        },
+        publishPost,
+        publishPostOptions: getPublishPostOptions(),
+        resetPublishPostOptions,
+        setPublishPostOptions,
       };
     },
   };
@@ -150,18 +184,21 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
         postCid: postCid ?? cid,
         communityAddress,
       });
+      const publishReply = React.useCallback(() => testState.publishReplyMock(), []);
+      const resetPublishReplyOptions = React.useCallback(() => testState.resetPublishReplyOptionsMock(), []);
+      const setPublishReplyOptions = React.useCallback((options: Record<string, unknown>) => {
+        testState.setPublishReplyOptionsMock(options);
+        setPublishReplyOptionsState((previous) => ({ ...previous, ...options }));
+      }, []);
 
       return {
         isResolvingExternalQuotes: testState.isResolvingExternalQuotes,
-        publishReply: testState.publishReplyMock,
+        publishReply,
         publishReplyError: testState.publishReplyError,
         publishReplyStateMessage: testState.publishReplyStateMessage,
         replyIndex: testState.replyIndex,
-        resetPublishReplyOptions: testState.resetPublishReplyOptionsMock,
-        setPublishReplyOptions: (options: Record<string, unknown>) => {
-          testState.setPublishReplyOptionsMock(options);
-          setPublishReplyOptionsState((previous) => ({ ...previous, ...options }));
-        },
+        resetPublishReplyOptions,
+        setPublishReplyOptions,
         _publishReplyOptions: publishReplyOptions,
       };
     },
@@ -252,11 +289,42 @@ const renderPostForm = async (initialEntry: string) => {
   await flushEffects();
 };
 
+const KeyedPostForm = () => {
+  const location = useLocation();
+  return createElement(PostForm, { key: location.pathname });
+};
+
+const renderNavigablePostForm = async (initialEntry: string) => {
+  await act(async () => {
+    root.render(
+      createElement(
+        MemoryRouter,
+        { initialEntries: [initialEntry] },
+        createElement(
+          React.Fragment,
+          {},
+          createElement(Link, { to: '/biz' }, 'go_biz'),
+          createElement(Routes, {}, createElement(Route, { path: '/:boardIdentifier/*', element: createElement(KeyedPostForm) })),
+        ),
+      ),
+    );
+  });
+  await flushEffects();
+};
+
 const clickByText = async (scope: ParentNode, text: string, index = 0) => {
   const button = Array.from(scope.querySelectorAll('button')).filter((candidate) => candidate.textContent === text)[index] as HTMLButtonElement | undefined;
   await act(async () => {
     button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
   });
+};
+
+const clickLinkByText = async (scope: ParentNode, text: string, index = 0) => {
+  const link = Array.from(scope.querySelectorAll('a')).filter((candidate) => candidate.textContent === text)[index] as HTMLAnchorElement | undefined;
+  await act(async () => {
+    link?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  });
+  await flushEffects();
 };
 
 const dispatchInput = async (element: HTMLInputElement | HTMLTextAreaElement, value: string) => {
@@ -302,6 +370,8 @@ describe('PostForm', () => {
     testState.isResolvingExternalQuotes = false;
     testState.offlineTitle = 'offline board';
     testState.postIndex = undefined;
+    testState.publishedPostOptions = undefined;
+    testState.publishPostOptions = {};
     testState.publishReplyError = null;
     testState.publishReplyStateMessage = null;
     testState.replyIndex = undefined;
@@ -427,6 +497,40 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ communityAddress: 'music-posting.eth' });
+  });
+
+  it('drops stale thread content when board navigation remounts the form before a link-only post', async () => {
+    await renderNavigablePostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    let table = container.querySelector('table');
+    let textarea = table?.querySelector('textarea');
+
+    expect(table).toBeTruthy();
+    expect(textarea).toBeTruthy();
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'stale draft body');
+    expect(testState.publishPostOptions.content).toBe('stale draft body');
+
+    await clickLinkByText(container, 'go_biz');
+    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalledTimes(1);
+
+    await clickByText(container, 'start_new_thread');
+
+    table = container.querySelector('table');
+    textarea = table?.querySelector('textarea');
+    const textInputs = table?.querySelectorAll<HTMLInputElement>('input[type="text"]') || [];
+    const linkInput = textInputs[2];
+
+    expect(textarea?.value).toBe('');
+    expect(linkInput).toBeTruthy();
+
+    await dispatchInput(linkInput as HTMLInputElement, 'https://example.com/fresh.png');
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishedPostOptions?.link).toBe('https://example.com/fresh.png');
+    expect(testState.publishedPostOptions?.content).toBeUndefined();
   });
 
   it('shows the pasted file-link filename next to the upload button', async () => {

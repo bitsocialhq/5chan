@@ -424,6 +424,17 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const { isResolvingExternalQuotes, publishReply, publishReplyError, publishReplyStateMessage, resetPublishReplyOptions, replyIndex, setPublishReplyOptions } =
     usePublishReply({ cid, communityAddress, postCid });
 
+  useEffect(() => {
+    return () => {
+      checkContentLength.cancel();
+      if (isInPostView) {
+        resetPublishReplyOptions();
+      } else {
+        resetPublishPostOptions();
+      }
+    };
+  }, [checkContentLength, isInPostView, resetPublishPostOptions, resetPublishReplyOptions]);
+
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const content = e.target.value;
     if (isInPostView) {
@@ -467,11 +478,10 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
 
   useEffect(() => {
     if (typeof replyIndex === 'number') {
-      resetPublishReplyOptions();
       resetFields();
       closeForm();
     }
-  }, [replyIndex, resetPublishReplyOptions, closeForm]);
+  }, [replyIndex, closeForm]);
 
   const { isUploading, uploadedFileName, handleUpload } = useFileUpload({
     onUploadComplete: (uploadedUrl: string) => {
