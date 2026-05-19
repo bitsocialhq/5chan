@@ -193,6 +193,16 @@
   color: red;
 }
 
+.statusUnavailable {
+  color: var(--body-font-color);
+}
+
+.statusUnavailableHelp {
+  margin-left: 2px;
+  font-weight: 700;
+  cursor: help;
+}
+
 .directoryFootnote {
   width: 80%;
   max-width: 810px;

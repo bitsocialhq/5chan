@@ -85,6 +85,11 @@ vi.mock('../../../components/loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('span', null, string),
 }));
 
+vi.mock('../../../components/tooltip', () => ({
+  default: ({ content, children }: { content: React.ReactNode; children: React.ReactNode }) =>
+    createElement('span', { title: typeof content === 'string' ? content : undefined }, children),
+}));
+
 vi.mock('../../../hooks/use-directories', () => ({
   useDirectories: () => testState.directories,
 }));
@@ -147,7 +152,20 @@ const renderDirectory = async () => {
   });
 };
 
-const getDirectoryRow = () => Array.from(container.querySelectorAll('tbody tr')).find((row) => row.textContent?.includes('anime-and-manga.bso'));
+const createDirectoryBoard = (address: string, score = 12) => ({
+  address,
+  score,
+  managedByDevs: false,
+});
+
+const createCommunity = (address: string, updatedAt = testState.nowSeconds - 60) => ({
+  address,
+  name: address,
+  state: 'started',
+  updatedAt,
+});
+
+const getDirectoryRow = (address = 'anime-and-manga.bso') => Array.from(container.querySelectorAll('tbody tr')).find((row) => row.textContent?.includes(address));
 
 describe('Directory', () => {
   beforeEach(() => {
@@ -163,13 +181,7 @@ describe('Directory', () => {
     };
     testState.communityIdentifierRequests = [];
     testState.directoryListLoading = false;
-    testState.directoryBoards = [
-      {
-        address: 'anime-and-manga.bso',
-        score: 12,
-        managedByDevs: false,
-      },
-    ];
+    testState.directoryBoards = [createDirectoryBoard('anime-and-manga.bso')];
     testState.directories = [
       {
         address: 'anime-and-manga.bso',
@@ -238,5 +250,31 @@ describe('Directory', () => {
     await renderDirectory();
 
     expect(getDirectoryRow()?.textContent).toContain('offline');
+  });
+
+  it('does not request status checks after the top five boards', async () => {
+    const boards = Array.from({ length: 6 }, (_, index) => createDirectoryBoard(`board-${index + 1}.bso`, 100 - index));
+    testState.directoryBoards = boards;
+    testState.communities = Object.fromEntries(boards.map((board) => [board.address, createCommunity(board.address)]));
+
+    await renderDirectory();
+
+    for (const board of boards.slice(0, 5)) {
+      expect(testState.communityIdentifierRequests).toContain(board.address);
+      expect(testState.offlineHookRequests).toContainEqual({
+        address: board.address,
+        communityAddressHint: board.address,
+      });
+    }
+
+    expect(testState.communityIdentifierRequests).not.toContain('board-6.bso');
+    expect(testState.offlineHookRequests).not.toContainEqual({
+      address: 'board-6.bso',
+      communityAddressHint: 'board-6.bso',
+    });
+
+    const cells = Array.from(getDirectoryRow('board-6.bso')?.querySelectorAll('td') ?? []).map((cell) => cell.textContent?.replace(/\s+/g, ' ').trim());
+    expect(cells[3]).toBe('—?');
+    expect(getDirectoryRow('board-6.bso')?.querySelector('sup')?.closest('span')?.getAttribute('title')).toBe('check only available for top 5 boards');
   });
 });

@@ -6,6 +6,7 @@ import { shouldShowSnow } from '../../lib/snow';
 import { BottomButton, CatalogButton, ReturnButton, TopButton } from '../../components/board-buttons/board-buttons';
 import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer';
 import LoadingEllipsis from '../../components/loading-ellipsis';
+import Tooltip from '../../components/tooltip';
 import { useDirectories } from '../../hooks/use-directories';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
@@ -19,6 +20,10 @@ import useIsCommunityOffline from '../../hooks/use-is-community-offline';
 import { useNowSeconds } from '../../hooks/use-now-seconds';
 import postStyles from '../post/post.module.css';
 import styles from './directory.module.css';
+
+const DIRECTORY_STATUS_CHECK_LIMIT = 5;
+const DIRECTORY_STATUS_UNAVAILABLE_REASON = 'check only available for top 5 boards';
+const DIRECTORY_STATUS_UNAVAILABLE_MARKER = '\u2014';
 
 const computeBoardStatus = (
   communityState: CommunityFreshnessState | undefined,
@@ -96,11 +101,12 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
   const ownerAddress = board.owner;
   const ownerDisplay = ownerAddress ? getShortAddress(ownerAddress) || ownerAddress : undefined;
   const developerBadge = get5chanDeveloperBadge(ownerAddress);
-  const communityIdentifier = useCommunityIdentifier(board.address);
-  const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
-  const { isOffline, isOnlineStatusLoading } = useIsCommunityOffline(community, board.address);
-  const offlineState = useCommunityOfflineStore((state) => state.communityOfflineState[board.address]);
-  const status = computeBoardStatus(community, offlineState, nowSeconds, isOffline, isOnlineStatusLoading);
+  const shouldCheckStatus = rank <= DIRECTORY_STATUS_CHECK_LIMIT;
+  const communityIdentifier = useCommunityIdentifier(shouldCheckStatus ? board.address : undefined);
+  const community = useCommunity(shouldCheckStatus && communityIdentifier ? { community: communityIdentifier } : undefined);
+  const { isOffline, isOnlineStatusLoading } = useIsCommunityOffline(community, shouldCheckStatus ? board.address : undefined);
+  const offlineState = useCommunityOfflineStore((state) => (shouldCheckStatus ? state.communityOfflineState[board.address] : undefined));
+  const status = shouldCheckStatus ? computeBoardStatus(community, offlineState, nowSeconds, isOffline, isOnlineStatusLoading) : 'unavailable';
   const boardLink = `/${board.address}`;
 
   return (
@@ -123,7 +129,16 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
         </span>
       </td>
       <td className={styles.statusCell}>
-        {status === 'loading' ? (
+        {status === 'unavailable' ? (
+          <span className={styles.statusUnavailable}>
+            {DIRECTORY_STATUS_UNAVAILABLE_MARKER}
+            <Tooltip content={DIRECTORY_STATUS_UNAVAILABLE_REASON}>
+              <sup className={styles.statusUnavailableHelp} aria-label={DIRECTORY_STATUS_UNAVAILABLE_REASON} tabIndex={0}>
+                ?
+              </sup>
+            </Tooltip>
+          </span>
+        ) : status === 'loading' ? (
           <LoadingEllipsis string={t('loading')} />
         ) : status === 'unknown' ? null : (
           <span className={status === 'offline' ? styles.statusOffline : styles.statusOnline}>
