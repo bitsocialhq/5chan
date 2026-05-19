@@ -24,6 +24,7 @@ const testState = vi.hoisted(() => ({
     ],
   },
   offlineStates: {} as Record<string, { updatedAt?: number; state?: string }>,
+  offlineSelections: [] as unknown[],
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -47,7 +48,11 @@ vi.mock('../use-directory-list', async () => {
 });
 
 vi.mock('../../stores/use-community-offline-store', () => ({
-  default: <T,>(selector: (state: { communityOfflineState: typeof testState.offlineStates }) => T) => selector({ communityOfflineState: testState.offlineStates }),
+  default: <T,>(selector: (state: { communityOfflineState: typeof testState.offlineStates }) => T) => {
+    const selected = selector({ communityOfflineState: testState.offlineStates });
+    testState.offlineSelections.push(selected);
+    return selected;
+  },
 }));
 
 let latestValue: string | undefined;
@@ -72,6 +77,7 @@ describe('useResolvedCommunityAddress', () => {
     latestValue = undefined;
     testState.boardIdentifier = 'biz';
     testState.offlineStates = {};
+    testState.offlineSelections = [];
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -106,6 +112,20 @@ describe('useResolvedCommunityAddress', () => {
     await renderHook();
 
     expect(latestValue).toBe('business-and-finance.bso');
+  });
+
+  it('does not subscribe to offline state on non-directory board routes', async () => {
+    testState.boardIdentifier = 'custom-board.bso';
+    testState.offlineStates = {
+      unrelated: {
+        updatedAt: 1,
+      },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('custom-board.bso');
+    expect(testState.offlineSelections).toEqual([undefined]);
   });
 
   it('switches away from a directory board when it crosses the offline threshold while mounted', async () => {

@@ -20,13 +20,13 @@ export const useResolvedCommunityAddress = (): string | undefined => {
   const boardIdentifier = params.boardIdentifier;
   const isCode = !!boardIdentifier && isDirectoryRoute(boardIdentifier, directories);
   const { list } = useDirectoryList(isCode ? boardIdentifier : undefined);
-  const offlineStates = useCommunityOfflineStore((state) => state.communityOfflineState);
+  const offlineStates = useCommunityOfflineStore((state) => (isCode ? state.communityOfflineState : undefined));
   const nowSeconds = useNowSeconds(isCode);
 
   return useMemo(() => {
     if (!boardIdentifier) return undefined;
     if (isCode && list && list.boards.length > 0) {
-      const isOffline = (address: string) => isCommunityKnownOffline(offlineStates[address], nowSeconds);
+      const isOffline = (address: string) => isCommunityKnownOffline(offlineStates?.[address], nowSeconds);
       const winner = pickDirectoryWinner(list.boards, isOffline);
       if (winner) return winner.address;
     }

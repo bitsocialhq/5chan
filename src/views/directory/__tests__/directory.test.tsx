@@ -245,6 +245,15 @@ describe('Directory', () => {
     expect(getDirectoryRow()?.textContent).toContain('loading');
   });
 
+  it('shows a placeholder when listed board status is unknown', async () => {
+    testState.communities = {};
+
+    await renderDirectory();
+
+    const cells = Array.from(getDirectoryRow()?.querySelectorAll('td') ?? []).map((cell) => cell.textContent?.replace(/\s+/g, ' ').trim());
+    expect(cells[3]).toBe('—');
+  });
+
   it('shows offline status when the listed board community is stale', async () => {
     testState.communities['anime-and-manga.bso'] = {
       address: 'anime-and-manga.bso',
