@@ -39,6 +39,7 @@ const loadModule = async () => {
 describe('app-update', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.doUnmock('../app-distribution');
     testState.capacitorPlatform = 'web';
     testState.browserOpenMock.mockReset();
     testState.electronDownloadAndInstallUpdateMock.mockReset();
@@ -97,7 +98,7 @@ describe('app-update', () => {
   });
 
   it('disables update checks for F-Droid builds', async () => {
-    vi.stubEnv('VITE_APP_DISTRIBUTION', 'fdroid');
+    vi.doMock('../app-distribution', () => ({ isAppUpdateEnabled: false }));
     testState.capacitorPlatform = 'android';
 
     const { applyAvailableAppUpdate, isAppUpdateEnabled, resolveAvailableAppUpdate } = await loadModule();
