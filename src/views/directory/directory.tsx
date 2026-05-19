@@ -1,26 +1,39 @@
 import { useEffect, useMemo } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
+import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { shouldShowSnow } from '../../lib/snow';
 import { BottomButton, CatalogButton, ReturnButton, TopButton } from '../../components/board-buttons/board-buttons';
 import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import { useDirectories } from '../../hooks/use-directories';
+import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { isDirectoryRoute } from '../../lib/utils/route-utils';
 import { DirectoryListBoard, sortDirectoryBoardsByRank, useDirectoryList } from '../../hooks/use-directory-list';
-import { isCommunityKnownOffline } from '../../lib/utils/community-freshness-utils';
+import { type CommunityFreshnessState, isCommunityKnownOffline } from '../../lib/utils/community-freshness-utils';
 import getShortAddress from '../../lib/get-short-address';
 import { get5chanDeveloperBadge } from '../../lib/utils/author-display-utils';
 import useCommunityOfflineStore from '../../stores/use-community-offline-store';
+import useIsCommunityOffline from '../../hooks/use-is-community-offline';
 import { useNowSeconds } from '../../hooks/use-now-seconds';
 import postStyles from '../post/post.module.css';
 import styles from './directory.module.css';
 
-const computeBoardStatus = (offlineState: { state?: string; updatedAt?: number } | undefined, nowSeconds: number): 'online' | 'offline' | 'unknown' => {
-  if (!offlineState) return 'unknown';
-  if (isCommunityKnownOffline(offlineState, nowSeconds)) return 'offline';
-  if (!offlineState.updatedAt) return 'unknown';
+const computeBoardStatus = (
+  communityState: CommunityFreshnessState | undefined,
+  offlineState: CommunityFreshnessState | undefined,
+  nowSeconds: number,
+  isOffline: boolean,
+  isOnlineStatusLoading: boolean,
+): 'online' | 'offline' | 'unknown' => {
+  const freshnessState = {
+    state: communityState?.state ?? offlineState?.state,
+    updatedAt: communityState?.updatedAt ?? offlineState?.updatedAt,
+  };
+
+  if (isOffline || isCommunityKnownOffline(freshnessState, nowSeconds)) return 'offline';
+  if (isOnlineStatusLoading || !freshnessState.updatedAt) return 'unknown';
   return 'online';
 };
 
@@ -82,8 +95,11 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
   const ownerAddress = board.owner;
   const ownerDisplay = ownerAddress ? getShortAddress(ownerAddress) || ownerAddress : undefined;
   const developerBadge = get5chanDeveloperBadge(ownerAddress);
+  const communityIdentifier = useCommunityIdentifier(board.address);
+  const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
+  const { isOffline, isOnlineStatusLoading } = useIsCommunityOffline(community, board.address);
   const offlineState = useCommunityOfflineStore((state) => state.communityOfflineState[board.address]);
-  const status = computeBoardStatus(offlineState, nowSeconds);
+  const status = computeBoardStatus(community, offlineState, nowSeconds, isOffline, isOnlineStatusLoading);
   const boardLink = `/${board.address}`;
 
   return (
