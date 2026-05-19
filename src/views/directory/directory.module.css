@@ -120,11 +120,16 @@
 
 .numberCell,
 .scoreCell,
-.voteCell,
 .ownerCell,
 .statusCell,
-.viewCell {
+.actionsCell {
   white-space: nowrap;
+}
+
+.numberCell,
+.scoreCell,
+.actionsCell {
+  width: 1%;
 }
 
 .postblock {
@@ -158,22 +163,25 @@
   color: var(--post-link-text-color-hover);
 }
 
-.voteButton {
+.actionButton {
   all: unset;
   cursor: pointer;
-  color: var(--button-desktop-text-color);
-  font-weight: 700;
-  padding: 0 3px;
+  color: var(--post-link-text-color);
+  text-decoration: var(--post-link-text-decoration);
 }
 
-.voteButton:hover {
-  color: var(--button-desktop-text-color-hover);
+.actionButton:hover,
+.actionButton:focus-visible {
+  color: var(--post-link-text-color-hover);
+}
+
+.actionButton:focus-visible {
+  outline: 1px dotted currentColor;
+  outline-offset: 1px;
 }
 
 .scoreValue {
   font-weight: 700;
-  min-width: 18px;
-  display: inline-block;
 }
 
 .statusOnline {
@@ -241,7 +249,7 @@
     margin-top: 10px;
   }
 
-  .viewCell {
+  .actionsCell {
     white-space: nowrap;
   }
 }

@@ -105,17 +105,6 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
   return (
     <tr className={`${styles.dirRow} ${rank % 2 === 1 ? styles.rowOdd : ''}`}>
       <td className={styles.numberCell}>{rank}</td>
-      <td className={styles.scoreCell}>
-        <span className={styles.scoreValue}>{board.score}</span>
-      </td>
-      <td className={styles.voteCell}>
-        <button type='button' className={styles.voteButton} onClick={onVote} aria-label={t('upvote')} title={t('upvote')}>
-          ▲
-        </button>
-        <button type='button' className={styles.voteButton} onClick={onVote} aria-label={t('downvote')} title={t('downvote')}>
-          ▼
-        </button>
-      </td>
       <td className={styles.boardCol}>
         <Link to={boardLink} className={styles.viewLink}>
           <span className={styles.boardAddress}>{board.address}</span>
@@ -139,8 +128,19 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
           </span>
         )}
       </td>
-      <td className={styles.viewCell}>
+      <td className={styles.scoreCell}>
+        <span className={styles.scoreValue}>{board.score}</span>
+      </td>
+      <td className={styles.actionsCell}>
         [
+        <button type='button' className={styles.actionButton} onClick={onVote} aria-label={t('upvote')} title={t('upvote')}>
+          +1
+        </button>
+        ] [
+        <button type='button' className={styles.actionButton} onClick={onVote} aria-label={t('downvote')} title={t('downvote')}>
+          -1
+        </button>
+        ] [
         <Link to={boardLink} className={styles.viewLink}>
           {t('open')}
         </Link>
@@ -204,12 +204,11 @@ const Directory = () => {
           <table className={styles.flashListing}>
             <thead>
               <tr>
-                <td className={styles.postblock}>#</td>
-                <td className={styles.postblock}>{t('directory_score')}</td>
-                <td className={styles.postblock}>{t('directory_vote')}</td>
+                <td className={styles.postblock}>No.</td>
                 <td className={styles.postblock}>{t('directory_board')}</td>
                 <td className={styles.postblock}>{t('directory_owner')}</td>
                 <td className={styles.postblock}>{t('directory_status')}</td>
+                <td className={styles.postblock}>{t('directory_score')}</td>
                 <td className={styles.postblock}></td>
               </tr>
             </thead>

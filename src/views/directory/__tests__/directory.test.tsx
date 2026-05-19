@@ -194,7 +194,11 @@ describe('Directory', () => {
   it('shows online status for a listed board after loading its community', async () => {
     await renderDirectory();
 
-    expect(getDirectoryRow()?.textContent).toContain('online');
+    const cells = Array.from(getDirectoryRow()?.querySelectorAll('td') ?? []).map((cell) => cell.textContent?.replace(/\s+/g, ' ').trim());
+    expect(cells.slice(0, 5)).toEqual(['1', 'anime-and-manga.bso', 'directory_owner_anonymous', 'online', '12']);
+    expect(cells[5]).toContain('+1');
+    expect(cells[5]).toContain('-1');
+    expect(cells[5]).toContain('open');
     expect(testState.communityIdentifierRequests).toContain('anime-and-manga.bso');
     expect(testState.offlineHookRequests).toContainEqual({
       address: 'anime-and-manga.bso',
