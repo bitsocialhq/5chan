@@ -112,11 +112,7 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
   return (
     <tr className={`${styles.dirRow} ${rank % 2 === 1 ? styles.rowOdd : ''}`}>
       <td className={styles.numberCell}>{rank}</td>
-      <td className={styles.boardCol}>
-        <Link to={boardLink} className={styles.viewLink}>
-          <span className={styles.boardAddress}>{board.address}</span>
-        </Link>
-      </td>
+      <td className={styles.boardCol}>{board.address}</td>
       <td className={styles.ownerCell}>
         <span className={developerBadge ? `${styles.ownerName} ${postStyles.capcodeAdmin}` : undefined}>
           {ownerDisplay ?? t('directory_owner_anonymous')}
@@ -160,7 +156,7 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
         </button>
         ] [
         <Link to={boardLink} className={styles.viewLink}>
-          {t('open')}
+          {t('view')}
         </Link>
         ]
       </td>

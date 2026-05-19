@@ -45,6 +45,7 @@ vi.mock('react-i18next', () => ({
       if (key === 'directory_status_online') return 'online';
       if (key === 'directory_status_offline') return 'offline';
       if (key === 'directory_heading') return `${values?.boardIdentifier} directory`;
+      if (key === 'view') return 'View';
       return key;
     },
   }),
@@ -217,7 +218,9 @@ describe('Directory', () => {
     expect(cells.slice(0, 5)).toEqual(['1', 'anime-and-manga.bso', 'directory_owner_anonymous', 'online', '12']);
     expect(cells[5]).toContain('+1');
     expect(cells[5]).toContain('-1');
-    expect(cells[5]).toContain('open');
+    expect(cells[5]).toContain('View');
+    expect(getDirectoryRow()?.querySelector('td:nth-child(2) a')).toBeNull();
+    expect(getDirectoryRow()?.querySelector('td:nth-child(2) span')).toBeNull();
     expect(testState.communityIdentifierRequests).toContain('anime-and-manga.bso');
     expect(testState.offlineHookRequests).toContainEqual({
       address: 'anime-and-manga.bso',
