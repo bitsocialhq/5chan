@@ -2,7 +2,7 @@ import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Link, MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
@@ -317,6 +317,10 @@ const dispatchTextInput = async (element: HTMLTextAreaElement, value: string) =>
 };
 
 describe('App', () => {
+  beforeAll(async () => {
+    App = (await import('../app')).default;
+  }, 30000);
+
   beforeEach(() => {
     vi.clearAllMocks();
     latestLocation = '';
