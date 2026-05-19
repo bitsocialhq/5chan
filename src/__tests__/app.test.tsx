@@ -266,11 +266,10 @@ const LocationProbe = () => {
 
 const flushEffects = async (count = 8) => {
   for (let i = 0; i < count; i += 1) {
-    await act(async () => {
-      await Promise.resolve();
-      await new Promise<void>((resolve) => queueMicrotask(resolve));
-    });
+    await Promise.resolve();
+    await new Promise<void>((resolve) => queueMicrotask(resolve));
   }
+  act(() => {});
 };
 
 const renderApp = async (initialEntry: string) => {
