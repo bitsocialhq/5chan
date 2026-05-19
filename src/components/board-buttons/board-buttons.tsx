@@ -7,7 +7,7 @@ import { usePostPageNumber } from '../../hooks/use-post-page-number';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
-import { getBoardPath, isDirectoryBoard } from '../../lib/utils/route-utils';
+import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import useSafeAccountComment from '../../hooks/use-safe-account-comment';
@@ -165,26 +165,20 @@ export const ReturnButton = ({ address, isInAllView, isInSubscriptionsView, isIn
   );
 };
 
-const VoteButton = () => {
+const DirectoryButton = () => {
   const { t } = useTranslation();
   const params = useParams();
   const directories = useDirectories();
-
-  // Get the boardIdentifier from params (try boardIdentifier first, then communityAddress for backward compatibility)
   const boardIdentifier = params.boardIdentifier;
 
-  // Only render the vote button if we're on a directory board route
-  if (!boardIdentifier || !isDirectoryBoard(boardIdentifier, directories)) {
+  if (!boardIdentifier || !isDirectoryRoute(boardIdentifier, directories)) {
     return null;
   }
 
-  const values = { boardIdentifier };
-  const message = `${t('vote_button_unavailable_intro', values)}\n\n${t('vote_button_unavailable_outro', values)}`;
-
   return (
-    <button className={`button ${styles.disabledButton}`} onClick={() => window.alert(message)}>
-      {t('vote')}
-    </button>
+    <Link className='button' to={`/${boardIdentifier}/directory`}>
+      {t('directory')}
+    </Link>
   );
 };
 
@@ -530,10 +524,9 @@ export const MobileBoardButtons = () => {
   const effectiveInfiniteScroll = isMultiboard || enableInfiniteScroll;
   const showBottomButton = !effectiveInfiniteScroll;
 
-  // Check if we should show the vote button (only for directory boards)
   const directories = useDirectories();
   const boardIdentifier = params.boardIdentifier;
-  const showVoteButton = boardIdentifier && isDirectoryBoard(boardIdentifier, directories);
+  const showDirectoryButton = boardIdentifier && isDirectoryRoute(boardIdentifier, directories);
 
   return (
     <div className={`${styles.mobileBoardButtons} ${!isInCatalogView ? styles.addMargin : ''}`}>
@@ -615,7 +608,7 @@ export const MobileBoardButtons = () => {
           <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
           <RefreshButton />
           <div className={styles.secondRow}>
-            {showVoteButton && <VoteButton />}
+            {showDirectoryButton && <DirectoryButton />}
             {!(isInAllView || isInSubscriptionsView || isInModView) && <SubscribeButton address={communityAddress} />}
             {!(isInAllView || isInSubscriptionsView) && <ModQueueButton boardIdentifier={boardIdentifier} isMobile={true} />}
           </div>
@@ -705,10 +698,9 @@ export const DesktopBoardButtons = () => {
   const effectiveInfiniteScroll = isMultiboard || enableInfiniteScroll;
   const showBottomButton = (isInCatalogView || isInPostView || isInPendingPostPage) && !effectiveInfiniteScroll;
 
-  // Check if we should show the vote button (only for directory boards)
   const directories = useDirectories();
   const boardIdentifier = params.boardIdentifier;
-  const showVoteButton = boardIdentifier && isDirectoryBoard(boardIdentifier, directories);
+  const showDirectoryButton = boardIdentifier && isDirectoryRoute(boardIdentifier, directories);
 
   return (
     <>
@@ -820,12 +812,12 @@ export const DesktopBoardButtons = () => {
               {showTimeFilter && (
                 <TimeFilter isInAllView={isInAllView} isInCatalogView={isInCatalogView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
               )}
-              {showVoteButton && (
+              {showDirectoryButton && (
                 <>
-                  [<VoteButton />]
+                  [<DirectoryButton />]
                 </>
               )}
-              {showVoteButton && !(isInAllView || isInSubscriptionsView || isInModView) && ' '}
+              {showDirectoryButton && !(isInAllView || isInSubscriptionsView || isInModView) && ' '}
               {!(isInAllView || isInSubscriptionsView || isInModView) && (
                 <>
                   [<SubscribeButton address={communityAddress} />]

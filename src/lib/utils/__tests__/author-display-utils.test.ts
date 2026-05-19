@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { KNOWN_5CHAN_DEVELOPER_ENTRIES, getAuthorBadge, isKnown5chanDeveloper } from '../author-display-utils';
+import { KNOWN_5CHAN_DEVELOPER_ENTRIES, get5chanDeveloperBadge, getAuthorBadge, getCommunityOwnerAddress, isKnown5chanDeveloper } from '../author-display-utils';
 
 describe('author display utils', () => {
   it('recognizes the hardcoded 5chan developer addresses', () => {
@@ -36,6 +36,26 @@ describe('author display utils', () => {
       label: '5chan Dev',
       title: '5chan Dev',
     });
+  });
+
+  it('finds the board owner address from community roles', () => {
+    expect(getCommunityOwnerAddress(undefined)).toBeUndefined();
+    expect(getCommunityOwnerAddress({ 'mod.bso': { role: 'moderator' } })).toBeUndefined();
+    expect(
+      getCommunityOwnerAddress({
+        'mod.bso': { role: 'moderator' },
+        'plebeius.bso': { role: 'owner' },
+      }),
+    ).toBe('plebeius.bso');
+  });
+
+  it('returns only the 5chan Dev badge for known developers', () => {
+    expect(get5chanDeveloperBadge('plebeius.bso')).toEqual({
+      icon: 'admin',
+      label: '5chan Dev',
+      title: '5chan Dev',
+    });
+    expect(get5chanDeveloperBadge('other.bso')).toBeUndefined();
   });
 
   it('keeps board role labels for non-developers', () => {

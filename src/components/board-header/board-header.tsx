@@ -7,7 +7,7 @@ import getShortAddress from '../../lib/get-short-address';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
-import { isArchiveRoute } from '../../lib/utils/route-utils';
+import { isArchiveRoute, isDirectoryListRoute } from '../../lib/utils/route-utils';
 import styles from './board-header.module.css';
 import { useDirectoriesMetadata, useDirectories } from '../../hooks/use-directories';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
@@ -54,6 +54,7 @@ const BoardHeader = () => {
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const isInModView = isModView(location.pathname);
   const isInArchiveView = isArchiveRoute(location.pathname);
+  const isInDirectoryListView = isDirectoryListRoute(location.pathname);
   const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
@@ -83,7 +84,15 @@ const BoardHeader = () => {
       : isInModView
         ? startCase(t('boards_you_moderate'))
         : defaultCommunity?.title || stableCommunity?.title;
-  const subtitle = isInAllView ? '' : isInSubscriptionsView ? subscriptionsSubtitle : isInModView ? '/mod/' : `${address || communityAddress || ''}`;
+  const subtitle = isInAllView
+    ? ''
+    : isInSubscriptionsView
+      ? subscriptionsSubtitle
+      : isInModView
+        ? '/mod/'
+        : isInDirectoryListView
+          ? t('directory_subtitle', { boardIdentifier: params.boardIdentifier })
+          : `${address || communityAddress || ''}`;
 
   return (
     <div className={`${styles.content} ${shouldShowSnow() ? styles.garland : ''}`}>
@@ -99,7 +108,7 @@ const BoardHeader = () => {
               ? shortAddress.slice(0, -4)
               : shortAddress
             : communityAddress && getShortAddress(communityAddress))}
-        {!isInAllView && !isInSubscriptionsView && !isInModView && <OfflineIndicator communityAddress={communityAddress} />}
+        {!isInAllView && !isInSubscriptionsView && !isInModView && !isInDirectoryListView && <OfflineIndicator communityAddress={communityAddress} />}
       </div>
       <div className={styles.boardSubtitle}>
         {isInSubscriptionsView ? (
@@ -117,6 +126,8 @@ const BoardHeader = () => {
           >
             {subtitle}
           </span>
+        ) : isInDirectoryListView ? (
+          <span>{subtitle}</span>
         ) : !isInAllView && !isInModView && subtitle ? (
           <span title={t('board_address_tooltip')}>{subtitle}</span>
         ) : (

@@ -27,6 +27,16 @@ const normalizeBoardRole = (role?: string): string | undefined => {
 export const isKnown5chanDeveloper = (address?: string): boolean =>
   typeof address === 'string' && KNOWN_5CHAN_DEVELOPER_ENTRIES.some((developer) => developer.address === address);
 
+type CommunityRoles = Record<string, { role?: string } | undefined> | null | undefined;
+
+export const getCommunityOwnerAddress = (roles: CommunityRoles): string | undefined => {
+  if (!roles) return undefined;
+  return Object.entries(roles).find(([, entry]) => entry?.role?.toLowerCase() === 'owner')?.[0];
+};
+
+/** 5chan Dev capcode only — never board owner/mod badges. */
+export const get5chanDeveloperBadge = (address?: string): AuthorBadge | undefined => (isKnown5chanDeveloper(address) ? getAuthorBadge({ address }) : undefined);
+
 export const getAuthorBadge = ({ address, role }: { address?: string; role?: string }): AuthorBadge | undefined => {
   const boardRole = normalizeBoardRole(role);
   const isDeveloper = isKnown5chanDeveloper(address);

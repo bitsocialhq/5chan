@@ -115,16 +115,24 @@ export const areSameBoardAddress = (a: string | undefined, b: string | undefined
 };
 
 /**
- * Check if an identifier is a directory short code
+ * True when the URL board segment is a directory short code (e.g. /biz), not a full board address (e.g. /board.bso).
  */
-export const isDirectoryBoard = (identifier: string, communities: DirectoryCommunity[]): boolean => {
+export const isDirectoryRoute = (boardIdentifier: string, communities: DirectoryCommunity[]): boolean => {
   const directoryToAddress = getDirectoryToAddressMap(communities);
-  return directoryToAddress.has(identifier);
+  return directoryToAddress.has(boardIdentifier);
 };
+
+/** @deprecated Use {@link isDirectoryRoute} */
+export const isDirectoryBoard = isDirectoryRoute;
 
 export const isArchiveRoute = (pathname: string): boolean => {
   const normalizedPath = pathname.replace(/\/settings$/, '').replace(/\/$/, '');
   return normalizedPath.endsWith('/archive');
+};
+
+export const isDirectoryListRoute = (pathname: string): boolean => {
+  const normalizedPath = pathname.replace(/\/settings$/, '').replace(/\/$/, '');
+  return normalizedPath.endsWith('/directory');
 };
 
 export const isFeedRoute = (pathname: string): boolean => {
@@ -133,6 +141,7 @@ export const isFeedRoute = (pathname: string): boolean => {
   if (normalizedPath.includes('/thread/')) return false;
   if (normalizedPath.startsWith('/pending/')) return false;
   if (isArchiveRoute(normalizedPath)) return false;
+  if (isDirectoryListRoute(normalizedPath)) return false;
   if (isBoardModRoute(normalizedPath) || isModQueueRoute(normalizedPath)) return false;
 
   const pathWithoutSettings = normalizedPath.replace(/\/settings$/, '');
@@ -270,7 +279,7 @@ export const getFeedCacheKey = (pathname: string, search = ''): string | null =>
     return null;
   }
 
-  if (isArchiveRoute(normalizedPath) || isBoardModRoute(normalizedPath) || isModQueueRoute(normalizedPath)) {
+  if (isArchiveRoute(normalizedPath) || isDirectoryListRoute(normalizedPath) || isBoardModRoute(normalizedPath) || isModQueueRoute(normalizedPath)) {
     return null;
   }
 

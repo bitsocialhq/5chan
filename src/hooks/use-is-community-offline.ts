@@ -4,6 +4,8 @@ import { Community } from '@bitsocial/bitsocial-react-hooks';
 import { getFormattedTimeAgo } from '../lib/utils/time-utils';
 import useCommunityOfflineStore from '../stores/use-community-offline-store';
 import useCommunitiesLoadingStartTimestamps from '../stores/use-communities-loading-start-timestamps-store';
+import { isCommunityUpdateStale } from '../lib/utils/community-freshness-utils';
+import { useNowSeconds } from './use-now-seconds';
 
 const getCommunityOfflineKey = (community?: Community, communityAddressHint?: string) =>
   communityAddressHint || community?.address || community?.name || community?.publicKey;
@@ -12,6 +14,7 @@ const useIsCommunityOffline = (community?: Community | undefined, communityAddre
   const { t } = useTranslation();
   const { state, updatedAt, updatingState } = community || {};
   const communityKey = getCommunityOfflineKey(community, communityAddressHint);
+  const nowSeconds = useNowSeconds(!!communityKey);
   const { communityOfflineState, setCommunityOfflineState, initializeCommunityOfflineState } = useCommunityOfflineStore();
   const communitiesLoadingStartTimestamps = useCommunitiesLoadingStartTimestamps(communityKey ? [communityKey] : undefined);
 
@@ -33,10 +36,11 @@ const useIsCommunityOffline = (community?: Community | undefined, communityAddre
 
   const offlineState = communityOfflineState[communityKey] || { initialLoad: true };
   const loadingStartTimestamp = communitiesLoadingStartTimestamps[0] || 0;
-  const isLoading = offlineState.initialLoad && (!updatedAt || Date.now() / 1000 - updatedAt >= 120 * 120) && Date.now() / 1000 - loadingStartTimestamp < 30;
-  const isOffline = !isLoading && ((updatedAt && updatedAt < Date.now() / 1000 - 120 * 120) || (!updatedAt && Date.now() / 1000 - loadingStartTimestamp >= 30));
+  const isStale = isCommunityUpdateStale(updatedAt, nowSeconds);
+  const isLoading = offlineState.initialLoad && (!updatedAt || isStale) && nowSeconds - loadingStartTimestamp < 30;
+  const isOffline = !isLoading && (isStale || (!updatedAt && nowSeconds - loadingStartTimestamp >= 30));
 
-  const isOnline = updatedAt && Date.now() / 1000 - updatedAt < 120 * 120;
+  const isOnline = updatedAt && !isStale;
   const offlineIconClass = isLoading ? 'yellowOfflineIcon' : isOffline ? 'redOfflineIcon' : '';
 
   const offlineTitle = isLoading

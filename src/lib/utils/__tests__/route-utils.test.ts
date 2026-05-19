@@ -10,6 +10,8 @@ import {
   isArchiveRoute,
   isBoardModRoute,
   isDirectoryBoard,
+  isDirectoryListRoute,
+  isDirectoryRoute,
   isFeedRoute,
   isLegacyBoardModQueueRoute,
   isModQueueRoute,
@@ -60,6 +62,8 @@ describe('directory mapping helpers', () => {
     expect(areSameBoardAddress('music-posting.eth', 'business.eth')).toBe(false);
     expect(areSameBoardAddress(undefined, 'business.eth')).toBe(false);
 
+    expect(isDirectoryRoute('biz', communities)).toBe(true);
+    expect(isDirectoryRoute('business.eth', communities)).toBe(false);
     expect(isDirectoryBoard('biz', communities)).toBe(true);
     expect(isDirectoryBoard('business.eth', communities)).toBe(false);
   });
@@ -116,6 +120,15 @@ describe('isFeedRoute', () => {
     expect(isFeedRoute('/biz/archive/settings')).toBe(false);
     expect(isArchiveRoute('/biz/archive')).toBe(true);
     expect(isArchiveRoute('/biz/archive/settings')).toBe(true);
+  });
+
+  it('returns false for board directory paths', () => {
+    expect(isFeedRoute('/biz/directory')).toBe(false);
+    expect(isFeedRoute('/biz/directory/settings')).toBe(false);
+    expect(isDirectoryListRoute('/biz/directory')).toBe(true);
+    expect(isDirectoryListRoute('/biz/directory/settings')).toBe(true);
+    expect(isDirectoryListRoute('/biz/archive')).toBe(false);
+    expect(isDirectoryListRoute('/biz')).toBe(false);
   });
 
   it('returns false for posts and pending items', () => {

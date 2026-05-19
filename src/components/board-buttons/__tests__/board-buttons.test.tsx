@@ -323,13 +323,14 @@ describe('BoardButtons', () => {
     localStorage.clear();
   });
 
-  it('renders desktop board actions for browsing boards, then searches OPs and triggers refresh, vote, subscribe, and archive flows', async () => {
+  it('renders desktop board actions for browsing boards, then searches OPs and triggers refresh, directory, subscribe, and archive flows', async () => {
     await renderWithRoute(createElement(DesktopBoardButtons), '/mu');
 
     expect(container.querySelector('[data-testid="mod-queue-button"]')?.textContent).toBe('mu');
     expect(container.textContent).toContain('subscribe');
-    expect(container.textContent).toContain('vote');
+    expect(container.textContent).toContain('directory');
     expect(findButtonLink('catalog')?.getAttribute('href')).toBe('/mu/catalog');
+    expect(findButtonLink('directory')?.getAttribute('href')).toBe('/mu/directory');
 
     const searchInput = container.querySelector<HTMLInputElement>('input[type="text"]');
     expect(searchInput).toBeTruthy();
@@ -345,14 +346,18 @@ describe('BoardButtons', () => {
 
     await clickButton('refresh');
     await clickButton('subscribe');
-    await clickButton('vote');
     await clickButton('archive');
 
     expect(testState.resetMock).toHaveBeenCalledTimes(1);
     expect(testState.subscribeMock).toHaveBeenCalledTimes(1);
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu/archive');
-    expect(globalThis.alert).toHaveBeenNthCalledWith(1, 'vote_button_unavailable_intro\n\nvote_button_unavailable_outro');
-    expect(globalThis.alert).toHaveBeenCalledTimes(1);
+    expect(globalThis.alert).not.toHaveBeenCalled();
+  });
+
+  it('does not render the directory button on a full board address route', async () => {
+    await renderWithRoute(createElement(DesktopBoardButtons), '/music-posting.eth');
+
+    expect(container.textContent).not.toContain('directory');
   });
 
   it('renders desktop catalog controls and wires sort, style, filter, and refresh updates', async () => {

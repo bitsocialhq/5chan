@@ -30,10 +30,6 @@
   width: 10px;
 }
 
-.disabledButton:hover {
-  cursor: not-allowed !important;
-}
-
 .mobileBoardButtons a:not([class~='button']),
 .desktopBoardButtons a:not([class~='button']) {
   all: unset;

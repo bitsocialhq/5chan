@@ -124,7 +124,7 @@ describe('useIsCommunityOffline', () => {
   });
 
   it('reports boards with stale updates as offline and includes the last synced time', async () => {
-    const staleUpdatedAt = 1_704_052_000;
+    const staleUpdatedAt = 1_704_067_210 - 31 * 60;
     testState.communityOfflineState = {
       'music.eth': {
         initialLoad: false,
@@ -141,6 +141,50 @@ describe('useIsCommunityOffline', () => {
       isOnlineStatusLoading: false,
       offlineIconClass: 'redOfflineIcon',
       offlineTitle: `posts_last_synced_info:ago:${staleUpdatedAt}`,
+    });
+  });
+
+  it('treats boards updated less than 30 minutes ago as online', async () => {
+    const freshUpdatedAt = 1_704_067_210 - 29 * 60;
+    testState.communityOfflineState = {
+      'music.eth': {
+        initialLoad: false,
+        updatedAt: freshUpdatedAt,
+      },
+    };
+
+    await renderHook({ address: 'music.eth', state: 'started', updatedAt: freshUpdatedAt });
+
+    expect(latestValue).toEqual({
+      isOffline: false,
+      isOnlineStatusLoading: false,
+      offlineIconClass: '',
+      offlineTitle: false,
+    });
+  });
+
+  it('updates mounted boards when their last update crosses the offline threshold', async () => {
+    const freshUpdatedAt = 1_704_067_210 - 29 * 60;
+    testState.communityOfflineState = {
+      'music.eth': {
+        initialLoad: false,
+        updatedAt: freshUpdatedAt,
+      },
+    };
+
+    await renderHook({ address: 'music.eth', state: 'started', updatedAt: freshUpdatedAt });
+
+    expect(latestValue.isOffline).toBe(false);
+
+    await act(async () => {
+      vi.advanceTimersByTime(2 * 60 * 1000);
+    });
+
+    expect(latestValue).toEqual({
+      isOffline: true,
+      isOnlineStatusLoading: false,
+      offlineIconClass: 'redOfflineIcon',
+      offlineTitle: `posts_last_synced_info:ago:${freshUpdatedAt}`,
     });
   });
 

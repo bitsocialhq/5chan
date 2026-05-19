@@ -23,6 +23,7 @@ import {
   isBoardModRoute,
   isDirectoryBoard,
   isArchiveRoute,
+  isDirectoryListRoute,
   isLegacyBoardModQueueRoute,
   isPostRoute,
   isPendingPostRoute,
@@ -36,6 +37,7 @@ import Blotter from './views/blotter';
 import FAQ from './views/faq';
 import Home from './views/home';
 import Archive from './views/archive/archive';
+import Directory from './views/directory/directory';
 import ModQueueView from './views/mod-queue';
 import NotAllowed from './views/not-allowed';
 import NotFound from './views/not-found';
@@ -83,8 +85,9 @@ const BoardLayout = () => {
   const isOnPendingPostRoute = isPendingPostRoute(pathname);
   const isOnModQueueRoute = isModQueueRoute(pathname);
   const isOnArchiveRoute = isArchiveRoute(pathname);
-  const shouldRenderOutlet = isOnPostRoute || isOnPendingPostRoute || isOnModQueueRoute || isOnArchiveRoute;
-  const shouldRenderBoardBlotter = !isOnArchiveRoute && !isOnModQueueRoute;
+  const isOnDirectoryRoute = isDirectoryListRoute(pathname);
+  const shouldRenderOutlet = isOnPostRoute || isOnPendingPostRoute || isOnModQueueRoute || isOnArchiveRoute || isOnDirectoryRoute;
+  const shouldRenderBoardBlotter = !isOnArchiveRoute && !isOnDirectoryRoute && !isOnModQueueRoute;
   const isInCatalogView = isCatalogView(pathname, params);
   // Christmas theme
   const { isEnabled: isSpecialEnabled } = useSpecialThemeStore();
@@ -151,6 +154,7 @@ const BoardLayout = () => {
       {isMobile
         ? (communityAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPostCommunityAddress || isOnModQueueRoute) &&
           !isOnArchiveRoute &&
+          !isOnDirectoryRoute &&
           (isInCatalogView ? (
             <>
               <PostForm key={key} />
@@ -164,7 +168,8 @@ const BoardLayout = () => {
             </>
           ))
         : (communityAddress || isInAllView || isInModView || isInSubscriptionsView || pendingPostCommunityAddress || isOnModQueueRoute) &&
-          !isOnArchiveRoute && (
+          !isOnArchiveRoute &&
+          !isOnDirectoryRoute && (
             <>
               <PostForm key={key} />
               {shouldRenderBoardBlotter ? <BoardBlotter /> : null}
@@ -314,6 +319,14 @@ const App = () => {
             <Route path='/subs/archive/settings' element={<Navigate to='/not-found' replace />} />
             <Route path='/mod/archive' element={<Navigate to='/not-found' replace />} />
             <Route path='/mod/archive/settings' element={<Navigate to='/not-found' replace />} />
+            <Route path='/all/directory' element={<Navigate to='/not-found' replace />} />
+            <Route path='/all/directory/settings' element={<Navigate to='/not-found' replace />} />
+            <Route path='/subs/directory' element={<Navigate to='/not-found' replace />} />
+            <Route path='/subs/directory/settings' element={<Navigate to='/not-found' replace />} />
+            <Route path='/mod/directory' element={<Navigate to='/not-found' replace />} />
+            <Route path='/mod/directory/settings' element={<Navigate to='/not-found' replace />} />
+            <Route path='/directory' element={<Navigate to='/not-found' replace />} />
+            <Route path='/directory/settings' element={<Navigate to='/not-found' replace />} />
 
             {/* Invalid subpaths: old URLs and unknown paths -> not-found */}
             <Route path='/mod/modqueue' element={<Navigate to='/not-found' replace />} />
@@ -330,6 +343,8 @@ const App = () => {
             <Route path='/:boardIdentifier/catalog/settings' element={catalogFeedElement} />
             <Route path='/:boardIdentifier/archive' element={<Archive />} />
             <Route path='/:boardIdentifier/archive/settings' element={<Archive />} />
+            <Route path='/:boardIdentifier/directory' element={<Directory />} />
+            <Route path='/:boardIdentifier/directory/settings' element={<Directory />} />
 
             <Route path='/:boardIdentifier/mod/queue' element={<ModQueueRoute />} />
             <Route path='/:boardIdentifier/mod/queue/settings' element={<ModQueueRoute />} />
