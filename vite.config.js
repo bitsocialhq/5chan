@@ -116,7 +116,9 @@ function resolveReleaseCommitRef() {
     return resolveBuildCommitRef();
   }
 
-  return firstNonEmpty(readGitRef(['rev-list', '-n', '1', releaseTag]), readRemoteTagCommitRef(releaseTag));
+  const localReleaseCommitRef = readGitRef(['rev-list', '-n', '1', releaseTag]);
+
+  return localReleaseCommitRef || readRemoteTagCommitRef(releaseTag);
 }
 
 const buildCommitRef = resolveBuildCommitRef();

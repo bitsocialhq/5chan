@@ -3,6 +3,7 @@ export {
   PageFooterMobile,
   StyleOnlyFooterFirstRow,
   CatalogFooterFirstRow,
+  CatalogFooterStyleRow,
   ThreadFooterFirstRow,
   ThreadFooterStyleRow,
   ThreadFooterMobile,

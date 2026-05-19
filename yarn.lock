@@ -9,6 +9,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "5chan@workspace:."
   dependencies:
+    "@bbob/parser": "npm:4.3.1"
     "@bitsocial/bitsocial-react-hooks": "npm:0.1.10"
     "@capacitor/android": "npm:7.4.5"
     "@capacitor/app": "npm:7.0.1"
@@ -1527,6 +1528,32 @@ __metadata:
     "@babel/helper-string-parser": "npm:^7.27.1"
     "@babel/helper-validator-identifier": "npm:^7.28.5"
   checksum: 10c0/23cc3466e83bcbfab8b9bd0edaafdb5d4efdb88b82b3be6728bbade5ba2f0996f84f63b1c5f7a8c0d67efded28300898a5f930b171bb40b311bca2029c4e9b4f
+  languageName: node
+  linkType: hard
+
+"@bbob/parser@npm:4.3.1":
+  version: 4.3.1
+  resolution: "@bbob/parser@npm:4.3.1"
+  dependencies:
+    "@bbob/plugin-helper": "npm:*"
+    "@bbob/types": "npm:*"
+  checksum: 10c0/f21400db6843dc9ef6ba9e1ec16bae6f1b11b656af3701a122cea4802b27daab213f6244e340b40569538bb716c7129ed614a060b9f66096605b8e6540743fff
+  languageName: node
+  linkType: hard
+
+"@bbob/plugin-helper@npm:*":
+  version: 4.3.1
+  resolution: "@bbob/plugin-helper@npm:4.3.1"
+  dependencies:
+    "@bbob/types": "npm:*"
+  checksum: 10c0/7f2fbc7ecb2925621c65be67aa35ab37aaddf9baa0c9783015039e9394293604b3993124ad471eb9e458f6aa3f1ae7e7725151fd571f46dfe4fc8e2b9c0032e6
+  languageName: node
+  linkType: hard
+
+"@bbob/types@npm:*":
+  version: 4.3.1
+  resolution: "@bbob/types@npm:4.3.1"
+  checksum: 10c0/79bd4b299c79cff3634142b9de1f58383329147fdeee554fcb29a52300b6c7dcbd452ef906093fc08867d3089103ee4b209aa2b8a611824e0259bd5f52faaecf
   languageName: node
   linkType: hard
 

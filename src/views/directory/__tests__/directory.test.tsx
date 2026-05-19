@@ -145,6 +145,7 @@ vi.mock('../../../lib/snow', () => ({
 }));
 
 let container: HTMLDivElement;
+let originalAlert: typeof window.alert;
 let root: Root;
 
 const renderDirectory = async () => {
@@ -199,6 +200,7 @@ describe('Directory', () => {
     };
     testState.offlineStates = {};
     testState.nowSeconds = 1_704_067_210;
+    originalAlert = window.alert;
     window.alert = vi.fn();
 
     container = document.createElement('div');
@@ -208,6 +210,7 @@ describe('Directory', () => {
 
   afterEach(() => {
     act(() => root.unmount());
+    window.alert = originalAlert;
     container.remove();
   });
 
@@ -278,6 +281,6 @@ describe('Directory', () => {
 
     const cells = Array.from(getDirectoryRow('board-6.bso')?.querySelectorAll('td') ?? []).map((cell) => cell.textContent?.replace(/\s+/g, ' ').trim());
     expect(cells[3]).toBe('—?');
-    expect(getDirectoryRow('board-6.bso')?.querySelector('sup')?.closest('span')?.getAttribute('title')).toBe('check only available for top 5 boards');
+    expect(getDirectoryRow('board-6.bso')?.querySelector('sup')?.closest('span')?.getAttribute('title')).toBe('directory_status_unavailable_reason');
   });
 });

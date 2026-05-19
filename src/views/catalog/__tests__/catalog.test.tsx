@@ -322,8 +322,15 @@ vi.mock('../../../components/catalog-row', () => ({
 
 vi.mock('../../../components/footer', () => ({
   CatalogFooterFirstRow: ({ communityAddress }: { communityAddress?: string }) =>
-    createElement('div', { 'data-testid': 'catalog-first-row' }, communityAddress || 'multi'),
-  PageFooterDesktop: ({ firstRow }: { firstRow: React.ReactNode }) => createElement('div', { 'data-testid': 'catalog-footer-desktop' }, firstRow),
+    createElement(
+      'div',
+      { 'data-testid': 'catalog-first-row' },
+      communityAddress || 'multi',
+      testState.searchText ? ` - search_results_for: ${testState.searchText}` : null,
+    ),
+  CatalogFooterStyleRow: () => createElement('div', { 'data-testid': 'catalog-style-row' }, 'style'),
+  PageFooterDesktop: ({ firstRow, styleRow }: { firstRow?: React.ReactNode; styleRow?: React.ReactNode }) =>
+    createElement('div', { 'data-testid': 'catalog-footer-desktop' }, firstRow, styleRow),
   PageFooterMobile: ({ children }: { children: React.ReactNode }) => createElement('div', { 'data-testid': 'catalog-footer-mobile' }, children),
 }));
 
@@ -900,6 +907,22 @@ describe('Catalog', () => {
 
     expect(container.textContent).toContain('not_subscribed_to_any_board');
     expect(container.querySelector('[data-testid="catalog-first-row"]')?.textContent).toBe('music-posting.eth');
+  });
+
+  it('shows centered nothing found when catalog search has no matches', async () => {
+    testState.feed = [{ cid: 'network-post', title: 'cats on stage', communityAddress: 'music-posting.eth' }];
+    testState.searchText = 'asddasd';
+    testState.hasMore = false;
+
+    await renderCatalog({ initialEntry: '/mu/catalog?q=asddasd', routePath: '/:boardIdentifier/catalog' });
+
+    expect(container.textContent).toContain('nothing_found');
+    expect(container.textContent).not.toContain('no_threads');
+    expect(container.querySelector('[role="status"]')?.className).toContain('searchNothingFound');
+    expect(container.querySelector('[role="status"]')?.textContent).toBe('nothing_found');
+    expect(container.querySelectorAll('[data-testid="catalog-row"]')).toHaveLength(0);
+    expect(container.textContent).toContain('search_results_for');
+    expect(container.textContent).toContain('asddasd');
   });
 
   it('queries scoped recent account posts and still applies local search filtering before injecting them', async () => {

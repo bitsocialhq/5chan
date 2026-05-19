@@ -4,7 +4,16 @@ import { useComment } from '@bitsocial/bitsocial-react-hooks';
 import BoardsBar from '../boards-bar';
 import SiteLegalMeta from '../site-legal-meta';
 import StyleSelector from '../style-selector/style-selector';
-import { ReturnButton, CatalogButton, TopButton, UpdateButton, AutoButton, PostPageStats, RefreshButton } from '../board-buttons/board-buttons';
+import {
+  CatalogSearchResultsLabel,
+  ReturnButton,
+  CatalogButton,
+  TopButton,
+  UpdateButton,
+  AutoButton,
+  PostPageStats,
+  RefreshButton,
+} from '../board-buttons/board-buttons';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
@@ -22,15 +31,17 @@ import styles from './footer.module.css';
 
 interface PageFooterDesktopProps {
   /** Mode-specific first row content (e.g. board pagination or thread controls) */
-  firstRow: React.ReactNode;
+  firstRow?: React.ReactNode;
   /** Optional row between first row and BoardsBar (e.g. style selector on thread page) */
   styleRow?: React.ReactNode;
+  /** Catalog pages omit the default footer top margin */
+  variant?: 'catalog';
 }
 
-export const PageFooterDesktop = ({ firstRow, styleRow }: PageFooterDesktopProps) => (
-  <footer className={styles.footer}>
+export const PageFooterDesktop = ({ firstRow, styleRow, variant }: PageFooterDesktopProps) => (
+  <footer className={variant === 'catalog' ? `${styles.footer} ${styles.footerCatalog}` : styles.footer}>
     <hr />
-    <div className={styles.firstRow}>{firstRow}</div>
+    {firstRow != null ? <div className={styles.firstRow}>{firstRow}</div> : null}
     {styleRow != null ? <div className={styles.styleRow}>{styleRow}</div> : null}
     <div className={styles.boardsBarRow}>
       <BoardsBar />
@@ -60,7 +71,7 @@ export const StyleOnlyFooterFirstRow = () => {
 
 /* -----------------------------------------------------------------------------
  * CatalogFooterFirstRow
- * Catalog footer first row: Return, Archive, Top, Refresh on left; Style selector on right.
+ * Catalog footer nav row: Return, Catalog, Top, Refresh, plus search/filter label.
  * -------------------------------------------------------------------------- */
 
 interface CatalogFooterFirstRowProps {
@@ -71,7 +82,6 @@ interface CatalogFooterFirstRowProps {
 }
 
 export const CatalogFooterFirstRow = ({ communityAddress, isInAllView = false, isInSubscriptionsView = false, isInModView = false }: CatalogFooterFirstRowProps) => {
-  const { t } = useTranslation();
   return (
     <div className={styles.footerRow}>
       <div className={styles.footerLeft}>
@@ -87,12 +97,24 @@ export const CatalogFooterFirstRow = ({ communityAddress, isInAllView = false, i
         <span>
           [<RefreshButton />]
         </span>
-      </div>
-      <div className={styles.footerRight}>
-        <span className={styles.styleLabel}>{t('style')}:</span>
-        <StyleSelector />
+        <CatalogSearchResultsLabel />
       </div>
     </div>
+  );
+};
+
+/* -----------------------------------------------------------------------------
+ * CatalogFooterStyleRow
+ * Catalog style selector on its own row (below nav, above BoardsBar).
+ * -------------------------------------------------------------------------- */
+
+export const CatalogFooterStyleRow = () => {
+  const { t } = useTranslation();
+  return (
+    <span className={styles.styleRowContent}>
+      <span className={styles.styleLabel}>{t('style')}:</span>
+      <StyleSelector />
+    </span>
   );
 };
 

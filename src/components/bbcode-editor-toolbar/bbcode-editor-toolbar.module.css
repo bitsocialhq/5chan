@@ -1,0 +1,65 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 2px;
+  max-width: 420px;
+}
+
+.toolbar .toolbarButton {
+  position: static;
+  bottom: auto;
+  margin: 0;
+  min-width: 22px;
+  height: 20px;
+  padding: 1px 5px;
+  line-height: 16px;
+  cursor: pointer;
+  filter: var(--filter80);
+  font-size: 10pt;
+  text-transform: none;
+}
+
+.toolbar .toolbarButton:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.toolbarSelect {
+  height: 20px;
+  max-width: 74px;
+  font-size: 10pt;
+}
+
+.boldButton {
+  font-weight: 700;
+}
+
+.italicButton {
+  font-style: italic;
+}
+
+.underlineButton {
+  text-decoration: underline;
+}
+
+.strikeButton {
+  text-decoration: line-through;
+}
+
+.redButton {
+  color: red;
+  font-weight: 700;
+}
+
+.preview {
+  box-sizing: border-box;
+  width: min(100%, 420px);
+  min-height: 72px;
+  margin-bottom: 2px;
+  padding: 3px 4px;
+  border: 1px inset;
+  background: var(--post-form-field-input-background-color, revert);
+  overflow-wrap: anywhere;
+}

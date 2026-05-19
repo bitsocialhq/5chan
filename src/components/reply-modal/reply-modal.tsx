@@ -5,6 +5,7 @@ import type { TFunction } from 'i18next';
 import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { getExpiringMediaLinkAlert } from '../../lib/utils/media-link-validation-utils';
 import { getPublishURLFilename, isValidPublishURL } from '../../lib/utils/url-utils';
+import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { isAllView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import useSelectedTextStore from '../../stores/use-selected-text-store';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
@@ -14,6 +15,8 @@ import { useDirectoryByAddress } from '../../hooks/use-directories';
 import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
+import { useCommunityField } from '../../hooks/use-stable-community';
+import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
 import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import LoadingEllipsis from '../loading-ellipsis';
 import styles from './reply-modal.module.css';
@@ -54,6 +57,10 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     });
   const account = useAccount();
   const { displayName } = account?.author || {};
+  const accountAddress = account?.author?.address;
+  const roles = useCommunityField(communityAddress, (community) => community?.roles);
+  const accountRole = accountAddress ? roles?.[accountAddress]?.role : undefined;
+  const showBbcodeToolbar = hasModQueueAccessRole(accountRole);
   const textRef = useRef<HTMLTextAreaElement | null>(null);
   const setTextRef = useRef((element: HTMLTextAreaElement | null) => {
     textRef.current = element;
@@ -78,6 +85,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const [error, setError] = useState<string | null>(null);
   const [lengthError, setLengthError] = useState<string | null>(null);
   const [url, setUrl] = useState('');
+  const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
+  const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
 
   const checkContentLengthRef = useRef(
     debounce((content: string, t: TFunction) => {
@@ -254,15 +263,43 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     }
   }, [showReplyModal, openEmpty, defaultParentQuote, selectedText]);
 
+  useEffect(() => {
+    if (!showReplyModal) {
+      setIsBbcodePreviewing(false);
+      setBbcodePreviewContent('');
+    }
+  }, [showReplyModal]);
+
   const handleContentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     lastSelectionStartRef.current = e.target.selectionStart ?? e.target.value.length;
     lastSelectionEndRef.current = e.target.selectionEnd ?? lastSelectionStartRef.current;
   };
 
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const content = e.target.value;
+  const handleContentValueChange = (content: string, selectionStart?: number, selectionEnd?: number) => {
+    if (isBbcodePreviewing) {
+      setBbcodePreviewContent(content);
+    }
+    if (typeof selectionStart === 'number') {
+      lastSelectionStartRef.current = selectionStart;
+      lastSelectionEndRef.current = selectionEnd ?? selectionStart;
+    }
     setPublishReplyOptions({ content });
     checkContentLengthRef.current(content, t);
+  };
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    handleContentValueChange(e.target.value);
+  };
+
+  const handleBbcodePreviewToggle = () => {
+    if (isBbcodePreviewing) {
+      setIsBbcodePreviewing(false);
+      window.requestAnimationFrame(() => textRef.current?.focus());
+      return;
+    }
+
+    setBbcodePreviewContent(textRef.current?.value ?? '');
+    setIsBbcodePreviewing(true);
   };
 
   useEffect(() => {
@@ -384,6 +421,15 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           />
         </div>
         <div className={styles.content}>
+          {showBbcodeToolbar && (
+            <BbcodeEditorToolbar
+              textareaRef={textRef}
+              onChange={handleContentValueChange}
+              isPreviewing={isBbcodePreviewing}
+              onPreviewToggle={handleBbcodePreviewToggle}
+            />
+          )}
+          {showBbcodeToolbar && isBbcodePreviewing && <BbcodePreview content={bbcodePreviewContent} postCid={postCid} communityAddress={communityAddress} />}
           <textarea
             cols={48}
             rows={4}
@@ -391,6 +437,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             ref={setTextRef.current}
             aria-label={t('comment')}
             spellCheck={true}
+            hidden={showBbcodeToolbar && isBbcodePreviewing}
             onInput={handleContentInput}
             onChange={handleContentChange}
             onSelect={(e) => {

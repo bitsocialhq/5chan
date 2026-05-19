@@ -85,12 +85,22 @@ const showSavedIndicator = (setSavedCryptoAddress: (value: boolean) => void) => 
   }, 2000);
 };
 
+type ResolutionStatus = ReturnType<typeof getResolutionStatus>;
+
+const showTransientResolutionStatus = (setTransientResolutionStatus: (value: ResolutionStatus | undefined) => void, status: ResolutionStatus) => {
+  setTransientResolutionStatus(status);
+  setTimeout(() => {
+    setTransientResolutionStatus(undefined);
+  }, 2000);
+};
+
 const CryptoAddressSettingContent = ({ account }: { account: ReturnType<typeof useAccount> }) => {
   const { t } = useTranslation();
   const [cryptoAddress, setCryptoAddress] = useState(() => getInitialCryptoAddress(account?.author?.address));
   const [checkedAddress, setCheckedAddress] = useState<string>();
   const [savedCryptoAddress, setSavedCryptoAddress] = useState(false);
   const [showCryptoAddressInfo, setShowCryptoAddressInfo] = useState(false);
+  const [transientResolutionStatus, setTransientResolutionStatus] = useState<ResolutionStatus>();
 
   const signerAddress = account?.signer?.address;
   const authorToResolve = checkedAddress ? { ...account?.author, address: checkedAddress } : undefined;
@@ -108,7 +118,10 @@ const CryptoAddressSettingContent = ({ account }: { account: ReturnType<typeof u
   const checkCryptoAddress = () => {
     const addressToCheck = cryptoAddress.trim();
     if (!addressToCheck || !addressToCheck.includes('.')) {
-      alert(t('enter_crypto_address'));
+      showTransientResolutionStatus(setTransientResolutionStatus, {
+        resolveClass: styles.red,
+        resolveString: t('enter_crypto_address'),
+      });
       return;
     }
 
@@ -169,6 +182,7 @@ const CryptoAddressSettingContent = ({ account }: { account: ReturnType<typeof u
           value={cryptoAddress}
           onChange={(e) => {
             setCheckedAddress(undefined);
+            setTransientResolutionStatus(undefined);
             setCryptoAddress(e.target.value);
           }}
         />
@@ -201,7 +215,7 @@ const CryptoAddressSettingContent = ({ account }: { account: ReturnType<typeof u
         <button className={styles.button} onClick={checkCryptoAddress}>
           {t('check')}
         </button>{' '}
-        <span className={resolutionStatus.resolveClass}>{resolutionStatus.resolveString}</span>
+        <span className={(transientResolutionStatus ?? resolutionStatus).resolveClass}>{(transientResolutionStatus ?? resolutionStatus).resolveString}</span>
       </div>
     </div>
   );

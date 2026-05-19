@@ -8,9 +8,11 @@ import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stor
 import { getDisplayMediaInfoType, getLinkMediaInfo } from '../../lib/utils/media-utils';
 import { getExpiringMediaLinkAlert } from '../../lib/utils/media-link-validation-utils';
 import { getPublishURLFilename, isValidPublishURL, isValidURL } from '../../lib/utils/url-utils';
+import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
+import { useCommunityField } from '../../hooks/use-stable-community';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import useSafeAccountComment from '../../hooks/use-safe-account-comment';
@@ -22,6 +24,7 @@ import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/sho
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
+import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
 import LoadingEllipsis from '../loading-ellipsis';
 import styles from './post-form.module.css';
 import capitalize from 'lodash/capitalize';
@@ -95,13 +98,17 @@ interface PostFormFieldsProps {
   t: TFunction;
   account: ReturnType<typeof useAccount>;
   displayName: string | undefined;
+  bbcodePreviewContent: string;
   isInPostView: boolean;
+  isBbcodePreviewing: boolean;
+  postCid: string;
   subjectRef: React.Ref<HTMLInputElement>;
-  textRef: React.Ref<HTMLTextAreaElement>;
+  textRef: React.RefObject<HTMLTextAreaElement>;
   urlRef: React.Ref<HTMLInputElement>;
   url: string;
   lengthError: string | null;
   handleContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  handleContentValueChange: (content: string) => void;
   setPublishPostOptions: (opts: Record<string, unknown>) => void;
   setPublishReplyOptions: (opts: Record<string, unknown>) => void;
   setUrl: (url: string) => void;
@@ -118,6 +125,8 @@ interface PostFormFieldsProps {
   subscriptions: string[];
   communityAddress: string | undefined;
   requirePostLinkIsMedia: boolean;
+  showBbcodeToolbar: boolean;
+  onBbcodePreviewToggle: () => void;
   onPublishReply: () => void;
   onPublishPost: () => void;
   handleUpload: () => void;
@@ -128,13 +137,17 @@ const PostFormFields = ({
   t,
   account,
   displayName,
+  bbcodePreviewContent,
   isInPostView,
+  isBbcodePreviewing,
+  postCid,
   subjectRef,
   textRef,
   urlRef,
   url,
   lengthError,
   handleContentChange,
+  handleContentValueChange,
   setPublishPostOptions,
   setPublishReplyOptions,
   setUrl,
@@ -151,6 +164,8 @@ const PostFormFields = ({
   subscriptions,
   communityAddress,
   requirePostLinkIsMedia,
+  showBbcodeToolbar,
+  onBbcodePreviewToggle,
   onPublishReply,
   onPublishPost,
   handleUpload,
@@ -214,10 +229,34 @@ const PostFormFields = ({
         </td>
       </tr>
     )}
+    {showBbcodeToolbar ? (
+      <tr>
+        <td>mods only</td>
+        <td>
+          <BbcodeEditorToolbar
+            textareaRef={textRef}
+            onChange={(content) => handleContentValueChange(content)}
+            isPreviewing={isBbcodePreviewing}
+            onPreviewToggle={onBbcodePreviewToggle}
+          />
+        </td>
+      </tr>
+    ) : null}
     <tr>
       <td>{t('comment')}</td>
       <td>
-        <textarea cols={48} rows={4} wrap='soft' ref={textRef} aria-label={t('comment')} onChange={handleContentChange} />
+        {showBbcodeToolbar && isBbcodePreviewing && (
+          <BbcodePreview content={bbcodePreviewContent} postCid={isInPostView ? postCid : undefined} communityAddress={communityAddress} />
+        )}
+        <textarea
+          cols={48}
+          rows={4}
+          wrap='soft'
+          ref={textRef}
+          aria-label={t('comment')}
+          hidden={showBbcodeToolbar && isBbcodePreviewing}
+          onChange={handleContentChange}
+        />
         {lengthError && <div className={styles.error}>{lengthError}</div>}
       </td>
     </tr>
@@ -345,9 +384,15 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
 
   const accountCommunityAddresses = useAccountCommunityAddresses();
+  const accountAddress = account?.author?.address;
+  const roles = useCommunityField(effectiveBoardAddress, (community) => community?.roles);
+  const accountRole = accountAddress ? roles?.[accountAddress]?.role : undefined;
+  const showBbcodeToolbar = hasModQueueAccessRole(accountRole) || (!effectiveBoardAddress && isInModView && accountCommunityAddresses.length > 0);
 
   const [lengthError, setLengthError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
+  const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
 
   const checkContentLength = useRef(
     debounce((content: string, t: TFunction) => {
@@ -370,6 +415,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     if (subjectRef.current) {
       subjectRef.current.value = '';
     }
+    setIsBbcodePreviewing(false);
+    setBbcodePreviewContent('');
   };
 
   const onPublishPost = () => {
@@ -435,14 +482,31 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     };
   }, [checkContentLength, isInPostView, resetPublishPostOptions, resetPublishReplyOptions]);
 
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const content = e.target.value;
+  const handleContentValueChange = (content: string) => {
+    if (isBbcodePreviewing) {
+      setBbcodePreviewContent(content);
+    }
     if (isInPostView) {
       setPublishReplyOptions({ content });
     } else {
       setPublishPostOptions({ content });
     }
     checkContentLength(content, t);
+  };
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    handleContentValueChange(e.target.value);
+  };
+
+  const handleBbcodePreviewToggle = () => {
+    if (isBbcodePreviewing) {
+      setIsBbcodePreviewing(false);
+      window.requestAnimationFrame(() => textRef.current?.focus());
+      return;
+    }
+
+    setBbcodePreviewContent(textRef.current?.value ?? '');
+    setIsBbcodePreviewing(true);
   };
 
   const onPublishReply = () => {
@@ -521,13 +585,17 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             t={t}
             account={account}
             displayName={displayName}
+            bbcodePreviewContent={bbcodePreviewContent}
             isInPostView={isInPostView}
+            isBbcodePreviewing={isBbcodePreviewing}
+            postCid={postCid}
             subjectRef={subjectRef}
             textRef={textRef}
             urlRef={urlRef}
             url={url}
             lengthError={lengthError}
             handleContentChange={handleContentChange}
+            handleContentValueChange={handleContentValueChange}
             setPublishPostOptions={setPublishPostOptions}
             setPublishReplyOptions={setPublishReplyOptions}
             setUrl={setUrl}
@@ -544,6 +612,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             subscriptions={subscriptions}
             communityAddress={communityAddress}
             requirePostLinkIsMedia={requirePostLinkIsMedia}
+            showBbcodeToolbar={showBbcodeToolbar}
+            onBbcodePreviewToggle={handleBbcodePreviewToggle}
             onPublishReply={onPublishReply}
             onPublishPost={onPublishPost}
             handleUpload={handleUpload}

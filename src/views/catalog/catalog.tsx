@@ -25,7 +25,7 @@ import useSortingStore from '../../stores/use-sorting-store';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import { getCommunityAddress, isDirectoryBoard, normalizeMultiboardFeedPath } from '../../lib/utils/route-utils';
 import CatalogRow from '../../components/catalog-row';
-import { CatalogFooterFirstRow, PageFooterDesktop, PageFooterMobile } from '../../components/footer';
+import { CatalogFooterFirstRow, CatalogFooterStyleRow, PageFooterDesktop, PageFooterMobile } from '../../components/footer';
 import { ReturnButton, ArchiveButton, TopButton, RefreshButton } from '../../components/board-buttons/board-buttons';
 import mobileFooterStyles from '../../components/footer/footer.module.css';
 import LoadingEllipsis from '../../components/loading-ellipsis';
@@ -131,6 +131,20 @@ const CatalogFooter = ({
 
 // Separate component for the loading state when there's no feed
 // This also calls useFeedStateString internally to isolate re-renders
+interface CatalogSearchNothingFoundProps {
+  className?: string;
+}
+
+const CatalogSearchNothingFound = ({ className }: CatalogSearchNothingFoundProps) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className={className ?? styles.searchNothingFound} role='status'>
+      {t('nothing_found')}
+    </div>
+  );
+};
+
 interface CatalogLoadingProps {
   communityAddresses: string[];
   hasMore: boolean;
@@ -138,9 +152,10 @@ interface CatalogLoadingProps {
   state: string | undefined;
   subscriptionsLength: number;
   error: Error | undefined;
+  hasActiveSearch: boolean;
 }
 
-const CatalogLoading = ({ communityAddresses, hasMore, combinedFeedLength, state, subscriptionsLength, error }: CatalogLoadingProps) => {
+const CatalogLoading = ({ communityAddresses, hasMore, combinedFeedLength, state, subscriptionsLength, error, hasActiveSearch }: CatalogLoadingProps) => {
   const { t } = useTranslation();
 
   const rawFeedStateString = useFeedStateString(communityAddresses);
@@ -153,7 +168,9 @@ const CatalogLoading = ({ communityAddresses, hasMore, combinedFeedLength, state
       ) : subscriptionsLength === 0 ? (
         <span className='red'>{t('not_subscribed_to_any_board')}</span>
       ) : !hasMore && combinedFeedLength === 0 ? (
-        t('no_threads')
+        hasActiveSearch ? null : (
+          t('no_threads')
+        )
       ) : (
         hasMore && <LoadingEllipsis string={loadingStateString} />
       )}
@@ -587,6 +604,11 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const footerMoreThreadsSuggestion = showHiddenThreads ? null : moreThreadsSuggestion;
   const footerShowLoadingEllipsis = showHiddenThreads ? isLoadingHiddenCatalogThreads : effectiveInfiniteScroll;
 
+  const catalogFooterFirstRow = (
+    <CatalogFooterFirstRow communityAddress={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+  );
+  const catalogFooterStyleRow = <CatalogFooterStyleRow />;
+
   // Memoize footer component to preserve identity across renders (Virtuoso optimization)
   // Note: useFeedStateString is called inside CatalogFooter to isolate re-renders from backend state changes
   const footerComponents = useMemo(
@@ -604,16 +626,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             onExpandTimeWindow={expandSuggestionTimeWindow}
             showLoadingEllipsis={footerShowLoadingEllipsis}
           />
-          <PageFooterDesktop
-            firstRow={
-              <CatalogFooterFirstRow
-                communityAddress={communityAddress}
-                isInAllView={isInAllView}
-                isInSubscriptionsView={isInSubscriptionsView}
-                isInModView={isInModView}
-              />
-            }
-          />
+          <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
           <PageFooterMobile>
             <div className={mobileFooterStyles.mobileFooterButtons}>
               <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
@@ -633,6 +646,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       footerMoreThreadsSuggestion,
       moreThreadsSuggestionPathname,
       expandSuggestionTimeWindow,
+      catalogFooterFirstRow,
+      catalogFooterStyleRow,
       communityAddress,
       isInAllView,
       isInSubscriptionsView,
@@ -655,16 +670,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           onExpandTimeWindow={expandSuggestionTimeWindow}
           showLoadingEllipsis={footerShowLoadingEllipsis}
         />
-        <PageFooterDesktop
-          firstRow={
-            <CatalogFooterFirstRow
-              communityAddress={communityAddress}
-              isInAllView={isInAllView}
-              isInSubscriptionsView={isInSubscriptionsView}
-              isInModView={isInModView}
-            />
-          }
-        />
+        <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
         <PageFooterMobile>
           <div className={mobileFooterStyles.mobileFooterButtons}>
             <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
@@ -683,6 +689,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       footerMoreThreadsSuggestion,
       moreThreadsSuggestionPathname,
       expandSuggestionTimeWindow,
+      catalogFooterFirstRow,
+      catalogFooterStyleRow,
       communityAddress,
       isInAllView,
       isInSubscriptionsView,
@@ -692,6 +700,9 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     ],
   );
   const isFeedLoaded = feed.length > 0 || hiddenThreadsCount > 0 || state === 'failed';
+  const hasActiveSearch = searchText.trim().length > 0;
+  const showSearchNothingFound =
+    hasActiveSearch && !footerHasMore && footerCombinedFeedLength === 0 && state !== 'failed' && !(isInSubscriptionsView && (subscriptions?.length || 0) === 0);
 
   // Process the feed to move "top" posts to the top (applied after display sort)
   const processedFeed = useMemo(() => {
@@ -896,6 +907,21 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
               </>
             )}
           </>
+        ) : showSearchNothingFound ? (
+          <>
+            <CatalogSearchNothingFound />
+            <hr />
+            {catalogFooterFirstRow}
+            <PageFooterDesktop variant='catalog' styleRow={catalogFooterStyleRow} />
+            <PageFooterMobile>
+              <div className={mobileFooterStyles.mobileFooterButtons}>
+                <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+                <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+                <TopButton />
+                <RefreshButton />
+              </div>
+            </PageFooterMobile>
+          </>
         ) : (
           <>
             <div className={styles.footer}>
@@ -906,18 +932,10 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                 state={state}
                 subscriptionsLength={isInSubscriptionsView ? subscriptions?.length || 0 : 1}
                 error={error}
+                hasActiveSearch={hasActiveSearch}
               />
             </div>
-            <PageFooterDesktop
-              firstRow={
-                <CatalogFooterFirstRow
-                  communityAddress={communityAddress}
-                  isInAllView={isInAllView}
-                  isInSubscriptionsView={isInSubscriptionsView}
-                  isInModView={isInModView}
-                />
-              }
-            />
+            <PageFooterDesktop variant='catalog' firstRow={catalogFooterFirstRow} styleRow={catalogFooterStyleRow} />
             <PageFooterMobile>
               <div className={mobileFooterStyles.mobileFooterButtons}>
                 <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />

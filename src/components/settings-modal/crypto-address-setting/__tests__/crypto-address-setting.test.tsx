@@ -28,7 +28,7 @@ vi.mock('react-i18next', () => ({
           crypto_address_not_yours: 'Crypto address is not yours.',
           crypto_address_verification: 'if the crypto address is resolved p2p',
           crypto_address_yours: 'Crypto address belongs to this account.',
-          enter_crypto_address: 'Enter crypto address.',
+          enter_crypto_address: 'Please enter a valid crypto address.',
           loading: 'loading',
           save: 'save',
           saved: 'saved',
@@ -150,6 +150,34 @@ describe('CryptoAddressSetting', () => {
     await render();
 
     expect(getInput().value).toBe('resolved-alias.eth');
+  });
+
+  it('shows a transient validation message when check is clicked with an empty field', async () => {
+    hookMocks.useAccount.mockReturnValue({
+      author: {
+        address: '12D3KooWSignerPublicKey',
+        shortAddress: '12D3KooWSignerPublicKey',
+      },
+      signer: {
+        address: SIGNER_ADDRESS,
+      },
+    });
+
+    await render();
+
+    await act(async () => {
+      getButtonByText('check').click();
+    });
+
+    expect(container.textContent).toContain('Please enter a valid crypto address.');
+    expect(alertSpy).not.toHaveBeenCalled();
+
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(container.textContent).toContain('if the crypto address is resolved p2p');
+    expect(container.textContent).not.toContain('Please enter a valid crypto address.');
   });
 
   it('updates the displayed status after async resolution completes', async () => {

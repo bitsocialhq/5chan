@@ -502,7 +502,6 @@ export const MobileAllFeedFilter = () => (
 );
 
 export const MobileBoardButtons = () => {
-  const { t } = useTranslation();
   const params = useParams();
   const location = useLocation();
   const isInAllView = isAllView(location.pathname);
@@ -517,7 +516,6 @@ export const MobileBoardButtons = () => {
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
 
-  const { filteredCount, searchText } = useCatalogFiltersStore();
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
   const isMultiboard = isInAllView || isInSubscriptionsView || isInModView;
   const showTimeFilter = isMultiboard;
@@ -567,19 +565,7 @@ export const MobileBoardButtons = () => {
             isInModView={isInModView}
             isMobilePlacement={true}
           />
-          {searchText ? (
-            <span className={styles.filteredThreadsCount}>
-              {' '}
-              - {t('search_results_for')}: <strong>{searchText}</strong>
-            </span>
-          ) : (
-            filteredCount > 0 && (
-              <span className={styles.filteredThreadsCount}>
-                {' '}
-                - {t('filtered_threads')}: <strong>{filteredCount}</strong>
-              </span>
-            )
-          )}
+          <CatalogSearchResultsLabel />
           {(isInAllView || showTimeFilter || isInCatalogView) && (
             <>
               <hr />
@@ -676,8 +662,32 @@ export const PostPageStats = () => {
   );
 };
 
-export const DesktopBoardButtons = () => {
+export const CatalogSearchResultsLabel = () => {
   const { t } = useTranslation();
+  const { filteredCount, searchText } = useCatalogFiltersStore();
+
+  if (searchText) {
+    return (
+      <span className={styles.filteredThreadsCount}>
+        {' '}
+        — {t('search_results_for')}: <strong>{searchText}</strong>
+      </span>
+    );
+  }
+
+  if (filteredCount > 0) {
+    return (
+      <span className={styles.filteredThreadsCount}>
+        {' '}
+        — {t('filtered_threads')}: <strong>{filteredCount}</strong>
+      </span>
+    );
+  }
+
+  return null;
+};
+
+export const DesktopBoardButtons = () => {
   const params = useParams();
   const location = useLocation();
   const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
@@ -691,7 +701,6 @@ export const DesktopBoardButtons = () => {
   const isInModView = isModView(location.pathname);
   const isInModQueueView = isModQueueView(location.pathname);
 
-  const { filteredCount, searchText } = useCatalogFiltersStore();
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
   const isMultiboard = isInAllView || isInSubscriptionsView || isInModView;
   const showTimeFilter = isMultiboard;
@@ -786,20 +795,7 @@ export const DesktopBoardButtons = () => {
                 <ModQueueButton boardIdentifier={boardIdentifier} isMobile={false} />
               </>
             )}
-            {isInCatalogView && searchText ? (
-              <span className={styles.filteredThreadsCount}>
-                {' '}
-                - {t('search_results_for')}: <strong>{searchText}</strong>
-              </span>
-            ) : (
-              isInCatalogView &&
-              filteredCount > 0 && (
-                <span className={styles.filteredThreadsCount}>
-                  {' '}
-                  - {t('filtered_threads')}: <strong>{filteredCount}</strong>
-                </span>
-              )
-            )}
+            {isInCatalogView && <CatalogSearchResultsLabel />}
             <span className={styles.rightSideButtons}>
               {isInCatalogView && (
                 <>

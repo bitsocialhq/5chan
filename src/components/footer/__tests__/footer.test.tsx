@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CatalogFooterFirstRow,
+  CatalogFooterStyleRow,
   PageFooterDesktop,
   PageFooterMobile,
   StyleOnlyFooterFirstRow,
@@ -51,6 +52,7 @@ vi.mock('../../style-selector/style-selector', () => ({
 }));
 
 vi.mock('../../board-buttons/board-buttons', () => ({
+  CatalogSearchResultsLabel: () => null,
   AutoButton: () => createElement('button', { type: 'button' }, 'auto-button'),
   CatalogButton: ({
     address,
@@ -154,6 +156,7 @@ describe('footer', () => {
           isInAllView: true,
           communityAddress: 'music-posting.eth',
         }),
+        createElement(CatalogFooterStyleRow),
         createElement(ThreadFooterStyleRow),
         createElement(PageFooterMobile, {
           children: createElement('div', { 'data-testid': 'mobile-child' }, 'mobile-child'),

@@ -31,7 +31,7 @@ type CommunityRoles = Record<string, { role?: string } | undefined> | null | und
 
 export const getCommunityOwnerAddress = (roles: CommunityRoles): string | undefined => {
   if (!roles) return undefined;
-  return Object.entries(roles).find(([, entry]) => entry?.role?.toLowerCase() === 'owner')?.[0];
+  return Object.entries(roles).find(([, entry]) => entry?.role?.trim().toLowerCase() === 'owner')?.[0];
 };
 
 /** 5chan Dev capcode only — never board owner/mod badges. */

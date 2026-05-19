@@ -9,7 +9,7 @@ import ReplyModal from '../reply-modal';
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
-  account: { author: { displayName: 'Alice' } } as { author?: { displayName?: string } },
+  account: { author: { address: 'alice.eth', displayName: 'Alice' } } as { author?: { address?: string; displayName?: string } },
   closeModalMock: vi.fn(),
   directoryByAddress: {
     'music-posting.eth': {
@@ -36,6 +36,7 @@ const testState = vi.hoisted(() => ({
   replyIndex: undefined as number | undefined,
   resetPublishReplyOptionsMock: vi.fn(),
   resolvedCommunityAddress: undefined as string | undefined,
+  rolesByCommunity: {} as Record<string, Record<string, { role?: string }>>,
   selectedText: 'selected text',
   setAccountMock: vi.fn(),
   setPublishReplyOptionsMock: vi.fn(),
@@ -137,6 +138,11 @@ vi.mock('../../../hooks/use-community-identifiers', () => ({
 
 vi.mock('../../../hooks/use-resolved-community-address', () => ({
   useResolvedCommunityAddress: () => testState.resolvedCommunityAddress,
+}));
+
+vi.mock('../../../hooks/use-stable-community', () => ({
+  useCommunityField: <T,>(communityAddress: string | undefined, selector: (community?: { roles?: Record<string, { role?: string }> }) => T) =>
+    selector(communityAddress ? { roles: testState.rolesByCommunity[communityAddress] } : undefined),
 }));
 
 vi.mock('../../../hooks/use-publish-reply', () => ({
@@ -273,7 +279,7 @@ const clickButtonByText = async (text: string) => {
 describe('ReplyModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    testState.account = { author: { displayName: 'Alice' } };
+    testState.account = { author: { address: 'alice.eth', displayName: 'Alice' } };
     testState.closeModalMock.mockReset();
     testState.directoryByAddress = {
       'music-posting.eth': {
@@ -300,6 +306,7 @@ describe('ReplyModal', () => {
     testState.replyIndex = undefined;
     testState.resetPublishReplyOptionsMock.mockReset();
     testState.resolvedCommunityAddress = undefined;
+    testState.rolesByCommunity = {};
     testState.selectedText = 'selected text';
     testState.setAccountMock.mockReset();
     testState.setPublishReplyOptionsMock.mockReset();
@@ -428,6 +435,43 @@ describe('ReplyModal', () => {
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
   });
 
+  it('shows BBCode controls only for board mods and inserts tags into the reply textarea', async () => {
+    testState.account = { author: { address: 'mod.eth', displayName: 'Alice' } };
+    testState.rolesByCommunity = {
+      'music-posting.eth': {
+        'mod.eth': { role: 'admin' },
+      },
+    };
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
+    const redButton = container.querySelector<HTMLButtonElement>('button[aria-label="Red text"]');
+    const linkButton = container.querySelector<HTMLButtonElement>('button[aria-label="Link"]');
+    expect(textarea).toBeTruthy();
+    expect(redButton).toBeTruthy();
+    expect(linkButton).toBeTruthy();
+    expect(container.querySelector('select[aria-label="Text color"]')).toBeNull();
+    expect(container.textContent).not.toContain('mods only');
+    expect(container.textContent).not.toContain('Mod editor');
+    expect(container.querySelector('button[aria-label="Quote"]')).toBeNull();
+
+    const selectionStart = textarea?.value.indexOf('selected text') ?? 0;
+    textarea?.setSelectionRange(selectionStart, selectionStart + 'selected text'.length);
+    await act(async () => {
+      redButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(textarea?.value).toBe('>>42\n[color=red]selected text[/color]');
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: '>>42\n[color=red]selected text[/color]' });
+
+    testState.rolesByCommunity = {};
+    await rerenderReplyModal('/mu/thread/post-1');
+
+    expect(container.querySelector('button[aria-label="Red text"]')).toBeNull();
+    expect(container.textContent).not.toContain('mods only');
+  });
+
   it('updates account state, applies upload completions, and closes once publishing succeeds', async () => {
     await renderReplyModal('/mu/thread/post-1');
 
@@ -436,7 +480,7 @@ describe('ReplyModal', () => {
 
     await dispatchInput(nameInput, 'Alicia');
     expect(testState.setAccountMock).toHaveBeenCalledWith({
-      author: { displayName: 'Alicia' },
+      author: { address: 'alice.eth', displayName: 'Alicia' },
     });
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ displayName: 'Alicia' });
 

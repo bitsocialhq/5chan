@@ -819,7 +819,7 @@ const Reply = ({
           />
         )}
         {post && !hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && (
-          <CommentContent comment={post} prependContent={failedPublishNotice} />
+          <CommentContent comment={post} prependContent={failedPublishNotice} roles={roles} />
         )}
       </div>
     </div>
@@ -1198,7 +1198,7 @@ const PostDesktop = ({
             directRepliesByParentCid={directRepliesByParentCid}
           />
           {!isHidden && !content && !(deleted || removed || purged) && <div className={styles.spacer} />}
-          {resolvedPost && !isHidden && <CommentContent comment={resolvedPost} prependContent={failedPublishNotice} />}
+          {resolvedPost && !isHidden && <CommentContent comment={resolvedPost} prependContent={failedPublishNotice} roles={roles} />}
         </div>
         {!isHidden && !isInPendingPostView && showReplies && repliesCount > 0 && !isInPostPageView && (
           <span className={styles.summary}>

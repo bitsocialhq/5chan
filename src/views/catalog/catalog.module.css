@@ -3,6 +3,22 @@
   color: var(--post-mobile-abbr-text-color);
 }
 
+.stateString {
+  padding: 15px 0 10px 5px;
+  color: var(--post-mobile-abbr-text-color);
+}
+
+.searchNothingFound {
+  color: red;
+  display: block;
+  margin: 0;
+  padding: 1em 0;
+  text-align: center;
+  font-size: x-large;
+  font-weight: bold;
+  line-height: normal;
+}
+
 .morePostsSuggestion {
   padding-bottom: 5px;
 }

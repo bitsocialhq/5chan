@@ -140,6 +140,7 @@
   "sort_by": "Sort by",
   "posts_last_synced_info": "Posts last synced {{time}}, this board might be offline and publishing might fail.",
   "no_threads": "No threads",
+  "nothing_found": "Nothing Found",
   "hidden": "hidden",
   "save_options": "Save Options",
   "save_advanced_settings": "Save Advanced Settings",
@@ -404,5 +405,6 @@
   "media_failed_to_load_source_unknown": "External host, not 5chan",
   "media_failed_to_load_open_source": "Open original file",
   "media_failed_to_load_inline": "External image from {{host}} failed. Try VPN.",
-  "media_failed_to_load_inline_unknown": "External image failed. Try VPN."
+  "media_failed_to_load_inline_unknown": "External image failed. Try VPN.",
+  "directory_status_unavailable_reason": "check only available for top 5 boards"
 }

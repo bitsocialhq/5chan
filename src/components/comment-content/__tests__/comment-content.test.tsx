@@ -9,6 +9,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 type TestComment = {
   author?: {
+    address?: string;
     community?: {
       banExpiresAt?: number;
     };
@@ -179,9 +180,11 @@ vi.mock('../../tooltip', () => ({
 let container: HTMLDivElement;
 let root: Root;
 
-const renderContent = async (comment: TestComment) => {
+type TestRoleMap = Record<string, { role?: string }>;
+
+const renderContent = async (comment: TestComment, roles?: TestRoleMap) => {
   await act(async () => {
-    root.render(createElement(CommentContent, { comment } as any));
+    root.render(createElement(CommentContent, { comment, roles } as any));
   });
 };
 
@@ -286,6 +289,67 @@ describe('CommentContent', () => {
     expect(append?.textContent).toBe('media failed');
     expect(blockquote?.lastChild).toBe(append);
     expect(blockquote?.querySelectorAll('br')).toHaveLength(2);
+  });
+
+  it('renders whitelisted BBCode only for board moderator authors', async () => {
+    await renderContent(
+      {
+        author: { address: '0xmod' },
+        cid: 'post-1',
+        communityAddress: 'music-posting.eth',
+        content: '[b]bold[/b] [color=red][size=24][url=https://example.com]large red[/url][/size][/color] [x]literal[/x]',
+        postCid: 'post-1',
+      },
+      {
+        '0xmod': { role: 'moderator' },
+      },
+    );
+
+    expect(container.querySelector('strong')?.textContent).toBe('bold');
+    expect(container.querySelector('[class*="colorRed"]')?.textContent).toBe('large red');
+    expect(container.querySelector('[class*="size24"]')?.textContent).toBe('large red');
+    expect(container.querySelector('a')?.getAttribute('href')).toBe('https://example.com/');
+    expect(container.textContent).toContain('[x]literal[/x]');
+
+    await renderContent(
+      {
+        author: { address: '0xuser' },
+        cid: 'post-2',
+        communityAddress: 'music-posting.eth',
+        content: '[b]plain[/b]',
+        postCid: 'post-2',
+      },
+      {
+        '0xuser': { role: 'user' },
+      },
+    );
+
+    expect(container.querySelector('strong')).toBeNull();
+    expect(queryMarkdownText()).toEqual(['[b]plain[/b]']);
+  });
+
+  it('ignores unsupported BBCode styling values for moderator authors', async () => {
+    await renderContent(
+      {
+        author: { address: '0xmod' },
+        cid: 'post-1',
+        content: '[color=#ff0000]hex[/color] [color=blue]blue[/color] [url=javascript:alert(1)]bad[/url] [size=huge]huge[/size]',
+        postCid: 'post-1',
+      },
+      {
+        '0xmod': { role: 'admin' },
+      },
+    );
+
+    expect(container.textContent).toContain('hex');
+    expect(container.textContent).toContain('blue');
+    expect(container.textContent).toContain('bad');
+    expect(container.textContent).toContain('huge');
+    expect(container.querySelector('[class*="colorRed"]')).toBeNull();
+    expect(container.querySelector('[class*="colorBlue"]')).toBeNull();
+    expect(container.querySelector('a')).toBeNull();
+    expect(container.querySelector('[class*="sizeLarge"]')).toBeNull();
+    expect(container.querySelector('[class*="size24"]')).toBeNull();
   });
 
   it('truncates long comments outside the post view and expands them on demand', async () => {

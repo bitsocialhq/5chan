@@ -578,7 +578,7 @@ const Reply = ({
             threadNumber={threadNumber}
           />
           {post && !hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && (
-            <CommentContent appendContent={mediaLoadFailureInfo} comment={post} prependContent={failedPublishNotice} />
+            <CommentContent appendContent={mediaLoadFailureInfo} comment={post} prependContent={failedPublishNotice} roles={roles} />
           )}
           {post && <ReplyBacklinks post={post} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />}
         </div>
@@ -876,7 +876,7 @@ const PostMobile = ({
                   roles={roles}
                   threadNumber={resolvedPost?.number}
                 />
-                {resolvedPost && <CommentContent appendContent={mediaLoadFailureInfo} comment={resolvedPost} prependContent={failedPublishNotice} />}
+                {resolvedPost && <CommentContent appendContent={mediaLoadFailureInfo} comment={resolvedPost} prependContent={failedPublishNotice} roles={roles} />}
                 {resolvedPost && <ReplyBacklinks post={resolvedPost} quotedByMap={quotedByMap} directRepliesByParentCid={directRepliesByParentCid} />}
               </div>
               {!isInPostView && !isInPendingPostView && (showReplies || isModQueue) && (

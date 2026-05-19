@@ -44,7 +44,7 @@ describe('author display utils', () => {
     expect(
       getCommunityOwnerAddress({
         'mod.bso': { role: 'moderator' },
-        'plebeius.bso': { role: 'owner' },
+        'plebeius.bso': { role: ' owner ' },
       }),
     ).toBe('plebeius.bso');
   });

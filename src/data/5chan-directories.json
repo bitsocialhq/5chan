@@ -2,7 +2,7 @@
   "title": "/all/ - All 5chan Directories",
   "description": "Each 5chan directory is assigned to a board handpicked by the team, until DAO curation is implemented.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories.json",
   "createdAt": 1762179811,
-  "updatedAt": 1776676271,
+  "updatedAt": 1779102921,
   "communities": [
     {
       "name": "anime-and-manga.bso",
@@ -417,6 +417,24 @@
         "postsPerPage": 15
       },
       "nsfw": false
+    },
+    {
+      "name": "torrents-posting.bso",
+      "publicKey": "12D3KooWFwieYtPDEd3UBK5qG6HFZ3Qu8cDd4B4RcY2HJ9CBkfaZ",
+      "title": "/t/ - Torrents",
+      "directoryCode": "t",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": false,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "nsfw": true
     },
     {
       "name": "paranormal-posting.bso",

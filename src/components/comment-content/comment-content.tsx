@@ -11,6 +11,7 @@ import { isPostPageView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useStateString from '../../hooks/use-state-string';
 import LoadingEllipsis from '../../components/loading-ellipsis';
+import BbcodeContent from '../../components/bbcode-content/bbcode-content';
 import ErrorDisplay from '../../components/error-display/error-display';
 import ReplyQuotePreview from '../../components/reply-quote-preview';
 import Markdown from '../../components/markdown';
@@ -19,6 +20,7 @@ import styles from '../../views/post/post.module.css';
 import capitalize from 'lodash/capitalize';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { formatErrorMessageForDisplay } from '../../lib/utils/error-utils';
+import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 
 const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
   const quotedNumber = usePostNumberStore((state) => state.cidToNumber[cid]);
@@ -71,7 +73,24 @@ const getFailedCommentError = (comment: Comment | undefined): unknown => {
   return Array.isArray(comment.errors) ? comment.errors.find(Boolean) : undefined;
 };
 
-const CommentContent = ({ appendContent, comment: post, prependContent }: { appendContent?: ReactNode; comment: Comment; prependContent?: ReactNode }) => {
+const getRoleByAddress = (roles: unknown, address?: string): string | undefined => {
+  if (!roles || !address || typeof roles !== 'object') return undefined;
+
+  const roleEntry = (roles as Record<string, { role?: unknown } | undefined>)[address];
+  return typeof roleEntry?.role === 'string' ? roleEntry.role : undefined;
+};
+
+const CommentContent = ({
+  appendContent,
+  comment: post,
+  prependContent,
+  roles,
+}: {
+  appendContent?: ReactNode;
+  comment: Comment;
+  prependContent?: ReactNode;
+  roles?: unknown;
+}) => {
   const { t } = useTranslation();
   const params = useParams();
   const location = useLocation();
@@ -82,6 +101,9 @@ const CommentContent = ({ appendContent, comment: post, prependContent }: { appe
 
   const { cid, content, deleted, edit, original, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state } = resolvedPost || {};
   const communityAddress = getCommentCommunityAddress(resolvedPost);
+  const authorAddress = resolvedPost?.author?.address;
+  const authorRole = getRoleByAddress(roles, authorAddress);
+  const shouldRenderBbcode = hasModQueueAccessRole(authorRole);
   const purged = resolvedPost?.commentModeration?.purged;
   const banExpiresAt = resolvedPost?.author?.community?.banExpiresAt;
   const banned = !!banExpiresAt;
@@ -146,6 +168,12 @@ const CommentContent = ({ appendContent, comment: post, prependContent }: { appe
       )}
     </div>
   );
+  const renderContent = (value: string | undefined) =>
+    shouldRenderBbcode ? (
+      <BbcodeContent content={value || ''} postCid={postCid} communityAddress={communityAddress} />
+    ) : (
+      <Markdown content={value || ''} postCid={postCid} communityAddress={communityAddress} />
+    );
 
   return (
     <blockquote className={`${styles.postMessage} ${!isReply && isMobile && styles.clampLines}`}>
@@ -185,7 +213,7 @@ const CommentContent = ({ appendContent, comment: post, prependContent }: { appe
         )
       ) : (
         <>
-          {!showOriginal && <Markdown content={displayContent} postCid={postCid} communityAddress={communityAddress} />}
+          {!showOriginal && renderContent(displayContent)}
           {pendingApproval && (
             <>
               <br />
@@ -221,7 +249,7 @@ const CommentContent = ({ appendContent, comment: post, prependContent }: { appe
           )}
           {edit && original?.content !== content && (
             <span className={styles.editedInfo}>
-              {showOriginal && <Markdown content={original?.content} postCid={postCid} communityAddress={communityAddress} />}
+              {showOriginal && renderContent(original?.content)}
               <br />
               <br />
               <Trans

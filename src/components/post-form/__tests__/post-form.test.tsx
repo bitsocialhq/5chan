@@ -10,7 +10,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 const testState = vi.hoisted(() => ({
   account: {
-    author: { displayName: 'Alice' },
+    author: { address: 'alice.eth', displayName: 'Alice' },
     subscriptions: ['music-posting.eth'],
   },
   accountComment: undefined as { communityAddress?: string } | undefined,
@@ -40,6 +40,7 @@ const testState = vi.hoisted(() => ({
   resetPublishPostOptionsMock: vi.fn(),
   resetPublishReplyOptionsMock: vi.fn(),
   resolvedCommunityAddress: undefined as string | undefined,
+  rolesByCommunity: {} as Record<string, Record<string, { role?: string }>>,
   setAccountMock: vi.fn(),
   setPublishPostOptionsMock: vi.fn(),
   setPublishReplyOptionsMock: vi.fn(),
@@ -101,6 +102,11 @@ vi.mock('../../../hooks/use-community-identifiers', () => ({
 
 vi.mock('../../../hooks/use-resolved-community-address', () => ({
   useResolvedCommunityAddress: () => testState.resolvedCommunityAddress,
+}));
+
+vi.mock('../../../hooks/use-stable-community', () => ({
+  useCommunityField: <T,>(communityAddress: string | undefined, selector: (community?: { roles?: Record<string, { role?: string }> }) => T) =>
+    selector(communityAddress ? { roles: testState.rolesByCommunity[communityAddress] } : undefined),
 }));
 
 vi.mock('../../../hooks/use-fetch-gif-first-frame', () => ({
@@ -352,7 +358,7 @@ describe('PostForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.account = {
-      author: { displayName: 'Alice' },
+      author: { address: 'alice.eth', displayName: 'Alice' },
       subscriptions: ['music-posting.eth'],
     };
     testState.accountComment = undefined;
@@ -376,6 +382,7 @@ describe('PostForm', () => {
     testState.publishReplyStateMessage = null;
     testState.replyIndex = undefined;
     testState.resolvedCommunityAddress = undefined;
+    testState.rolesByCommunity = {};
     testState.showUploadControls = true;
     testState.uploadComplete = undefined;
     testState.uploadMode = 'always';
@@ -531,6 +538,92 @@ describe('PostForm', () => {
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.publishedPostOptions?.link).toBe('https://example.com/fresh.png');
     expect(testState.publishedPostOptions?.content).toBeUndefined();
+  });
+
+  it('shows BBCode controls only for board mods and inserts tags into the post textarea', async () => {
+    testState.account = {
+      author: { address: 'mod.eth', displayName: 'Alice' },
+      subscriptions: ['music-posting.eth'],
+    };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.rolesByCommunity = {
+      'music-posting.eth': {
+        'mod.eth': { role: 'moderator' },
+      },
+    };
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+    const boldButton = table?.querySelector<HTMLButtonElement>('button[aria-label="Bold"]');
+    const redButton = table?.querySelector<HTMLButtonElement>('button[aria-label="Red text"]');
+    const linkButton = table?.querySelector<HTMLButtonElement>('button[aria-label="Link"]');
+    const sizeSelect = table?.querySelector<HTMLSelectElement>('select[aria-label="Text size"]');
+    const rows = Array.from(table?.querySelectorAll('tr') || []);
+    expect(textarea).toBeTruthy();
+    expect(boldButton).toBeTruthy();
+    expect(redButton).toBeTruthy();
+    expect(linkButton).toBeTruthy();
+    expect(sizeSelect).toBeTruthy();
+    expect(table?.querySelector('select[aria-label="Text color"]')).toBeNull();
+    expect(rows.some((row) => row.querySelector('td')?.textContent === 'mods only')).toBe(true);
+    expect(rows.some((row) => row.querySelector('td')?.textContent === 'comment')).toBe(true);
+    expect(table?.textContent).not.toContain('Mod editor');
+    expect(table?.querySelector('button[aria-label="Quote"]')).toBeNull();
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'hello world');
+    textarea?.setSelectionRange(0, 5);
+    await act(async () => {
+      boldButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(textarea?.value).toBe('[b]hello[/b] world');
+    expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ content: '[b]hello[/b] world' });
+
+    const worldStart = textarea?.value.indexOf('world') ?? 0;
+    textarea?.setSelectionRange(worldStart, worldStart + 'world'.length);
+    await act(async () => {
+      redButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(textarea?.value).toBe('[b]hello[/b] [color=red]world[/color]');
+    expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ content: '[b]hello[/b] [color=red]world[/color]' });
+
+    const helloStart = textarea?.value.indexOf('hello') ?? 0;
+    textarea?.setSelectionRange(helloStart, helloStart + 'hello'.length);
+    await dispatchChange(sizeSelect as HTMLSelectElement, '24');
+
+    expect(textarea?.value).toBe('[b][size=24]hello[/size][/b] [color=red]world[/color]');
+    expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ content: '[b][size=24]hello[/size][/b] [color=red]world[/color]' });
+
+    const linkedWorldStart = textarea?.value.indexOf('world') ?? 0;
+    textarea?.setSelectionRange(linkedWorldStart, linkedWorldStart + 'world'.length);
+    await act(async () => {
+      linkButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const linkedContent = '[b][size=24]hello[/size][/b] [color=red][url=https://example.com]world[/url][/color]';
+    expect(textarea?.value).toBe(linkedContent);
+    expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ content: linkedContent });
+
+    await clickByText(table as HTMLTableElement, 'Preview');
+    const preview = table?.querySelector('[aria-label="BBCode preview"]');
+    expect(preview?.textContent).toContain('hello');
+    expect(preview?.textContent).toContain('world');
+    expect(preview?.querySelector('a')?.getAttribute('href')).toBe('https://example.com/');
+    expect(table?.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe(linkedContent);
+
+    await clickByText(table as HTMLTableElement, 'Edit');
+    expect(table?.querySelector('[aria-label="BBCode preview"]')).toBeNull();
+
+    testState.rolesByCommunity = {};
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    expect(container.querySelector('button[aria-label="Bold"]')).toBeNull();
+    expect(container.textContent).not.toContain('mods only');
   });
 
   it('shows the pasted file-link filename next to the upload button', async () => {

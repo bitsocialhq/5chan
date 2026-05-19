@@ -1,0 +1,49 @@
+.content {
+  overflow-wrap: anywhere;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+.colorRed {
+  color: red;
+}
+
+.size12 {
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.size16 {
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.size20 {
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.size24 {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.size32 {
+  font-size: 32px;
+  line-height: 1.15;
+}
+
+.sizeLarge {
+  font-size: 1.35em;
+  line-height: 1.3;
+}
+
+.quote {
+  display: block;
+  margin: 3px 0;
+  padding-left: 8px;
+  border-left: 2px solid currentColor;
+  opacity: 0.82;
+}

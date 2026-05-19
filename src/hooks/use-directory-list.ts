@@ -32,6 +32,7 @@ const LOCALSTORAGE_KEY_PREFIX = '5chan-directory-list-cache:';
 const LOCALSTORAGE_TIMESTAMP_KEY_PREFIX = '5chan-directory-list-cache-timestamp:';
 const CACHE_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour
 const FETCH_RETRY_DELAY_MS = 60 * 1000; // 1 minute
+const FETCH_TIMEOUT_MS = 10 * 1000;
 
 // Per-code module caches keyed by directory code (e.g. 'biz').
 const moduleCaches = new Map<string, DirectoryList>();
@@ -148,7 +149,14 @@ const shouldRefreshFromGitHub = (code: string): boolean => {
 
 const fetchDirectoryListFromGitHub = async (code: string): Promise<DirectoryList | null> => {
   const url = GITHUB_URL_TEMPLATE.replace('{code}', code);
-  const response = await fetch(url, { cache: 'no-cache' });
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch(url, { cache: 'no-cache', signal: controller.signal });
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
   if (response.status === 404) {
     // Not yet published; treat as missing — caller will fall back.
     return null;

@@ -4,6 +4,10 @@
   padding-bottom: 24px;
 }
 
+.footerCatalog {
+  margin-top: 0;
+}
+
 .firstRow {
   display: flex;
   align-items: center;
@@ -76,7 +80,6 @@
 }
 
 .styleLabel {
-  font-size: 12px;
   text-transform: capitalize;
 }
 

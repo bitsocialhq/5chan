@@ -22,7 +22,6 @@ import postStyles from '../post/post.module.css';
 import styles from './directory.module.css';
 
 const DIRECTORY_STATUS_CHECK_LIMIT = 5;
-const DIRECTORY_STATUS_UNAVAILABLE_REASON = 'check only available for top 5 boards';
 const DIRECTORY_STATUS_UNAVAILABLE_MARKER = '\u2014';
 
 const computeBoardStatus = (
@@ -98,6 +97,7 @@ interface DirectoryRowProps {
 
 const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) => {
   const { t } = useTranslation();
+  const statusUnavailableReason = t('directory_status_unavailable_reason');
   const ownerAddress = board.owner;
   const ownerDisplay = ownerAddress ? getShortAddress(ownerAddress) || ownerAddress : undefined;
   const developerBadge = get5chanDeveloperBadge(ownerAddress);
@@ -128,8 +128,8 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
         {status === 'unavailable' ? (
           <span className={styles.statusUnavailable}>
             {DIRECTORY_STATUS_UNAVAILABLE_MARKER}
-            <Tooltip content={DIRECTORY_STATUS_UNAVAILABLE_REASON}>
-              <sup className={styles.statusUnavailableHelp} aria-label={DIRECTORY_STATUS_UNAVAILABLE_REASON} tabIndex={0}>
+            <Tooltip content={statusUnavailableReason}>
+              <sup className={styles.statusUnavailableHelp} aria-label={statusUnavailableReason} tabIndex={0}>
                 ?
               </sup>
             </Tooltip>
@@ -218,12 +218,24 @@ const Directory = () => {
           <table className={styles.flashListing}>
             <thead>
               <tr>
-                <td className={styles.postblock}>No.</td>
-                <td className={styles.postblock}>{t('directory_board')}</td>
-                <td className={styles.postblock}>{t('directory_owner')}</td>
-                <td className={styles.postblock}>{t('directory_status')}</td>
-                <td className={styles.postblock}>{t('directory_score')}</td>
-                <td className={styles.postblock}></td>
+                <th className={styles.postblock} scope='col'>
+                  No.
+                </th>
+                <th className={styles.postblock} scope='col'>
+                  {t('directory_board')}
+                </th>
+                <th className={styles.postblock} scope='col'>
+                  {t('directory_owner')}
+                </th>
+                <th className={styles.postblock} scope='col'>
+                  {t('directory_status')}
+                </th>
+                <th className={styles.postblock} scope='col'>
+                  {t('directory_score')}
+                </th>
+                <th className={styles.postblock} scope='col'>
+                  {t('directory_vote')}
+                </th>
               </tr>
             </thead>
             <tbody>
