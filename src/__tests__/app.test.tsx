@@ -279,7 +279,7 @@ const renderApp = async (initialEntry: string) => {
   }
 
   latestLocation = initialEntry;
-  await act(async () => {
+  act(() => {
     root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(App!), createElement(LocationProbe)));
   });
   await flushEffects();

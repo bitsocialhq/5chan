@@ -31,8 +31,13 @@ const originalLocation = window.location;
 const originalElectronApi = window.electronApi;
 const originalServiceWorker = navigator.serviceWorker;
 
-const loadModule = async () => {
+const loadModule = async (options: { appUpdateEnabled?: boolean } = {}) => {
   vi.resetModules();
+  if (typeof options.appUpdateEnabled === 'boolean') {
+    vi.doMock('../app-distribution', () => ({ isAppUpdateEnabled: options.appUpdateEnabled }));
+  } else {
+    vi.doUnmock('../app-distribution');
+  }
   return import('../app-update');
 };
 
@@ -98,10 +103,9 @@ describe('app-update', () => {
   });
 
   it('disables update checks for F-Droid builds', async () => {
-    vi.doMock('../app-distribution', () => ({ isAppUpdateEnabled: false }));
     testState.capacitorPlatform = 'android';
 
-    const { applyAvailableAppUpdate, isAppUpdateEnabled, resolveAvailableAppUpdate } = await loadModule();
+    const { applyAvailableAppUpdate, isAppUpdateEnabled, resolveAvailableAppUpdate } = await loadModule({ appUpdateEnabled: false });
 
     await expect(resolveAvailableAppUpdate()).resolves.toBeNull();
     await expect(
