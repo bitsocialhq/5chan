@@ -27,6 +27,12 @@ interface DirectoryListState {
   error: Error | null;
 }
 
+interface DirectoryListsState {
+  listsByCode: Record<string, DirectoryList | null>;
+  loadingByCode: Record<string, boolean>;
+  errorsByCode: Record<string, Error | null>;
+}
+
 const GITHUB_URL_TEMPLATE = 'https://raw.githubusercontent.com/bitsocialnet/lists/master/5chan-{code}-directory.json';
 const LOCALSTORAGE_KEY_PREFIX = '5chan-directory-list-cache:';
 const LOCALSTORAGE_TIMESTAMP_KEY_PREFIX = '5chan-directory-list-cache-timestamp:';
@@ -270,6 +276,91 @@ export const useDirectoryList = (directoryCode: string | undefined): DirectoryLi
       isMounted = false;
     };
   }, [directoryCode, fallback]);
+
+  return state;
+};
+
+export const useDirectoryLists = (directoryCodes: string[] | undefined): DirectoryListsState => {
+  const directories = useDirectories();
+  const directoryCodesKey = useMemo(() => [...new Set(directoryCodes ?? [])].join('\0'), [directoryCodes]);
+
+  const fallbackByCode = useMemo(() => {
+    const normalizedDirectoryCodes = directoryCodesKey ? directoryCodesKey.split('\0') : [];
+    return Object.fromEntries(normalizedDirectoryCodes.map((directoryCode) => [directoryCode, synthesizeFromMainDirectory(directoryCode, directories)])) as Record<
+      string,
+      DirectoryList | null
+    >;
+  }, [directories, directoryCodesKey]);
+
+  const [state, setState] = useState<DirectoryListsState>({
+    listsByCode: {},
+    loadingByCode: {},
+    errorsByCode: {},
+  });
+
+  useEffect(() => {
+    const normalizedDirectoryCodes = directoryCodesKey ? directoryCodesKey.split('\0') : [];
+    if (normalizedDirectoryCodes.length === 0) {
+      setState({
+        listsByCode: {},
+        loadingByCode: {},
+        errorsByCode: {},
+      });
+      return;
+    }
+
+    let isMounted = true;
+    const initialState = normalizedDirectoryCodes.reduce<DirectoryListsState>(
+      (acc, directoryCode) => {
+        const cached = moduleCaches.get(directoryCode);
+        const local = cached ? null : getFromLocalStorage(directoryCode);
+        const list = cached ?? local ?? fallbackByCode[directoryCode] ?? null;
+
+        if (local) {
+          moduleCaches.set(directoryCode, local);
+        }
+
+        acc.listsByCode[directoryCode] = list;
+        acc.loadingByCode[directoryCode] = !cached && !local;
+        acc.errorsByCode[directoryCode] = null;
+        return acc;
+      },
+      {
+        listsByCode: {},
+        loadingByCode: {},
+        errorsByCode: {},
+      },
+    );
+
+    setState(initialState);
+
+    normalizedDirectoryCodes.forEach((directoryCode) => {
+      fetchDirectoryListDeduped(directoryCode)
+        .then((fetched) => {
+          if (!isMounted) return;
+          const list = fetched ?? moduleCaches.get(directoryCode) ?? fallbackByCode[directoryCode] ?? null;
+          setState((prev) => ({
+            listsByCode: { ...prev.listsByCode, [directoryCode]: list },
+            loadingByCode: { ...prev.loadingByCode, [directoryCode]: false },
+            errorsByCode: { ...prev.errorsByCode, [directoryCode]: null },
+          }));
+        })
+        .catch((error) => {
+          console.warn(`Failed to fetch directory list "${directoryCode}":`, error);
+          if (!isMounted) return;
+          const cachedAfter = moduleCaches.get(directoryCode);
+          setState((prev) => ({
+            listsByCode: { ...prev.listsByCode, [directoryCode]: cachedAfter ?? fallbackByCode[directoryCode] ?? null },
+            loadingByCode: { ...prev.loadingByCode, [directoryCode]: false },
+            errorsByCode: { ...prev.errorsByCode, [directoryCode]: error instanceof Error ? error : new Error(String(error)) },
+          }));
+        });
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [directoryCodesKey, fallbackByCode]);
 
   return state;
 };

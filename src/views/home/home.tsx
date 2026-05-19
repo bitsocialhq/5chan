@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './home.module.css';
-import { useDirectories, useDirectoryAddresses } from '../../hooks/use-directories';
+import { type DirectoryCommunity, useDirectories, useDirectoryAddresses } from '../../hooks/use-directories';
+import { sortDirectoryBoardsByRank, useDirectoryLists } from '../../hooks/use-directory-list';
 import { CommunityStatsCollector, useCommunitiesStatsStore } from '../../hooks/use-communities-stats';
 import PopularThreadsBox from './popular-threads-box';
 import BoardsList from './boards-list';
@@ -11,9 +12,11 @@ import LoadingEllipsis from '../../components/loading-ellipsis';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import DisclaimerModal from '../../components/disclaimer-modal';
 import DirectoryModal from '../../components/directory-modal';
-import { getBoardPath } from '../../lib/utils/route-utils';
+import { extractDirectoryFromTitle, getBoardPath } from '../../lib/utils/route-utils';
 import { isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import lowerCase from 'lodash/lowerCase';
+import useCommunitiesLoadingStartTimestamps from '../../stores/use-communities-loading-start-timestamps-store';
+import { useNowSeconds } from '../../hooks/use-now-seconds';
 
 // https://github.com/bitsocialnet/lists/blob/master/5chan-directories.json
 
@@ -91,22 +94,74 @@ interface StatValueProps {
   value: number;
 }
 
+type HomepageStats = {
+  allPostCount?: number;
+  weekActiveUserCount?: number;
+};
+
 const StatValue = ({ isLoaded, loadingLabel, value }: StatValueProps) => (isLoaded ? <>{value}</> : <LoadingEllipsis string={loadingLabel} />);
 
-const Stats = ({ directoryAddresses }: { directoryAddresses: string[] }) => {
+const STATS_DIRECTORY_FALLBACK_DELAY_SECONDS = 30;
+
+const getDirectoryCode = (directory: DirectoryCommunity): string | null => directory.directoryCode ?? extractDirectoryFromTitle(directory.title ?? '');
+
+const getUniqueAddresses = (addresses: string[]): string[] => [...new Set(addresses.filter((address) => address.length > 0))];
+
+const hasLoadedStats = (stat: HomepageStats | undefined): stat is HomepageStats & { allPostCount: number } => stat?.allPostCount !== undefined;
+
+const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
   const { t } = useTranslation();
   const communitiesStats = useCommunitiesStatsStore((state) => state.communityStats);
+  const defaultDirectoryAddresses = useMemo(() => directories.map((directory) => directory.address), [directories]);
+  const loadingStartTimestamps = useCommunitiesLoadingStartTimestamps(defaultDirectoryAddresses);
+  const nowSeconds = useNowSeconds(defaultDirectoryAddresses.length > 0);
 
-  const { totalPosts, currentUsers, boardsTracked, allDirectoryStatsLoaded } = useMemo(() => {
+  const fallbackDirectoryCodes = useMemo(
+    () =>
+      directories.flatMap((directory, index) => {
+        const defaultStats = communitiesStats[directory.address];
+        if (hasLoadedStats(defaultStats)) {
+          return [];
+        }
+
+        const loadingStartTimestamp = loadingStartTimestamps[index];
+        if (!loadingStartTimestamp || nowSeconds - loadingStartTimestamp < STATS_DIRECTORY_FALLBACK_DELAY_SECONDS) {
+          return [];
+        }
+
+        const directoryCode = getDirectoryCode(directory);
+        return directoryCode ? [directoryCode] : [];
+      }),
+    [communitiesStats, directories, loadingStartTimestamps, nowSeconds],
+  );
+
+  const { listsByCode } = useDirectoryLists(fallbackDirectoryCodes);
+
+  const { collectorAddresses, totalPosts, currentUsers, boardsTracked, allDirectoryStatsLoaded } = useMemo(() => {
+    const collectorAddressSet = new Set(defaultDirectoryAddresses);
     let totalPosts = 0;
     let currentUsers = 0;
     let boardsTracked = 0;
-    let allDirectoryStatsLoaded = directoryAddresses.length > 0;
+    let allDirectoryStatsLoaded = directories.length > 0;
 
-    for (const address of directoryAddresses) {
-      const stat = communitiesStats[address];
+    for (const directory of directories) {
+      const directoryCode = getDirectoryCode(directory);
+      const directoryList = directoryCode ? listsByCode[directoryCode] : null;
+      const rankedAddresses = directoryList ? sortDirectoryBoardsByRank(directoryList.boards).map((board) => board.address) : [directory.address];
+      const candidateAddresses = getUniqueAddresses(rankedAddresses.length > 0 ? rankedAddresses : [directory.address]);
 
-      if (!stat || stat.allPostCount === undefined) {
+      candidateAddresses.forEach((address) => collectorAddressSet.add(address));
+
+      let stat: HomepageStats | undefined;
+      for (const address of candidateAddresses) {
+        const candidateStats = communitiesStats[address];
+        if (hasLoadedStats(candidateStats)) {
+          stat = candidateStats;
+          break;
+        }
+      }
+
+      if (!hasLoadedStats(stat)) {
         allDirectoryStatsLoaded = false;
         continue;
       }
@@ -116,15 +171,21 @@ const Stats = ({ directoryAddresses }: { directoryAddresses: string[] }) => {
       boardsTracked++;
     }
 
-    return { totalPosts, currentUsers, boardsTracked, allDirectoryStatsLoaded };
-  }, [communitiesStats, directoryAddresses]);
+    return {
+      collectorAddresses: [...collectorAddressSet],
+      totalPosts,
+      currentUsers,
+      boardsTracked,
+      allDirectoryStatsLoaded,
+    };
+  }, [communitiesStats, defaultDirectoryAddresses, directories, listsByCode]);
 
   const loadingLabel = t('loading');
 
   return (
     <>
       {/* Render collectors to fetch stats for each community */}
-      {directoryAddresses.map((address) => (
+      {collectorAddresses.map((address) => (
         <CommunityStatsCollector key={address} communityAddress={address} />
       ))}
       <div className={styles.box}>
@@ -225,7 +286,7 @@ const Home = () => {
         <InfoBox />
         <BoardsList multisub={directories} />
         <PopularThreadsBox directories={directories} directoryAddresses={directoryAddresses} />
-        <Stats directoryAddresses={directoryAddresses} />
+        <Stats directories={directories} />
         <Footer />
       </div>
     </>

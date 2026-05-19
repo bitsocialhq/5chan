@@ -10,8 +10,12 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 const testState = vi.hoisted(() => ({
   closeDirectoryModalMock: vi.fn(),
-  directories: [] as Array<{ address: string; title?: string }>,
+  directories: [] as Array<{ address: string; title?: string; directoryCode?: string }>,
   directoryAddresses: [] as string[],
+  directoryListCodes: [] as string[],
+  directoryListsByCode: {} as Record<string, { boards: Array<{ address: string; score: number; managedByDevs: boolean; addedAt?: number }> }>,
+  loadingStartTimestamps: [] as number[],
+  nowSeconds: 1_704_067_210,
   navigateMock: vi.fn(),
   communities: {} as Record<string, unknown>,
   communityStats: {} as Record<string, { allPostCount?: number; weekActiveUserCount?: number }>,
@@ -43,10 +47,33 @@ vi.mock('../../../hooks/use-directories', () => ({
     directories.find((entry) => entry.address === address || entry.directoryCode === address || entry.title === address),
 }));
 
+vi.mock('../../../hooks/use-directory-list', async () => {
+  const actual = await vi.importActual<typeof import('../../../hooks/use-directory-list')>('../../../hooks/use-directory-list');
+  return {
+    ...actual,
+    useDirectoryLists: (directoryCodes: string[] | undefined) => {
+      testState.directoryListCodes = directoryCodes ?? [];
+      return {
+        listsByCode: testState.directoryListsByCode,
+        loadingByCode: {},
+        errorsByCode: {},
+      };
+    },
+  };
+});
+
 vi.mock('../../../hooks/use-communities-stats', () => ({
   CommunityStatsCollector: ({ communityAddress }: { communityAddress: string }) =>
     createElement('div', { 'data-testid': 'stats-collector', 'data-address': communityAddress }),
   useCommunitiesStatsStore: (selector: (state: { communityStats: typeof testState.communityStats }) => unknown) => selector({ communityStats: testState.communityStats }),
+}));
+
+vi.mock('../../../stores/use-communities-loading-start-timestamps-store', () => ({
+  default: () => testState.loadingStartTimestamps,
+}));
+
+vi.mock('../../../hooks/use-now-seconds', () => ({
+  useNowSeconds: () => testState.nowSeconds,
 }));
 
 vi.mock('../../../components/loading-ellipsis', () => ({
@@ -96,10 +123,14 @@ describe('Home', () => {
     testState.closeDirectoryModalMock.mockReset();
     testState.navigateMock.mockReset();
     testState.directories = [
-      { address: 'music-posting.eth', title: '/mu/ - Music' },
-      { address: 'tech-posting.eth', title: '/g/ - Technology' },
+      { address: 'music-posting.eth', title: '/mu/ - Music', directoryCode: 'mu' },
+      { address: 'tech-posting.eth', title: '/g/ - Technology', directoryCode: 'g' },
     ];
     testState.directoryAddresses = ['music-posting.eth', 'tech-posting.eth'];
+    testState.directoryListCodes = [];
+    testState.directoryListsByCode = {};
+    testState.loadingStartTimestamps = [];
+    testState.nowSeconds = 1_704_067_210;
     testState.communities = {
       'music-posting.eth': { address: 'music-posting.eth' },
       'tech-posting.eth': { address: 'tech-posting.eth' },
@@ -149,6 +180,37 @@ describe('Home', () => {
     expect(container.textContent).not.toContain('total_posts 5');
     expect(container.textContent).not.toContain('current_users 2');
     expect(container.textContent).not.toContain('boards_tracked 1');
+  });
+
+  it('uses a ranked directory fallback board when the default board stats stay unresolved', () => {
+    testState.directories = [
+      { address: 'business-and-finance.bso', title: '/biz/ - Business & Finance', directoryCode: 'biz' },
+      { address: 'tech-posting.eth', title: '/g/ - Technology', directoryCode: 'g' },
+    ];
+    testState.directoryAddresses = ['business-and-finance.bso', 'tech-posting.eth'];
+    testState.loadingStartTimestamps = [1_704_067_170, 1_704_067_170];
+    testState.directoryListsByCode = {
+      biz: {
+        boards: [
+          { address: 'business-and-finance.bso', score: 100, managedByDevs: true },
+          { address: 'backup-business.bso', score: 10, managedByDevs: false },
+        ],
+      },
+    };
+    testState.communityStats = {
+      'backup-business.bso': { allPostCount: 11, weekActiveUserCount: 3 },
+      'tech-posting.eth': { allPostCount: 7, weekActiveUserCount: 4 },
+    };
+
+    renderHome();
+
+    const collectorAddresses = Array.from(container.querySelectorAll('[data-testid="stats-collector"]')).map((collector) => collector.getAttribute('data-address'));
+    expect(testState.directoryListCodes).toEqual(['biz']);
+    expect(collectorAddresses).toEqual(['business-and-finance.bso', 'tech-posting.eth', 'backup-business.bso']);
+    expect(container.querySelectorAll('[data-testid="loading-ellipsis"]')).toHaveLength(0);
+    expect(container.textContent).toContain('total_posts 18');
+    expect(container.textContent).toContain('current_users 7');
+    expect(container.textContent).toContain('boards_tracked 2');
   });
 
   it('shows zero totals after every directory has loaded zero-count stats', () => {
