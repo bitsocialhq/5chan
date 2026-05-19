@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const testState = vi.hoisted(() => ({
+  appUpdateEnabled: true,
   capacitorPlatform: 'web',
   browserOpenMock: vi.fn(),
   electronDownloadAndInstallUpdateMock: vi.fn(),
@@ -21,6 +22,12 @@ vi.mock('@capacitor/browser', () => ({
   },
 }));
 
+vi.mock('../app-distribution', () => ({
+  get isAppUpdateEnabled() {
+    return testState.appUpdateEnabled;
+  },
+}));
+
 const createFetchResponse = (body: unknown, ok = true, status = 200) => ({
   ok,
   status,
@@ -31,20 +38,15 @@ const originalLocation = window.location;
 const originalElectronApi = window.electronApi;
 const originalServiceWorker = navigator.serviceWorker;
 
-const loadModule = async (options: { appUpdateEnabled?: boolean } = {}) => {
+const loadModule = async () => {
   vi.resetModules();
-  if (typeof options.appUpdateEnabled === 'boolean') {
-    vi.doMock('../app-distribution', () => ({ isAppUpdateEnabled: options.appUpdateEnabled }));
-  } else {
-    vi.doUnmock('../app-distribution');
-  }
   return import('../app-update');
 };
 
 describe('app-update', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.doUnmock('../app-distribution');
+    testState.appUpdateEnabled = true;
     testState.capacitorPlatform = 'web';
     testState.browserOpenMock.mockReset();
     testState.electronDownloadAndInstallUpdateMock.mockReset();
@@ -103,9 +105,10 @@ describe('app-update', () => {
   });
 
   it('disables update checks for F-Droid builds', async () => {
+    testState.appUpdateEnabled = false;
     testState.capacitorPlatform = 'android';
 
-    const { applyAvailableAppUpdate, isAppUpdateEnabled, resolveAvailableAppUpdate } = await loadModule({ appUpdateEnabled: false });
+    const { applyAvailableAppUpdate, isAppUpdateEnabled, resolveAvailableAppUpdate } = await loadModule();
 
     await expect(resolveAvailableAppUpdate()).resolves.toBeNull();
     await expect(
