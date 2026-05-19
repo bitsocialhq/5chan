@@ -36,9 +36,9 @@ const CreateBoardModal = () => {
           <div className={styles.section}>
             <h3>Creating Your Board</h3>
             <p>
-              Create a board using the CLI:
-              <a href='https://github.com/bitsocialnet/bitsocial-cli' target='_blank' rel='noopener noreferrer'>
-                bitsocial-cli
+              Create a board using{' '}
+              <a href='https://github.com/bitsocialnet/5chan-board-manager' target='_blank' rel='noopener noreferrer'>
+                5chan Board Manager
               </a>
               . <strong>Build a following:</strong> Users can subscribe to your board via the &quot;[Subscribe]&quot; button, which adds it to their top bar. You can gain
               subscribers through direct links, word of mouth, or search, no directory assignment or dev approval needed.

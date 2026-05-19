@@ -17,7 +17,7 @@ _Telegram group for this repo https://t.me/fivechandev_
 ## Key Features
 
 ### Decentralized Board Ownership
-Unlike traditional imageboards, 5chan has no global admins or central authority. Anyone can create unlimited boards using their own [bitsocial node](https://github.com/bitsocialnet/bitsocial-cli). Each board owner runs their own P2P node that users connect to peer-to-peer, giving them complete control over their board's content, moderation, and rules.
+Unlike traditional imageboards, 5chan has no global admins or central authority. Anyone can create unlimited boards using [5chan Board Manager](https://github.com/bitsocialnet/5chan-board-manager). Each board owner runs their own P2P node that users connect to peer-to-peer, giving them complete control over their board's content, moderation, and rules.
 
 ### Competitive Directory System
 5chan maintains the familiar imageboard directory structure (Japanese Culture, Video Games, Interests, Creative, etc.), but introduces competition: **multiple boards can compete for each directory slot**. For example, there can be unlimited "Business & Finance" boards, but only the highest-voted one appears in the directory on the homepage.
@@ -54,10 +54,9 @@ In the bitsocial protocol, a 5chan board is called a _community_. To deliver the
 
 To create and run a board:
 
-1. Install bitsocial-cli, available for Windows, macOS, and Linux: [latest release](https://github.com/bitsocialnet/bitsocial-cli/releases/latest);
-2. Follow the instructions in the repo's README;
-3. When running the daemon for the first time, it will output WebUI links you can use to manage your bitsocial community with a GUI.
-4. Run 5chan Board Manager against the same bitsocial node and add your community to it. The recommended setup is the Docker Compose flow in the [5chan-board-manager README](https://github.com/bitsocialnet/5chan-board-manager#standalone-bitsocial-cli-already-running) for an existing bitsocial-cli daemon.
+1. Follow the Docker Compose flow in the [5chan-board-manager README](https://github.com/bitsocialnet/5chan-board-manager#docker-compose-recommended);
+2. Create your community and add it to 5chan Board Manager using the commands shown there;
+3. Keep the manager running so it can apply 5chan board behavior such as thread archiving, bump limits, and retention cleanup.
 
 Once created, anyone can connect to your community using any bitsocial client (such as 5chan) by using the community address. The address is not stored in any central database—bitsocial is a pure peer-to-peer protocol.
 

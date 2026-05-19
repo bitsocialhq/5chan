@@ -43,9 +43,9 @@ const DirectoryModal = () => {
           <div className={styles.section}>
             <h3>Creating Your Board</h3>
             <p>
-              <strong>Anyone can create a board</strong> using the official CLI:{' '}
-              <a href='https://github.com/bitsocialnet/bitsocial-cli' target='_blank' rel='noopener noreferrer'>
-                bitsocial-cli
+              <strong>Anyone can create a board</strong> using{' '}
+              <a href='https://github.com/bitsocialnet/5chan-board-manager' target='_blank' rel='noopener noreferrer'>
+                5chan Board Manager
               </a>
               . Users can access it anytime via the search bar, direct links, or by subscribing with the &quot;[Subscribe]&quot; button;{' '}
               <strong>no directory assignment or dev approval needed</strong>. Directory boards are simply featured in homepage categories (like &quot;Anime &

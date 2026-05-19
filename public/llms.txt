@@ -34,7 +34,7 @@ This repository primarily contains the client application. It is a React and Typ
 - README: https://github.com/bitsocialnet/5chan/blob/master/README.md
 - Agent instructions: https://github.com/bitsocialnet/5chan/blob/master/AGENTS.md
 - Bitsocial protocol site: https://bitsocial.net
-- Bitsocial CLI: https://github.com/bitsocialnet/bitsocial-cli
+- 5chan Board Manager: https://github.com/bitsocialnet/5chan-board-manager
 - Directory list source: https://github.com/bitsocialnet/lists/blob/master/5chan-directories.json
 
 ## Architecture
