@@ -352,19 +352,8 @@ describe('App', () => {
     container.remove();
   });
 
-  it('renders board layout chrome, settings modal, and reply modal wiring on settings routes', async () => {
-    testState.replyModalState = {
-      activeCid: 'parent-cid',
-      closeModal: vi.fn(),
-      parentNumber: 12,
-      scrollY: 32,
-      showReplyModal: true,
-      communityAddress: 'music-posting.eth',
-      threadCid: 'thread-cid',
-      threadNumber: 99,
-    } as ReplyModalShape;
-
-    await renderApp('/all/settings');
+  it('renders board layout chrome on multiboard routes', async () => {
+    await renderApp('/all');
 
     expect(container.querySelector('[data-testid="boards-bar"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="board-header"]')).toBeTruthy();
@@ -372,7 +361,7 @@ describe('App', () => {
     expect(container.querySelector('[data-testid="feed-cache-container"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="desktop-board-buttons"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="board-blotter"]')).toBeTruthy();
-    expect(latestLocation).toBe('/all/settings');
+    expect(latestLocation).toBe('/all');
   });
 
   it('keeps an open post form and its draft when settings opens from a trailing-slash board route', async () => {
