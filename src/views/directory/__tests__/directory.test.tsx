@@ -28,6 +28,12 @@ const testState = vi.hoisted(() => ({
     },
   ],
   offlineHookRequests: [] as Array<{ address?: string; communityAddressHint?: string }>,
+  offlineHookValue: {
+    isOffline: false,
+    isOnlineStatusLoading: false,
+    offlineIconClass: '',
+    offlineTitle: false as string | false,
+  },
   offlineStates: {} as Record<string, { state?: string; updatedAt?: number }>,
   nowSeconds: 1_704_067_210,
 }));
@@ -113,12 +119,7 @@ vi.mock('../../../hooks/use-community-identifiers', () => ({
 vi.mock('../../../hooks/use-is-community-offline', () => ({
   default: (community?: { address?: string }, communityAddressHint?: string) => {
     testState.offlineHookRequests.push({ address: community?.address, communityAddressHint });
-    return {
-      isOffline: false,
-      isOnlineStatusLoading: false,
-      offlineIconClass: '',
-      offlineTitle: false,
-    };
+    return testState.offlineHookValue;
   },
 }));
 
@@ -177,6 +178,12 @@ describe('Directory', () => {
       },
     ];
     testState.offlineHookRequests = [];
+    testState.offlineHookValue = {
+      isOffline: false,
+      isOnlineStatusLoading: false,
+      offlineIconClass: '',
+      offlineTitle: false,
+    };
     testState.offlineStates = {};
     testState.nowSeconds = 1_704_067_210;
     window.alert = vi.fn();
@@ -204,6 +211,20 @@ describe('Directory', () => {
       address: 'anime-and-manga.bso',
       communityAddressHint: 'anime-and-manga.bso',
     });
+  });
+
+  it('shows loading status while the listed board status is loading', async () => {
+    testState.communities = {};
+    testState.offlineHookValue = {
+      isOffline: false,
+      isOnlineStatusLoading: true,
+      offlineIconClass: 'yellowOfflineIcon',
+      offlineTitle: 'downloading board...',
+    };
+
+    await renderDirectory();
+
+    expect(getDirectoryRow()?.textContent).toContain('loading');
   });
 
   it('shows offline status when the listed board community is stale', async () => {

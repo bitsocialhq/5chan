@@ -26,14 +26,15 @@ const computeBoardStatus = (
   nowSeconds: number,
   isOffline: boolean,
   isOnlineStatusLoading: boolean,
-): 'online' | 'offline' | 'unknown' => {
+): 'online' | 'offline' | 'loading' | 'unknown' => {
   const freshnessState = {
     state: communityState?.state ?? offlineState?.state,
     updatedAt: communityState?.updatedAt ?? offlineState?.updatedAt,
   };
 
   if (isOffline || isCommunityKnownOffline(freshnessState, nowSeconds)) return 'offline';
-  if (isOnlineStatusLoading || !freshnessState.updatedAt) return 'unknown';
+  if (isOnlineStatusLoading) return 'loading';
+  if (!freshnessState.updatedAt) return 'unknown';
   return 'online';
 };
 
@@ -122,7 +123,9 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
         </span>
       </td>
       <td className={styles.statusCell}>
-        {status === 'unknown' ? null : (
+        {status === 'loading' ? (
+          <LoadingEllipsis string={t('loading')} />
+        ) : status === 'unknown' ? null : (
           <span className={status === 'offline' ? styles.statusOffline : styles.statusOnline}>
             {t(status === 'offline' ? 'directory_status_offline' : 'directory_status_online')}
           </span>
