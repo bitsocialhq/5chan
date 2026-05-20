@@ -22,7 +22,7 @@ export const CommunityStatsCollector = ({ communityAddress }: { communityAddress
   const setCommunityStats = useCommunitiesStatsStore((state) => state.setCommunityStats);
 
   useEffect(() => {
-    if (stats && stats.allPostCount !== undefined) {
+    if (stats && (stats.allPostCount !== undefined || stats.state === 'failed')) {
       setCommunityStats(communityAddress, stats);
     }
   }, [stats, communityAddress, setCommunityStats]);

@@ -64,6 +64,8 @@ const PopularThreadCard = memo(
   (prevProps, nextProps) => prevProps.post?.cid === nextProps.post?.cid && prevProps.boardTitle === nextProps.boardTitle && prevProps.boardPath === nextProps.boardPath,
 );
 
+const getPopularThreadBoardTitle = (directoryTitle: string | undefined): string => directoryTitle?.replace(/^\/[^/]+\/\s*-\s*/, '').replace(/\s+Directory$/, '') || '';
+
 const PopularThreadsBox = ({ directories, directoryAddresses }: { directories: DirectoryCommunity[]; directoryAddresses: string[] }) => {
   const { t } = useTranslation();
   const showWorksafeContentOnly = usePopularThreadsOptionsStore((state) => state.showWorksafeContentOnly);
@@ -103,7 +105,7 @@ const PopularThreadsBox = ({ directories, directoryAddresses }: { directories: D
           popularPosts.map((post: Comment) => {
             const communityAddress = getCommentCommunityAddress(post);
             const directoryEntry = findDirectoryByAddress(directories, communityAddress);
-            const boardTitle = directoryEntry?.title?.replace(/^\/[^/]+\/\s*-\s*/, '') || '';
+            const boardTitle = getPopularThreadBoardTitle(directoryEntry?.title);
             const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : '';
             return <PopularThreadCard key={post.cid} post={post} boardTitle={boardTitle} boardPath={boardPath} />;
           })

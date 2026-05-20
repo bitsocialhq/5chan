@@ -70,9 +70,9 @@ const FAQ_SECTIONS: FAQSection[] = [
         answer: (
           <>
             Directories are short paths such as <code>/g/</code>, <code>/biz/</code>, or <code>/mu/</code> that point to featured boards. Today they are handpicked
-            through pull requests to{' '}
-            <a href='https://github.com/bitsocialnet/lists/blob/master/5chan-directories.json' {...externalLinkProps}>
-              5chan-directories.json
+            through pull requests to the{' '}
+            <a href='https://github.com/bitsocialnet/lists/tree/master/5chan-directories' {...externalLinkProps}>
+              5chan directory files
             </a>{' '}
             until directory voting is available. A board does not need a directory slot to exist or be reachable.
           </>
@@ -330,9 +330,9 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'How do I get my board into a directory?',
         answer: (
           <>
-            Open a pull request against{' '}
-            <a href='https://github.com/bitsocialnet/lists/blob/master/5chan-directories.json' {...externalLinkProps}>
-              5chan-directories.json
+            Open a pull request against the relevant file in the{' '}
+            <a href='https://github.com/bitsocialnet/lists/tree/master/5chan-directories' {...externalLinkProps}>
+              5chan-directories folder
             </a>{' '}
             with the board title, address, and NSFW status. Current expectations include high uptime, active use, relevant topic fit, and responsible moderation. Future
             directory voting is planned for 5chan Pass holders.

@@ -79,6 +79,7 @@ vi.mock('../../box-modal', () => ({
 const directories = [
   { address: 'music-posting.eth', title: '/mu/ - Music' },
   { address: 'tech-posting.eth', title: '/g/ - Technology' },
+  { address: 'tv-posting.eth', title: '/tv/ - Television & Film Directory' },
 ];
 
 let container: HTMLDivElement;
@@ -158,6 +159,24 @@ describe('PopularThreadsBox', () => {
     expect(container.querySelector('.spoilertext')).toBeNull();
   });
 
+  it('does not show a stale directory suffix in board titles', () => {
+    testState.popularPosts = [
+      {
+        cid: 'thread-tv',
+        communityAddress: 'tv-posting.eth',
+        content: 'thread content',
+        link: 'https://cdn.example/thread-tv.jpg',
+        thumbnailUrl: 'https://cdn.example/thread-tv-thumb.jpg',
+        title: '',
+      },
+    ];
+
+    renderPopularThreadsBox();
+
+    expect(container.textContent).toContain('Television & Film');
+    expect(container.textContent).not.toContain('Television & Film Directory');
+  });
+
   it('subscribes to feed state only while popular threads are loading', () => {
     testState.isLoading = true;
     testState.popularPosts = [];
@@ -165,6 +184,6 @@ describe('PopularThreadsBox', () => {
     renderPopularThreadsBox();
 
     expect(container.textContent).toContain('Downloading boards');
-    expect(vi.mocked(useFeedStateString)).toHaveBeenCalledWith(['music-posting.eth', 'tech-posting.eth']);
+    expect(vi.mocked(useFeedStateString)).toHaveBeenCalledWith(['music-posting.eth', 'tech-posting.eth', 'tv-posting.eth']);
   });
 });

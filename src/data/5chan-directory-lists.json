@@ -1,0 +1,800 @@
+{
+  "title": "5chan directories",
+  "description": "Directory assignments built from per-directory candidate lists in https://github.com/bitsocialnet/lists/tree/master/5chan-directories",
+  "createdAt": 1779182014,
+  "updatedAt": 1779279785,
+  "directories": [
+    {
+      "directoryCode": "a",
+      "title": "/a/ - Anime & Manga",
+      "description": "Boards competing to host the /a/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-a-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "anime-and-manga.bso",
+          "publicKey": "12D3KooWMDt3RMVMHrm2pEEyfraBtHP86dmkim7EVAapDj3Mchdy",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "co",
+      "title": "/co/ - Comics & Cartoons",
+      "description": "Boards competing to host the /co/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-co-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "comics-and-cartoons.bso",
+          "publicKey": "12D3KooWRLmyg671KVYb1xekZ8eTQSMfRraB3DmQZPsKbCdMsEuc",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "ck",
+      "title": "/ck/ - Food & Cooking",
+      "description": "Boards competing to host the /ck/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-ck-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "food-and-cooking.bso",
+          "publicKey": "12D3KooWFfANpSeemwvqqGsXNPHDuyDMCK6wE8cxGTuNw7xoWUp7",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "pol",
+      "title": "/pol/ - Politically Incorrect",
+      "description": "Boards competing to host the /pol/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-pol-directory.json",
+      "features": {
+        "pseudonymityMode": "per-post",
+        "safeForWork": false,
+        "hasFlags": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 20
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779212075,
+      "boards": [
+        {
+          "address": "politically-incorrect.bso",
+          "publicKey": "12D3KooWMVob74DQoTLGZ4B8kWgPwDfbtiWqdJE4DrGtf2rmVw36",
+          "owner": "rinse12.bso",
+          "addedAt": 1779182014
+        },
+        {
+          "address": "nothing-is-beyond-our-reach.bso",
+          "publicKey": "12D3KooWDpiDmJCGKbXB3RJFfATmRMzmwTkjimBvf8xKZmUx2L1P",
+          "owner": "plebeius.bso",
+          "addedAt": 1779212075
+        }
+      ]
+    },
+    {
+      "directoryCode": "biz",
+      "title": "/biz/ - Business & Finance",
+      "description": "Boards competing to host the /biz/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-biz-directory.json",
+      "features": {
+        "pseudonymityMode": "per-post",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 20
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779212075,
+      "boards": [
+        {
+          "address": "business-and-finance.bso",
+          "publicKey": "12D3KooWNMybS8JqELi38ZBX897PrjWbCrGoMKfw3bgoqzC2n1Dh",
+          "owner": "rinse12.bso",
+          "addedAt": 1779182014
+        },
+        {
+          "address": "bizraelis.bso",
+          "publicKey": "12D3KooWR7nTdKZqZ1twGWMfVsXYDGp1XAKUrnYznKP651jFrizE",
+          "owner": "plebeius.bso",
+          "addedAt": 1779212075
+        }
+      ]
+    },
+    {
+      "directoryCode": "sci",
+      "title": "/sci/ - Science & Math",
+      "description": "Boards competing to host the /sci/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-sci-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "science-and-math.bso",
+          "publicKey": "12D3KooWEtHqwtEpgHsXS8VSFcGDt2DhzeqaLm9tTCRFucXaWp62",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "g",
+      "title": "/g/ - Technology",
+      "description": "Boards competing to host the /g/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-g-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "technology-posting.bso",
+          "publicKey": "12D3KooWFnLrUYHpvqki7gbL4w9JzdxjpQPKE2JBDEd23Ly6X82X",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "v",
+      "title": "/v/ - Video Games",
+      "description": "Boards competing to host the /v/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-v-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "videogames-posting.bso",
+          "publicKey": "12D3KooWRAbo3HU5ThCAkJGQ5q7MTEJfhAX6Hu7xHyPtxHGi1Fgh",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "vg",
+      "title": "/vg/ - Video Game Generals",
+      "description": "Boards competing to host the /vg/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-vg-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 20
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "videogame-generals.bso",
+          "publicKey": "12D3KooWMvAcJFV45CS3hSZcx7EFhwhQrXfXhVHXQJFPfKeakWfq",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "vr",
+      "title": "/vr/ - Retro Games",
+      "description": "Boards competing to host the /vr/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-vr-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "retro-games.bso",
+          "publicKey": "12D3KooWJfwp2WRwU3gsaNNPjZ1iHgxc1QFySr361cQarkhLp1fY",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "fit",
+      "title": "/fit/ - Fitness",
+      "description": "Boards competing to host the /fit/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-fit-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "fitness-posting.bso",
+          "publicKey": "12D3KooWHcqcJJmjAiBJA3uyhSW6ep4HFadUfteDrzU1Pn9ALkkw",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "sp",
+      "title": "/sp/ - Sports",
+      "description": "Boards competing to host the /sp/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-sp-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "sports-posting.bso",
+          "publicKey": "12D3KooWGJA6zN3Q63FtSgwNhtfA26Skdzdxz5X7A9PFfE4FBMGE",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "tg",
+      "title": "/tg/ - Traditional Games",
+      "description": "Boards competing to host the /tg/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-tg-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "traditional-games.bso",
+          "publicKey": "12D3KooWK6G3EHUCkfcgX6kPDihXJAdpucrZvn4WjPwf7fF484nt",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "adv",
+      "title": "/adv/ - Advice",
+      "description": "Boards competing to host the /adv/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-adv-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "advice-posting.bso",
+          "publicKey": "12D3KooWH5UFNs9yfwJVsSUhEW5bYrtF8KmzfeJzwg84qWMoFJVY",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "wsg",
+      "title": "/wsg/ - Worksafe GIF",
+      "description": "Boards competing to host the /wsg/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-wsg-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "worksafe-gif.bso",
+          "publicKey": "12D3KooWAGHV9th2FN48KPvHMJwxen8h5mSM39pkaZWvvzcWMPr9",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "diy",
+      "title": "/diy/ - Do It Yourself",
+      "description": "Boards competing to host the /diy/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-diy-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "do-it-yourself.bso",
+          "publicKey": "12D3KooWKKbiaFu7x2EwueN6wxw3DJRQsvCv8KVRGbTTYpsGZXVa",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "out",
+      "title": "/out/ - Outdoors",
+      "description": "Boards competing to host the /out/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-out-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "outdoors-posting.bso",
+          "publicKey": "12D3KooWQ2nPGxQxuSMY92kM3zKu1rBekJsXxXb5uNkHLDfSSxTm",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "ic",
+      "title": "/ic/ - Artwork/Critique",
+      "description": "Boards competing to host the /ic/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-ic-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "artwork-critique.bso",
+          "publicKey": "12D3KooWQZ5HkAspHUPGEVoSaAZgqachZGtxCXxAXYBDTreR4uWJ",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "mu",
+      "title": "/mu/ - Music",
+      "description": "Boards competing to host the /mu/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-mu-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "music-posting.bso",
+          "publicKey": "12D3KooWQdQ6TkVA1Xe9zzaFP6vXBgsLeMAewpLpLwbsAYKivnQy",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "int",
+      "title": "/int/ - International",
+      "description": "Boards competing to host the /int/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-int-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "international-sfw.bso",
+          "publicKey": "12D3KooWMSUYcergS2BwbRzFynR5hQURc962W9iR81eTJKz89Q6n",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "lit",
+      "title": "/lit/ - Literature",
+      "description": "Boards competing to host the /lit/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-lit-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "literature-posting.bso",
+          "publicKey": "12D3KooWKXimxiZWtgF3LoTdaW3btHhDzJN7P3qrsgHwRkow186x",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "his",
+      "title": "/his/ - History & Humanities",
+      "description": "Boards competing to host the /his/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-his-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "history-posting.bso",
+          "publicKey": "12D3KooWN7bzigSgU4rxayrPCjvq2ETJMN9Zv3cyazpRYh36QWiN",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "tv",
+      "title": "/tv/ - Television & Film",
+      "description": "Boards competing to host the /tv/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-tv-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "television-and-film.bso",
+          "publicKey": "12D3KooWGSRg4crzV5vXEya1ghXD7UBTqimqXTQvNUqy9NdzZNyd",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "t",
+      "title": "/t/ - Torrents",
+      "description": "Boards competing to host the /t/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-t-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": false,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "torrents-posting.bso",
+          "publicKey": "12D3KooWFwieYtPDEd3UBK5qG6HFZ3Qu8cDd4B4RcY2HJ9CBkfaZ",
+          "owner": "rinse12.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "x",
+      "title": "/x/ - Paranormal",
+      "description": "Boards competing to host the /x/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-x-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "paranormal-posting.bso",
+          "publicKey": "12D3KooWFZn7r5gYKbq5YQMr1FYQ5eUwoZr41Tjd8KmTgQ4dxTTP",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "vip",
+      "title": "/vip/ - Very Important Posts",
+      "description": "Boards competing to host the /vip/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-vip-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "very-important-posts.bso",
+          "publicKey": "12D3KooWNMnBJ5phkBWrcjfdnzdqPwCARmXwGWeZDKNJvCVPR8GT",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "gif",
+      "title": "/gif/ - Adult GIF",
+      "description": "Boards competing to host the /gif/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-gif-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": false,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "adult-gif.bso",
+          "publicKey": "12D3KooWJP8v5VUzKUfxr38BbhQPb5yidF3WapGQ6CjLctBV6QC1",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "bant",
+      "title": "/bant/ - International/Random",
+      "description": "Boards competing to host the /bant/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-bant-directory.json",
+      "features": {
+        "pseudonymityMode": "per-post",
+        "safeForWork": false,
+        "hasFlags": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "international-nsfw.bso",
+          "publicKey": "12D3KooWPuYtTzrq8gFnv6yM1r4egy1rd4cxLr1nsXTjfdYkfwcN",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "b",
+      "title": "/b/ - Random",
+      "description": "Boards competing to host the /b/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-b-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": false,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779182014,
+      "updatedAt": 1779182014,
+      "boards": [
+        {
+          "address": "random-nsfw.bso",
+          "publicKey": "12D3KooWJkJYkuVbJQhapcVGpo8oNmsXsKmFRrFqc1SHezZW9fX8",
+          "owner": "plebeius.bso",
+          "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "an",
+      "title": "/an/ - Animals & Nature",
+      "description": "Boards competing to host the /an/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-an-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1779262963,
+      "updatedAt": 1779262963,
+      "boards": [
+        {
+          "address": "animals-and-nature.bso",
+          "publicKey": "12D3KooWSpKszPM2c17KBgbnoRrkWPCHJosGGFg3bKnzarYhHeSc",
+          "owner": "plebeius.bso",
+          "addedAt": 1779262963
+        }
+      ]
+    }
+  ]
+}

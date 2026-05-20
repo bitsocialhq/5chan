@@ -18,7 +18,7 @@ const testState = vi.hoisted(() => ({
   nowSeconds: 1_704_067_210,
   navigateMock: vi.fn(),
   communities: {} as Record<string, unknown>,
-  communityStats: {} as Record<string, { allPostCount?: number; weekActiveUserCount?: number }>,
+  communityStats: {} as Record<string, { allPostCount?: number; weekActiveUserCount?: number; state?: string }>,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -224,6 +224,20 @@ describe('Home', () => {
     expect(container.querySelectorAll('[data-testid="loading-ellipsis"]')).toHaveLength(0);
     expect(container.textContent).toContain('total_posts 0');
     expect(container.textContent).toContain('current_users 0');
+    expect(container.textContent).toContain('boards_tracked 2');
+  });
+
+  it('does not keep aggregate stats loading after a directory stats fetch fails', () => {
+    testState.communityStats = {
+      'music-posting.eth': { allPostCount: 5, weekActiveUserCount: 2 },
+      'tech-posting.eth': { state: 'failed' },
+    };
+
+    renderHome();
+
+    expect(container.querySelectorAll('[data-testid="loading-ellipsis"]')).toHaveLength(0);
+    expect(container.textContent).toContain('total_posts 5');
+    expect(container.textContent).toContain('current_users 2');
     expect(container.textContent).toContain('boards_tracked 2');
   });
 

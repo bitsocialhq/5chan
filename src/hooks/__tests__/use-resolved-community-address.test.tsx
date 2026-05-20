@@ -19,8 +19,8 @@ const testState = vi.hoisted(() => ({
   list: {
     directoryCode: 'biz',
     boards: [
-      { address: 'business-and-finance.bso', score: 100, managedByDevs: true },
-      { address: 'backup-business.bso', score: 10, managedByDevs: false },
+      { address: 'business-and-finance.bso', score: 100 },
+      { address: 'backup-business.bso', score: 10 },
     ],
   },
   offlineStates: {} as Record<string, { updatedAt?: number; state?: string }>,

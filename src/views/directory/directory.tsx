@@ -145,7 +145,7 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
         )}
       </td>
       <td className={styles.scoreCell}>
-        <span className={styles.scoreValue}>{board.score}</span>
+        <span className={styles.scoreValue}>{board.score ?? DIRECTORY_STATUS_UNAVAILABLE_MARKER}</span>
       </td>
       <td className={styles.actionsCell}>
         [
@@ -166,7 +166,7 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
   );
 };
 
-const getRepoEditUrl = (directoryCode: string) => `https://github.com/bitsocialnet/lists/edit/master/5chan-${directoryCode}-directory.json`;
+const getRepoEditUrl = (directoryCode: string) => `https://github.com/bitsocialnet/lists/edit/master/5chan-directories/5chan-${directoryCode}-directory.json`;
 
 const Directory = () => {
   const { t } = useTranslation();

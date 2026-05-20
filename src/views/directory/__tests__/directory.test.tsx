@@ -17,7 +17,6 @@ const testState = vi.hoisted(() => ({
     {
       address: 'anime-and-manga.bso',
       score: 12,
-      managedByDevs: false,
     },
   ],
   directories: [
@@ -157,7 +156,6 @@ const renderDirectory = async () => {
 const createDirectoryBoard = (address: string, score = 12) => ({
   address,
   score,
-  managedByDevs: false,
 });
 
 const createCommunity = (address: string, updatedAt = testState.nowSeconds - 60) => ({

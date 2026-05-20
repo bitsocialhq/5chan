@@ -1,5 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
-import directoriesData from '../data/5chan-directories.json';
+import directoryListsData from '../data/5chan-directory-lists.json';
+import {
+  directoryListToCommunity,
+  isRecord,
+  normalizeDirectoryDefaultsData,
+  normalizeDirectoryList,
+  sortDirectoryLists,
+  toCanonicalCommunity,
+  toString,
+  type DirectoriesData,
+  type DirectoryDefaultsData,
+  type DirectoryCommunity,
+  type DirectoryList,
+} from '../lib/utils/directory-list-utils';
+
+export type { DirectoriesData, DirectoryCommunity } from '../lib/utils/directory-list-utils';
 
 interface DirectoriesMetadata {
   title: string;
@@ -8,47 +23,19 @@ interface DirectoriesMetadata {
   updatedAt: number;
 }
 
-interface DirectoryFeatures {
-  postsPerPage?: number;
-  pseudonymityMode?: string;
-  nsfw?: boolean;
-  noSpoilers?: boolean;
-  noSpoilerReplies?: boolean;
-  hasFlags?: boolean;
-  requirePostLink?: boolean;
-  requirePostLinkIsMedia?: boolean;
-  [key: string]: unknown;
-}
-
-export interface DirectoryCommunity {
-  title?: string;
-  address: string;
-  name?: string;
-  publicKey?: string;
-  nsfw?: boolean;
-  directoryCode?: string;
-  features?: DirectoryFeatures;
-}
-
-export interface DirectoriesData {
-  title: string;
-  description: string;
-  createdAt: number;
-  updatedAt: number;
-  communities: DirectoryCommunity[];
-}
-
 interface DirectoriesState {
   communities: DirectoryCommunity[];
   loading: boolean;
   error: Error | null;
 }
 
-const GITHUB_URL = 'https://raw.githubusercontent.com/bitsocialnet/lists/master/5chan-directories.json';
+const GITHUB_URL_TEMPLATE = 'https://raw.githubusercontent.com/bitsocialnet/lists/master/5chan-directories/5chan-{code}-directory.json';
+const GITHUB_DEFAULTS_URL = 'https://raw.githubusercontent.com/bitsocialnet/lists/master/5chan-directories/5chan-directories-defaults.json';
 const LOCALSTORAGE_KEY = '5chan-directories-cache';
 const LOCALSTORAGE_TIMESTAMP_KEY = '5chan-directories-cache-timestamp';
 const CACHE_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour
 const FETCH_RETRY_DELAY_MS = 60 * 1000; // 1 minute
+const FETCH_TIMEOUT_MS = 10 * 1000;
 
 let cacheCommunities: DirectoryCommunity[] | null = null;
 let cacheMetadata: DirectoriesMetadata | null = null;
@@ -67,68 +54,9 @@ export const __resetDirectoriesModuleStateForTests = () => {
   fallbackDirectoriesData = null;
 };
 
-const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
-
-const getStringValue = (...values: unknown[]): string | undefined => values.find((value): value is string => typeof value === 'string' && value.length > 0);
-
-const normalizeFeatures = (value: unknown): DirectoryFeatures | undefined => {
-  if (!isRecord(value)) {
-    return undefined;
-  }
-
-  const normalizedFeatures = Object.entries(value).reduce<DirectoryFeatures>((acc, [key, featureValue]) => {
-    if (typeof featureValue === 'string' || typeof featureValue === 'boolean' || typeof featureValue === 'number') {
-      acc[key] = featureValue;
-    }
-    return acc;
-  }, {});
-
-  return Object.keys(normalizedFeatures).length > 0 ? normalizedFeatures : undefined;
-};
-
-const deriveNsfw = (value: { nsfw?: unknown; features?: { nsfw?: boolean; safeForWork?: boolean } }): boolean | undefined => {
-  const features = value.features;
-  const safeForWork = typeof features?.safeForWork === 'boolean' ? features.safeForWork : undefined;
-  if (safeForWork !== undefined) {
-    return !safeForWork;
-  }
-  const featuresNsfw = typeof features?.nsfw === 'boolean' ? features.nsfw : undefined;
-  const topLevelNsfw = typeof (value as { nsfw?: boolean }).nsfw === 'boolean' ? (value as { nsfw: boolean }).nsfw : undefined;
-  return topLevelNsfw ?? featuresNsfw;
-};
-
 const getDirectoryIdentifiers = (community: DirectoryCommunity): string[] => [
   ...new Set([community.address, community.name, community.publicKey].filter((value): value is string => typeof value === 'string' && value.length > 0)),
 ];
-
-const toCanonicalCommunity = (value: {
-  address?: unknown;
-  communityAddress?: unknown;
-  name?: unknown;
-  publicKey?: unknown;
-  title?: unknown;
-  nsfw?: unknown;
-  directoryCode?: unknown;
-  features?: unknown;
-}): DirectoryCommunity | null => {
-  const name = getStringValue(value.name, value.address, value.communityAddress);
-  if (!name) {
-    return null;
-  }
-
-  const features = normalizeFeatures(value.features);
-  const nsfw = deriveNsfw({ ...value, features });
-
-  return {
-    address: name,
-    name,
-    ...(typeof value.publicKey === 'string' ? { publicKey: value.publicKey } : {}),
-    ...(typeof value.title === 'string' ? { title: value.title } : {}),
-    ...(typeof value.directoryCode === 'string' ? { directoryCode: value.directoryCode } : {}),
-    ...(features ? { features } : {}),
-    ...(nsfw !== undefined ? { nsfw } : {}),
-  };
-};
 
 const dedupeCommunities = (entries: DirectoryCommunity[]): DirectoryCommunity[] => {
   const seenAddresses = new Set<string>();
@@ -144,6 +72,27 @@ const dedupeCommunities = (entries: DirectoryCommunity[]): DirectoryCommunity[] 
   }
 
   return normalizedEntries;
+};
+
+const adaptDirectoryLists = (value: Record<string, unknown>): DirectoryCommunity[] => {
+  if (!Array.isArray(value.directories)) {
+    return [];
+  }
+
+  const lists = value.directories
+    .map((directory) => {
+      if (!isRecord(directory) || !Array.isArray(directory.boards) || typeof directory.directoryCode !== 'string') {
+        return null;
+      }
+      return normalizeDirectoryList(directory, directory.directoryCode);
+    })
+    .filter((list): list is DirectoryList => list !== null);
+
+  const communities = sortDirectoryLists(lists)
+    .map(directoryListToCommunity)
+    .filter((community): community is DirectoryCommunity => community !== null);
+
+  return dedupeCommunities(communities);
 };
 
 const adaptV2Directories = (value: Record<string, unknown>): DirectoryCommunity[] => {
@@ -248,14 +197,14 @@ const normalizeDirectoriesData = (value: unknown): DirectoriesData | null => {
     return null;
   }
 
-  const adapters: Array<(raw: Record<string, unknown>) => DirectoryCommunity[]> = [adaptV2Directories, adaptV1Communities];
+  const adapters: Array<(raw: Record<string, unknown>) => DirectoryCommunity[]> = [adaptDirectoryLists, adaptV2Directories, adaptV1Communities];
   const communities = adapters.map((adapter) => adapter(value)).find((normalized) => normalized.length > 0) ?? [];
 
   if (communities.length === 0) {
     return null;
   }
 
-  const fallbackMetadata = getDirectoriesMetadata(directoriesData as unknown);
+  const fallbackMetadata = getDirectoriesMetadata(directoryListsData as unknown);
   return {
     title: typeof value.title === 'string' ? value.title : fallbackMetadata.title,
     description: typeof value.description === 'string' ? value.description : fallbackMetadata.description,
@@ -269,8 +218,8 @@ let fallbackDirectoriesData: DirectoriesData | null = null;
 
 export const getFallbackDirectoriesData = (): DirectoriesData => {
   if (fallbackDirectoriesData) return fallbackDirectoriesData;
-  const normalized = normalizeDirectoriesData(directoriesData as unknown);
-  const metadata = getDirectoriesMetadata(directoriesData as unknown);
+  const normalized = normalizeDirectoriesData(directoryListsData as unknown);
+  const metadata = getDirectoriesMetadata(directoryListsData as unknown);
   fallbackDirectoriesData = normalized ?? {
     ...metadata,
     communities: [],
@@ -322,12 +271,90 @@ const hydrateModuleCaches = (data: DirectoriesData) => {
   cacheMetadata = toDirectoriesMetadata(data);
 };
 
-const fetchDirectoriesFromGitHub = async (): Promise<DirectoriesData> => {
-  const response = await fetch(GITHUB_URL, { cache: 'no-cache' });
+const getFallbackDirectoryLists = (defaults?: DirectoryDefaultsData): DirectoryList[] => {
+  const rawData = directoryListsData as unknown;
+  if (!isRecord(rawData) || !Array.isArray(rawData.directories)) {
+    return [];
+  }
+
+  return rawData.directories
+    .map((directory) => {
+      if (!isRecord(directory)) {
+        return null;
+      }
+      const fallbackCode = toString(directory.directoryCode);
+      return fallbackCode ? normalizeDirectoryList(directory, fallbackCode, defaults) : null;
+    })
+    .filter((list): list is DirectoryList => list !== null);
+};
+
+const fetchWithTimeout = async (url: string): Promise<Response> => {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    return await fetch(url, { cache: 'no-cache', signal: controller.signal });
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Timed out fetching ${url}`);
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+};
+
+const fetchJsonWithTimeout = async (url: string): Promise<unknown> => {
+  const response = await fetchWithTimeout(url);
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-  const data = normalizeDirectoriesData(await response.json());
+  return response.json();
+};
+
+const fetchDirectoryDefaultsFromGitHub = async (): Promise<DirectoryDefaultsData> => {
+  return normalizeDirectoryDefaultsData(await fetchJsonWithTimeout(GITHUB_DEFAULTS_URL));
+};
+
+const fetchDirectoryListFromGitHub = async (code: string, defaults: DirectoryDefaultsData): Promise<DirectoryList | null> => {
+  const response = await fetchWithTimeout(GITHUB_URL_TEMPLATE.replace('{code}', code));
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  const list = normalizeDirectoryList(await response.json(), code, defaults);
+  if (!list) {
+    throw new Error(`Invalid directory list payload for ${code}`);
+  }
+  return list;
+};
+
+const fetchDirectoriesFromGitHub = async (): Promise<DirectoriesData> => {
+  const defaults = await fetchDirectoryDefaultsFromGitHub();
+  const fallbackLists = getFallbackDirectoryLists(defaults);
+  const fallbackListsByCode = new Map(fallbackLists.map((list) => [list.directoryCode, list]));
+  const codes = [...new Set([...Object.keys(defaults.directories), ...fallbackLists.map((list) => list.directoryCode)])];
+  const fetchedLists = await Promise.all(
+    codes.map(async (code) => {
+      try {
+        return (await fetchDirectoryListFromGitHub(code, defaults)) ?? fallbackListsByCode.get(code) ?? null;
+      } catch (error) {
+        console.warn(`Failed to fetch directory list "${code}" from GitHub, using fallback if available:`, error);
+        return fallbackListsByCode.get(code) ?? null;
+      }
+    }),
+  );
+  const lists = sortDirectoryLists(fetchedLists.filter((list): list is DirectoryList => list !== null));
+  const fallbackMetadata = getDirectoriesMetadata(directoryListsData as unknown);
+  const timestamps = [defaults.createdAt, defaults.updatedAt, ...lists.flatMap((list) => [list.createdAt, list.updatedAt])].filter(
+    (value): value is number => typeof value === 'number',
+  );
+  const data = normalizeDirectoriesData({
+    ...fallbackMetadata,
+    ...(timestamps.length > 0 ? { createdAt: Math.min(...timestamps), updatedAt: Math.max(...timestamps) } : {}),
+    directories: lists,
+  });
   if (!data) {
     throw new Error('Invalid directories payload');
   }

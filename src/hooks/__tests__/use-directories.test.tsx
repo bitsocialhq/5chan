@@ -78,6 +78,57 @@ const createFetchResponse = (body: unknown, ok = true, status = 200) => ({
   json: vi.fn().mockResolvedValue(body),
 });
 
+const getDirectoryCodeFromUrl = (url: unknown): string => String(url).match(/5chan-([a-z0-9]+)-directory\.json/)?.[1] ?? 'unknown';
+const isDefaultsUrl = (url: unknown): boolean => String(url).endsWith('/5chan-directories-defaults.json');
+const REMOTE_DIRECTORY_CODES = ['a', 'mu', 'biz'];
+
+type RemoteDirectoryOverride = {
+  address?: string;
+  publicKey?: string;
+  title?: string;
+  features?: Record<string, unknown>;
+};
+
+const createRemoteDirectoryList = (code: string, board: RemoteDirectoryOverride = {}) => ({
+  createdAt: 3,
+  updatedAt: 4,
+  boards: [
+    {
+      address: board.address ?? `${code}-posting.bso`,
+      publicKey: board.publicKey ?? `${code}-public-key`,
+      addedAt: 3,
+    },
+  ],
+});
+
+const createRemoteDefaults = (codes = REMOTE_DIRECTORY_CODES, overrides: Record<string, RemoteDirectoryOverride> = {}) => ({
+  title: '5chan Directory Defaults',
+  description: 'remote defaults',
+  createdAt: 1,
+  updatedAt: 10,
+  directories: Object.fromEntries(
+    codes.map((code) => [
+      code,
+      {
+        directoryCode: code,
+        title: overrides[code]?.title ?? `/${code}/ - Test`,
+        features: overrides[code]?.features ?? { safeForWork: true },
+      },
+    ]),
+  ),
+});
+
+const mockDirectoryListFetches = (overrides: Record<string, RemoteDirectoryOverride> = {}) => {
+  fetchMock.mockImplementation((url: unknown) => {
+    if (isDefaultsUrl(url)) {
+      return Promise.resolve(createFetchResponse(createRemoteDefaults(REMOTE_DIRECTORY_CODES, overrides)));
+    }
+    const code = getDirectoryCodeFromUrl(url);
+    const payload = createRemoteDirectoryList(code, overrides[code]);
+    return Promise.resolve(createFetchResponse(payload));
+  });
+};
+
 const flushEffects = async (count = 4) => {
   for (let i = 0; i < count; i += 1) {
     await act(async () => {
@@ -153,45 +204,25 @@ describe('use-directories', () => {
       ],
     };
 
-    const remotePayload = {
-      title: 'Fresh directories',
-      description: 'fresh description',
-      createdAt: 3,
-      updatedAt: 4,
-      directories: [
-        {
-          name: 'music-posting.bso',
-          publicKey: 'music-public-key',
-          title: '/mu/ - Music',
-          directoryCode: 'mu',
-          features: { safeForWork: true, postsPerPage: 25, nested: { ignore: true } },
-        },
-        {
-          name: 'flash.bso',
-          publicKey: 'flash-public-key',
-          title: '/f/ - Flash',
-          directoryCode: 'f',
-          features: { nsfw: true, postsPerPage: 10 },
-        },
-        {
-          name: 'flash.bso',
-          publicKey: 'flash-public-key',
-          title: '/f/ - Duplicate Flash',
-          directoryCode: 'f',
-        },
-      ],
-    };
-
     localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(cachedData));
     localStorage.setItem(LOCALSTORAGE_TIMESTAMP_KEY, String(Date.now()));
 
-    const pendingFetch = createDeferred<ReturnType<typeof createFetchResponse>>();
-    fetchMock.mockReturnValueOnce(pendingFetch.promise);
+    const pendingDefaults = createDeferred<ReturnType<typeof createFetchResponse>>();
+    const pendingFetches = new Map<string, Deferred<ReturnType<typeof createFetchResponse>>>();
+    fetchMock.mockImplementation((url: unknown) => {
+      if (isDefaultsUrl(url)) {
+        return pendingDefaults.promise;
+      }
+      const code = getDirectoryCodeFromUrl(url);
+      const deferred = createDeferred<ReturnType<typeof createFetchResponse>>();
+      pendingFetches.set(code, deferred);
+      return deferred.promise;
+    });
 
     renderHarness();
     await flushEffects();
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalled();
     expect(latestSnapshot?.state.loading).toBe(false);
     expect(latestSnapshot?.state.communities.map((community) => community.address)).toEqual(['music-posting.bso', 'flash.bso']);
     expect(latestSnapshot?.addresses).toEqual(['music-posting.bso', 'flash.bso']);
@@ -203,70 +234,64 @@ describe('use-directories', () => {
       updatedAt: 2,
     });
 
-    pendingFetch.resolve(createFetchResponse(remotePayload));
+    const remoteOverrides: Record<string, RemoteDirectoryOverride> = {
+      mu: {
+        address: 'music-posting.bso',
+        publicKey: 'music-public-key',
+        title: '/mu/ - Music',
+        features: { safeForWork: true, postsPerPage: 25, nested: { ignore: true } },
+      },
+    };
+    pendingDefaults.resolve(createFetchResponse(createRemoteDefaults(REMOTE_DIRECTORY_CODES, remoteOverrides)));
+    await flushEffects();
+
+    pendingFetches.forEach((pendingFetch, code) => {
+      const override = code === 'mu' ? remoteOverrides.mu : undefined;
+      pendingFetch.resolve(createFetchResponse(createRemoteDirectoryList(code, override)));
+    });
     await flushEffects();
 
     expect(latestSnapshot?.state.loading).toBe(false);
-    expect(latestSnapshot?.directories).toEqual([
-      {
-        address: 'music-posting.bso',
-        name: 'music-posting.bso',
-        publicKey: 'music-public-key',
-        title: '/mu/ - Music',
-        directoryCode: 'mu',
-        features: { safeForWork: true, postsPerPage: 25 },
-        nsfw: false,
-      },
-      {
-        address: 'flash.bso',
-        name: 'flash.bso',
-        publicKey: 'flash-public-key',
-        title: '/f/ - Flash',
-        directoryCode: 'f',
-        features: { nsfw: true, postsPerPage: 10 },
-        nsfw: true,
-      },
-    ]);
-    expect(latestSnapshot?.addresses).toEqual(['music-posting.bso', 'flash.bso']);
-    expect(latestSnapshot?.directory?.address).toBe('music-posting.bso');
-    expect(latestSnapshot?.metadata).toEqual({
-      title: 'Fresh directories',
-      description: 'fresh description',
-      createdAt: 3,
-      updatedAt: 4,
-    });
-
-    const persisted = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY) ?? '{}');
-    expect(persisted.title).toBe('Fresh directories');
-    expect(persisted.communities).toHaveLength(2);
-  });
-
-  it('does not refetch GitHub directories for each later hook mount after a successful refresh', async () => {
-    const remotePayload = {
-      title: 'Fresh directories',
-      description: 'fresh description',
-      createdAt: 3,
-      updatedAt: 4,
-      directories: [
+    expect(latestSnapshot?.directories).toEqual(
+      expect.arrayContaining([
         {
+          address: 'music-posting.bso',
           name: 'music-posting.bso',
           publicKey: 'music-public-key',
           title: '/mu/ - Music',
           directoryCode: 'mu',
           features: { safeForWork: true, postsPerPage: 25 },
+          nsfw: false,
         },
-      ],
-    };
+      ]),
+    );
+    expect(latestSnapshot?.addresses).toContain('music-posting.bso');
+    expect(latestSnapshot?.directory?.address).toBe('music-posting.bso');
+    expect(latestSnapshot?.metadata?.title).toBe('5chan directories');
 
-    fetchMock.mockResolvedValueOnce(createFetchResponse(remotePayload));
+    const persisted = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY) ?? '{}');
+    expect(persisted.title).toBe('5chan directories');
+    expect(persisted.communities.length).toBeGreaterThan(1);
+  });
+
+  it('does not refetch GitHub directories for each later hook mount after a successful refresh', async () => {
+    mockDirectoryListFetches({
+      mu: {
+        address: 'music-posting.bso',
+        publicKey: 'music-public-key',
+        title: '/mu/ - Music',
+        features: { safeForWork: true, postsPerPage: 25 },
+      },
+    });
 
     renderHarness();
     await flushEffects(8);
 
     const firstSnapshot = expectLatestSnapshot();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(firstSnapshot.directories.map((community) => community.address)).toEqual(['music-posting.bso']);
-    expect(firstSnapshot.metadata?.title).toBe('Fresh directories');
+    const firstFetchCount = fetchMock.mock.calls.length;
+    expect(firstFetchCount).toBeGreaterThan(1);
+    expect(firstSnapshot.directories.map((community) => community.address)).toContain('music-posting.bso');
+    expect(firstSnapshot.metadata?.title).toBe('5chan directories');
 
     latestSnapshot = null;
     act(() => {
@@ -277,9 +302,43 @@ describe('use-directories', () => {
     await flushEffects(8);
 
     const secondSnapshot = expectLatestSnapshot();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(secondSnapshot.directories.map((community) => community.address)).toEqual(['music-posting.bso']);
-    expect(secondSnapshot.metadata?.title).toBe('Fresh directories');
+    expect(fetchMock).toHaveBeenCalledTimes(firstFetchCount);
+    expect(secondSnapshot.directories.map((community) => community.address)).toContain('music-posting.bso');
+    expect(secondSnapshot.metadata?.title).toBe('5chan directories');
+  });
+
+  it('keeps vendored non-default directories when remote defaults omit them and one list fetch fails', async () => {
+    fetchMock.mockImplementation((url: unknown) => {
+      if (isDefaultsUrl(url)) {
+        return Promise.resolve(
+          createFetchResponse(
+            createRemoteDefaults(['mu'], {
+              mu: { address: 'music-remote.bso', publicKey: 'music-remote-public-key', title: '/mu/ - Music' },
+            }),
+          ),
+        );
+      }
+
+      const code = getDirectoryCodeFromUrl(url);
+      if (code === 'mu') {
+        return Promise.resolve(createFetchResponse(createRemoteDirectoryList('mu', { address: 'music-remote.bso', publicKey: 'music-remote-public-key' })));
+      }
+      if (code === 'biz') {
+        return Promise.resolve(createFetchResponse({ error: 'temporary failure' }, false, 500));
+      }
+      return Promise.resolve(createFetchResponse({ error: 'missing' }, false, 404));
+    });
+
+    renderHarness('television-and-film.bso');
+    await flushEffects(12);
+
+    const snapshot = expectLatestSnapshot();
+    const directoriesByCode = new Map(snapshot.directories.map((directory) => [directory.directoryCode, directory]));
+    expect(directoriesByCode.get('mu')?.address).toBe('music-remote.bso');
+    expect(directoriesByCode.get('biz')?.address).toBe('business-and-finance.bso');
+    expect(directoriesByCode.get('tv')?.address).toBe('television-and-film.bso');
+    expect(snapshot.directory?.address).toBe('television-and-film.bso');
+    expect(warnSpy.mock.calls.some((call: ConsoleWarnCall) => String(call[0]).includes('Failed to fetch directory list "biz"'))).toBe(true);
   });
 
   it('clears invalid recent cache entries and falls back to vendored data when GitHub refresh fails', async () => {
@@ -290,7 +349,7 @@ describe('use-directories', () => {
     renderHarness('unknown.eth');
     await flushEffects(8);
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalled();
     expect(localStorage.getItem(LOCALSTORAGE_KEY)).toBeNull();
     expect(localStorage.getItem(LOCALSTORAGE_TIMESTAMP_KEY)).toBeNull();
     expect(warnSpy.mock.calls.some((call: ConsoleWarnCall) => String(call[0]).includes('Invalid directories cache format'))).toBe(true);

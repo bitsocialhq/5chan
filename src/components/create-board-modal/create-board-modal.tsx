@@ -48,9 +48,9 @@ const CreateBoardModal = () => {
           <div className={styles.section}>
             <h3>Submitting to a Directory</h3>
             <p>
-              Open a PR editing{' '}
-              <a href='https://github.com/bitsocialnet/lists/blob/master/5chan-directories.json' target='_blank' rel='noopener noreferrer'>
-                5chan-directories.json
+              Open a PR editing the relevant file in the{' '}
+              <a href='https://github.com/bitsocialnet/lists/tree/master/5chan-directories' target='_blank' rel='noopener noreferrer'>
+                5chan-directories folder
               </a>{' '}
               with your board&apos;s title, address, and NSFW status. Devs will review and merge if approved. 99% uptime is required.
             </p>

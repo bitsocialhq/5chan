@@ -18,7 +18,7 @@ import lowerCase from 'lodash/lowerCase';
 import useCommunitiesLoadingStartTimestamps from '../../stores/use-communities-loading-start-timestamps-store';
 import { useNowSeconds } from '../../hooks/use-now-seconds';
 
-// https://github.com/bitsocialnet/lists/blob/master/5chan-directories.json
+// https://github.com/bitsocialnet/lists/tree/master/5chan-directories
 
 const SearchBar = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -97,6 +97,7 @@ interface StatValueProps {
 type HomepageStats = {
   allPostCount?: number;
   weekActiveUserCount?: number;
+  state?: string;
 };
 
 const StatValue = ({ isLoaded, loadingLabel, value }: StatValueProps) => (isLoaded ? <>{value}</> : <LoadingEllipsis string={loadingLabel} />);
@@ -108,6 +109,7 @@ const getDirectoryCode = (directory: DirectoryCommunity): string | null => direc
 const getUniqueAddresses = (addresses: string[]): string[] => [...new Set(addresses.filter((address) => address.length > 0))];
 
 const hasLoadedStats = (stat: HomepageStats | undefined): stat is HomepageStats & { allPostCount: number } => stat?.allPostCount !== undefined;
+const hasFailedStats = (stat: HomepageStats | undefined): boolean => stat?.state === 'failed';
 
 const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
   const { t } = useTranslation();
@@ -153,15 +155,26 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
       candidateAddresses.forEach((address) => collectorAddressSet.add(address));
 
       let stat: HomepageStats | undefined;
+      let failedStat: HomepageStats | undefined;
+      let allCandidateStatsResolved = candidateAddresses.length > 0;
       for (const address of candidateAddresses) {
         const candidateStats = communitiesStats[address];
         if (hasLoadedStats(candidateStats)) {
           stat = candidateStats;
           break;
         }
+        if (hasFailedStats(candidateStats)) {
+          failedStat ??= candidateStats;
+          continue;
+        }
+        allCandidateStatsResolved = false;
       }
 
-      if (!hasLoadedStats(stat)) {
+      if (!stat && allCandidateStatsResolved) {
+        stat = failedStat;
+      }
+
+      if (!stat || (!hasLoadedStats(stat) && !hasFailedStats(stat))) {
         allDirectoryStatsLoaded = false;
         continue;
       }

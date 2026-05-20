@@ -56,9 +56,9 @@ const DirectoryModal = () => {
           <div className={styles.section}>
             <h3>Directory Submission</h3>
             <p>
-              To submit your board, open a PR editing{' '}
-              <a href='https://github.com/bitsocialnet/lists/blob/master/5chan-directories.json' target='_blank' rel='noopener noreferrer'>
-                5chan-directories.json
+              To submit your board, open a PR editing the relevant file in the{' '}
+              <a href='https://github.com/bitsocialnet/lists/tree/master/5chan-directories' target='_blank' rel='noopener noreferrer'>
+                5chan-directories folder
               </a>{' '}
               with your board&apos;s title, address, and NSFW status. Requirements: 99% uptime (they&apos;re P2P nodes), active, well-moderated, and relevant to the
               category. Devs will review and approve/reject based on these criteria.
