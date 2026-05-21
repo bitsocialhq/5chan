@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { CommunityIdentifier } from '@bitsocial/bitsocial-react-hooks';
 import { findDirectoryByAddress, type DirectoryCommunity, useDirectories } from './use-directories';
+import { getDirectoryCandidateBoardByAddress } from '../lib/utils/directory-list-lookup-utils';
 
 const isLikelyCommunityName = (value: string) => value.includes('.');
 
@@ -10,20 +11,24 @@ const getCommunityIdentifier = (communityAddress: string | undefined, directorie
   }
 
   const directory = findDirectoryByAddress(directories, communityAddress);
-  if (directory?.name && directory.publicKey) {
+  const directoryCandidate = getDirectoryCandidateBoardByAddress(communityAddress);
+  const name = directory?.name ?? directory?.address ?? directoryCandidate?.address;
+  const publicKey = directory?.publicKey ?? directoryCandidate?.publicKey;
+
+  if (name && publicKey) {
     return {
-      name: directory.name,
-      publicKey: directory.publicKey,
+      name,
+      publicKey,
     };
   }
-  if (directory?.publicKey) {
+  if (publicKey) {
     return {
-      publicKey: directory.publicKey,
+      publicKey,
     };
   }
-  if (directory?.name) {
+  if (name) {
     return {
-      name: directory.name,
+      name,
     };
   }
 

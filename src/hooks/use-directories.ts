@@ -13,8 +13,10 @@ import {
   type DirectoryCommunity,
   type DirectoryList,
 } from '../lib/utils/directory-list-utils';
+import { normalizeBoardAddress } from '../lib/utils/directory-list-lookup-utils';
 
 export type { DirectoriesData, DirectoryCommunity } from '../lib/utils/directory-list-utils';
+export { normalizeBoardAddress };
 
 interface DirectoriesMetadata {
   title: string;
@@ -42,8 +44,6 @@ let cacheMetadata: DirectoriesMetadata | null = null;
 let inFlightGitHubFetch: Promise<DirectoriesData> | null = null;
 let lastSuccessfulGitHubFetchAt: number | null = null;
 let lastGitHubFetchAttemptAt: number | null = null;
-const DIRECTORY_ALIAS_SUFFIXES = ['.bso', '.eth'] as const;
-
 // Exposed for deterministic unit tests around module-level cache state.
 export const __resetDirectoriesModuleStateForTests = () => {
   cacheCommunities = null;
@@ -118,16 +118,6 @@ const adaptV2Directories = (value: Record<string, unknown>): DirectoryCommunity[
     .filter((community): community is DirectoryCommunity => community !== null);
 
   return dedupeCommunities(communities);
-};
-
-export const normalizeBoardAddress = (address: string): string => {
-  for (const suffix of DIRECTORY_ALIAS_SUFFIXES) {
-    if (address.endsWith(suffix)) {
-      return address.slice(0, -suffix.length);
-    }
-  }
-
-  return address;
 };
 
 export const findDirectoryByAddress = (directories: DirectoryCommunity[], address: string | undefined): DirectoryCommunity | undefined => {
