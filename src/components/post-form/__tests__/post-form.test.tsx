@@ -142,10 +142,24 @@ vi.mock('../../../hooks/use-publish-post', async () => {
         }),
         [communityAddress],
       );
-      const publishPost = React.useCallback(() => {
-        testState.publishedPostOptions = getPublishPostOptions();
-        return testState.publishPostMock();
-      }, [getPublishPostOptions]);
+      const publishPost = React.useCallback(
+        (options?: Record<string, unknown>) => {
+          const sanitizedOptions = Object.entries(options || {}).reduce(
+            (acc, [key, value]) => {
+              acc[key] = value === '' ? undefined : value;
+              return acc;
+            },
+            {} as Record<string, unknown>,
+          );
+          testState.publishPostOptions = {
+            ...getPublishPostOptions(),
+            ...sanitizedOptions,
+          };
+          testState.publishedPostOptions = testState.publishPostOptions;
+          return testState.publishPostMock(options);
+        },
+        [getPublishPostOptions],
+      );
       const resetPublishPostOptions = React.useCallback(() => {
         testState.publishPostOptions = {};
         testState.resetPublishPostOptionsMock();
@@ -192,7 +206,13 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
         postCid: postCid ?? cid,
         communityAddress,
       });
-      const publishReply = React.useCallback(() => testState.publishReplyMock(), []);
+      const publishReply = React.useCallback((options?: Record<string, unknown>) => {
+        if (options) {
+          testState.setPublishReplyOptionsMock(options);
+          setPublishReplyOptionsState((previous) => ({ ...previous, ...options }));
+        }
+        return testState.publishReplyMock(options);
+      }, []);
       const resetPublishReplyOptions = React.useCallback(() => testState.resetPublishReplyOptionsMock(), []);
       const setPublishReplyOptions = React.useCallback((options: Record<string, unknown>) => {
         testState.setPublishReplyOptionsMock(options);

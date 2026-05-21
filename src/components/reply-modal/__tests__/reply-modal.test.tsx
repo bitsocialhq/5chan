@@ -152,7 +152,12 @@ vi.mock('../../../hooks/use-stable-community', () => ({
 vi.mock('../../../hooks/use-publish-reply', () => ({
   default: () => ({
     isResolvingExternalQuotes: testState.isResolvingExternalQuotes,
-    publishReply: testState.publishReplyMock,
+    publishReply: (options?: Record<string, unknown>) => {
+      if (options) {
+        testState.setPublishReplyOptionsMock(options);
+      }
+      return testState.publishReplyMock(options);
+    },
     publishReplyError: testState.publishReplyError,
     publishReplyStateMessage: testState.publishReplyStateMessage,
     replyIndex: testState.replyIndex,

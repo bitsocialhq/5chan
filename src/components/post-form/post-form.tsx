@@ -509,7 +509,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       return;
     }
 
-    publishPost();
+    publishPost({ content: publishContent });
   };
 
   // redirect to pending page when pending comment is created
@@ -611,7 +611,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       return;
     }
 
-    publishReply();
+    publishReply({ content: publishContent });
   };
 
   useEffect(() => {

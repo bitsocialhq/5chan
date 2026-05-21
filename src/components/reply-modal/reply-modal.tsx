@@ -130,10 +130,11 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     const currentOptionsError = getUnsupportedPostOptionsMessage(currentOptions, postOptionsDirectoryCode);
     const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
 
+    checkContentLengthRef.current.cancel();
     checkPostOptionsRef.current.cancel();
+    setLengthError(null);
 
     if (currentOptionsError) {
-      setLengthError(null);
       setError(currentOptionsError);
       return;
     }
@@ -153,16 +154,13 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       return;
     }
 
-    checkContentLengthRef.current.cancel();
-    setLengthError(null);
-
     if (publishContent.trim().length > 2000) {
       setError(t('error') + ': ' + t('field_too_long'));
       return;
     }
 
     setError(null);
-    publishReply();
+    publishReply({ content: publishContent });
   };
 
   useEffect(() => {
@@ -228,6 +226,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
   useEffect(() => {
     return () => {
+      checkContentLengthRef.current.cancel();
       checkPostOptionsRef.current.cancel();
       restoreBodyTextSelection();
     };
@@ -301,6 +300,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
   useEffect(() => {
     if (!showReplyModal) {
+      checkContentLengthRef.current.cancel();
       checkPostOptionsRef.current.cancel();
       setIsBbcodePreviewing(false);
       setBbcodePreviewContent('');

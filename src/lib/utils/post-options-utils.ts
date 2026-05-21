@@ -84,8 +84,20 @@ const isSupportedPostOption = (option: string, directoryCode: string | undefined
   return !!parseDiceOption(option) && !!directoryCode && DICE_DIRECTORY_CODES.has(directoryCode);
 };
 
-const getUnsupportedPostOptions = (value: string, directoryCode: string | undefined): string[] =>
-  parsePostOptions(value).filter((option) => !isSupportedPostOption(option, directoryCode));
+const getUnsupportedPostOptions = (value: string, directoryCode: string | undefined): string[] => {
+  let hasDiceOption = false;
+
+  return parsePostOptions(value).filter((option) => {
+    const diceOption = parseDiceOption(option);
+    if (diceOption && directoryCode && DICE_DIRECTORY_CODES.has(directoryCode)) {
+      const isExtraDiceOption = hasDiceOption;
+      hasDiceOption = true;
+      return isExtraDiceOption;
+    }
+
+    return !isSupportedPostOption(option, directoryCode);
+  });
+};
 
 export const getUnsupportedPostOptionsMessage = (value: string, directoryCode: string | undefined): string | null => {
   const unsupportedOptions = getUnsupportedPostOptions(value, directoryCode);
