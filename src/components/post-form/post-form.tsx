@@ -7,6 +7,7 @@ import getShortAddress from '../../lib/get-short-address';
 import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
 import { getDisplayMediaInfoType, getLinkMediaInfo } from '../../lib/utils/media-utils';
 import { getExpiringMediaLinkAlert } from '../../lib/utils/media-link-validation-utils';
+import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import { getPublishURLFilename, isValidPublishURL, isValidURL } from '../../lib/utils/url-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
@@ -31,6 +32,13 @@ import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
 
 const FILE_LINK_PLACEHOLDER = 'https://website.com/image.jpg';
+const POST_FORM_FILE_DISPLAY_MAX_LENGTH = 28;
+
+const getPostFormFileDisplayLabel = (url: string, uploadedFileName: string | null | undefined, noFileLabel: string): string => {
+  const raw = getPublishURLFilename(url) || uploadedFileName;
+  if (!raw) return noFileLabel;
+  return truncateWithEllipsisInMiddle(raw, POST_FORM_FILE_DISPLAY_MAX_LENGTH);
+};
 
 export const LinkTypePreviewer = ({ link }: { link: string }) => {
   const { t } = useTranslation();
@@ -299,7 +307,9 @@ const PostFormFields = ({
             isUploading={isUploading}
             showUploadControls={showUploadControls}
           />
-          <span>{isUploading ? <LoadingEllipsis string={t('uploading')} /> : getPublishURLFilename(url) || uploadedFileName || t('no_file_chosen')}</span>
+          <span title={getPublishURLFilename(url) || uploadedFileName || undefined}>
+            {isUploading ? <LoadingEllipsis string={t('uploading')} /> : getPostFormFileDisplayLabel(url, uploadedFileName, t('no_file_chosen'))}
+          </span>
         </td>
       </tr>
     )}

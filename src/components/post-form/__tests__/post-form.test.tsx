@@ -643,6 +643,23 @@ describe('PostForm', () => {
     expect(table?.textContent).toContain('file name.jpg');
   });
 
+  it('shortens long pasted file-link filenames next to the upload button', async () => {
+    testState.uploadedFileName = null;
+
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const textInputs = table?.querySelectorAll<HTMLInputElement>('input[type="text"]') || [];
+    const linkInput = textInputs[2];
+    const longFilename = 'TELEMMGLPICT000378070158_17159651831200_trans_NvBQzQNjv4BqpVlberWd9EgFPZtcLiMQf0Rf_Wk3V23H2268P_XkPxc.jpeg';
+
+    await dispatchInput(linkInput as HTMLInputElement, `https://www.telegraph.co.uk/multimedia/${longFilename}`);
+
+    expect(table?.textContent).toContain('TELEMMGLPICT...P_XkPxc.jpeg');
+    expect(table?.textContent).not.toContain(longFilename);
+  });
+
   it('uses the shared loading ellipsis while a post form upload is running', async () => {
     testState.isUploading = true;
 
