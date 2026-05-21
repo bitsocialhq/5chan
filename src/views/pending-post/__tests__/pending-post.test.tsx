@@ -10,6 +10,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 type TestComment = {
   cid?: string;
   communityAddress?: string;
+  index?: number;
 };
 
 const testState = vi.hoisted(() => ({
@@ -130,6 +131,29 @@ describe('PendingPost', () => {
   it('redirects out-of-range pending indices to not found', async () => {
     testState.accountCommentIndex = '2';
     testState.accountComments = [{}, {}];
+
+    await renderPendingPost();
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/not-found', { replace: true });
+  });
+
+  it('keeps sparse pending account comment indices addressable', async () => {
+    testState.accountCommentIndex = '1';
+    testState.accountComments = [{ index: 1 }];
+    testState.post = {
+      communityAddress: 'music-posting.eth',
+      index: 1,
+    };
+
+    await renderPendingPost();
+
+    expect(container.querySelector('[data-testid="post-view"]')?.textContent).toBe('no-post');
+    expect(testState.navigateMock).not.toHaveBeenCalledWith('/not-found', { replace: true });
+  });
+
+  it('redirects missing sparse pending account comment indices to not found', async () => {
+    testState.accountCommentIndex = '0';
+    testState.accountComments = [{ index: 1 }];
 
     await renderPendingPost();
 

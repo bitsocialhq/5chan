@@ -16,6 +16,7 @@ const testState = vi.hoisted(() => ({
   lastPublishOptions: undefined as Record<string, any> | undefined,
   navigateMock: vi.fn(),
   publishCommentMock: vi.fn(async () => undefined),
+  publishIndex: undefined as number | undefined,
 }));
 
 vi.mock('react-router-dom', () => ({
@@ -28,6 +29,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
     testState.lastPublishOptions = options;
     return {
       abandonPublish: testState.abandonPublishMock,
+      index: testState.publishIndex,
       publishComment: testState.publishCommentMock,
     };
   },
@@ -79,10 +81,19 @@ const renderHook = (post = failedPost, deleteRedirectPath?: string) => {
   });
 };
 
+const flushEffects = async (count = 4) => {
+  for (let i = 0; i < count; i += 1) {
+    await act(async () => {
+      await Promise.resolve();
+    });
+  }
+};
+
 describe('useDeleteFailedPost', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.lastPublishOptions = undefined;
+    testState.publishIndex = undefined;
     vi.stubGlobal('alert', testState.alertMock);
     useChallengesStore.setState({ challenges: [] });
 
@@ -140,6 +151,20 @@ describe('useDeleteFailedPost', () => {
 
     expect(testState.deleteCommentMock).toHaveBeenCalledWith('failed-cid');
     expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('redirects retry publishes to the new pending row', async () => {
+    testState.publishCommentMock.mockImplementationOnce(async () => {
+      testState.publishIndex = 12;
+    });
+
+    await act(async () => {
+      await latestValue.onRetryFailedPost();
+    });
+    renderHook();
+    await flushEffects();
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/pending/12', { replace: true });
   });
 
   it('redirects after deleting a failed post when a redirect path is provided', async () => {
