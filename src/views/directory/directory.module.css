@@ -300,7 +300,9 @@
 
 :global(body.tomorrow) .flashListing thead th,
 :global(body.tomorrow) .flashListing thead td {
-  background: #b294bb;
+  background: var(--post-form-field-title-background-color);
+  color: var(--post-form-field-title-color);
+  border: none;
 }
 
 :global(body.photon) .rowOdd td {
