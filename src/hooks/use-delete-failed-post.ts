@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChallengeVerification, Comment, PublishCommentOptions, deleteComment, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
 import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
@@ -71,6 +71,7 @@ export const getFailedPostRetryPublishOptions = (post?: FailedPost): PublishComm
 const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => {
   const [isDeletingFailedPost, setIsDeletingFailedPost] = useState(false);
   const [isRetryingFailedPost, setIsRetryingFailedPost] = useState(false);
+  const [isRetryRedirectPending, setIsRetryRedirectPending] = useState(false);
   const addChallenge = useChallengesStore((state) => state.addChallenge);
   const navigate = useNavigate();
   const abandonPublishRef = useRef<(() => Promise<void>) | undefined>();
@@ -93,14 +94,24 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
             },
             onError: (error: Error) => {
               console.error('Failed to retry failed post:', error);
+              setIsRetryRedirectPending(false);
               alert(`Failed to retry post: ${error.message}`);
             },
           }
         : undefined,
     [abandonCurrentPublish, addChallenge, retryPublishOptions],
   );
-  const { abandonPublish, publishComment } = usePublishComment(publishOptionsWithCallbacks);
+  const { abandonPublish, index: retryPostIndex, publishComment } = usePublishComment(publishOptionsWithCallbacks);
   abandonPublishRef.current = abandonPublish;
+
+  useEffect(() => {
+    if (!isRetryRedirectPending || typeof retryPostIndex !== 'number') {
+      return;
+    }
+
+    setIsRetryRedirectPending(false);
+    navigate(`/pending/${retryPostIndex}`, { replace: true });
+  }, [isRetryRedirectPending, navigate, retryPostIndex]);
 
   const onDeleteFailedPost = useCallback(() => {
     if (isDeletingFailedPost || isRetryingFailedPost || !canDeleteFailedPost) {
@@ -140,12 +151,14 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
     }
 
     setIsRetryingFailedPost(true);
+    setIsRetryRedirectPending(true);
 
     try {
       await deleteComment(targetComment);
       await publishComment();
     } catch (error) {
       console.error('Failed to retry failed post:', error);
+      setIsRetryRedirectPending(false);
       alert(`Failed to retry post: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsRetryingFailedPost(false);

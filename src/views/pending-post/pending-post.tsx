@@ -7,6 +7,30 @@ import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { Post } from '../post';
 
+type PendingAccountComment = {
+  index?: number;
+};
+
+const hasPendingAccountCommentIndex = (accountComments: PendingAccountComment[] | undefined, accountCommentIndex: number) => {
+  if (!accountComments || accountComments.length === 0) {
+    return true;
+  }
+
+  let hasExplicitIndices = false;
+  for (const accountComment of accountComments) {
+    if (typeof accountComment?.index !== 'number') {
+      continue;
+    }
+
+    hasExplicitIndices = true;
+    if (accountComment.index === accountCommentIndex) {
+      return true;
+    }
+  }
+
+  return hasExplicitIndices ? false : accountCommentIndex < accountComments.length;
+};
+
 const PendingPost = () => {
   const { accountComments } = useAccountComments();
   const { accountCommentIndex } = useParams<{ accountCommentIndex?: string }>();
@@ -23,7 +47,7 @@ const PendingPost = () => {
     (hasNormalizedAccountCommentIndex &&
       normalizedAccountCommentIndex >= 0 &&
       Number.isInteger(normalizedAccountCommentIndex) &&
-      (accountComments?.length === 0 || normalizedAccountCommentIndex < accountComments.length));
+      hasPendingAccountCommentIndex(accountComments, normalizedAccountCommentIndex));
 
   useEffect(() => {
     if (!isValidAccountCommentIndex) {
