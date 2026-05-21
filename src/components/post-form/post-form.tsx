@@ -261,7 +261,7 @@ const PostFormFields = ({
     )}
     {showBbcodeToolbar ? (
       <tr>
-        <td>mods only</td>
+        <td>format</td>
         <td>
           <BbcodeEditorToolbar
             textareaRef={textRef}
@@ -718,6 +718,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
           />
         </tbody>
       </table>
+      {showBbcodeToolbar ? <div className={`${styles.error} ${styles.formError}`}>warning: posting as moderator</div> : null}
       {formError && <div className={`${styles.error} ${styles.formError}`}>{formError}</div>}
       {publishPostError && <div className={`${styles.error} ${styles.formError}`}>{publishPostError}</div>}
       {publishReplyError && <div className={`${styles.error} ${styles.formError}`}>{publishReplyError}</div>}
