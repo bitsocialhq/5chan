@@ -396,7 +396,12 @@ describe('Board', () => {
       routePath: '/:boardIdentifier/*',
     });
 
-    expect(testState.feedOptionsCalls.map((call) => call.communities)).toContainEqual([{ name: 'bizraelis.bso' }]);
+    expect(testState.feedOptionsCalls.map((call) => call.communities)).toContainEqual([
+      {
+        name: 'bizraelis.bso',
+        publicKey: '12D3KooWR7nTdKZqZ1twGWMfVsXYDGp1XAKUrnYznKP651jFrizE',
+      },
+    ]);
   });
 
   it('renders the current page feed, inserts recent account comments, and wires footer actions', async () => {

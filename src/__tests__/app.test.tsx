@@ -333,6 +333,10 @@ describe('App', () => {
     testState.account = { author: { address: '0x123' } };
     testState.accountComments = {};
     testState.accountCommunityAddresses = [];
+    testState.directories = [
+      { address: 'music-posting.eth', title: '/mu/ - Music', nsfw: false },
+      { address: 'tech-posting.eth', title: '/g/ - Technology', nsfw: false },
+    ];
     testState.isMobile = false;
     testState.isSpecialEnabled = false;
     testState.replyModalState = {

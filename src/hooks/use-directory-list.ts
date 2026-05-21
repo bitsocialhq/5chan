@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { type DirectoryCommunity, normalizeBoardAddress, useDirectories } from './use-directories';
+import { type DirectoryCommunity, useDirectories } from './use-directories';
 import { type DirectoryList, type DirectoryListBoard, normalizeDirectoryList, sortDirectoryBoardsByRank } from '../lib/utils/directory-list-utils';
-import directoryListsData from '../data/5chan-directory-lists.json';
+import { getDirectoryCodeForBoardAddress, getVendoredDirectoryList } from '../lib/utils/directory-list-lookup-utils';
 
 export type { DirectoryListBoard } from '../lib/utils/directory-list-utils';
+export { getDirectoryCodeForBoardAddress };
 
 interface DirectoryListState {
   list: DirectoryList | null;
@@ -29,33 +30,6 @@ const moduleCaches = new Map<string, DirectoryList>();
 const inFlightFetches = new Map<string, Promise<DirectoryList | null>>();
 const lastFetchSuccessAt = new Map<string, number>();
 const lastFetchAttemptAt = new Map<string, number>();
-let vendoredDirectoryListsCache: DirectoryList[] | null = null;
-
-const getVendoredDirectoryLists = (): DirectoryList[] => {
-  if (vendoredDirectoryListsCache) return vendoredDirectoryListsCache;
-
-  const directories = Array.isArray(directoryListsData.directories) ? directoryListsData.directories : [];
-  vendoredDirectoryListsCache = directories.flatMap((directory) => {
-    const directoryCode = typeof directory.directoryCode === 'string' ? directory.directoryCode : undefined;
-    if (!directoryCode) return [];
-    const normalized = normalizeDirectoryList(directory, directoryCode);
-    return normalized ? [normalized] : [];
-  });
-
-  return vendoredDirectoryListsCache;
-};
-
-const getVendoredDirectoryList = (directoryCode: string): DirectoryList | null =>
-  getVendoredDirectoryLists().find((directory) => directory.directoryCode === directoryCode) ?? null;
-
-export const getDirectoryCodeForBoardAddress = (address: string | undefined): string | undefined => {
-  if (!address) return undefined;
-
-  const normalizedAddress = normalizeBoardAddress(address);
-  return getVendoredDirectoryLists().find((directory) =>
-    directory.boards.some((board) => normalizeBoardAddress(board.address) === normalizedAddress || board.publicKey === address),
-  )?.directoryCode;
-};
 
 const synthesizeFromMainDirectory = (directoryCode: string, directories: DirectoryCommunity[]): DirectoryList | null => {
   const match = directories.find((community) => community.directoryCode === directoryCode);
