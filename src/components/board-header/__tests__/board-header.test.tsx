@@ -13,7 +13,6 @@ const testState = vi.hoisted(() => ({
   community: { address: 'music-posting.eth' } as { address?: string; name?: string; publicKey?: string } | undefined,
   communityIdentifier: { name: 'music-posting.eth' } as { name?: string; publicKey?: string } | undefined,
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string }>,
-  directoriesMetadata: { title: '/all/ - Directories' } as { title?: string } | undefined,
   isMobile: false,
   navigateMock: vi.fn(),
   offlineIconClass: 'offline',
@@ -82,7 +81,6 @@ vi.mock('../../../hooks/use-stable-community', () => ({
 
 vi.mock('../../../hooks/use-directories', () => ({
   useDirectories: () => testState.directories,
-  useDirectoriesMetadata: () => testState.directoriesMetadata,
 }));
 
 vi.mock('../../../hooks/use-community-identifiers', () => ({
@@ -132,7 +130,6 @@ describe('BoardHeader', () => {
     testState.community = { address: 'music-posting.eth' };
     testState.communityIdentifier = { name: 'music-posting.eth' };
     testState.directories = [{ address: 'music-posting.eth', title: '/mu/ - Music' }];
-    testState.directoriesMetadata = { title: '/all/ - Directories' };
     testState.isMobile = false;
     testState.navigateMock.mockReset();
     testState.offlineIconClass = 'offline';
@@ -169,7 +166,7 @@ describe('BoardHeader', () => {
   it('renders the all view title and banner chrome on desktop', async () => {
     await renderHeader('/all');
 
-    expect(container.textContent).toContain('/all/ - Directories');
+    expect(container.textContent).toContain('/all/ - All 5chan Directories');
     expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
     expect(container.textContent).not.toContain('subscriptions_subtitle');
   });

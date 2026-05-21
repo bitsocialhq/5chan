@@ -15,7 +15,6 @@ const testState = vi.hoisted(() => ({
     { address: 'music-posting.eth', title: '/mu/ - Music' },
     { address: 'tech-posting.eth', title: '/g/ - Technology' },
   ] as Array<{ address: string; title?: string }>,
-  directoriesMetadata: { title: '/all/ - All Boards' } as { title?: string } | null,
   initializeVisibilityMock: vi.fn(),
   navigateMock: vi.fn(),
   openBoardsBarEditModalMock: vi.fn(),
@@ -78,7 +77,6 @@ vi.mock('../../../hooks/use-directories', async () => {
   return {
     ...actual,
     useDirectories: () => testState.directories,
-    useDirectoriesMetadata: () => testState.directoriesMetadata,
   };
 });
 
@@ -160,7 +158,6 @@ describe('BoardsBar', () => {
       { address: 'music-posting.eth', title: '/mu/ - Music' },
       { address: 'tech-posting.eth', title: '/g/ - Technology' },
     ];
-    testState.directoriesMetadata = { title: '/all/ - All Boards' };
     testState.navigateMock.mockReset();
     testState.openBoardsBarEditModalMock.mockReset();
     testState.openCreateBoardModalMock.mockReset();

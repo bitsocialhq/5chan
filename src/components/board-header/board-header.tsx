@@ -9,14 +9,13 @@ import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import { isArchiveRoute, isDirectoryListRoute } from '../../lib/utils/route-utils';
 import styles from './board-header.module.css';
-import { useDirectoriesMetadata, useDirectories } from '../../hooks/use-directories';
+import { useDirectories } from '../../hooks/use-directories';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useIsCommunityOffline from '../../hooks/use-is-community-offline';
 import { shouldShowSnow } from '../../lib/snow';
 import Tooltip from '../tooltip';
-import startCase from 'lodash/startCase';
 import { BANNERS } from '../../generated/asset-manifest';
 
 const ImageBanner = () => {
@@ -63,7 +62,6 @@ const BoardHeader = () => {
   const stableCommunity = useStableCommunity(communityAddress);
   const { address, shortAddress } = stableCommunity || {};
 
-  const directoriesMetadata = useDirectoriesMetadata();
   const directories = useDirectories();
 
   // Find matching community from default list to get its title
@@ -78,18 +76,18 @@ const BoardHeader = () => {
   const subscriptionsSubtitle = t('subscriptions_subtitle', { count: subscriptionsCount });
 
   const title = isInAllView
-    ? directoriesMetadata?.title || '/all/ - 5chan Directories'
+    ? '/all/ - All 5chan Directories'
     : isInSubscriptionsView
       ? '/subs/ - Subscriptions'
       : isInModView
-        ? startCase(t('boards_you_moderate'))
+        ? '/mod/ - Boards You Moderate'
         : defaultCommunity?.title || stableCommunity?.title;
   const subtitle = isInAllView
     ? ''
     : isInSubscriptionsView
       ? subscriptionsSubtitle
       : isInModView
-        ? '/mod/'
+        ? ''
         : isInDirectoryListView
           ? t('directory_subtitle', { boardIdentifier: params.boardIdentifier })
           : `${address || communityAddress || ''}`;

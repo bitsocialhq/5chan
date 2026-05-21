@@ -5,7 +5,7 @@ import getShortAddress from '../../lib/get-short-address';
 import useAccountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
-import { useDirectories, useDirectoriesMetadata, DirectoryCommunity } from '../../hooks/use-directories';
+import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath, useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
@@ -19,7 +19,6 @@ import styles from './boards-bar.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
 import lowerCase from 'lodash/lowerCase';
-import startCase from 'lodash/startCase';
 
 const SearchBar = ({ setShowSearchBar }: { setShowSearchBar: (show: boolean) => void }) => {
   const { t } = useTranslation();
@@ -302,7 +301,6 @@ const BoardsBarMobile = ({ communityAddress }: { communityAddress?: string }) =>
   const { t } = useTranslation();
   const navigate = useNavigate();
   const directories = useDirectories();
-  const directoriesMetadata = useDirectoriesMetadata();
   const displayCommunityAddress = communityAddress && communityAddress.length > 30 ? communityAddress.slice(0, 30).concat('...') : communityAddress;
   const [showSearchBar, setShowSearchBar] = useState(false);
 
@@ -325,9 +323,9 @@ const BoardsBarMobile = ({ communityAddress }: { communityAddress?: string }) =>
 
   // Build multiboards with full titles, then combine with directory boards and sort alphabetically
   const sortedBoardOptions = useMemo(() => {
-    const allTitle = directoriesMetadata?.title || '/all/ - All 5chan Directories';
+    const allTitle = '/all/ - All 5chan Directories';
     const subsTitle = '/subs/ - Subscriptions';
-    const modTitle = `/mod/ - ${startCase(t('boards_you_moderate'))}`;
+    const modTitle = '/mod/ - Boards You Moderate';
 
     const multiboards: Array<{ value: string; label: string }> = [
       { value: 'all', label: allTitle },
@@ -341,7 +339,7 @@ const BoardsBarMobile = ({ communityAddress }: { communityAddress?: string }) =>
     });
 
     return [...multiboards, ...directoryOptions].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
-  }, [directoriesMetadata?.title, t, accountCommunityAddresses.length, directoryBoards]);
+  }, [accountCommunityAddresses.length, directoryBoards]);
 
   const boardSelect = (
     <select
