@@ -192,8 +192,11 @@ export const getContentWithPostOptionState = (
   return result.content;
 };
 
-export const FORTUNE_MARKUP_REGEX = /<span class="fortune" style="color:(#[0-9a-fA-F]{6})"><br><br><b>Your fortune: ([^<]+)<\/b><\/span>/g;
-export const DICE_ROLL_MARKUP_REGEX = /<b>(Rolled \d+(?:, \d+)*(?: [+-] \d+)?(?: = -?\d+)? \(\d+d\d+(?: [+-] \d+)?\))<br><br><\/b>/g;
+const FORTUNE_MARKUP_PATTERN = '<span class="fortune" style="color:(#[0-9a-fA-F]{6})"><br><br><b>Your fortune: ([^<]+)<\\/b><\\/span>';
+const DICE_ROLL_MARKUP_PATTERN = '<b>(Rolled \\d+(?:, \\d+)*(?: [+-] \\d+)?(?: = -?\\d+)? \\(\\d+d\\d+(?: [+-] \\d+)?\\))<br><br><\\/b>';
+
+export const createFortuneMarkupRegex = (): RegExp => new RegExp(FORTUNE_MARKUP_PATTERN, 'g');
+export const createDiceRollMarkupRegex = (): RegExp => new RegExp(DICE_ROLL_MARKUP_PATTERN, 'g');
 
 export const getMatchingFortuneEntry = (color: string, text: string): FortuneEntry | undefined =>
   FORTUNE_ENTRIES.find((entry) => entry.color.toLowerCase() === color.toLowerCase() && entry.text === text);

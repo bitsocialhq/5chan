@@ -17,7 +17,7 @@ import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stor
 import { useComment } from '@bitsocial/bitsocial-react-hooks';
 import ReplyQuotePreview from '../reply-quote-preview';
 import ExternalNumberQuoteLink from './external-number-quote-link';
-import { DICE_ROLL_MARKUP_REGEX, FORTUNE_MARKUP_REGEX, getMatchingFortuneEntry } from '../../lib/utils/post-options-utils';
+import { createDiceRollMarkupRegex, createFortuneMarkupRegex, getMatchingFortuneEntry } from '../../lib/utils/post-options-utils';
 
 const safeParseUrl = (href: string): URL | null => {
   try {
@@ -544,13 +544,15 @@ const DiceRoll = ({ text }: { text: string }) => (
 const renderLineContent = (line: string, context: RenderContext): React.ReactNode[] => {
   const elements: React.ReactNode[] = [];
   let lastIndex = 0;
+  const fortuneMarkupRegex = createFortuneMarkupRegex();
+  const diceRollMarkupRegex = createDiceRollMarkupRegex();
 
   while (lastIndex < line.length) {
-    FORTUNE_MARKUP_REGEX.lastIndex = lastIndex;
-    DICE_ROLL_MARKUP_REGEX.lastIndex = lastIndex;
+    fortuneMarkupRegex.lastIndex = lastIndex;
+    diceRollMarkupRegex.lastIndex = lastIndex;
 
-    const fortuneMatch = FORTUNE_MARKUP_REGEX.exec(line);
-    const diceMatch = DICE_ROLL_MARKUP_REGEX.exec(line);
+    const fortuneMatch = fortuneMarkupRegex.exec(line);
+    const diceMatch = diceRollMarkupRegex.exec(line);
     const nextMatch =
       fortuneMatch && diceMatch
         ? fortuneMatch.index <= diceMatch.index

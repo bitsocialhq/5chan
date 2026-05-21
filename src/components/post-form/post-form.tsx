@@ -334,7 +334,7 @@ const PostFormFields = ({
     )}
     {((isInPostView && showSpoilerForReply) || (!isInPostView && showSpoilerForPost)) && (
       <tr className={styles.spoilerButton}>
-        <td>{t('options')}</td>
+        <td>{capitalize(t('spoiler'))}</td>
         <td>
           [
           <label>
@@ -460,6 +460,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     if (optionsRef.current) {
       optionsRef.current.value = '';
     }
+    checkContentLength.cancel();
     checkPostOptions.cancel();
     fortuneEntryRef.current = null;
     diceRollRef.current = null;
