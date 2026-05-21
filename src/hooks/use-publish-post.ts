@@ -26,6 +26,8 @@ const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
   const addChallenge = useChallengesStore((state) => state.addChallenge);
   const abandonPublishRef = useRef<(() => Promise<void>) | undefined>();
   const [publishPostError, setPublishPostError] = useState<string | null>(null);
+  const [pendingPublishRequestId, setPendingPublishRequestId] = useState(0);
+  const startedPublishRequestIdRef = useRef(0);
   const { blockedReason } = usePublishAuthorDomainGuard();
   const abandonCurrentPublish = useCallback(async () => {
     await abandonPublishRef.current?.();
@@ -90,7 +92,7 @@ const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
     setPublishPostError(null);
   }, [author?.displayName, blockedReason, communityAddress, content, link, spoiler, title]);
 
-  const publishPost = useCallback(() => {
+  const startPublishPost = useCallback(() => {
     if (blockedReason) {
       setPublishPostError(getPublishAuthorDomainErrorMessage(blockedReason));
       return;
@@ -99,6 +101,28 @@ const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
     setPublishPostError(null);
     return publishComment();
   }, [blockedReason, publishComment]);
+
+  useEffect(() => {
+    if (pendingPublishRequestId === 0 || pendingPublishRequestId === startedPublishRequestIdRef.current) {
+      return;
+    }
+
+    startedPublishRequestIdRef.current = pendingPublishRequestId;
+    startPublishPost();
+  }, [pendingPublishRequestId, startPublishPost]);
+
+  const publishPost = useCallback(
+    (options?: Partial<Comment>) => {
+      if (options) {
+        setPublishPostOptions(options);
+        setPendingPublishRequestId((requestId) => requestId + 1);
+        return;
+      }
+
+      return startPublishPost();
+    },
+    [setPublishPostOptions, startPublishPost],
+  );
 
   return {
     setPublishPostOptions,
