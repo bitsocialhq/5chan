@@ -17,6 +17,17 @@
   padding: 15px 0 20px 5px;
 }
 
+.searchNothingFound {
+  color: red;
+  display: block;
+  margin: 0;
+  padding: 1em 0;
+  text-align: center;
+  font-size: x-large;
+  font-weight: bold;
+  line-height: normal;
+}
+
 .morePostsSuggestion {
   color: var(--body-font-color);
   padding-bottom: 5px;

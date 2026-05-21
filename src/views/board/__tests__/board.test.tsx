@@ -604,6 +604,7 @@ describe('Board', () => {
 
     expect(latestLocation).toBe('/subs');
     expect(container.textContent).toContain('not_subscribed_to_any_board');
+    expect(container.querySelector('[role="status"]')?.className).toContain('searchNothingFound');
   });
 
   it('links empty mod feeds to account import settings', async () => {
