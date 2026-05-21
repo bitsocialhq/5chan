@@ -89,7 +89,7 @@ const BoardFooter = ({
 }: BoardFooterProps) => {
   const { t } = useTranslation();
 
-  const loadingStateString = useFeedStateString(communityAddresses) || (combinedFeedLength === 0 ? t('loading_feed') : t('looking_for_more_posts'));
+  const loadingStateString = useFeedStateString(communityAddresses) || (combinedFeedLength === 0 ? t('downloading_board') : t('looking_for_more_posts'));
   const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
   const canShowNoThreads = !isSingleCommunityBoard || (isLoadedCommunityState && feedState === 'succeeded');
   const isEmptyBoardLoading = isSingleCommunityBoard && combinedFeedLength === 0 && !canShowNoThreads && communityState !== 'failed';

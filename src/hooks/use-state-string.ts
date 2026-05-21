@@ -39,7 +39,27 @@ const friendlyStateNames: Record<string, string> = {
   'resolving-author-address': 'resolving author address',
 };
 
-const getFriendlyStateName = (state: string): string => friendlyStateNames[state] || state.replaceAll('-', ' ');
+const getFriendlyStateName = (state: string): string =>
+  friendlyStateNames[state] ||
+  state
+    .replaceAll('-', ' ')
+    .replace('ipfs', 'thread')
+    .replace('ipns', 'community')
+    .replace('fetching', 'downloading')
+    .replace('community community', 'board')
+    .replace('downloading community', 'downloading board');
+
+const inactiveLifecycleStates = new Set(['failed', 'ready', 'stopped', 'succeeded']);
+
+const isActiveLifecycleState = (state?: string): state is string => Boolean(state && !inactiveLifecycleStates.has(state));
+
+const getActiveLifecycleState = (commentOrCommunity: CommentOrCommunity | undefined): string | undefined => {
+  if (!commentOrCommunity || commentOrCommunity.state === 'succeeded') {
+    return;
+  }
+
+  return [commentOrCommunity.publishingState, commentOrCommunity.updatingState, commentOrCommunity.state].find(isActiveLifecycleState);
+};
 
 const sanitizeSingleFeedLoadingState = (stateString?: string): string | undefined => {
   if (!stateString) {
@@ -87,21 +107,11 @@ const useStateString = (commentOrCommunity: CommentOrCommunity | undefined): str
       stateString += downloadingParts.join(', ') + getDownloadSourceSuffix(downloadingClientUrls, isBrowserPureP2P);
     }
 
-    if (!stateString && commentOrCommunity?.state !== 'succeeded') {
-      if (commentOrCommunity?.publishingState && commentOrCommunity?.publishingState !== 'stopped' && commentOrCommunity?.publishingState !== 'succeeded') {
-        stateString = commentOrCommunity.publishingState;
-      } else if (commentOrCommunity?.updatingState !== 'stopped' && commentOrCommunity?.updatingState !== 'succeeded') {
-        stateString = commentOrCommunity?.updatingState;
-      }
-      if (stateString) {
-        const isIpfsRelated = stateString.includes('ipfs') || stateString.includes('ipns');
-        stateString = stateString
-          .replaceAll('-', ' ')
-          .replace('ipfs', 'thread')
-          .replace('ipns', 'community')
-          .replace('fetching', 'downloading')
-          .replace('community community', 'board')
-          .replace('downloading community', 'downloading board');
+    if (!stateString) {
+      const activeLifecycleState = getActiveLifecycleState(commentOrCommunity);
+      if (activeLifecycleState) {
+        const isIpfsRelated = activeLifecycleState.includes('ipfs') || activeLifecycleState.includes('ipns');
+        stateString = getFriendlyStateName(activeLifecycleState);
         if (isIpfsRelated) {
           stateString += getDownloadSourceSuffix([], isBrowserPureP2P);
         }

@@ -765,7 +765,7 @@ describe('Board', () => {
     await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
 
     expect(container.textContent).not.toContain('no_threads');
-    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_feed');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
   });
 
   it('does not show no threads while an empty board feed is still loading', async () => {
@@ -781,7 +781,7 @@ describe('Board', () => {
     await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
 
     expect(container.textContent).not.toContain('no_threads');
-    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_feed');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
   });
 
   it('shows no threads after an empty board feed finishes loading', async () => {
