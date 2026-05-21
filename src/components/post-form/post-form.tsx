@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Comment, setAccount, useAccount, useEditedComment } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
@@ -10,6 +10,7 @@ import { getExpiringMediaLinkAlert } from '../../lib/utils/media-link-validation
 import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import { getPublishURLFilename, isValidPublishURL, isValidURL } from '../../lib/utils/url-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
+import { getBoardPath } from '../../lib/utils/route-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
@@ -132,6 +133,7 @@ interface PostFormFieldsProps {
   accountCommunityAddresses: string[];
   subscriptions: string[];
   communityAddress: string | undefined;
+  rulesPath: string;
   requirePostLinkIsMedia: boolean;
   showBbcodeToolbar: boolean;
   onBbcodePreviewToggle: () => void;
@@ -171,6 +173,7 @@ const PostFormFields = ({
   accountCommunityAddresses,
   subscriptions,
   communityAddress,
+  rulesPath,
   requirePostLinkIsMedia,
   showBbcodeToolbar,
   onBbcodePreviewToggle,
@@ -313,6 +316,21 @@ const PostFormFields = ({
         </td>
       </tr>
     )}
+    <tr className='rules'>
+      <td colSpan={2}>
+        <ul className='rules'>
+          <li>
+            <Trans
+              i18nKey='post_form_rules_faq_prompt'
+              components={{
+                rules: <Link to={rulesPath} />,
+                faq: <Link to='/faq' />,
+              }}
+            />
+          </li>
+        </ul>
+      </td>
+    </tr>
     {((isInPostView && showSpoilerForReply) || (!isInPostView && showSpoilerForPost)) && (
       <tr className={styles.spoilerButton}>
         <td>{t('options')}</td>
@@ -388,6 +406,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const subscriptions = account?.subscriptions || [];
   const directories = useDirectories();
   const directoryEntry = useDirectoryByAddress(effectiveBoardAddress);
+  const rulesPath = effectiveBoardAddress ? `/rules/${getBoardPath(effectiveBoardAddress, directories)}` : '/rules';
   const showSpoilerForPost = directoryEntry?.features?.noSpoilers !== true;
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
@@ -621,6 +640,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             accountCommunityAddresses={accountCommunityAddresses}
             subscriptions={subscriptions}
             communityAddress={communityAddress}
+            rulesPath={rulesPath}
             requirePostLinkIsMedia={requirePostLinkIsMedia}
             showBbcodeToolbar={showBbcodeToolbar}
             onBbcodePreviewToggle={handleBbcodePreviewToggle}

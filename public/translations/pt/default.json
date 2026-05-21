@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Ignorar",
   "board_address_unverified_warning": "Este endereço do board não foi verificado. O proprietário do board pode não ser dono deste endereço.",
-  "go_to_settings_to_import_mod_account": "Vá para <1>configurações</1> para importar sua conta de mod"
+  "go_to_settings_to_import_mod_account": "Vá para <1>configurações</1> para importar sua conta de mod",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }

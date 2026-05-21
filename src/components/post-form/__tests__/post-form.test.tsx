@@ -53,11 +53,30 @@ const testState = vi.hoisted(() => ({
   uploadedFileName: 'picked.png' as string | null,
 }));
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, options?: Record<string, unknown>) => (options?.domain ? `${key}:${options.domain}` : key),
-  }),
-}));
+vi.mock('react-i18next', async () => {
+  const React = await vi.importActual<typeof import('react')>('react');
+
+  return {
+    Trans: ({ i18nKey, components }: { components?: Record<string, React.ReactElement>; i18nKey: string }) => {
+      if (i18nKey === 'post_form_rules_faq_prompt') {
+        return React.createElement(
+          React.Fragment,
+          {},
+          'Please read the ',
+          components?.rules ? React.cloneElement(components.rules, {}, 'Rules') : 'Rules',
+          ' and ',
+          components?.faq ? React.cloneElement(components.faq, {}, 'FAQ') : 'FAQ',
+          ' before posting.',
+        );
+      }
+
+      return i18nKey;
+    },
+    useTranslation: () => ({
+      t: (key: string, options?: Record<string, unknown>) => (options?.domain ? `${key}:${options.domain}` : key),
+    }),
+  };
+});
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
@@ -641,6 +660,27 @@ describe('PostForm', () => {
     await dispatchInput(linkInput as HTMLInputElement, 'https://example.com/images/file%20name.jpg?size=large');
 
     expect(table?.textContent).toContain('file name.jpg');
+  });
+
+  it('shows the rules and FAQ prompt below the file row with a board-specific rules link', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const rows = Array.from(table?.querySelectorAll('tr') || []);
+    const fileRowIndex = rows.findIndex((row) => row.querySelector('td')?.textContent === 'file');
+    const promptRowIndex = rows.findIndex((row) => row.textContent === 'Please read the Rules and FAQ before posting.');
+    const promptRow = rows[promptRowIndex];
+    const links = Array.from(promptRow?.querySelectorAll('a') || []);
+
+    expect(fileRowIndex).toBeGreaterThan(-1);
+    expect(promptRowIndex).toBe(fileRowIndex + 1);
+    expect(promptRow?.className).toBe('rules');
+    expect(promptRow?.querySelector('ul')?.className).toBe('rules');
+    expect(links.map((link) => link.textContent)).toEqual(['Rules', 'FAQ']);
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/rules/mu', '/faq']);
   });
 
   it('shortens long pasted file-link filenames next to the upload button', async () => {

@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Ignorer",
   "board_address_unverified_warning": "Denne board-adressen er ikke bekreftet. Board-eieren eier kanskje ikke denne adressen.",
-  "go_to_settings_to_import_mod_account": "Gå til <1>innstillinger</1> for å importere modkontoen din"
+  "go_to_settings_to_import_mod_account": "Gå til <1>innstillinger</1> for å importere modkontoen din",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }

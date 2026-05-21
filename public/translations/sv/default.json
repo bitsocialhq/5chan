@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Avfärda",
   "board_address_unverified_warning": "Den här board-adressen är inte verifierad. Boardets ägare kanske inte äger den här adressen.",
-  "go_to_settings_to_import_mod_account": "Gå till <1>inställningar</1> för att importera ditt modkonto"
+  "go_to_settings_to_import_mod_account": "Gå till <1>inställningar</1> för att importera ditt modkonto",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }

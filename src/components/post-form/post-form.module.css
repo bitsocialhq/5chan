@@ -182,6 +182,40 @@
   font-weight: normal;
 }
 
+.postFormTable :global(ul.rules) {
+  margin: 0px;
+  padding: 0px;
+  margin-top: 5px;
+}
+
+.postFormTable :global(ul.rules > li) {
+  list-style: none;
+  font-size: 11px;
+}
+
+.postFormTable :global(.rules > li::before) {
+  content: "\2022 \20";
+}
+
+.postFormTable :global(tr.rules td) {
+  border: 0px !important;
+  background-color: transparent !important;
+  font-weight: normal !important;
+  text-transform: none !important;
+}
+
+.postFormTable :global(tr.rules a),
+.postFormTable :global(tr.rules a:visited) {
+  color: var(--post-link-text-color);
+  text-decoration: none;
+}
+
+.postFormTable :global(tr.rules a:hover),
+.postFormTable :global(tr.rules a:visited:hover) {
+  color: var(--post-link-text-color-hover);
+  text-decoration: none;
+}
+
 .error {
   font-weight: bold;
   padding: 5px;

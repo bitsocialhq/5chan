@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "విస్మరించు",
   "board_address_unverified_warning": "ఈ బోర్డ్ చిరునామా ధృవీకరించబడలేదు. బోర్డ్ యజమాని ఈ చిరునామాకు యజమాని కాకపోవచ్చు.",
-  "go_to_settings_to_import_mod_account": "మీ మోడ్ ఖాతాను దిగుమతి చేయడానికి <1>అమరికలు</1>కి వెళ్లండి"
+  "go_to_settings_to_import_mod_account": "మీ మోడ్ ఖాతాను దిగుమతి చేయడానికి <1>అమరికలు</1>కి వెళ్లండి",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }

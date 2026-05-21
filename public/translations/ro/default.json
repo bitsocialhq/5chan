@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Ignoră",
   "board_address_unverified_warning": "Această adresă de board nu este verificată. Proprietarul boardului s-ar putea să nu dețină această adresă.",
-  "go_to_settings_to_import_mod_account": "Accesează <1>setările</1> pentru a importa contul tău de moderator"
+  "go_to_settings_to_import_mod_account": "Accesează <1>setările</1> pentru a importa contul tău de moderator",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }

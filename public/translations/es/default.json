@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Descartar",
   "board_address_unverified_warning": "Esta dirección del tablón no está verificada. Es posible que el propietario del tablón no sea dueño de esta dirección.",
-  "go_to_settings_to_import_mod_account": "Ve a <1>configuración</1> para importar tu cuenta de moderador"
+  "go_to_settings_to_import_mod_account": "Ve a <1>configuración</1> para importar tu cuenta de moderador",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }

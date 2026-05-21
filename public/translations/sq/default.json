@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Shpërfill",
   "board_address_unverified_warning": "Kjo adresë e board-it nuk është verifikuar. Pronari i board-it mund të mos e zotërojë këtë adresë.",
-  "go_to_settings_to_import_mod_account": "Shkoni te <1>parametrat</1> për të importuar llogarinë tuaj të modit"
+  "go_to_settings_to_import_mod_account": "Shkoni te <1>parametrat</1> për të importuar llogarinë tuaj të modit",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }

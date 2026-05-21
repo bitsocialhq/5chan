@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Ignorovat",
   "board_address_unverified_warning": "Tato adresa nástěnky není ověřená. Vlastník nástěnky nemusí tuto adresu vlastnit.",
-  "go_to_settings_to_import_mod_account": "Přejděte do <1>nastavení</1> a importujte svůj moderátorský účet"
+  "go_to_settings_to_import_mod_account": "Přejděte do <1>nastavení</1> a importujte svůj moderátorský účet",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }

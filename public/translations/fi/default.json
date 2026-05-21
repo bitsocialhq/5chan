@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Ohita",
   "board_address_unverified_warning": "Tätä laudan osoitetta ei ole vahvistettu. Laudan omistaja ei välttämättä omista tätä osoitetta.",
-  "go_to_settings_to_import_mod_account": "Siirry <1>asetuksiin</1> tuodaksesi moderaattoritilisi"
+  "go_to_settings_to_import_mod_account": "Siirry <1>asetuksiin</1> tuodaksesi moderaattoritilisi",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }

@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "تجاهل",
   "board_address_unverified_warning": "لم يتم التحقق من عنوان هذه اللوحة. قد لا يكون مالك اللوحة مالكًا لهذا العنوان.",
-  "go_to_settings_to_import_mod_account": "انتقل إلى <1>الإعدادات</1> لاستيراد حساب المشرف الخاص بك"
+  "go_to_settings_to_import_mod_account": "انتقل إلى <1>الإعدادات</1> لاستيراد حساب المشرف الخاص بك",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }

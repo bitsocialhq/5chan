@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Приховати",
   "board_address_unverified_warning": "Цю адресу дошки не перевірено. Власник дошки може не володіти цією адресою.",
-  "go_to_settings_to_import_mod_account": "Перейдіть до <1>налаштувань</1>, щоб імпортувати свій обліковий запис модератора"
+  "go_to_settings_to_import_mod_account": "Перейдіть до <1>налаштувань</1>, щоб імпортувати свій обліковий запис модератора",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }

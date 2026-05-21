@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "نادیده گرفتن",
   "board_address_unverified_warning": "این نشانی برد تأیید نشده است. ممکن است مالک برد صاحب این نشانی نباشد.",
-  "go_to_settings_to_import_mod_account": "برای وارد کردن حساب مدیر خود به <1>تنظیمات</1> بروید"
+  "go_to_settings_to_import_mod_account": "برای وارد کردن حساب مدیر خود به <1>تنظیمات</1> بروید",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }

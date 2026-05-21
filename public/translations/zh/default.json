@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "忽略",
   "board_address_unverified_warning": "此版面地址尚未验证。版主可能并不拥有此地址。",
-  "go_to_settings_to_import_mod_account": "前往<1>设置</1>以导入您的版主账户"
+  "go_to_settings_to_import_mod_account": "前往<1>设置</1>以导入您的版主账户",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }

@@ -390,5 +390,6 @@
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "התעלם",
   "board_address_unverified_warning": "כתובת הלוח הזו אינה מאומתת. ייתכן שבעל הלוח אינו הבעלים של הכתובת הזו.",
-  "go_to_settings_to_import_mod_account": "עבור אל <1>הגדרות</1> כדי לייבא את חשבון המוד שלך"
+  "go_to_settings_to_import_mod_account": "עבור אל <1>הגדרות</1> כדי לייבא את חשבון המוד שלך",
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
 }
