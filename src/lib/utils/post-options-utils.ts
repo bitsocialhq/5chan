@@ -24,6 +24,10 @@ interface PostOptionsDirectory {
   title?: string;
 }
 
+interface PostOptionsStateRef<T> {
+  current: T;
+}
+
 const getRouteDirectoryCode = (pathname: string | undefined): string | undefined => {
   const firstSegment = pathname?.split('/').filter(Boolean)[0];
   return firstSegment && POST_OPTION_ROUTE_DIRECTORY_CODES.has(firstSegment) ? firstSegment : undefined;
@@ -135,7 +139,7 @@ const rollDice = (diceOption: NonNullable<ReturnType<typeof parseDiceOption>>, c
 
 const getDiceRollText = (diceRoll: DiceRoll): string => {
   const rolls = diceRoll.rolls.join(', ');
-  const total = diceRoll.count > 1 ? ` = ${diceRoll.total}` : '';
+  const total = diceRoll.count > 1 || diceRoll.modifier !== 0 ? ` = ${diceRoll.total}` : '';
   return `Rolled ${rolls}${diceRoll.modifierText}${total} (${diceRoll.count}d${diceRoll.sides}${diceRoll.modifierText})`;
 };
 
@@ -143,7 +147,7 @@ const getDiceRollMarkup = (diceRoll: DiceRoll): string => `<b>${getDiceRollText(
 
 const prependDiceRollToContent = (content: string, diceRoll: DiceRoll): string => `${getDiceRollMarkup(diceRoll)}${content}`;
 
-export const getContentWithPostOptions = (
+const getContentWithPostOptions = (
   content: string,
   options: string,
   currentFortuneEntry: FortuneEntry | null,
@@ -161,6 +165,19 @@ export const getContentWithPostOptions = (
   const fortuneEntry = currentFortuneEntry || getRandomFortuneEntry();
   nextContent = appendFortuneToContent(nextContent, fortuneEntry);
   return { content: nextContent, fortuneEntry, diceRoll };
+};
+
+export const getContentWithPostOptionState = (
+  content: string,
+  options: string,
+  fortuneEntryRef: PostOptionsStateRef<FortuneEntry | null>,
+  diceRollRef: PostOptionsStateRef<DiceRoll | null>,
+  directoryCode: string | undefined,
+): string => {
+  const result = getContentWithPostOptions(content, options, fortuneEntryRef.current, diceRollRef.current, directoryCode);
+  fortuneEntryRef.current = result.fortuneEntry;
+  diceRollRef.current = result.diceRoll;
+  return result.content;
 };
 
 export const FORTUNE_MARKUP_REGEX = /<span class="fortune" style="color:(#[0-9a-fA-F]{6})"><br><br><b>Your fortune: ([^<]+)<\/b><\/span>/g;

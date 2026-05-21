@@ -11,7 +11,7 @@ import {
   type DiceRoll,
   type FortuneEntry,
   POST_OPTIONS_VALIDATION_DELAY_MS,
-  getContentWithPostOptions,
+  getContentWithPostOptionState as getContentWithOptions,
   getPostOptionsDirectoryCode,
   getUnsupportedPostOptionsMessage,
   isUnsupportedPostOptionsMessage,
@@ -47,19 +47,6 @@ const getPostFormFileDisplayLabel = (url: string, uploadedFileName: string | nul
   const raw = getPublishURLFilename(url) || uploadedFileName;
   if (!raw) return noFileLabel;
   return truncateWithEllipsisInMiddle(raw, POST_FORM_FILE_DISPLAY_MAX_LENGTH);
-};
-
-const getContentWithOptions = (
-  content: string,
-  options: string,
-  fortuneEntryRef: React.MutableRefObject<FortuneEntry | null>,
-  diceRollRef: React.MutableRefObject<DiceRoll | null>,
-  directoryCode: string | undefined,
-): string => {
-  const result = getContentWithPostOptions(content, options, fortuneEntryRef.current, diceRollRef.current, directoryCode);
-  fortuneEntryRef.current = result.fortuneEntry;
-  diceRollRef.current = result.diceRoll;
-  return result.content;
 };
 
 export const LinkTypePreviewer = ({ link }: { link: string }) => {

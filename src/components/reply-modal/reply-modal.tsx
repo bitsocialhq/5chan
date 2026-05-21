@@ -8,7 +8,7 @@ import {
   type DiceRoll,
   type FortuneEntry,
   POST_OPTIONS_VALIDATION_DELAY_MS,
-  getContentWithPostOptions,
+  getContentWithPostOptionState as getContentWithOptions,
   getPostOptionsDirectoryCode,
   getUnsupportedPostOptionsMessage,
   isUnsupportedPostOptionsMessage,
@@ -35,19 +35,6 @@ import { useSpring, animated } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 
 const FILE_LINK_PLACEHOLDER = 'https://website.com/image.jpg';
-
-const getContentWithOptions = (
-  content: string,
-  options: string,
-  fortuneEntryRef: React.MutableRefObject<FortuneEntry | null>,
-  diceRollRef: React.MutableRefObject<DiceRoll | null>,
-  directoryCode: string | undefined,
-): string => {
-  const result = getContentWithPostOptions(content, options, fortuneEntryRef.current, diceRollRef.current, directoryCode);
-  fortuneEntryRef.current = result.fortuneEntry;
-  diceRollRef.current = result.diceRoll;
-  return result.content;
-};
 
 interface ReplyModalProps {
   closeModal: () => void;

@@ -92,6 +92,7 @@ vi.mock('../../../hooks/use-account-community-addresses', () => ({
 }));
 
 vi.mock('../../../hooks/use-directories', () => ({
+  findDirectoryByAddress: (directories: typeof testState.directories, address: string | undefined) => directories.find((entry) => entry.address === address),
   useDirectories: () => testState.directories,
   useDirectoryByAddress: (address: string | undefined) => testState.directories.find((entry) => entry.address === address),
   normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
@@ -629,7 +630,7 @@ describe('PostForm', () => {
   });
 
   it('stores dice rolls in post content on dice-enabled boards', async () => {
-    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.5);
     testState.resolvedCommunityAddress = 'quests.bso';
 
     await renderPostForm('/qst');
@@ -639,7 +640,7 @@ describe('PostForm', () => {
     const optionsInput = table?.querySelector<HTMLInputElement>('input[aria-label="options"]');
     const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
 
-    await dispatchInput(optionsInput as HTMLInputElement, 'dice+2d6');
+    await dispatchInput(optionsInput as HTMLInputElement, 'dice+1d6+3');
     await waitForOptionsValidation();
 
     expect(container.textContent).not.toContain('unsupported options');
@@ -648,7 +649,7 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishedPostOptions?.content).toBe('<b>Rolled 2, 2 = 4 (2d6)<br><br></b>dice body');
+    expect(testState.publishedPostOptions?.content).toBe('<b>Rolled 4 + 3 = 7 (1d6 + 3)<br><br></b>dice body');
     randomSpy.mockRestore();
   });
 

@@ -130,6 +130,8 @@ vi.mock('../../../stores/use-media-hosting-store', () => ({
 }));
 
 vi.mock('../../../hooks/use-directories', () => ({
+  findDirectoryByAddress: (directories: Array<{ address: string; features?: Record<string, unknown>; title?: string }>, address: string | undefined) =>
+    directories.find((entry) => entry.address === address),
   useDirectoryByAddress: (address: string) => testState.directoryByAddress[address],
   normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
 }));
