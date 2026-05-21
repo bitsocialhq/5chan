@@ -181,7 +181,7 @@ src/
 
 - If `CHANGELOG.md` or package version changes, run `yarn blotter:check`.
 - If blotter check fails for missing release coverage, add a concise one-line release entry.
-- Blotter entries are shown to 5chan end users, not developers. Every release message must be plain English a non-dev can understand: no internal library names (e.g. `Pretext`, `Zustand`), no dev shorthand (`perf`, `deps`, `refactor`, `a11y`, `CI`), no file paths, and no PR numbers. Prefer user-visible outcomes over implementation details (`performant account history`, not `compact account history`). Broad wording like `security fix`, `stability fixes`, or `bug fixes` is fine when the change is hard to summarize. Full rules and examples live in the `release` skill's Step 3.
+- Blotter entries are shown to 5chan end users, not developers. Every release message must be plain English a non-dev can understand: no internal library names (e.g. `Pretext`, `Zustand`), no dev shorthand (`perf`, `deps`, `refactor`, `a11y`, `CI`), no file paths, and no PR numbers. Mention only the most interesting user-visible changes in the release, if any; do not pad entries with routine maintenance, regression fixes, invisible security/stability work, or generic labels like `security fixes`, `bug fixes`, or `stability fixes`. Prefer dropping a weak highlight to making the entry longer. Full rules and examples live in the `release` skill's Step 3.
 - Ignore manual entries for release coverage logic.
 - Use `yarn blotter` / `yarn blotter:manual` for manual dev messages.
 
