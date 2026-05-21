@@ -841,7 +841,7 @@ describe('PostForm', () => {
     expect(table?.textContent).toContain('file name.jpg');
   });
 
-  it('shows the rules and FAQ prompt below the file row with a board-specific rules link', async () => {
+  it('shows the rules and FAQ prompt at the bottom of the form with a board-specific rules link', async () => {
     testState.resolvedCommunityAddress = 'music-posting.eth';
 
     await renderPostForm('/mu');
@@ -855,7 +855,8 @@ describe('PostForm', () => {
     const links = Array.from(promptRow?.querySelectorAll('a') || []);
 
     expect(fileRowIndex).toBeGreaterThan(-1);
-    expect(promptRowIndex).toBe(fileRowIndex + 1);
+    expect(promptRowIndex).toBeGreaterThan(fileRowIndex);
+    expect(promptRowIndex).toBe(rows.length - 1);
     expect(promptRow?.className).toBe('rules');
     expect(promptRow?.querySelector('ul')?.className).toBe('rules');
     expect(links.map((link) => link.textContent)).toEqual(['Rules', 'FAQ']);
