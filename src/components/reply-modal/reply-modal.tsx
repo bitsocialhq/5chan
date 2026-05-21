@@ -542,6 +542,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             {t('post')}
           </button>
         </div>
+        {showBbcodeToolbar ? <div className={styles.error}>warning: posting as moderator</div> : null}
         {lengthError ? (
           <div className={styles.error}>{lengthError}</div>
         ) : error ? (

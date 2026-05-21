@@ -637,6 +637,9 @@ describe('ReplyModal', () => {
     expect(container.querySelector('select[aria-label="Text color"]')).toBeNull();
     expect(container.textContent).not.toContain('mods only');
     expect(container.textContent).not.toContain('Mod editor');
+    expect(container.textContent).toContain('warning: posting as moderator');
+    const moderatorWarning = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'warning: posting as moderator');
+    expect(moderatorWarning?.className).toContain('error');
     expect(container.querySelector('button[aria-label="Quote"]')).toBeNull();
 
     const selectionStart = textarea?.value.indexOf('selected text') ?? 0;
@@ -653,6 +656,7 @@ describe('ReplyModal', () => {
 
     expect(container.querySelector('button[aria-label="Red text"]')).toBeNull();
     expect(container.textContent).not.toContain('mods only');
+    expect(container.textContent).not.toContain('warning: posting as moderator');
   });
 
   it('updates account state, applies upload completions, and closes once publishing succeeds', async () => {

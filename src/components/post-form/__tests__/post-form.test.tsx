@@ -766,9 +766,14 @@ describe('PostForm', () => {
     expect(linkButton).toBeTruthy();
     expect(sizeSelect).toBeTruthy();
     expect(table?.querySelector('select[aria-label="Text color"]')).toBeNull();
-    expect(rows.some((row) => row.querySelector('td')?.textContent === 'mods only')).toBe(true);
+    expect(rows.some((row) => row.querySelector('td')?.textContent === 'format')).toBe(true);
     expect(rows.some((row) => row.querySelector('td')?.textContent === 'comment')).toBe(true);
+    expect(container.textContent).toContain('warning: posting as moderator');
+    const moderatorWarning = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'warning: posting as moderator');
+    expect(moderatorWarning?.className).toContain('error');
+    expect(moderatorWarning?.className).toContain('formError');
     expect(table?.textContent).not.toContain('Mod editor');
+    expect(table?.textContent).not.toContain('mods only');
     expect(table?.querySelector('button[aria-label="Quote"]')).toBeNull();
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'hello world');
@@ -822,6 +827,7 @@ describe('PostForm', () => {
 
     expect(container.querySelector('button[aria-label="Bold"]')).toBeNull();
     expect(container.textContent).not.toContain('mods only');
+    expect(container.textContent).not.toContain('warning: posting as moderator');
   });
 
   it('shows the pasted file-link filename next to the upload button', async () => {

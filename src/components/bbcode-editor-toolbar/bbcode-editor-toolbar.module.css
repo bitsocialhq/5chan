@@ -61,5 +61,6 @@
   padding: 3px 4px;
   border: 1px inset;
   background: var(--post-form-field-input-background-color, revert);
+  font-weight: normal;
   overflow-wrap: anywhere;
 }
