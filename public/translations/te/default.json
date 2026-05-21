@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "{{host}} నుండి బాహ్య చిత్రం లోడ్ కాలేదు. VPN ప్రయత్నించండి.",
   "media_failed_to_load_inline_unknown": "బాహ్య చిత్రం లోడ్ కాలేదు. VPN ప్రయత్నించండి.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "ఏమీ దొరకలేదు",
   "modQueue.dismiss": "విస్మరించు",
   "board_address_unverified_warning": "ఈ బోర్డ్ చిరునామా ధృవీకరించబడలేదు. బోర్డ్ యజమాని ఈ చిరునామాకు యజమాని కాకపోవచ్చు.",
   "go_to_settings_to_import_mod_account": "మీ మోడ్ ఖాతాను దిగుమతి చేయడానికి <1>అమరికలు</1>కి వెళ్లండి",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "పోస్ట్ చేయడానికి ముందు <rules>నియమాలు</rules> మరియు <faq>తరచుగా అడిగే ప్రశ్నలు</faq> చదవండి."
 }

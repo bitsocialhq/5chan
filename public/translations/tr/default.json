@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "{{host}} harici görseli yüklenemedi. VPN deneyin.",
   "media_failed_to_load_inline_unknown": "Harici görsel yüklenemedi. VPN deneyin.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "Hiçbir şey bulunamadı",
   "modQueue.dismiss": "Yoksay",
   "board_address_unverified_warning": "Bu board adresi doğrulanmamış. Board sahibi bu adresin sahibi olmayabilir.",
   "go_to_settings_to_import_mod_account": "Mod hesabınızı içe aktarmak için <1>ayarlar</1>a gidin",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "Lütfen göndermeden önce <rules>Kuralları</rules> ve <faq>SSS</faq>'yi okuyun."
 }

@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "Eksternt billede fra {{host}} fejlede. Prøv VPN.",
   "media_failed_to_load_inline_unknown": "Eksternt billede fejlede. Prøv VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "Intet fundet",
   "modQueue.dismiss": "Ignorer",
   "board_address_unverified_warning": "Denne boardadresse er ikke verificeret. Boardets ejer ejer muligvis ikke denne adresse.",
   "go_to_settings_to_import_mod_account": "Gå til <1>indstillinger</1> for at importere din mod-konto",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "Læs venligst <rules>Reglerne</rules> og <faq>FAQ</faq>, før du poster."
 }

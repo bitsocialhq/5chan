@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "{{host}} の外部画像を読み込めませんでした。VPN を試してください。",
   "media_failed_to_load_inline_unknown": "外部画像を読み込めませんでした。VPN を試してください。",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "見つかりませんでした",
   "modQueue.dismiss": "無視",
   "board_address_unverified_warning": "このボードアドレスは検証されていません。ボード所有者がこのアドレスを所有していない可能性があります。",
   "go_to_settings_to_import_mod_account": "モデレーターアカウントをインポートするには<1>設定</1>に移動してください",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "投稿する前に<rules>ルール</rules>と<faq>FAQ</faq>をお読みください。"
 }

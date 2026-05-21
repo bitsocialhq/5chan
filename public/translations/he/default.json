@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "התמונה החיצונית מ-{{host}} נכשלה. נסה VPN.",
   "media_failed_to_load_inline_unknown": "התמונה החיצונית נכשלה. נסה VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "לא נמצא דבר",
   "modQueue.dismiss": "התעלם",
   "board_address_unverified_warning": "כתובת הלוח הזו אינה מאומתת. ייתכן שבעל הלוח אינו הבעלים של הכתובת הזו.",
   "go_to_settings_to_import_mod_account": "עבור אל <1>הגדרות</1> כדי לייבא את חשבון המוד שלך",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "אנא קרא את <rules>הכללים</rules> ואת <faq>שאלות נפוצות</faq> לפני פרסום."
 }

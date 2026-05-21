@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "{{host}} سے بیرونی تصویر لوڈ نہیں ہوئی۔ VPN آزمائیں۔",
   "media_failed_to_load_inline_unknown": "بیرونی تصویر لوڈ نہیں ہوئی۔ VPN آزمائیں۔",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "کچھ نہیں ملا",
   "modQueue.dismiss": "نظر انداز کریں",
   "board_address_unverified_warning": "اس بورڈ کے پتے کی تصدیق نہیں ہوئی۔ ممکن ہے بورڈ کا مالک اس پتے کا مالک نہ ہو۔",
   "go_to_settings_to_import_mod_account": "اپنا موڈ اکاؤنٹ درآمد کرنے کے لیے <1>ترتیبات</1> پر جائیں",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "براہ کرم پوسٹ کرنے سے پہلے <rules>اصول</rules> اور <faq>اکثر پوچھے گئے سوالات</faq> پڑھیں۔"
 }

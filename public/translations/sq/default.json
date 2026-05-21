@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "Imazhi i jashtëm nga {{host}} dështoi. Provoni VPN.",
   "media_failed_to_load_inline_unknown": "Imazhi i jashtëm dështoi. Provoni VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "Asgjë nuk u gjet",
   "modQueue.dismiss": "Shpërfill",
   "board_address_unverified_warning": "Kjo adresë e board-it nuk është verifikuar. Pronari i board-it mund të mos e zotërojë këtë adresë.",
   "go_to_settings_to_import_mod_account": "Shkoni te <1>parametrat</1> për të importuar llogarinë tuaj të modit",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "Ju lutemi lexoni <rules>Rregullat</rules> dhe <faq>Pyetjet e shpeshta</faq> para se të postoni."
 }

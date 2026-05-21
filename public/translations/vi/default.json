@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "Không tải được ảnh bên ngoài từ {{host}}. Thử VPN.",
   "media_failed_to_load_inline_unknown": "Không tải được ảnh bên ngoài. Thử VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "Không tìm thấy gì",
   "modQueue.dismiss": "Bỏ qua",
   "board_address_unverified_warning": "Địa chỉ bảng này chưa được xác minh. Chủ bảng có thể không sở hữu địa chỉ này.",
   "go_to_settings_to_import_mod_account": "Vào <1>cài đặt</1> để nhập tài khoản mod của bạn",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "Vui lòng đọc <rules>Quy tắc</rules> và <faq>Câu hỏi thường gặp</faq> trước khi đăng."
 }

@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "Nabigo ang panlabas na larawan mula sa {{host}}. Subukan ang VPN.",
   "media_failed_to_load_inline_unknown": "Nabigo ang panlabas na larawan. Subukan ang VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "Walang Natagpuan",
   "modQueue.dismiss": "Huwag pansinin",
   "board_address_unverified_warning": "Hindi beripikado ang address ng board na ito. Maaaring hindi pag-aari ng may-ari ng board ang address na ito.",
   "go_to_settings_to_import_mod_account": "Pumunta sa <1>mga setting</1> para i-import ang iyong mod account",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "Pakibasa ang <rules>Rules</rules> at <faq>FAQ</faq> bago mag-post."
 }
