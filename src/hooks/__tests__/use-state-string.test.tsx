@@ -122,6 +122,23 @@ describe('use-state-string', () => {
       root.render(createElement(StateStringHarness, { value: { state: 'updating', updatingState: 'fetching-ipns' } }));
     });
     expect(latestValue).toBe('Downloading board via IPFS');
+
+    act(() => {
+      root.render(createElement(StateStringHarness, { value: { publishingState: 'fetching-ipfs' } }));
+    });
+    expect(latestValue).toBe('Downloading thread via IPFS');
+  });
+
+  it('formats raw community loading states when no client or update states are available', () => {
+    testState.community = {
+      state: 'fetching-community-ipfs',
+    };
+
+    act(() => {
+      root.render(createElement(FeedStateStringHarness, { addresses: ['music-posting.eth'] }));
+    });
+
+    expect(latestValue).toBe('Downloading board via IPFS');
   });
 
   it('formats browser p2p single-board feed fallback states as peer downloads', () => {
