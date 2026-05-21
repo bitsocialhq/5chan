@@ -279,6 +279,63 @@ describe('Markdown', () => {
     expect(container.textContent).toBe('https://en.wikipedia.org/wiki/Function_(mathematics) https://example.com/path),');
   });
 
+  it('renders whitelisted 4chan fortune markup with its specific color', async () => {
+    await renderMarkdown({
+      content: 'body<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
+    });
+
+    const fortune = container.querySelector<HTMLElement>('.fortune');
+    expect(fortune?.textContent).toBe('Your fortune: Excellent Luck');
+    expect(fortune?.style.color).toBe('rgb(253, 77, 50)');
+    expect(fortune?.querySelectorAll('br')).toHaveLength(2);
+    expect(container.textContent).toBe('bodyYour fortune: Excellent Luck');
+  });
+
+  it('renders whitelisted 4chan dice roll markup as bold post content', async () => {
+    await renderMarkdown({
+      content: '<b>Rolled 2, 2 = 4 (2d6)<br><br></b>dice body',
+    });
+
+    const diceRoll = container.querySelector('strong');
+    expect(diceRoll?.textContent).toBe('Rolled 2, 2 = 4 (2d6)');
+    expect(diceRoll?.querySelectorAll('br')).toHaveLength(2);
+    expect(container.textContent).toBe('Rolled 2, 2 = 4 (2d6)dice body');
+  });
+
+  it('renders only the /qst/ author formatting BBCode tags on qst routes', async () => {
+    await renderMarkdown(
+      {
+        content: '[b]bold[/b] [i]italic[/i] [red]red[/red] [green]green[/green] [blue]blue[/blue] [u]raw[/u] [spoiler][b]hidden[/b][/spoiler]',
+      },
+      '/qst/thread/post-1',
+    );
+
+    expect(container.querySelector('strong')?.textContent).toBe('bold');
+    expect(container.querySelector('em')?.textContent).toBe('italic');
+
+    const red = Array.from(container.querySelectorAll<HTMLElement>('span')).find((node) => node.textContent === 'red');
+    const green = Array.from(container.querySelectorAll<HTMLElement>('span')).find((node) => node.textContent === 'green');
+    const blue = Array.from(container.querySelectorAll<HTMLElement>('span')).find((node) => node.textContent === 'blue');
+    expect(red?.style.color).toBe('rgb(196, 30, 58)');
+    expect(green?.style.color).toBe('rgb(0, 165, 80)');
+    expect(blue?.style.color).toBe('rgb(29, 141, 196)');
+    expect(container.querySelector('.spoilertext strong')?.textContent).toBe('hidden');
+    expect(container.textContent).toContain('[u]raw[/u]');
+  });
+
+  it('leaves qst-only BBCode raw outside qst routes', async () => {
+    await renderMarkdown(
+      {
+        content: '[b]bold[/b] [red]red[/red]',
+      },
+      '/tg/thread/post-1',
+    );
+
+    expect(container.querySelector('strong')).toBeNull();
+    expect(Array.from(container.querySelectorAll<HTMLElement>('span')).some((node) => node.style.color)).toBe(false);
+    expect(container.textContent).toBe('[b]bold[/b] [red]red[/red]');
+  });
+
   it('renders number quote links with op and unavailable state derived from cached comments', async () => {
     testState.comments = {
       'comment-42': { cid: 'comment-42', number: 42 },

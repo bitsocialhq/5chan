@@ -17,6 +17,7 @@ import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stor
 import { useComment } from '@bitsocial/bitsocial-react-hooks';
 import ReplyQuotePreview from '../reply-quote-preview';
 import ExternalNumberQuoteLink from './external-number-quote-link';
+import { DICE_ROLL_MARKUP_REGEX, FORTUNE_MARKUP_REGEX, getMatchingFortuneEntry } from '../../lib/utils/post-options-utils';
 
 const safeParseUrl = (href: string): URL | null => {
   try {
@@ -152,6 +153,18 @@ const SPOILER_REGEX = /\[[sS][pP][oO][iI][lL][eE][rR]\]([\s\S]*?)\[\/[sS][pP][oO
 const CROSSBOARD_REGEX = />>>\/((?:[a-zA-Z0-9]{1,10}\/(?:[a-zA-Z0-9]{46})?|[a-zA-Z0-9\-.]+(?:\/[a-zA-Z0-9]{46})?))[.,:;!?]*/;
 const QUOTE_LINK_REGEX = /(?<![>/\w])>>(\d+)(?![\d/])/;
 const URL_REGEX = /https?:\/\/[^\s<>[\]]+/;
+type QstBbcodeTag = 'b' | 'i' | 'red' | 'green' | 'blue';
+const QST_BBCODE_OPEN_REGEX = /\[(b|i|red|green|blue)\]/g;
+const QST_BBCODE_COLORS = {
+  red: '#C41E3A',
+  green: '#00A550',
+  blue: '#1d8dc4',
+} satisfies Record<Extract<QstBbcodeTag, 'red' | 'green' | 'blue'>, string>;
+const QST_BBCODE_COLOR_STYLES = {
+  red: { color: QST_BBCODE_COLORS.red },
+  green: { color: QST_BBCODE_COLORS.green },
+  blue: { color: QST_BBCODE_COLORS.blue },
+} satisfies Record<Extract<QstBbcodeTag, 'red' | 'green' | 'blue'>, React.CSSProperties>;
 
 const COMBINED_REGEX = new RegExp(
   `(${SPOILER_REGEX.source})|(${CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX.source})|(${CROSSBOARD_REGEX.source})|(${QUOTE_LINK_REGEX.source})|(${URL_REGEX.source})`,
@@ -308,6 +321,7 @@ interface RenderContext {
   isInCatalogView: boolean;
   postCid?: string;
   communityAddress?: string;
+  enableQstBbcode: boolean;
 }
 
 interface MarkdownProps {
@@ -398,7 +412,7 @@ const TokenNode = ({ token, context }: { token: Token; context: RenderContext })
 
   switch (token.type) {
     case 'text':
-      return <>{token.value}</>;
+      return context.enableQstBbcode ? <QstBbcodeText text={token.value} tokenKey={token.key} /> : <>{token.value}</>;
     case 'url': {
       const href = token.href;
       const linkMediaInfo = getLinkMediaInfo(href);
@@ -445,17 +459,155 @@ const TokenList = ({ tokens, context }: { tokens: Token[]; context: RenderContex
   );
 };
 
+const findMatchingQstBbcodeClose = (text: string, tag: QstBbcodeTag, searchStart: number): number => {
+  const tagRegex = new RegExp(`\\[(/?)${tag}\\]`, 'g');
+  tagRegex.lastIndex = searchStart;
+  let depth = 1;
+  let match: RegExpExecArray | null;
+
+  while ((match = tagRegex.exec(text)) !== null) {
+    depth += match[1] ? -1 : 1;
+    if (depth === 0) {
+      return match.index;
+    }
+  }
+
+  return -1;
+};
+
+const renderQstBbcodeElement = (tag: QstBbcodeTag, key: string, children: React.ReactNode[]) => {
+  if (tag === 'b') {
+    return <strong key={key}>{children}</strong>;
+  }
+  if (tag === 'i') {
+    return <em key={key}>{children}</em>;
+  }
+  return (
+    <span key={key} style={QST_BBCODE_COLOR_STYLES[tag]}>
+      {children}
+    </span>
+  );
+};
+
+const renderQstBbcodeText = (text: string, keyPrefix: string): React.ReactNode[] => {
+  const elements: React.ReactNode[] = [];
+  const regex = new RegExp(QST_BBCODE_OPEN_REGEX.source, 'g');
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    const tag = match[1] as QstBbcodeTag;
+    const matchStart = match.index;
+    const contentStart = regex.lastIndex;
+    const closeStart = findMatchingQstBbcodeClose(text, tag, contentStart);
+
+    if (closeStart === -1) {
+      continue;
+    }
+
+    if (matchStart > lastIndex) {
+      elements.push(<React.Fragment key={`${keyPrefix}text-${lastIndex}-${matchStart}`}>{text.slice(lastIndex, matchStart)}</React.Fragment>);
+    }
+
+    const closeEnd = closeStart + tag.length + 3;
+    const childKeyPrefix = `${keyPrefix}${tag}-${matchStart}-`;
+    elements.push(renderQstBbcodeElement(tag, `${keyPrefix}${tag}-${matchStart}-${closeEnd}`, renderQstBbcodeText(text.slice(contentStart, closeStart), childKeyPrefix)));
+    lastIndex = closeEnd;
+    regex.lastIndex = closeEnd;
+  }
+
+  if (lastIndex < text.length) {
+    elements.push(<React.Fragment key={`${keyPrefix}text-${lastIndex}-${text.length}`}>{text.slice(lastIndex)}</React.Fragment>);
+  }
+
+  return elements;
+};
+
+const QstBbcodeText = ({ text, tokenKey }: { text: string; tokenKey: string }) => <>{renderQstBbcodeText(text, `${tokenKey}/`)}</>;
+
+const Fortune = ({ color, text }: { color: string; text: string }) => (
+  <span className='fortune' style={{ color }}>
+    <br />
+    <br />
+    <strong>Your fortune: {text}</strong>
+  </span>
+);
+
+const DiceRoll = ({ text }: { text: string }) => (
+  <strong>
+    {text}
+    <br />
+    <br />
+  </strong>
+);
+
+const renderLineContent = (line: string, context: RenderContext): React.ReactNode[] => {
+  const elements: React.ReactNode[] = [];
+  let lastIndex = 0;
+
+  while (lastIndex < line.length) {
+    FORTUNE_MARKUP_REGEX.lastIndex = lastIndex;
+    DICE_ROLL_MARKUP_REGEX.lastIndex = lastIndex;
+
+    const fortuneMatch = FORTUNE_MARKUP_REGEX.exec(line);
+    const diceMatch = DICE_ROLL_MARKUP_REGEX.exec(line);
+    const nextMatch =
+      fortuneMatch && diceMatch
+        ? fortuneMatch.index <= diceMatch.index
+          ? { type: 'fortune' as const, match: fortuneMatch }
+          : { type: 'dice' as const, match: diceMatch }
+        : fortuneMatch
+          ? { type: 'fortune' as const, match: fortuneMatch }
+          : diceMatch
+            ? { type: 'dice' as const, match: diceMatch }
+            : null;
+
+    if (!nextMatch) {
+      break;
+    }
+
+    const [fullMatch] = nextMatch.match;
+    const matchStart = nextMatch.match.index;
+    const matchEnd = matchStart + fullMatch.length;
+
+    if (matchStart > lastIndex) {
+      elements.push(<TokenList key={`text-${lastIndex}-${matchStart}`} tokens={tokenize(line.slice(lastIndex, matchStart), `${lastIndex}:`)} context={context} />);
+    }
+
+    if (nextMatch.type === 'dice') {
+      elements.push(<DiceRoll key={`dice-${matchStart}`} text={nextMatch.match[1]} />);
+    } else {
+      const [, color, text] = nextMatch.match;
+      const fortune = getMatchingFortuneEntry(color, text);
+      if (fortune) {
+        elements.push(<Fortune key={`fortune-${matchStart}`} color={fortune.color} text={fortune.text} />);
+      } else {
+        elements.push(<TokenList key={`text-${matchStart}-${matchEnd}`} tokens={tokenize(fullMatch, `${matchStart}:`)} context={context} />);
+      }
+    }
+
+    lastIndex = matchEnd;
+  }
+
+  if (lastIndex < line.length) {
+    elements.push(<TokenList key={`text-${lastIndex}-${line.length}`} tokens={tokenize(line.slice(lastIndex), `${lastIndex}:`)} context={context} />);
+  }
+
+  return elements;
+};
+
 const Markdown = ({ content, title, postCid, communityAddress }: MarkdownProps) => {
   const location = useLocation();
   const params = useParams();
   const isInCatalogView = isCatalogView(location.pathname, params);
+  const enableQstBbcode = location.pathname.split('/').filter(Boolean)[0] === 'qst';
 
   const rendered = useMemo(() => {
     const normalized = normalizeContent(content || '');
     const lines = normalized.split('\n');
     const elements: React.ReactNode[] = [];
 
-    const context = { isInCatalogView, postCid, communityAddress };
+    const context = { isInCatalogView, postCid, communityAddress, enableQstBbcode };
 
     lines.forEach((line, lineIndex) => {
       if (lineIndex > 0) {
@@ -466,8 +618,7 @@ const Markdown = ({ content, title, postCid, communityAddress }: MarkdownProps) 
 
       const isGreentext = isGreentextLine(line);
 
-      const tokens = tokenize(line);
-      const lineElements = <TokenList tokens={tokens} context={context} />;
+      const lineElements = renderLineContent(line, context);
 
       if (isGreentext) {
         elements.push(
@@ -481,7 +632,7 @@ const Markdown = ({ content, title, postCid, communityAddress }: MarkdownProps) 
     });
 
     return elements;
-  }, [content, isInCatalogView, postCid, communityAddress]);
+  }, [content, isInCatalogView, postCid, communityAddress, enableQstBbcode]);
 
   return (
     <span className={styles.markdown}>
