@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Denne tråden ble fjernet av boardmoderatorer",
   "this_reply_was_deleted": "Dette svaret ble slettet av forfatteren",
   "this_reply_was_removed": "Dette svaret ble fjernet av forummoderatorer",
-  "not_mod_of_any_board": "Du er ikke moderator på noen tavle. [<1>Importer</1>] modkontoen din",
+  "not_mod_of_any_board": "Du er ikke moderator på noen tavle.",
   "search_results_for": "Søkeresultater for",
   "help": "Hjelp",
   "filter_and_highlights_help": "Filtre og fremhevinger Hjelp",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Ignorer",
-  "board_address_unverified_warning": "Denne board-adressen er ikke bekreftet. Board-eieren eier kanskje ikke denne adressen."
+  "board_address_unverified_warning": "Denne board-adressen er ikke bekreftet. Board-eieren eier kanskje ikke denne adressen.",
+  "go_to_settings_to_import_mod_account": "Gå til <1>innstillinger</1> for å importere modkontoen din"
 }

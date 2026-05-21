@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Deze thread werd verwijderd door boardmoderators",
   "this_reply_was_deleted": "Dit antwoord werd verwijderd door de auteur",
   "this_reply_was_removed": "Dit antwoord is verwijderd door de forum moderators",
-  "not_mod_of_any_board": "Je bent geen mod van een bord. [<1>Importeer</1>] je mod-account",
+  "not_mod_of_any_board": "Je bent geen mod van een bord.",
   "search_results_for": "Zoekresultaten voor",
   "help": "Help",
   "filter_and_highlights_help": "Filters en Markeringen Help",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Negeren",
-  "board_address_unverified_warning": "Dit boardadres is niet geverifieerd. De eigenaar van het board is mogelijk niet de eigenaar van dit adres."
+  "board_address_unverified_warning": "Dit boardadres is niet geverifieerd. De eigenaar van het board is mogelijk niet de eigenaar van dit adres.",
+  "go_to_settings_to_import_mod_account": "Ga naar <1>instellingen</1> om je mod-account te importeren"
 }

@@ -201,7 +201,7 @@
   "this_thread_was_removed": "กระทู้นี้ถูกลบโดยผู้ดูแลบอร์ด",
   "this_reply_was_deleted": "การตอบกลับนี้ถูกลบโดยผู้แต่ง",
   "this_reply_was_removed": "คำตอบนี้ถูกลบโดยผู้ดูแลบอร์ด",
-  "not_mod_of_any_board": "คุณไม่ใช่ผู้ดูแลบอร์ดใดๆ [<1>นำเข้า</1>] บัญชีผู้ดูแลของคุณ",
+  "not_mod_of_any_board": "คุณไม่ใช่ผู้ดูแลบอร์ดใดๆ",
   "search_results_for": "ผลการค้นหาสำหรับ",
   "help": "ช่วยเหลือ",
   "filter_and_highlights_help": "ตัวกรองและการเน้นความช่วยเหลือ",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "มองข้าม",
-  "board_address_unverified_warning": "ที่อยู่บอร์ดนี้ยังไม่ได้รับการยืนยัน เจ้าของบอร์ดอาจไม่ได้เป็นเจ้าของที่อยู่นี้"
+  "board_address_unverified_warning": "ที่อยู่บอร์ดนี้ยังไม่ได้รับการยืนยัน เจ้าของบอร์ดอาจไม่ได้เป็นเจ้าของที่อยู่นี้",
+  "go_to_settings_to_import_mod_account": "ไปที่ <1>การตั้งค่า</1> เพื่อนำเข้าบัญชีผู้ดูแลของคุณ"
 }

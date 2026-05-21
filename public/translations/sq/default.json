@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Ky thread u hoq nga moderatorët e bordit",
   "this_reply_was_deleted": "Ky përgjigje u fshi nga autori i saj",
   "this_reply_was_removed": "Ky përgjigje u hoq nga moderatorët e forumit",
-  "not_mod_of_any_board": "Nuk jeni mod në asnjë bord. [<1>Importoni</1>] llogarinë tuaj të modit",
+  "not_mod_of_any_board": "Nuk jeni mod në asnjë bord.",
   "search_results_for": "Rezultatet e kërkimit për",
   "help": "Ndihmë",
   "filter_and_highlights_help": "Ndihma për Filtro & Thekso",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Shpërfill",
-  "board_address_unverified_warning": "Kjo adresë e board-it nuk është verifikuar. Pronari i board-it mund të mos e zotërojë këtë adresë."
+  "board_address_unverified_warning": "Kjo adresë e board-it nuk është verifikuar. Pronari i board-it mund të mos e zotërojë këtë adresë.",
+  "go_to_settings_to_import_mod_account": "Shkoni te <1>parametrat</1> për të importuar llogarinë tuaj të modit"
 }

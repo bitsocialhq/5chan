@@ -201,7 +201,7 @@
   "this_thread_was_removed": "এই থ্রেডটি বোর্ড moderators দ্বারা মুছে ফেলা হয়েছে",
   "this_reply_was_deleted": "এই প্রতিক্রিয়া তার লেখক দ্বারা মুছে ফেলা হয়েছে",
   "this_reply_was_removed": "এই প্রতিক্রিয়া বোর্ড পরিচালকদের দ্বারা সরানো হয়েছে",
-  "not_mod_of_any_board": "আপনি কোনও বোর্ডের মড নন। [<1>আমদানি করুন</1>] আপনার মড অ্যাকাউন্ট",
+  "not_mod_of_any_board": "আপনি কোনও বোর্ডের মড নন।",
   "search_results_for": "অনুসন্ধান ফলাফল",
   "help": "সাহায্য",
   "filter_and_highlights_help": "ফিল্টার এবং হাইলাইট সাহায্য",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "উপেক্ষা করুন",
-  "board_address_unverified_warning": "এই বোর্ড ঠিকানাটি যাচাই করা হয়নি। বোর্ডের মালিক এই ঠিকানার মালিক নাও হতে পারেন।"
+  "board_address_unverified_warning": "এই বোর্ড ঠিকানাটি যাচাই করা হয়নি। বোর্ডের মালিক এই ঠিকানার মালিক নাও হতে পারেন।",
+  "go_to_settings_to_import_mod_account": "আপনার মড অ্যাকাউন্ট আমদানি করতে <1>সেটিংস</1>-এ যান"
 }

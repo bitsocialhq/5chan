@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Bu konu, board moderatörleri tarafından kaldırıldı",
   "this_reply_was_deleted": "Bu yanıt, yazar tarafından silindi",
   "this_reply_was_removed": "Bu yanıt, forum moderatörleri tarafından kaldırıldı",
-  "not_mod_of_any_board": "Hiçbir panoda moderatör değilsiniz. [<1>İçe aktarın</1>] mod hesabınızı",
+  "not_mod_of_any_board": "Hiçbir panoda moderatör değilsiniz.",
   "search_results_for": "Arama sonuçları için",
   "help": "Yardım",
   "filter_and_highlights_help": "Filtreler ve Vurgular Yardımı",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Yoksay",
-  "board_address_unverified_warning": "Bu board adresi doğrulanmamış. Board sahibi bu adresin sahibi olmayabilir."
+  "board_address_unverified_warning": "Bu board adresi doğrulanmamış. Board sahibi bu adresin sahibi olmayabilir.",
+  "go_to_settings_to_import_mod_account": "Mod hesabınızı içe aktarmak için <1>ayarlar</1>a gidin"
 }

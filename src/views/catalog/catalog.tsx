@@ -30,6 +30,7 @@ import { ReturnButton, ArchiveButton, TopButton, RefreshButton } from '../../com
 import mobileFooterStyles from '../../components/footer/footer.module.css';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display/error-display';
+import { ModEmptyState } from '../../components/mod-empty-state';
 import styles from './catalog.module.css';
 import { commentMatchesPattern } from '../../lib/utils/pattern-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
@@ -695,8 +696,14 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   );
   const isFeedLoaded = feed.length > 0 || hiddenThreadsCount > 0 || state === 'failed';
   const hasActiveSearch = searchText.trim().length > 0;
+  const showModEmptyState = isInModView && accountCommunityAddresses.length === 0;
   const showSearchNothingFound =
-    hasActiveSearch && !footerHasMore && footerCombinedFeedLength === 0 && state !== 'failed' && !(isInSubscriptionsView && (subscriptions?.length || 0) === 0);
+    hasActiveSearch &&
+    !footerHasMore &&
+    footerCombinedFeedLength === 0 &&
+    state !== 'failed' &&
+    !(isInSubscriptionsView && (subscriptions?.length || 0) === 0) &&
+    !showModEmptyState;
 
   // Process the feed to move "top" posts to the top (applied after display sort)
   const processedFeed = useMemo(() => {
@@ -900,6 +907,21 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
                 {catalogFooter}
               </>
             )}
+          </>
+        ) : showModEmptyState ? (
+          <>
+            <ModEmptyState />
+            <hr />
+            {catalogFooterFirstRow}
+            <PageFooterDesktop variant='catalog' styleRow={catalogFooterStyleRow} />
+            <PageFooterMobile>
+              <div className={mobileFooterStyles.mobileFooterButtons}>
+                <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+                <ArchiveButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+                <TopButton />
+                <RefreshButton />
+              </div>
+            </PageFooterMobile>
           </>
         ) : showSearchNothingFound ? (
           <>

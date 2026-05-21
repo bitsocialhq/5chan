@@ -201,7 +201,7 @@
   "this_thread_was_removed": "השרשור הזה הוסר על ידי מנהלי הפורום",
   "this_reply_was_deleted": "תשובה זו נמחקה על ידי המחבר שלה",
   "this_reply_was_removed": "תשובה זו הוסרה על ידי מנהלי הפורום",
-  "not_mod_of_any_board": "אתה לא מוד באף לוח. [<1>ייבא</1>] את חשבון המוד שלך",
+  "not_mod_of_any_board": "אתה לא מוד באף לוח.",
   "search_results_for": "תוצאות חיפוש עבור",
   "help": "עזרה",
   "filter_and_highlights_help": "עזרה במסננים והדגשות",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "התעלם",
-  "board_address_unverified_warning": "כתובת הלוח הזו אינה מאומתת. ייתכן שבעל הלוח אינו הבעלים של הכתובת הזו."
+  "board_address_unverified_warning": "כתובת הלוח הזו אינה מאומתת. ייתכן שבעל הלוח אינו הבעלים של הכתובת הזו.",
+  "go_to_settings_to_import_mod_account": "עבור אל <1>הגדרות</1> כדי לייבא את חשבון המוד שלך"
 }

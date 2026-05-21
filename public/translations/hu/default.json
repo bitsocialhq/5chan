@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Ezt a témát a fórum moderátorai eltávolították",
   "this_reply_was_deleted": "Ez a válasz törölve lett a szerzője által",
   "this_reply_was_removed": "Ez a válasz törlésre került a fórum moderátorai által",
-  "not_mod_of_any_board": "Nem vagy moderátor egyetlen táblán sem. [<1>Importáld</1>] a moderátori fiókodat",
+  "not_mod_of_any_board": "Nem vagy moderátor egyetlen táblán sem.",
   "search_results_for": "Keresési eredmények",
   "help": "Segítség",
   "filter_and_highlights_help": "Szűrők és kiemelések súgó",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Mellőzés",
-  "board_address_unverified_warning": "Ez a board-cím nincs ellenőrizve. Lehet, hogy a board tulajdonosa nem birtokolja ezt a címet."
+  "board_address_unverified_warning": "Ez a board-cím nincs ellenőrizve. Lehet, hogy a board tulajdonosa nem birtokolja ezt a címet.",
+  "go_to_settings_to_import_mod_account": "Lépj a <1>beállítások</1> menübe a moderátori fiókod importálásához"
 }

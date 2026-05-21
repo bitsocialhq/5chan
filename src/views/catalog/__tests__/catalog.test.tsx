@@ -909,6 +909,22 @@ describe('Catalog', () => {
     expect(container.querySelector('[data-testid="catalog-first-row"]')?.textContent).toBe('music-posting.eth');
   });
 
+  it('shows mod empty state with settings link in mod catalog', async () => {
+    testState.accountCommunityAddresses = [];
+
+    await renderCatalog({
+      catalogProps: { viewType: 'mod' },
+      initialEntry: '/mod/catalog',
+      routePath: '/mod/*',
+    });
+
+    expect(container.textContent).toContain('not_mod_of_any_board');
+    expect(container.textContent).toContain('go_to_settings_to_import_mod_account');
+    expect(container.querySelector('[role="status"]')?.className).toContain('modEmptyState');
+    expect(container.querySelector('a')?.getAttribute('href')).toBe('/mod/settings#account-settings');
+    expect(container.querySelectorAll('[data-testid="catalog-row"]')).toHaveLength(0);
+  });
+
   it('shows centered nothing found when catalog search has no matches', async () => {
     testState.feed = [{ cid: 'network-post', title: 'cats on stage', communityAddress: 'music-posting.eth' }];
     testState.searchText = 'asddasd';

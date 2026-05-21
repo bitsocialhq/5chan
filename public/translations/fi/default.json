@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Tämä ketju poistettiin foorumin moderaattoreiden toimesta",
   "this_reply_was_deleted": "Tämä vastaus poistettiin sen kirjoittajalta",
   "this_reply_was_removed": "Tämä vastaus poistettiin foorumin moderaattoreiden toimesta",
-  "not_mod_of_any_board": "Et ole moderaattori missään taulussa. [<1>Tuo</1>] moderaattoritilisi",
+  "not_mod_of_any_board": "Et ole moderaattori missään taulussa.",
   "search_results_for": "Hakutulokset hakusanalle",
   "help": "Apua",
   "filter_and_highlights_help": "Suodattimet ja korostukset -apu",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Ohita",
-  "board_address_unverified_warning": "Tätä laudan osoitetta ei ole vahvistettu. Laudan omistaja ei välttämättä omista tätä osoitetta."
+  "board_address_unverified_warning": "Tätä laudan osoitetta ei ole vahvistettu. Laudan omistaja ei välttämättä omista tätä osoitetta.",
+  "go_to_settings_to_import_mod_account": "Siirry <1>asetuksiin</1> tuodaksesi moderaattoritilisi"
 }

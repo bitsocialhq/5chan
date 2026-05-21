@@ -201,7 +201,7 @@
   "this_thread_was_removed": "यह थ्रेड बोर्ड मॉडरेटर्स द्वारा हटा दिया गया था",
   "this_reply_was_deleted": "इस उत्तर को इसके लेखक द्वारा हटा दिया गया था",
   "this_reply_was_removed": "यह उत्तर बोर्ड मॉडरेटर द्वारा हटा दिया गया था",
-  "not_mod_of_any_board": "आप किसी बोर्ड के मॉड नहीं हैं। [<1>इम्पोर्ट करें</1>] अपना मॉड खाता",
+  "not_mod_of_any_board": "आप किसी बोर्ड के मॉड नहीं हैं।",
   "search_results_for": "के लिए खोज परिणाम",
   "help": "मदद",
   "filter_and_highlights_help": "फ़िल्टर और हाइलाइट्स सहायता",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "अनदेखा करें",
-  "board_address_unverified_warning": "इस बोर्ड पते की पुष्टि नहीं हुई है। हो सकता है बोर्ड का मालिक इस पते का मालिक न हो।"
+  "board_address_unverified_warning": "इस बोर्ड पते की पुष्टि नहीं हुई है। हो सकता है बोर्ड का मालिक इस पते का मालिक न हो।",
+  "go_to_settings_to_import_mod_account": "अपना मॉड खाता इम्पोर्ट करने के लिए <1>सेटिंग्स</1> पर जाएं"
 }

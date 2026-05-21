@@ -201,7 +201,7 @@
   "this_thread_was_removed": "تم إزالة هذا الموضوع بواسطة مشرفي المنتدى",
   "this_reply_was_deleted": "تم حذف هذه الرد من قبل مؤلفه",
   "this_reply_was_removed": "تمت إزالة هذه الرد من قبل مشرفي المنتدى",
-  "not_mod_of_any_board": "أنت لست مشرفًا في أي لوحة. [<1>استيراد</1>] حساب المشرف الخاص بك",
+  "not_mod_of_any_board": "أنت لست مشرفًا في أي لوحة.",
   "search_results_for": "نتائج البحث عن",
   "help": "مساعدة",
   "filter_and_highlights_help": "مساعدة الفلاتر والإبرازات",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "تجاهل",
-  "board_address_unverified_warning": "لم يتم التحقق من عنوان هذه اللوحة. قد لا يكون مالك اللوحة مالكًا لهذا العنوان."
+  "board_address_unverified_warning": "لم يتم التحقق من عنوان هذه اللوحة. قد لا يكون مالك اللوحة مالكًا لهذا العنوان.",
+  "go_to_settings_to_import_mod_account": "انتقل إلى <1>الإعدادات</1> لاستيراد حساب المشرف الخاص بك"
 }

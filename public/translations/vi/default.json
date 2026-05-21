@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Chủ đề này đã bị các quản trị viên diễn đàn xóa",
   "this_reply_was_deleted": "Câu trả lời này đã bị tác giả của nó xóa",
   "this_reply_was_removed": "Phản hồi này đã bị xóa bởi các quản trị viên diễn đàn",
-  "not_mod_of_any_board": "Bạn không phải là mod của bất kỳ bảng nào. [<1>Nhập</1>] tài khoản mod của bạn",
+  "not_mod_of_any_board": "Bạn không phải là mod của bất kỳ bảng nào.",
   "search_results_for": "Kết quả tìm kiếm cho",
   "help": "Trợ giúp",
   "filter_and_highlights_help": "Trợ giúp bộ lọc và đánh dấu",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Bỏ qua",
-  "board_address_unverified_warning": "Địa chỉ bảng này chưa được xác minh. Chủ bảng có thể không sở hữu địa chỉ này."
+  "board_address_unverified_warning": "Địa chỉ bảng này chưa được xác minh. Chủ bảng có thể không sở hữu địa chỉ này.",
+  "go_to_settings_to_import_mod_account": "Vào <1>cài đặt</1> để nhập tài khoản mod của bạn"
 }

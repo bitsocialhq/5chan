@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Denna tråd togs bort av forumets moderatorer",
   "this_reply_was_deleted": "Detta svar togs bort av författaren",
   "this_reply_was_removed": "Detta svar togs bort av forumets moderatorer",
-  "not_mod_of_any_board": "Du är inte moderator på någon tavla. [<1>Importera</1>] ditt modkonto",
+  "not_mod_of_any_board": "Du är inte moderator på någon tavla.",
   "search_results_for": "Sökresultat för",
   "help": "Hjälp",
   "filter_and_highlights_help": "Filter och markeringar Hjälp",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Avfärda",
-  "board_address_unverified_warning": "Den här board-adressen är inte verifierad. Boardets ägare kanske inte äger den här adressen."
+  "board_address_unverified_warning": "Den här board-adressen är inte verifierad. Boardets ägare kanske inte äger den här adressen.",
+  "go_to_settings_to_import_mod_account": "Gå till <1>inställningar</1> för att importera ditt modkonto"
 }

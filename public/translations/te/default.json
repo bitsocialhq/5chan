@@ -201,7 +201,7 @@
   "this_thread_was_removed": "ఈ థ్రెడ్ బోర్డ్ మోడరేటర్ల ద్వారా తీసివేయబడింది",
   "this_reply_was_deleted": "ఈ స్పందనను దాని రచయిత తొలగించారు",
   "this_reply_was_removed": "ఈ స్పందన బోర్డ్ మోడరేటర్లచే తొలగించబడింది",
-  "not_mod_of_any_board": "మీరు ఏ బోర్డుకీ మోడ్ కాదు. [<1>దిగుమతి చేయండి</1>] మీ మోడ్ ఖాతాను",
+  "not_mod_of_any_board": "మీరు ఏ బోర్డుకీ మోడ్ కాదు.",
   "search_results_for": "శోధన ఫలితాలు",
   "help": "సహాయం",
   "filter_and_highlights_help": "ఫిల్టర్లు మరియు హైలైట్ సహాయం",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "విస్మరించు",
-  "board_address_unverified_warning": "ఈ బోర్డ్ చిరునామా ధృవీకరించబడలేదు. బోర్డ్ యజమాని ఈ చిరునామాకు యజమాని కాకపోవచ్చు."
+  "board_address_unverified_warning": "ఈ బోర్డ్ చిరునామా ధృవీకరించబడలేదు. బోర్డ్ యజమాని ఈ చిరునామాకు యజమాని కాకపోవచ్చు.",
+  "go_to_settings_to_import_mod_account": "మీ మోడ్ ఖాతాను దిగుమతి చేయడానికి <1>అమరికలు</1>కి వెళ్లండి"
 }

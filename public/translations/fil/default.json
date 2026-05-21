@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Inalis ang thread na ito ng mga moderator ng board",
   "this_reply_was_deleted": "Ang tugon na ito ay tinanggal ng may-akda nito",
   "this_reply_was_removed": "Ang sagot na ito ay tinanggal ng mga moderator ng board",
-  "not_mod_of_any_board": "Hindi ka mod ng anumang board. [<1>I-import</1>] ang iyong mod account",
+  "not_mod_of_any_board": "Hindi ka mod ng anumang board.",
   "search_results_for": "Mga resulta ng paghahanap para sa",
   "help": "Tulong",
   "filter_and_highlights_help": "Tulong sa mga filter at highlight",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Huwag pansinin",
-  "board_address_unverified_warning": "Hindi beripikado ang address ng board na ito. Maaaring hindi pag-aari ng may-ari ng board ang address na ito."
+  "board_address_unverified_warning": "Hindi beripikado ang address ng board na ito. Maaaring hindi pag-aari ng may-ari ng board ang address na ito.",
+  "go_to_settings_to_import_mod_account": "Pumunta sa <1>mga setting</1> para i-import ang iyong mod account"
 }

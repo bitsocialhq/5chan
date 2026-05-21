@@ -201,7 +201,7 @@
   "this_thread_was_removed": "このスレッドはボードのモデレーターによって削除されました",
   "this_reply_was_deleted": "この返信はその著者によって削除されました",
   "this_reply_was_removed": "この返信は掲示板のモデレーターによって削除されました",
-  "not_mod_of_any_board": "あなたはどのボードのモデレーターでもありません。[<1>インポート</1>] あなたのモデレーターアカウント",
+  "not_mod_of_any_board": "あなたはどのボードのモデレーターでもありません。",
   "search_results_for": "検索結果",
   "help": "ヘルプ",
   "filter_and_highlights_help": "フィルターとハイライトのヘルプ",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "無視",
-  "board_address_unverified_warning": "このボードアドレスは検証されていません。ボード所有者がこのアドレスを所有していない可能性があります。"
+  "board_address_unverified_warning": "このボードアドレスは検証されていません。ボード所有者がこのアドレスを所有していない可能性があります。",
+  "go_to_settings_to_import_mod_account": "モデレーターアカウントをインポートするには<1>設定</1>に移動してください"
 }

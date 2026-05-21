@@ -1,0 +1,28 @@
+.modEmptyState {
+  padding: 1em 0;
+  text-align: center;
+  width: 100%;
+}
+
+.modEmptyStateTitle {
+  color: red;
+  display: block;
+  margin: 0;
+  font-size: x-large;
+  font-weight: bold;
+  line-height: normal;
+}
+
+.modEmptyStateAction {
+  color: var(--post-mobile-abbr-text-color);
+  margin-top: 0.5em;
+}
+
+.modEmptyStateAction a {
+  text-decoration: var(--button-text-decoration);
+  color: var(--button-desktop-text-color);
+}
+
+.modEmptyStateAction a:hover {
+  color: var(--button-desktop-text-color-hover);
+}

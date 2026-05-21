@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Toto vlákno bylo odstraněno moderátory fóra",
   "this_reply_was_deleted": "Tato odpověď byla smazána autorem",
   "this_reply_was_removed": "Tato odpověď byla odstraněna moderátory fóra",
-  "not_mod_of_any_board": "Nejste moderátor žádné desky. [<1>Importujte</1>] svůj moderátorský účet",
+  "not_mod_of_any_board": "Nejste moderátor žádné desky.",
   "search_results_for": "Výsledky hledání pro",
   "help": "Pomoc",
   "filter_and_highlights_help": "Pomoc s filtry a zvýrazněním",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Ignorovat",
-  "board_address_unverified_warning": "Tato adresa nástěnky není ověřená. Vlastník nástěnky nemusí tuto adresu vlastnit."
+  "board_address_unverified_warning": "Tato adresa nástěnky není ověřená. Vlastník nástěnky nemusí tuto adresu vlastnit.",
+  "go_to_settings_to_import_mod_account": "Přejděte do <1>nastavení</1> a importujte svůj moderátorský účet"
 }

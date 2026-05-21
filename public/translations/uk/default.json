@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Цю тему було видалено модераторами форуму",
   "this_reply_was_deleted": "Цю відповідь було видалено її автором",
   "this_reply_was_removed": "Цю відповідь було видалено модераторами форуму",
-  "not_mod_of_any_board": "Ви не модератор жодної дошки. [<1>Імпортуйте</1>] свій обліковий запис модератора",
+  "not_mod_of_any_board": "Ви не модератор жодної дошки.",
   "search_results_for": "Результати пошуку для",
   "help": "Допомога",
   "filter_and_highlights_help": "Допомога з фільтрами та підсвічуваннями",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Приховати",
-  "board_address_unverified_warning": "Цю адресу дошки не перевірено. Власник дошки може не володіти цією адресою."
+  "board_address_unverified_warning": "Цю адресу дошки не перевірено. Власник дошки може не володіти цією адресою.",
+  "go_to_settings_to_import_mod_account": "Перейдіть до <1>налаштувань</1>, щоб імпортувати свій обліковий запис модератора"
 }

@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Thread ini dihapus oleh moderator papan",
   "this_reply_was_deleted": "Balasan ini dihapus oleh penulisnya",
   "this_reply_was_removed": "Balasan ini dihapus oleh moderator papan",
-  "not_mod_of_any_board": "Anda bukan mod di papan mana pun. [<1>Impor</1>] akun mod Anda",
+  "not_mod_of_any_board": "Anda bukan mod di papan mana pun.",
   "search_results_for": "Hasil pencarian untuk",
   "help": "Bantuan",
   "filter_and_highlights_help": "Bantuan Filter dan Sorotan",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Abaikan",
-  "board_address_unverified_warning": "Alamat board ini belum diverifikasi. Pemilik board mungkin tidak memiliki alamat ini."
+  "board_address_unverified_warning": "Alamat board ini belum diverifikasi. Pemilik board mungkin tidak memiliki alamat ini.",
+  "go_to_settings_to_import_mod_account": "Buka <1>pengaturan</1> untuk mengimpor akun mod Anda"
 }

@@ -201,7 +201,7 @@
   "this_thread_was_removed": "اس تھریڈ کو بورڈ کے موڈریٹرز نے ہٹا دیا ہے",
   "this_reply_was_deleted": "اس جواب کو اس کے مصنف نے حذف کر دیا تھا",
   "this_reply_was_removed": "اس جواب کو بورڈ کے منتظمین نے حذف کر دیا ہے",
-  "not_mod_of_any_board": "آپ کسی بورڈ کے موڈ نہیں ہیں۔ [<1>درآمد کریں</1>] اپنا موڈ اکاؤنٹ",
+  "not_mod_of_any_board": "آپ کسی بورڈ کے موڈ نہیں ہیں۔",
   "search_results_for": "تلاش کے نتائج",
   "help": "مدد",
   "filter_and_highlights_help": "فلٹرز اور ہائی لائٹس کی مدد",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "نظر انداز کریں",
-  "board_address_unverified_warning": "اس بورڈ کے پتے کی تصدیق نہیں ہوئی۔ ممکن ہے بورڈ کا مالک اس پتے کا مالک نہ ہو۔"
+  "board_address_unverified_warning": "اس بورڈ کے پتے کی تصدیق نہیں ہوئی۔ ممکن ہے بورڈ کا مالک اس پتے کا مالک نہ ہو۔",
+  "go_to_settings_to_import_mod_account": "اپنا موڈ اکاؤنٹ درآمد کرنے کے لیے <1>ترتیبات</1> پر جائیں"
 }

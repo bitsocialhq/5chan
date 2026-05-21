@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Este hilo fue eliminado por los moderadores del foro",
   "this_reply_was_deleted": "Esta respuesta fue eliminada por su autor",
   "this_reply_was_removed": "Esta respuesta fue eliminada por los moderadores del foro",
-  "not_mod_of_any_board": "No eres moderador de ningún tablero. [<1>Importa</1>] tu cuenta de moderador",
+  "not_mod_of_any_board": "No eres moderador de ningún tablero.",
   "search_results_for": "Resultados de búsqueda para",
   "help": "Ayuda",
   "filter_and_highlights_help": "Ayuda de filtros y resaltes",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Descartar",
-  "board_address_unverified_warning": "Esta dirección del tablón no está verificada. Es posible que el propietario del tablón no sea dueño de esta dirección."
+  "board_address_unverified_warning": "Esta dirección del tablón no está verificada. Es posible que el propietario del tablón no sea dueño de esta dirección.",
+  "go_to_settings_to_import_mod_account": "Ve a <1>configuración</1> para importar tu cuenta de moderador"
 }

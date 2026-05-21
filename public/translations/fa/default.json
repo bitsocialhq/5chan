@@ -201,7 +201,7 @@
   "this_thread_was_removed": "این تاپیک توسط مدیران انجمن حذف شد",
   "this_reply_was_deleted": "این پاسخ توسط نویسنده‌اش حذف شد",
   "this_reply_was_removed": "این پاسخ توسط مدیران انجمن حذف شد",
-  "not_mod_of_any_board": "شما مدیر هیچ تابلویی نیستید. [<1>وارد کردن</1>] حساب مدیر خود",
+  "not_mod_of_any_board": "شما مدیر هیچ تابلویی نیستید.",
   "search_results_for": "نتایج جستجو برای",
   "help": "کمک",
   "filter_and_highlights_help": "کمک فیلترها و برجسته‌ها",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "نادیده گرفتن",
-  "board_address_unverified_warning": "این نشانی برد تأیید نشده است. ممکن است مالک برد صاحب این نشانی نباشد."
+  "board_address_unverified_warning": "این نشانی برد تأیید نشده است. ممکن است مالک برد صاحب این نشانی نباشد.",
+  "go_to_settings_to_import_mod_account": "برای وارد کردن حساب مدیر خود به <1>تنظیمات</1> بروید"
 }

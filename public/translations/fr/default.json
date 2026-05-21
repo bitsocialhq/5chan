@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Ce sujet a été supprimé par les modérateurs du forum",
   "this_reply_was_deleted": "Cette réponse a été supprimée par son auteur",
   "this_reply_was_removed": "Cette réponse a été supprimée par les modérateurs du forum",
-  "not_mod_of_any_board": "Vous n'êtes modérateur d'aucun forum. [<1>Importez</1>] votre compte de modération",
+  "not_mod_of_any_board": "Vous n'êtes modérateur d'aucun forum.",
   "search_results_for": "Résultats de recherche pour",
   "help": "Aide",
   "filter_and_highlights_help": "Aide sur les filtres et surlignages",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Ignorer",
-  "board_address_unverified_warning": "Cette adresse de board n'est pas vérifiée. Le propriétaire du board pourrait ne pas posséder cette adresse."
+  "board_address_unverified_warning": "Cette adresse de board n'est pas vérifiée. Le propriétaire du board pourrait ne pas posséder cette adresse.",
+  "go_to_settings_to_import_mod_account": "Allez dans les <1>paramètres</1> pour importer votre compte de modération"
 }

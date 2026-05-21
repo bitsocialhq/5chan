@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Dieser Thread wurde von den Moderatoren des Boards entfernt",
   "this_reply_was_deleted": "Diese Antwort wurde vom Autor gelöscht",
   "this_reply_was_removed": "Diese Antwort wurde von den Forenmoderatoren entfernt",
-  "not_mod_of_any_board": "Du bist kein Moderator eines Boards. [<1>Importiere</1>] dein Moderatorkonto",
+  "not_mod_of_any_board": "Du bist kein Moderator eines Boards.",
   "search_results_for": "Suchergebnisse für",
   "help": "Hilfe",
   "filter_and_highlights_help": "Filter- und Markierungs-Hilfe",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Ignorieren",
-  "board_address_unverified_warning": "Diese Board-Adresse ist nicht verifiziert. Der Board-Betreiber besitzt diese Adresse möglicherweise nicht."
+  "board_address_unverified_warning": "Diese Board-Adresse ist nicht verifiziert. Der Board-Betreiber besitzt diese Adresse möglicherweise nicht.",
+  "go_to_settings_to_import_mod_account": "Gehe zu <1>Einstellungen</1>, um dein Moderatorkonto zu importieren"
 }

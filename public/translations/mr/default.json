@@ -201,7 +201,7 @@
   "this_thread_was_removed": "हे थ्रेड बोर्ड मध्यमाने काढले गेले आहे",
   "this_reply_was_deleted": "हा प्रतिसाद त्याच्या लेखकाने हटवला आहे",
   "this_reply_was_removed": "या उत्तराला बोर्ड मॉडरेटरने काढले आहे",
-  "not_mod_of_any_board": "तुम्ही कोणत्याही बोर्डचे मॉड नाहीत. [<1>आयात करा</1>] तुमचे मॉड खाते",
+  "not_mod_of_any_board": "तुम्ही कोणत्याही बोर्डचे मॉड नाहीत.",
   "search_results_for": "सर्च परिणाम",
   "help": "मदत",
   "filter_and_highlights_help": "फिल्टर आणि हायलाइट्स सहाय्य",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "दुर्लक्ष करा",
-  "board_address_unverified_warning": "हा बोर्ड पत्ता सत्यापित केलेला नाही. बोर्डचा मालक हा पत्ता मालक नसू शकतो."
+  "board_address_unverified_warning": "हा बोर्ड पत्ता सत्यापित केलेला नाही. बोर्डचा मालक हा पत्ता मालक नसू शकतो.",
+  "go_to_settings_to_import_mod_account": "तुमचे मॉड खाते आयात करण्यासाठी <1>सेटिंग्ज</1> वर जा"
 }

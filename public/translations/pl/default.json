@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Wątek został usunięty przez moderatorów forum",
   "this_reply_was_deleted": "Ta odpowiedź została usunięta przez autora",
   "this_reply_was_removed": "Ta odpowiedź została usunięta przez moderatorów forum",
-  "not_mod_of_any_board": "Nie jesteś moderatorem żadnej tablicy. [<1>Importuj</1>] swoje konto moderatora",
+  "not_mod_of_any_board": "Nie jesteś moderatorem żadnej tablicy.",
   "search_results_for": "Wyniki wyszukiwania dla",
   "help": "Pomoc",
   "filter_and_highlights_help": "Pomoc dotycząca filtrów i wyróżnień",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Pomiń",
-  "board_address_unverified_warning": "Ten adres boarda nie jest zweryfikowany. Właściciel boarda może nie być właścicielem tego adresu."
+  "board_address_unverified_warning": "Ten adres boarda nie jest zweryfikowany. Właściciel boarda może nie być właścicielem tego adresu.",
+  "go_to_settings_to_import_mod_account": "Przejdź do <1>ustawień</1>, aby zaimportować swoje konto moderatora"
 }

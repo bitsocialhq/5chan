@@ -201,7 +201,7 @@
   "this_thread_was_removed": "Acest thread a fost eliminat de moderatorii board-ului",
   "this_reply_was_deleted": "Acest răspuns a fost șters de autorul său",
   "this_reply_was_removed": "Acest răspuns a fost eliminat de moderatorii forumului",
-  "not_mod_of_any_board": "Nu ești moderator pe niciun tablou. [<1>Importă</1>] contul tău de moderator",
+  "not_mod_of_any_board": "Nu ești moderator pe niciun tablou.",
   "search_results_for": "Rezultatele căutării pentru",
   "help": "Ajutor",
   "filter_and_highlights_help": "Ajutor pentru filtre și evidențieri",
@@ -389,5 +389,6 @@
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
   "modQueue.dismiss": "Ignoră",
-  "board_address_unverified_warning": "Această adresă de board nu este verificată. Proprietarul boardului s-ar putea să nu dețină această adresă."
+  "board_address_unverified_warning": "Această adresă de board nu este verificată. Proprietarul boardului s-ar putea să nu dețină această adresă.",
+  "go_to_settings_to_import_mod_account": "Accesează <1>setările</1> pentru a importa contul tău de moderator"
 }
