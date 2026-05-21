@@ -133,7 +133,9 @@ const BoardFooter = ({
         {communityState === 'failed' ? (
           <span className='red'>{communityState}</span>
         ) : isInSubscriptionsView && subscriptionsLength === 0 ? (
-          <span className='red'>{t('not_subscribed_to_any_board')}</span>
+          <div className={styles.searchNothingFound} role='status'>
+            {t('not_subscribed_to_any_board')}
+          </div>
         ) : isInModView && accountCommunityAddressesLength === 0 ? (
           <ModEmptyState />
         ) : (
