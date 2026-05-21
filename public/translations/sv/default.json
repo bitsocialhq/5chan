@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "Extern bild från {{host}} kunde inte läsas in. Prova VPN.",
   "media_failed_to_load_inline_unknown": "Extern bild kunde inte läsas in. Prova VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "Inget hittades",
   "modQueue.dismiss": "Avfärda",
   "board_address_unverified_warning": "Den här board-adressen är inte verifierad. Boardets ägare kanske inte äger den här adressen.",
   "go_to_settings_to_import_mod_account": "Gå till <1>inställningar</1> för att importera ditt modkonto",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "Läs <rules>Reglerna</rules> och <faq>FAQ</faq> innan du postar."
 }

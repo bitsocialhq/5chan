@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "Gambar eksternal dari {{host}} gagal. Coba VPN.",
   "media_failed_to_load_inline_unknown": "Gambar eksternal gagal. Coba VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "Tidak ada yang ditemukan",
   "modQueue.dismiss": "Abaikan",
   "board_address_unverified_warning": "Alamat board ini belum diverifikasi. Pemilik board mungkin tidak memiliki alamat ini.",
   "go_to_settings_to_import_mod_account": "Buka <1>pengaturan</1> untuk mengimpor akun mod Anda",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "Silakan baca <rules>Aturan</rules> dan <faq>FAQ</faq> sebelum memposting."
 }

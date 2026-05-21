@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "Ulkoinen kuva sivustolta {{host}} epäonnistui. Kokeile VPN:ää.",
   "media_failed_to_load_inline_unknown": "Ulkoinen kuva epäonnistui. Kokeile VPN:ää.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "Mitään ei löytynyt",
   "modQueue.dismiss": "Ohita",
   "board_address_unverified_warning": "Tätä laudan osoitetta ei ole vahvistettu. Laudan omistaja ei välttämättä omista tätä osoitetta.",
   "go_to_settings_to_import_mod_account": "Siirry <1>asetuksiin</1> tuodaksesi moderaattoritilisi",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "Lue <rules>Säännöt</rules> ja <faq>UKK</faq> ennen julkaisemista."
 }

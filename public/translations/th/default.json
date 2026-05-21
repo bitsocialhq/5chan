@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "โหลดรูปภาพภายนอกจาก {{host}} ไม่สำเร็จ ลอง VPN",
   "media_failed_to_load_inline_unknown": "โหลดรูปภาพภายนอกไม่สำเร็จ ลอง VPN",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "ไม่พบข้อมูล",
   "modQueue.dismiss": "มองข้าม",
   "board_address_unverified_warning": "ที่อยู่บอร์ดนี้ยังไม่ได้รับการยืนยัน เจ้าของบอร์ดอาจไม่ได้เป็นเจ้าของที่อยู่นี้",
   "go_to_settings_to_import_mod_account": "ไปที่ <1>การตั้งค่า</1> เพื่อนำเข้าบัญชีผู้ดูแลของคุณ",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "โปรดอ่าน<rules>กฎ</rules>และ<faq>คำถามที่พบบ่อย</faq>ก่อนโพสต์"
 }

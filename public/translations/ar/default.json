@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "فشلت الصورة الخارجية من {{host}}. جرّب VPN.",
   "media_failed_to_load_inline_unknown": "فشلت الصورة الخارجية. جرّب VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "لم يُعثر على شيء",
   "modQueue.dismiss": "تجاهل",
   "board_address_unverified_warning": "لم يتم التحقق من عنوان هذه اللوحة. قد لا يكون مالك اللوحة مالكًا لهذا العنوان.",
   "go_to_settings_to_import_mod_account": "انتقل إلى <1>الإعدادات</1> لاستيراد حساب المشرف الخاص بك",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "يُرجى قراءة <rules>القواعد</rules> و<faq>الأسئلة الشائعة</faq> قبل النشر."
 }

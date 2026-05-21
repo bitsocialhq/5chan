@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "A külső kép innen nem töltődött be: {{host}}. Próbálj VPN-t.",
   "media_failed_to_load_inline_unknown": "A külső kép nem töltődött be. Próbálj VPN-t.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "Nem található semmi",
   "modQueue.dismiss": "Mellőzés",
   "board_address_unverified_warning": "Ez a board-cím nincs ellenőrizve. Lehet, hogy a board tulajdonosa nem birtokolja ezt a címet.",
   "go_to_settings_to_import_mod_account": "Lépj a <1>beállítások</1> menübe a moderátori fiókod importálásához",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "Kérjük, olvasd el a <rules>Szabályokat</rules> és a <faq>GYIK</faq>-et posztolás előtt."
 }

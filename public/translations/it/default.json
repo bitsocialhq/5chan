@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "Immagine esterna da {{host}} non caricata. Prova una VPN.",
   "media_failed_to_load_inline_unknown": "Immagine esterna non caricata. Prova una VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "Nessun risultato",
   "modQueue.dismiss": "Ignora",
   "board_address_unverified_warning": "Questo indirizzo della board non è verificato. Il proprietario della board potrebbe non possedere questo indirizzo.",
   "go_to_settings_to_import_mod_account": "Vai alle <1>impostazioni</1> per importare il tuo account mod",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "Leggi le <rules>Regole</rules> e le <faq>FAQ</faq> prima di pubblicare."
 }

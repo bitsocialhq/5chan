@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "Внешнее изображение с {{host}} не загрузилось. Попробуйте VPN.",
   "media_failed_to_load_inline_unknown": "Внешнее изображение не загрузилось. Попробуйте VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "Ничего не найдено",
   "modQueue.dismiss": "Скрыть",
   "board_address_unverified_warning": "Этот адрес доски не проверен. Владелец доски может не владеть этим адресом.",
   "go_to_settings_to_import_mod_account": "Перейдите в <1>настройки</1>, чтобы импортировать свой аккаунт модератора",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "Пожалуйста, прочитайте <rules>Правила</rules> и <faq>FAQ</faq> перед публикацией."
 }

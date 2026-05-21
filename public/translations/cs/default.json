@@ -387,9 +387,9 @@
   "media_failed_to_load_inline": "Externí obrázek z {{host}} selhal. Zkuste VPN.",
   "media_failed_to_load_inline_unknown": "Externí obrázek selhal. Zkuste VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
-  "nothing_found": "Nothing Found",
+  "nothing_found": "Nic nenalezeno",
   "modQueue.dismiss": "Ignorovat",
   "board_address_unverified_warning": "Tato adresa nástěnky není ověřená. Vlastník nástěnky nemusí tuto adresu vlastnit.",
   "go_to_settings_to_import_mod_account": "Přejděte do <1>nastavení</1> a importujte svůj moderátorský účet",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "Před odesláním si přečtěte <rules>Pravidla</rules> a <faq>FAQ</faq>."
 }
