@@ -4,6 +4,15 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { getExpiringMediaLinkAlert } from '../../lib/utils/media-link-validation-utils';
+import {
+  type DiceRoll,
+  type FortuneEntry,
+  POST_OPTIONS_VALIDATION_DELAY_MS,
+  getContentWithPostOptionState as getContentWithOptions,
+  getPostOptionsDirectoryCode,
+  getUnsupportedPostOptionsMessage,
+  isUnsupportedPostOptionsMessage,
+} from '../../lib/utils/post-options-utils';
 import { getPublishURLFilename, isValidPublishURL } from '../../lib/utils/url-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { isAllView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
@@ -47,6 +56,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const directoryEntry = useDirectoryByAddress(communityAddress);
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
+  const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
   const { isResolvingExternalQuotes, publishReply, publishReplyError, publishReplyStateMessage, resetPublishReplyOptions, replyIndex, setPublishReplyOptions } =
@@ -73,6 +83,9 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     }, 0);
   });
   const urlRef = useRef<HTMLInputElement>(null);
+  const optionsRef = useRef<HTMLInputElement>(null);
+  const fortuneEntryRef = useRef<FortuneEntry | null>(null);
+  const diceRollRef = useRef<DiceRoll | null>(null);
   const lastSelectionStartRef = useRef(0);
   const lastSelectionEndRef = useRef(0);
   const lastProcessedQuoteInsertRequestIdRef = useRef(0);
@@ -100,11 +113,33 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     }, 1000),
   );
 
-  const onPublishReply = () => {
-    const currentContent = textRef.current?.value.trim() || '';
-    const currentUrl = urlRef.current?.value.trim() || '';
+  const checkPostOptionsRef = useRef(
+    debounce((options: string, directoryCode: string | undefined) => {
+      const nextOptionsError = getUnsupportedPostOptionsMessage(options, directoryCode);
+      if (nextOptionsError) {
+        setLengthError(null);
+        setError(nextOptionsError);
+      }
+    }, POST_OPTIONS_VALIDATION_DELAY_MS),
+  );
 
-    if (!currentContent && !currentUrl) {
+  const onPublishReply = () => {
+    const currentContent = textRef.current?.value || '';
+    const currentUrl = urlRef.current?.value.trim() || '';
+    const currentOptions = optionsRef.current?.value || '';
+    const currentOptionsError = getUnsupportedPostOptionsMessage(currentOptions, postOptionsDirectoryCode);
+    const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+
+    checkContentLengthRef.current.cancel();
+    checkPostOptionsRef.current.cancel();
+    setLengthError(null);
+
+    if (currentOptionsError) {
+      setError(currentOptionsError);
+      return;
+    }
+
+    if (!publishContent.trim() && !currentUrl) {
       setError(t('error') + ': ' + t('empty_comment_alert'));
       return;
     }
@@ -119,16 +154,13 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       return;
     }
 
-    checkContentLengthRef.current.cancel();
-    setLengthError(null);
-
-    if (currentContent.length > 2000) {
+    if (publishContent.trim().length > 2000) {
       setError(t('error') + ': ' + t('field_too_long'));
       return;
     }
 
     setError(null);
-    publishReply();
+    publishReply({ content: publishContent });
   };
 
   useEffect(() => {
@@ -194,6 +226,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
   useEffect(() => {
     return () => {
+      checkContentLengthRef.current.cancel();
+      checkPostOptionsRef.current.cancel();
       restoreBodyTextSelection();
     };
   }, []);
@@ -248,8 +282,9 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       lastSelectionStartRef.current = len;
       lastSelectionEndRef.current = len;
       const content = textRef.current.value;
-      setPublishReplyOptions({ content });
-      checkContentLengthRef.current(content, t);
+      const publishContent = getContentWithOptions(content, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+      setPublishReplyOptions({ content: publishContent });
+      checkContentLengthRef.current(publishContent, t);
 
       const spellcheckTimeout = window.setTimeout(() => {
         if (textRef.current) {
@@ -265,8 +300,17 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
   useEffect(() => {
     if (!showReplyModal) {
+      checkContentLengthRef.current.cancel();
+      checkPostOptionsRef.current.cancel();
       setIsBbcodePreviewing(false);
       setBbcodePreviewContent('');
+    }
+  }, [showReplyModal]);
+
+  useEffect(() => {
+    if (!showReplyModal) {
+      fortuneEntryRef.current = null;
+      diceRollRef.current = null;
     }
   }, [showReplyModal]);
 
@@ -275,7 +319,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     lastSelectionEndRef.current = e.target.selectionEnd ?? lastSelectionStartRef.current;
   };
 
-  const handleContentValueChange = (content: string, selectionStart?: number, selectionEnd?: number) => {
+  const handleContentValueChange = (content: string, selectionStart?: number, selectionEnd?: number, options = optionsRef.current?.value || '') => {
     if (isBbcodePreviewing) {
       setBbcodePreviewContent(content);
     }
@@ -283,8 +327,16 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       lastSelectionStartRef.current = selectionStart;
       lastSelectionEndRef.current = selectionEnd ?? selectionStart;
     }
-    setPublishReplyOptions({ content });
-    checkContentLengthRef.current(content, t);
+    const publishContent = getContentWithOptions(content, options, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+    setPublishReplyOptions({ content: publishContent });
+    checkContentLengthRef.current(publishContent, t);
+  };
+
+  const handleOptionsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const options = e.target.value;
+    handleContentValueChange(textRef.current?.value || '', undefined, undefined, options);
+    setError((currentError) => (isUnsupportedPostOptionsMessage(currentError) ? null : currentError));
+    checkPostOptionsRef.current(options, postOptionsDirectoryCode);
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -341,8 +393,9 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     lastSelectionStartRef.current = nextCursor;
     lastSelectionEndRef.current = nextCursor;
 
-    setPublishReplyOptions({ content: nextValue });
-    checkContentLengthRef.current(nextValue, t);
+    const publishContent = getContentWithOptions(nextValue, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+    setPublishReplyOptions({ content: publishContent });
+    checkContentLengthRef.current(publishContent, t);
   }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, setPublishReplyOptions, t]);
 
   const { isUploading, uploadedFileName, handleUpload } = useFileUpload({
@@ -407,17 +460,16 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             }}
           />
         </div>
-        <div className={styles.link}>
+        <div className={styles.options}>
           <input
             type='text'
-            ref={urlRef}
-            aria-label={requirePostLinkIsMedia ? t('link_to_file') : t('link')}
-            placeholder={requirePostLinkIsMedia ? FILE_LINK_PLACEHOLDER : capitalize(t('link'))}
-            disabled={isUploading}
-            onChange={(e) => {
-              setUrl(e.target.value);
-              setPublishReplyOptions({ link: e.target.value });
-            }}
+            ref={optionsRef}
+            aria-label={t('options')}
+            placeholder={capitalize(t('options'))}
+            autoCorrect='off'
+            autoComplete='off'
+            spellCheck='false'
+            onChange={handleOptionsChange}
           />
         </div>
         <div className={styles.content}>
@@ -447,6 +499,19 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             onBlur={(e) => {
               lastSelectionStartRef.current = e.currentTarget.selectionStart ?? e.currentTarget.value.length;
               lastSelectionEndRef.current = e.currentTarget.selectionEnd ?? lastSelectionStartRef.current;
+            }}
+          />
+        </div>
+        <div className={styles.link}>
+          <input
+            type='text'
+            ref={urlRef}
+            aria-label={requirePostLinkIsMedia ? t('link_to_file') : t('link')}
+            placeholder={requirePostLinkIsMedia ? FILE_LINK_PLACEHOLDER : capitalize(t('link'))}
+            disabled={isUploading}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              setPublishReplyOptions({ link: e.target.value });
             }}
           />
         </div>

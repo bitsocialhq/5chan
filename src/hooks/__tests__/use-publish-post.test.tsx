@@ -137,4 +137,22 @@ describe('usePublishPost', () => {
     expect(latestValue.publishPostError).toBe('blocked:unresolved');
     expect(testState.publishCommentMock).not.toHaveBeenCalled();
   });
+
+  it('publishes after synchronizing one-shot publish options', async () => {
+    await act(async () => {
+      latestValue.setPublishPostOptions({
+        content: 'Old body',
+      } as never);
+    });
+
+    await act(async () => {
+      latestValue.publishPost({
+        content: 'Fresh body',
+      } as never);
+      await Promise.resolve();
+    });
+
+    expect(testState.lastPublishOptions?.content).toBe('Fresh body');
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+  });
 });

@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ReplyModal from '../reply-modal';
+import { POST_OPTIONS_VALIDATION_DELAY_MS } from '../../../lib/utils/post-options-utils';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -15,8 +16,9 @@ const testState = vi.hoisted(() => ({
     'music-posting.eth': {
       address: 'music-posting.eth',
       features: {},
+      title: '/mu/ - Music',
     },
-  } as Record<string, { address: string; features?: Record<string, unknown> }>,
+  } as Record<string, { address: string; features?: Record<string, unknown>; title?: string }>,
   handleUploadMock: vi.fn(),
   isMobile: false,
   isResolvingExternalQuotes: false,
@@ -128,6 +130,8 @@ vi.mock('../../../stores/use-media-hosting-store', () => ({
 }));
 
 vi.mock('../../../hooks/use-directories', () => ({
+  findDirectoryByAddress: (directories: Array<{ address: string; features?: Record<string, unknown>; title?: string }>, address: string | undefined) =>
+    directories.find((entry) => entry.address === address),
   useDirectoryByAddress: (address: string) => testState.directoryByAddress[address],
   normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
 }));
@@ -148,7 +152,12 @@ vi.mock('../../../hooks/use-stable-community', () => ({
 vi.mock('../../../hooks/use-publish-reply', () => ({
   default: () => ({
     isResolvingExternalQuotes: testState.isResolvingExternalQuotes,
-    publishReply: testState.publishReplyMock,
+    publishReply: (options?: Record<string, unknown>) => {
+      if (options) {
+        testState.setPublishReplyOptionsMock(options);
+      }
+      return testState.publishReplyMock(options);
+    },
     publishReplyError: testState.publishReplyError,
     publishReplyStateMessage: testState.publishReplyStateMessage,
     replyIndex: testState.replyIndex,
@@ -177,9 +186,20 @@ vi.mock('../../loading-ellipsis', () => ({
 }));
 
 vi.mock('lodash/debounce', () => ({
-  default: <T extends (...args: any[]) => void>(fn: T) => {
-    const wrapped = ((...args: Parameters<T>) => fn(...args)) as T & { cancel: () => void };
-    wrapped.cancel = () => undefined;
+  default: <T extends (...args: any[]) => void>(fn: T, wait = 0) => {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const wrapped = ((...args: Parameters<T>) => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+      timeout = setTimeout(() => fn(...args), wait);
+    }) as T & { cancel: () => void };
+    wrapped.cancel = () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+      timeout = undefined;
+    };
     return wrapped;
   },
 }));
@@ -269,6 +289,12 @@ const dispatchInput = async (element: HTMLInputElement | HTMLTextAreaElement, va
   });
 };
 
+const waitForOptionsValidation = async () => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, POST_OPTIONS_VALIDATION_DELAY_MS + 20));
+  });
+};
+
 const clickButtonByText = async (text: string) => {
   const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === text);
   await act(async () => {
@@ -285,6 +311,22 @@ describe('ReplyModal', () => {
       'music-posting.eth': {
         address: 'music-posting.eth',
         features: {},
+        title: '/mu/ - Music',
+      },
+      'random-nsfw.bso': {
+        address: 'random-nsfw.bso',
+        features: {},
+        title: '/b/ - Random',
+      },
+      'silly-stuff.bso': {
+        address: 'silly-stuff.bso',
+        features: {},
+        title: '/s5s/ - Silly Stuff',
+      },
+      'traditional-games.bso': {
+        address: 'traditional-games.bso',
+        features: {},
+        title: '/tg/ - Traditional Games',
       },
     };
     testState.handleUploadMock.mockReset();
@@ -325,6 +367,9 @@ describe('ReplyModal', () => {
       'music-posting.eth': {
         address: 'music-posting.eth',
       },
+      'traditional-games.bso': {
+        address: 'traditional-games.bso',
+      },
     };
     testState.showUploadControls = true;
     testState.uploadComplete = undefined;
@@ -349,12 +394,19 @@ describe('ReplyModal', () => {
     await renderReplyModal('/mu/thread/post-1');
 
     const nameInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[0];
-    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const optionsInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
     const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
 
+    expect(optionsInput).toBeTruthy();
+    expect(linkInput).toBeTruthy();
+    expect(textarea).toBeTruthy();
     expect(nameInput?.value).toBe('Alice');
+    expect(optionsInput?.getAttribute('placeholder')).toBe('Options');
     expect(linkInput?.getAttribute('placeholder')).toContain('Link');
     expect(textarea?.value).toBe('>>42\nselected text');
+    expect(Boolean(optionsInput!.compareDocumentPosition(textarea!) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    expect(Boolean(textarea!.compareDocumentPosition(linkInput!) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
     expect(container.textContent).toContain('choose_file');
     expect(container.textContent).toContain('Spoiler?');
     expect(container.textContent).toContain('posts_last_synced_info:{"time":"ago:1000"}');
@@ -410,7 +462,7 @@ describe('ReplyModal', () => {
     expect(container.textContent).toContain('error: empty_comment_alert');
     expect(testState.publishReplyMock).not.toHaveBeenCalled();
 
-    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
     const spoilerCheckbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
     await dispatchInput(linkInput, 'not-a-url');
     await act(async () => {
@@ -433,6 +485,137 @@ describe('ReplyModal', () => {
     expect(container.textContent).toContain('file.png');
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ link: 'https://example.com/file.png' });
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('validates unsupported options and stores fortune output in reply content', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
+    testState.openEmpty = true;
+    testState.selectedText = '';
+
+    await renderReplyModal('/b/thread/post-1', 'random-nsfw.bso');
+
+    const optionsInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchInput(optionsInput, 'x y z');
+    expect(container.textContent).not.toContain('unsupported options');
+
+    await waitForOptionsValidation();
+    expect(container.textContent).toContain('unsupported options: x, y, z');
+    const delayedOptionsError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'unsupported options: x, y, z');
+    expect(delayedOptionsError?.className).toContain('error');
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'reply body');
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+
+    await dispatchInput(optionsInput, 'fortune');
+
+    expect(container.textContent).not.toContain('unsupported options');
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
+      content: 'reply body<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
+    });
+
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    randomSpy.mockRestore();
+  });
+
+  it('supports fortune on the /s5s/ route when directory metadata is not loaded', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
+    testState.openEmpty = true;
+    testState.selectedText = '';
+    delete testState.directoryByAddress['silly-stuff.bso'];
+
+    await renderReplyModal('/s5s/thread/post-1', 'silly-stuff.bso');
+
+    const optionsInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchInput(optionsInput, 'fortune');
+    await waitForOptionsValidation();
+
+    expect(container.textContent).not.toContain('unsupported options');
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'silly reply');
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
+      content: 'silly reply<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
+    });
+    randomSpy.mockRestore();
+  });
+
+  it('stores dice rolls in reply content on dice-enabled boards', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
+    testState.openEmpty = true;
+    testState.selectedText = '';
+
+    await renderReplyModal('/tg/thread/post-1', 'traditional-games.bso');
+
+    const optionsInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchInput(optionsInput, 'dice+2d6');
+    await waitForOptionsValidation();
+
+    expect(container.textContent).not.toContain('unsupported options');
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'dice reply');
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
+      content: '<b>Rolled 2, 2 = 4 (2d6)<br><br></b>dice reply',
+    });
+    randomSpy.mockRestore();
+  });
+
+  it('treats dice rolls as unsupported outside /tg/ and /qst/ in reply modal', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = '';
+
+    await renderReplyModal('/b/thread/post-1', 'random-nsfw.bso');
+
+    const optionsInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchInput(optionsInput, 'dice+1d6');
+    expect(container.textContent).not.toContain('unsupported options');
+
+    await waitForOptionsValidation();
+    expect(container.textContent).toContain('unsupported options: dice+1d6');
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'plain dice reply');
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: 'plain dice reply' });
+  });
+
+  it('treats fortune as unsupported outside /b/ and /s5s/ in reply modal', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = '';
+
+    await renderReplyModal('/mu/thread/post-1', 'music-posting.eth');
+
+    const optionsInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchInput(optionsInput, 'fortune');
+    expect(container.textContent).not.toContain('unsupported options');
+
+    await waitForOptionsValidation();
+    expect(container.textContent).toContain('unsupported options: fortune');
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'plain reply');
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: 'plain reply' });
   });
 
   it('shows BBCode controls only for board mods and inserts tags into the reply textarea', async () => {
@@ -476,7 +659,7 @@ describe('ReplyModal', () => {
     await renderReplyModal('/mu/thread/post-1');
 
     const nameInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[0];
-    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
 
     await dispatchInput(nameInput, 'Alicia');
     expect(testState.setAccountMock).toHaveBeenCalledWith({
@@ -533,7 +716,7 @@ describe('ReplyModal', () => {
 
     await renderReplyModal('/all/thread/post-1');
 
-    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
     expect(linkInput?.getAttribute('placeholder')).toBe('https://website.com/image.jpg');
     expect(container.textContent).not.toContain('warning');
     expect(container.textContent).not.toContain('Spoiler?');

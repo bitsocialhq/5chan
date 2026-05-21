@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { Link, MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostForm, { LinkTypePreviewer } from '../post-form';
+import { POST_OPTIONS_VALIDATION_DELAY_MS } from '../../../lib/utils/post-options-utils';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -110,6 +111,7 @@ vi.mock('../../../hooks/use-account-community-addresses', () => ({
 }));
 
 vi.mock('../../../hooks/use-directories', () => ({
+  findDirectoryByAddress: (directories: typeof testState.directories, address: string | undefined) => directories.find((entry) => entry.address === address),
   useDirectories: () => testState.directories,
   useDirectoryByAddress: (address: string | undefined) => testState.directories.find((entry) => entry.address === address),
   normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
@@ -159,10 +161,24 @@ vi.mock('../../../hooks/use-publish-post', async () => {
         }),
         [communityAddress],
       );
-      const publishPost = React.useCallback(() => {
-        testState.publishedPostOptions = getPublishPostOptions();
-        return testState.publishPostMock();
-      }, [getPublishPostOptions]);
+      const publishPost = React.useCallback(
+        (options?: Record<string, unknown>) => {
+          const sanitizedOptions = Object.entries(options || {}).reduce(
+            (acc, [key, value]) => {
+              acc[key] = value === '' ? undefined : value;
+              return acc;
+            },
+            {} as Record<string, unknown>,
+          );
+          testState.publishPostOptions = {
+            ...getPublishPostOptions(),
+            ...sanitizedOptions,
+          };
+          testState.publishedPostOptions = testState.publishPostOptions;
+          return testState.publishPostMock(options);
+        },
+        [getPublishPostOptions],
+      );
       const resetPublishPostOptions = React.useCallback(() => {
         testState.publishPostOptions = {};
         testState.resetPublishPostOptionsMock();
@@ -209,7 +225,13 @@ vi.mock('../../../hooks/use-publish-reply', async () => {
         postCid: postCid ?? cid,
         communityAddress,
       });
-      const publishReply = React.useCallback(() => testState.publishReplyMock(), []);
+      const publishReply = React.useCallback((options?: Record<string, unknown>) => {
+        if (options) {
+          testState.setPublishReplyOptionsMock(options);
+          setPublishReplyOptionsState((previous) => ({ ...previous, ...options }));
+        }
+        return testState.publishReplyMock(options);
+      }, []);
       const resetPublishReplyOptions = React.useCallback(() => testState.resetPublishReplyOptionsMock(), []);
       const setPublishReplyOptions = React.useCallback((options: Record<string, unknown>) => {
         testState.setPublishReplyOptionsMock(options);
@@ -274,9 +296,20 @@ vi.mock('../../../stores/use-media-hosting-store', () => ({
 }));
 
 vi.mock('lodash/debounce', () => ({
-  default: <T extends (...args: any[]) => void>(fn: T) => {
-    const wrapped = ((...args: Parameters<T>) => fn(...args)) as T & { cancel: () => void };
-    wrapped.cancel = () => undefined;
+  default: <T extends (...args: any[]) => void>(fn: T, wait = 0) => {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const wrapped = ((...args: Parameters<T>) => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+      timeout = setTimeout(() => fn(...args), wait);
+    }) as T & { cancel: () => void };
+    wrapped.cancel = () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+      timeout = undefined;
+    };
     return wrapped;
   },
 }));
@@ -362,6 +395,12 @@ const dispatchInput = async (element: HTMLInputElement | HTMLTextAreaElement, va
   });
 };
 
+const waitForOptionsValidation = async () => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, POST_OPTIONS_VALIDATION_DELAY_MS + 20));
+  });
+};
+
 const dispatchChange = async (element: HTMLInputElement | HTMLSelectElement, value: string | boolean) => {
   await act(async () => {
     if (typeof value === 'boolean' && 'checked' in element) {
@@ -385,6 +424,9 @@ describe('PostForm', () => {
     testState.comments = {};
     testState.directories = [
       { address: 'music-posting.eth', features: {}, title: '/mu/ - Music' },
+      { address: 'random-nsfw.bso', features: {}, title: '/b/ - Random' },
+      { address: 'silly-stuff.bso', features: {}, title: '/s5s/ - Silly Stuff' },
+      { address: 'traditional-games.bso', features: {}, title: '/tg/ - Traditional Games' },
       { address: 'mod.eth', features: {}, title: '/mod/ - Moderation' },
     ];
     testState.editedComment = undefined;
@@ -408,6 +450,7 @@ describe('PostForm', () => {
     testState.uploadedFileName = 'picked.png';
     testState.communities = {
       'music-posting.eth': { address: 'music-posting.eth' },
+      'traditional-games.bso': { address: 'traditional-games.bso' },
     };
     testState.handleUploadMock.mockReset();
     testState.navigateMock.mockReset();
@@ -480,12 +523,14 @@ describe('PostForm', () => {
 
     const textInputs = table?.querySelectorAll<HTMLInputElement>('input[type="text"]') || [];
     const nameInput = textInputs[0];
-    const subjectInput = textInputs[1];
-    const linkInput = textInputs[2];
+    const optionsInput = textInputs[1];
+    const subjectInput = textInputs[2];
+    const linkInput = textInputs[3];
     const textarea = table?.querySelector('textarea');
     const select = table?.querySelector('select');
 
     expect(nameInput).toBeTruthy();
+    expect(optionsInput?.getAttribute('aria-label')).toBe('options');
     expect(subjectInput).toBeTruthy();
     expect(linkInput).toBeTruthy();
     expect(linkInput?.getAttribute('placeholder')).toBe('https://website.com/image.jpg');
@@ -546,7 +591,7 @@ describe('PostForm', () => {
     table = container.querySelector('table');
     textarea = table?.querySelector('textarea');
     const textInputs = table?.querySelectorAll<HTMLInputElement>('input[type="text"]') || [];
-    const linkInput = textInputs[2];
+    const linkInput = textInputs[3];
 
     expect(textarea?.value).toBe('');
     expect(linkInput).toBeTruthy();
@@ -557,6 +602,140 @@ describe('PostForm', () => {
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.publishedPostOptions?.link).toBe('https://example.com/fresh.png');
     expect(testState.publishedPostOptions?.content).toBeUndefined();
+  });
+
+  it('validates unsupported options and stores fortune output in post content', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
+    testState.resolvedCommunityAddress = 'random-nsfw.bso';
+
+    await renderPostForm('/b');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const optionsInput = table?.querySelector<HTMLInputElement>('input[aria-label="options"]');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+
+    expect(optionsInput).toBeTruthy();
+    expect(textarea).toBeTruthy();
+
+    await dispatchInput(optionsInput as HTMLInputElement, 'x y z');
+    expect(container.textContent).not.toContain('unsupported options');
+
+    await waitForOptionsValidation();
+    expect(container.textContent).toContain('unsupported options: x, y, z');
+    const delayedOptionsError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'unsupported options: x, y, z');
+    expect(delayedOptionsError?.className).toContain('error');
+    expect(delayedOptionsError?.className).toContain('formError');
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'fortune body');
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+
+    await dispatchInput(optionsInput as HTMLInputElement, 'fortune');
+
+    expect(container.textContent).not.toContain('unsupported options');
+    expect(testState.publishPostOptions.content).toBe('fortune body<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>');
+
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    randomSpy.mockRestore();
+  });
+
+  it('supports fortune on the /s5s/ route when directory metadata is not loaded', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
+    testState.resolvedCommunityAddress = 'silly-stuff.bso';
+    testState.directories = testState.directories.filter((entry) => entry.address !== 'silly-stuff.bso');
+
+    await renderPostForm('/s5s');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const optionsInput = table?.querySelector<HTMLInputElement>('input[aria-label="options"]');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchInput(optionsInput as HTMLInputElement, 'fortune');
+    await waitForOptionsValidation();
+
+    expect(container.textContent).not.toContain('unsupported options');
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'silly fortune');
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishedPostOptions?.content).toBe('silly fortune<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>');
+    randomSpy.mockRestore();
+  });
+
+  it('stores dice rolls in post content on dice-enabled boards', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.5);
+    testState.resolvedCommunityAddress = 'quests.bso';
+
+    await renderPostForm('/qst');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const optionsInput = table?.querySelector<HTMLInputElement>('input[aria-label="options"]');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchInput(optionsInput as HTMLInputElement, 'dice+1d6+3');
+    await waitForOptionsValidation();
+
+    expect(container.textContent).not.toContain('unsupported options');
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'dice body');
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishedPostOptions?.content).toBe('<b>Rolled 4 + 3 = 7 (1d6 + 3)<br><br></b>dice body');
+    randomSpy.mockRestore();
+  });
+
+  it('treats fortune as unsupported outside /b/ and /s5s/', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const optionsInput = table?.querySelector<HTMLInputElement>('input[aria-label="options"]');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchInput(optionsInput as HTMLInputElement, 'fortune');
+    expect(container.textContent).not.toContain('unsupported options');
+
+    await waitForOptionsValidation();
+    expect(container.textContent).toContain('unsupported options: fortune');
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'plain body');
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+    expect(testState.publishPostOptions.content).toBe('plain body');
+  });
+
+  it('treats dice rolls as unsupported outside /tg/ and /qst/', async () => {
+    testState.resolvedCommunityAddress = 'random-nsfw.bso';
+
+    await renderPostForm('/b');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const optionsInput = table?.querySelector<HTMLInputElement>('input[aria-label="options"]');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchInput(optionsInput as HTMLInputElement, 'dice+1d6');
+    expect(container.textContent).not.toContain('unsupported options');
+
+    await waitForOptionsValidation();
+    expect(container.textContent).toContain('unsupported options: dice+1d6');
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'plain dice');
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+    expect(testState.publishPostOptions.content).toBe('plain dice');
   });
 
   it('shows BBCode controls only for board mods and inserts tags into the post textarea', async () => {
@@ -653,7 +832,7 @@ describe('PostForm', () => {
 
     const table = container.querySelector('table');
     const textInputs = table?.querySelectorAll<HTMLInputElement>('input[type="text"]') || [];
-    const linkInput = textInputs[2];
+    const linkInput = textInputs[3];
 
     expect(table?.textContent).toContain('no_file_chosen');
 
@@ -691,7 +870,7 @@ describe('PostForm', () => {
 
     const table = container.querySelector('table');
     const textInputs = table?.querySelectorAll<HTMLInputElement>('input[type="text"]') || [];
-    const linkInput = textInputs[2];
+    const linkInput = textInputs[3];
     const longFilename = 'TELEMMGLPICT000378070158_17159651831200_trans_NvBQzQNjv4BqpVlberWd9EgFPZtcLiMQf0Rf_Wk3V23H2268P_XkPxc.jpeg';
 
     await dispatchInput(linkInput as HTMLInputElement, `https://www.telegraph.co.uk/multimedia/${longFilename}`);
@@ -761,7 +940,7 @@ describe('PostForm', () => {
     expect(container.textContent).toContain('error: empty_comment_alert');
 
     const textInputs = table?.querySelectorAll<HTMLInputElement>('input[type="text"]') || [];
-    const linkInput = textInputs[1];
+    const linkInput = textInputs[2];
     expect(linkInput).toBeTruthy();
 
     await dispatchInput(linkInput as HTMLInputElement, 'not-a-url');

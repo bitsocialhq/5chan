@@ -167,6 +167,25 @@ describe('usePublishReply', () => {
     expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
   });
 
+  it('publishes after synchronizing one-shot reply options', async () => {
+    await act(async () => {
+      latestValue.setPublishReplyOptions({
+        content: 'Old reply',
+      } as never);
+    });
+
+    await act(async () => {
+      await latestValue.publishReply({
+        content: 'Fresh reply',
+      } as never);
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(testState.lastPublishOptions?.content).toBe('Fresh reply');
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+  });
+
   it('blocks publish when a same-board external quote cannot be resolved', async () => {
     testState.resolveExternalQuoteTargetMock.mockResolvedValue(null);
 

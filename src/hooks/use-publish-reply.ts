@@ -41,6 +41,8 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const startedPublishRequestIdRef = useRef(0);
   const [resolvedExternalQuotedCids, setResolvedExternalQuotedCids] = useState<string[] | undefined>();
   const [pendingPublishRequestId, setPendingPublishRequestId] = useState(0);
+  const [pendingSyncedPublishRequestId, setPendingSyncedPublishRequestId] = useState(0);
+  const startedSyncedPublishRequestIdRef = useRef(0);
   const [isResolvingExternalQuotes, setIsResolvingExternalQuotes] = useState(false);
   const [publishReplyError, setPublishReplyError] = useState<string | null>(null);
   const [publishReplyStateMessage, setPublishReplyStateMessage] = useState<string | null>(null);
@@ -151,64 +153,82 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
     publishComment();
   }, [pendingPublishRequestId, publishComment]);
 
-  const publishReply = useCallback(async () => {
-    setPublishReplyError(null);
-
-    if (blockedReason) {
-      setPublishReplyStateMessage(null);
-      setPublishReplyError(getPublishAuthorDomainErrorMessage(blockedReason));
-      return;
-    }
-
-    if (publishResolvableQuoteReferences.length === 0) {
-      setResolvedExternalQuotedCids(undefined);
-      setPublishReplyStateMessage(null);
-      setPendingPublishRequestId((requestId) => requestId + 1);
-      return;
-    }
-
-    if (!account?.id) {
-      setPublishReplyError(t('external_quote_resolution_unavailable'));
-      return;
-    }
-
-    setIsResolvingExternalQuotes(true);
-
-    try {
-      const resolvedCids = new Set<string>();
-
-      for (const reference of publishResolvableQuoteReferences) {
-        const resolvedTarget = await resolveExternalQuoteTarget({
-          account,
-          directories,
-          onStatus: (status) => {
-            setPublishReplyStateMessage(getExternalQuoteStatusMessage(t, status));
-          },
-          reference,
-        });
-
-        if (!resolvedTarget?.cid) {
-          setPublishReplyError(
-            t('external_quote_publish_missing', {
-              interpolation: { escapeValue: false },
-              quote: reference.raw,
-            }),
-          );
-          return;
-        }
-
-        resolvedCids.add(resolvedTarget.cid);
+  const publishReply = useCallback(
+    async (options?: Partial<Comment>) => {
+      if (options) {
+        setPublishReplyOptions(options);
+        setPendingSyncedPublishRequestId((requestId) => requestId + 1);
+        return;
       }
 
-      setResolvedExternalQuotedCids(resolvedCids.size > 0 ? [...resolvedCids] : undefined);
-      setPublishReplyStateMessage(null);
-      setPendingPublishRequestId((requestId) => requestId + 1);
-    } catch {
-      setPublishReplyError(t('external_quote_resolution_unavailable'));
-    } finally {
-      setIsResolvingExternalQuotes(false);
+      setPublishReplyError(null);
+
+      if (blockedReason) {
+        setPublishReplyStateMessage(null);
+        setPublishReplyError(getPublishAuthorDomainErrorMessage(blockedReason));
+        return;
+      }
+
+      if (publishResolvableQuoteReferences.length === 0) {
+        setResolvedExternalQuotedCids(undefined);
+        setPublishReplyStateMessage(null);
+        setPendingPublishRequestId((requestId) => requestId + 1);
+        return;
+      }
+
+      if (!account?.id) {
+        setPublishReplyError(t('external_quote_resolution_unavailable'));
+        return;
+      }
+
+      setIsResolvingExternalQuotes(true);
+
+      try {
+        const resolvedCids = new Set<string>();
+
+        for (const reference of publishResolvableQuoteReferences) {
+          const resolvedTarget = await resolveExternalQuoteTarget({
+            account,
+            directories,
+            onStatus: (status) => {
+              setPublishReplyStateMessage(getExternalQuoteStatusMessage(t, status));
+            },
+            reference,
+          });
+
+          if (!resolvedTarget?.cid) {
+            setPublishReplyError(
+              t('external_quote_publish_missing', {
+                interpolation: { escapeValue: false },
+                quote: reference.raw,
+              }),
+            );
+            return;
+          }
+
+          resolvedCids.add(resolvedTarget.cid);
+        }
+
+        setResolvedExternalQuotedCids(resolvedCids.size > 0 ? [...resolvedCids] : undefined);
+        setPublishReplyStateMessage(null);
+        setPendingPublishRequestId((requestId) => requestId + 1);
+      } catch {
+        setPublishReplyError(t('external_quote_resolution_unavailable'));
+      } finally {
+        setIsResolvingExternalQuotes(false);
+      }
+    },
+    [account, blockedReason, directories, publishResolvableQuoteReferences, setPublishReplyOptions, t],
+  );
+
+  useEffect(() => {
+    if (pendingSyncedPublishRequestId === 0 || pendingSyncedPublishRequestId === startedSyncedPublishRequestIdRef.current) {
+      return;
     }
-  }, [account, blockedReason, directories, publishResolvableQuoteReferences, t]);
+
+    startedSyncedPublishRequestIdRef.current = pendingSyncedPublishRequestId;
+    publishReply();
+  }, [pendingSyncedPublishRequestId, publishReply]);
 
   return {
     isResolvingExternalQuotes,

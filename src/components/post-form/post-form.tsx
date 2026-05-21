@@ -7,6 +7,15 @@ import getShortAddress from '../../lib/get-short-address';
 import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
 import { getDisplayMediaInfoType, getLinkMediaInfo } from '../../lib/utils/media-utils';
 import { getExpiringMediaLinkAlert } from '../../lib/utils/media-link-validation-utils';
+import {
+  type DiceRoll,
+  type FortuneEntry,
+  POST_OPTIONS_VALIDATION_DELAY_MS,
+  getContentWithPostOptionState as getContentWithOptions,
+  getPostOptionsDirectoryCode,
+  getUnsupportedPostOptionsMessage,
+  isUnsupportedPostOptionsMessage,
+} from '../../lib/utils/post-options-utils';
 import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import { getPublishURLFilename, isValidPublishURL, isValidURL } from '../../lib/utils/url-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
@@ -112,12 +121,14 @@ interface PostFormFieldsProps {
   isBbcodePreviewing: boolean;
   postCid: string;
   subjectRef: React.Ref<HTMLInputElement>;
+  optionsRef: React.RefObject<HTMLInputElement>;
   textRef: React.RefObject<HTMLTextAreaElement>;
   urlRef: React.Ref<HTMLInputElement>;
   url: string;
   lengthError: string | null;
   handleContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  handleContentValueChange: (content: string) => void;
+  handleContentValueChange: (content: string, options?: string) => void;
+  handleOptionsChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   setPublishPostOptions: (opts: Record<string, unknown>) => void;
   setPublishReplyOptions: (opts: Record<string, unknown>) => void;
   setUrl: (url: string) => void;
@@ -152,12 +163,14 @@ const PostFormFields = ({
   isBbcodePreviewing,
   postCid,
   subjectRef,
+  optionsRef,
   textRef,
   urlRef,
   url,
   lengthError,
   handleContentChange,
   handleContentValueChange,
+  handleOptionsChange,
   setPublishPostOptions,
   setPublishReplyOptions,
   setUrl,
@@ -212,6 +225,12 @@ const PostFormFields = ({
           isUploading={isUploading}
           showUploadControls={showUploadControls}
         />
+      </td>
+    </tr>
+    <tr>
+      <td>{t('options')}</td>
+      <td>
+        <input type='text' aria-label={t('options')} ref={optionsRef} autoCorrect='off' autoComplete='off' spellCheck='false' onChange={handleOptionsChange} />
       </td>
     </tr>
     {!isInPostView && (
@@ -318,7 +337,7 @@ const PostFormFields = ({
     )}
     {((isInPostView && showSpoilerForReply) || (!isInPostView && showSpoilerForPost)) && (
       <tr className={styles.spoilerButton}>
-        <td>{t('options')}</td>
+        <td>{capitalize(t('spoiler'))}</td>
         <td>
           [
           <label>
@@ -398,6 +417,9 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const textRef = useRef<HTMLTextAreaElement>(null);
   const urlRef = useRef<HTMLInputElement>(null);
   const subjectRef = useRef<HTMLInputElement>(null);
+  const optionsRef = useRef<HTMLInputElement>(null);
+  const fortuneEntryRef = useRef<FortuneEntry | null>(null);
+  const diceRollRef = useRef<DiceRoll | null>(null);
 
   const location = useLocation();
   const isInAllView = isAllView(location.pathname);
@@ -409,6 +431,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const rulesPath = effectiveBoardAddress ? `/rules/${getBoardPath(effectiveBoardAddress, directories)}` : '/rules';
   const showSpoilerForPost = directoryEntry?.features?.noSpoilers !== true;
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
+  const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
 
@@ -434,6 +457,15 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     }, 1000),
   ).current;
 
+  const checkPostOptions = useRef(
+    debounce((options: string, directoryCode: string | undefined) => {
+      const nextOptionsError = getUnsupportedPostOptionsMessage(options, directoryCode);
+      if (nextOptionsError) {
+        setFormError(nextOptionsError);
+      }
+    }, POST_OPTIONS_VALIDATION_DELAY_MS),
+  ).current;
+
   const resetFields = () => {
     if (textRef.current) {
       textRef.current.value = '';
@@ -444,20 +476,36 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     if (subjectRef.current) {
       subjectRef.current.value = '';
     }
+    if (optionsRef.current) {
+      optionsRef.current.value = '';
+    }
+    checkContentLength.cancel();
+    checkPostOptions.cancel();
+    fortuneEntryRef.current = null;
+    diceRollRef.current = null;
     setIsBbcodePreviewing(false);
     setBbcodePreviewContent('');
   };
 
   const onPublishPost = () => {
     const currentTitle = subjectRef.current?.value.trim() || '';
-    const currentContent = textRef.current?.value.trim() || '';
+    const currentContent = textRef.current?.value || '';
     const currentUrl = urlRef.current?.value.trim() || '';
+    const currentOptions = optionsRef.current?.value || '';
+    const currentOptionsError = getUnsupportedPostOptionsMessage(currentOptions, postOptionsDirectoryCode);
+    const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
 
     checkContentLength.cancel();
+    checkPostOptions.cancel();
     setLengthError(null);
     setFormError(null);
 
-    if (!currentTitle && !currentContent && !currentUrl) {
+    if (currentOptionsError) {
+      setFormError(currentOptionsError);
+      return;
+    }
+
+    if (!currentTitle && !publishContent.trim() && !currentUrl) {
       setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
       return;
     }
@@ -471,7 +519,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       return;
     }
 
-    if (currentContent.length > 2000) {
+    if (publishContent.trim().length > 2000) {
       setFormError(`${t('error')}: ${t('field_too_long')}`);
       return;
     }
@@ -481,7 +529,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       return;
     }
 
-    publishPost();
+    publishPost({ content: publishContent });
   };
 
   // redirect to pending page when pending comment is created
@@ -503,28 +551,37 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   useEffect(() => {
     return () => {
       checkContentLength.cancel();
+      checkPostOptions.cancel();
       if (isInPostView) {
         resetPublishReplyOptions();
       } else {
         resetPublishPostOptions();
       }
     };
-  }, [checkContentLength, isInPostView, resetPublishPostOptions, resetPublishReplyOptions]);
+  }, [checkContentLength, checkPostOptions, isInPostView, resetPublishPostOptions, resetPublishReplyOptions]);
 
-  const handleContentValueChange = (content: string) => {
+  const handleContentValueChange = (content: string, options = optionsRef.current?.value || '') => {
+    const publishContent = getContentWithOptions(content, options, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
     if (isBbcodePreviewing) {
       setBbcodePreviewContent(content);
     }
     if (isInPostView) {
-      setPublishReplyOptions({ content });
+      setPublishReplyOptions({ content: publishContent });
     } else {
-      setPublishPostOptions({ content });
+      setPublishPostOptions({ content: publishContent });
     }
-    checkContentLength(content, t);
+    checkContentLength(publishContent, t);
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     handleContentValueChange(e.target.value);
+  };
+
+  const handleOptionsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const options = e.target.value;
+    handleContentValueChange(textRef.current?.value || '', options);
+    setFormError((currentError) => (isUnsupportedPostOptionsMessage(currentError) ? null : currentError));
+    checkPostOptions(options, postOptionsDirectoryCode);
   };
 
   const handleBbcodePreviewToggle = () => {
@@ -539,14 +596,22 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   };
 
   const onPublishReply = () => {
-    const currentContent = textRef.current?.value.trim() || '';
     const currentUrl = urlRef.current?.value.trim() || '';
+    const currentOptions = optionsRef.current?.value || '';
+    const currentOptionsError = getUnsupportedPostOptionsMessage(currentOptions, postOptionsDirectoryCode);
+    const publishContent = getContentWithOptions(textRef.current?.value || '', currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
 
     checkContentLength.cancel();
+    checkPostOptions.cancel();
     setLengthError(null);
     setFormError(null);
 
-    if (!currentContent && !currentUrl) {
+    if (currentOptionsError) {
+      setFormError(currentOptionsError);
+      return;
+    }
+
+    if (!publishContent.trim() && !currentUrl) {
       setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
       return;
     }
@@ -561,12 +626,12 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       return;
     }
 
-    if (currentContent.length > 2000) {
+    if (publishContent.trim().length > 2000) {
       setFormError(`${t('error')}: ${t('field_too_long')}`);
       return;
     }
 
-    publishReply();
+    publishReply({ content: publishContent });
   };
 
   useEffect(() => {
@@ -619,12 +684,14 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             isBbcodePreviewing={isBbcodePreviewing}
             postCid={postCid}
             subjectRef={subjectRef}
+            optionsRef={optionsRef}
             textRef={textRef}
             urlRef={urlRef}
             url={url}
             lengthError={lengthError}
             handleContentChange={handleContentChange}
             handleContentValueChange={handleContentValueChange}
+            handleOptionsChange={handleOptionsChange}
             setPublishPostOptions={setPublishPostOptions}
             setPublishReplyOptions={setPublishReplyOptions}
             setUrl={setUrl}
