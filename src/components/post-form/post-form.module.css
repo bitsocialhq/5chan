@@ -10,7 +10,6 @@
 .postFormDesktop {
   font-size: var(--post-form-toggle-font-size);
   font-weight: var(--post-form-toggle-font-weight);
-  text-align: center;
 }
 
 .postFormMobile {
@@ -169,6 +168,18 @@
 @media (min-width: 640px) {
   .postFormMobile {
     display: none;
+  }
+
+  .postFormDesktop {
+    width: 468px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+  }
+
+  .postFormTable {
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 
