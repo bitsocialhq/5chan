@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "Внешнее изображение не загрузилось. Попробуйте VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "Скрыть"
+  "modQueue.dismiss": "Скрыть",
+  "board_address_unverified_warning": "Этот адрес доски не проверен. Владелец доски может не владеть этим адресом."
 }

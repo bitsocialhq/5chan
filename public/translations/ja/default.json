@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "外部画像を読み込めませんでした。VPN を試してください。",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "無視"
+  "modQueue.dismiss": "無視",
+  "board_address_unverified_warning": "このボードアドレスは検証されていません。ボード所有者がこのアドレスを所有していない可能性があります。"
 }

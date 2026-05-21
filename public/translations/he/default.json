@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "התמונה החיצונית נכשלה. נסה VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "התעלם"
+  "modQueue.dismiss": "התעלם",
+  "board_address_unverified_warning": "כתובת הלוח הזו אינה מאומתת. ייתכן שבעל הלוח אינו הבעלים של הכתובת הזו."
 }

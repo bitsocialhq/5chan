@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "Η εξωτερική εικόνα απέτυχε. Δοκιμάστε VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "Παράβλεψη"
+  "modQueue.dismiss": "Παράβλεψη",
+  "board_address_unverified_warning": "Αυτή η διεύθυνση board δεν έχει επαληθευτεί. Ο ιδιοκτήτης του board ενδέχεται να μην κατέχει αυτή τη διεύθυνση."
 }

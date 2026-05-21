@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "Eksternt bilde kunne ikke lastes. Prøv VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "Ignorer"
+  "modQueue.dismiss": "Ignorer",
+  "board_address_unverified_warning": "Denne board-adressen er ikke bekreftet. Board-eieren eier kanskje ikke denne adressen."
 }

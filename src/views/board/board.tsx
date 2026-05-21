@@ -594,6 +594,13 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   }, [title, shortAddress, communityAddress, isVisible, params.boardIdentifier, boardIdentifierProp, directories, isInAllView, isInSubscriptionsView, isInModView, t]);
 
   const shouldShowErrorToUser = communityError?.message && feed.length === 0;
+  const shouldShowUnverifiedAddressWarning =
+    !isMultiboardView &&
+    typeof communityIdentifier?.name === 'string' &&
+    communityIdentifier.name.includes('.') &&
+    typeof communityIdentifier.publicKey === 'string' &&
+    communityIdentifier.publicKey.length > 0 &&
+    communityData?.nameResolved === false;
   const displayFeed = effectiveInfiniteScroll ? combinedFeed : currentPageFeed;
 
   return (
@@ -603,6 +610,11 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
         {shouldShowErrorToUser && (
           <div className={styles.error}>
             <ErrorDisplay error={communityError} />
+          </div>
+        )}
+        {shouldShowUnverifiedAddressWarning && (
+          <div className={styles.addressWarning} role='status'>
+            {t('board_address_unverified_warning')}
           </div>
         )}
         {effectiveInfiniteScroll ? (

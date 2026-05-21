@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "Falha na imagem externa. Tente uma VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "Ignorar"
+  "modQueue.dismiss": "Ignorar",
+  "board_address_unverified_warning": "Este endereço do board não foi verificado. O proprietário do board pode não ser dono deste endereço."
 }

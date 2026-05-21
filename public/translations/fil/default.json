@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "Nabigo ang panlabas na larawan. Subukan ang VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "Huwag pansinin"
+  "modQueue.dismiss": "Huwag pansinin",
+  "board_address_unverified_warning": "Hindi beripikado ang address ng board na ito. Maaaring hindi pag-aari ng may-ari ng board ang address na ito."
 }

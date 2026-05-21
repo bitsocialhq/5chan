@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "Ulkoinen kuva epäonnistui. Kokeile VPN:ää.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "Ohita"
+  "modQueue.dismiss": "Ohita",
+  "board_address_unverified_warning": "Tätä laudan osoitetta ei ole vahvistettu. Laudan omistaja ei välttämättä omista tätä osoitetta."
 }

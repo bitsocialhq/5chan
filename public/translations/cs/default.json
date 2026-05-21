@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "Externí obrázek selhal. Zkuste VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "Ignorovat"
+  "modQueue.dismiss": "Ignorovat",
+  "board_address_unverified_warning": "Tato adresa nástěnky není ověřená. Vlastník nástěnky nemusí tuto adresu vlastnit."
 }

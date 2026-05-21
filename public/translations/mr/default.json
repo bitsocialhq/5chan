@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "बाह्य प्रतिमा लोड झाली नाही. VPN वापरून पाहा.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "दुर्लक्ष करा"
+  "modQueue.dismiss": "दुर्लक्ष करा",
+  "board_address_unverified_warning": "हा बोर्ड पत्ता सत्यापित केलेला नाही. बोर्डचा मालक हा पत्ता मालक नसू शकतो."
 }

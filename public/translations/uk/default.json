@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "Зовнішнє зображення не завантажилося. Спробуйте VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "Приховати"
+  "modQueue.dismiss": "Приховати",
+  "board_address_unverified_warning": "Цю адресу дошки не перевірено. Власник дошки може не володіти цією адресою."
 }

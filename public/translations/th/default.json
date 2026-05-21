@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "โหลดรูปภาพภายนอกไม่สำเร็จ ลอง VPN",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "มองข้าม"
+  "modQueue.dismiss": "มองข้าม",
+  "board_address_unverified_warning": "ที่อยู่บอร์ดนี้ยังไม่ได้รับการยืนยัน เจ้าของบอร์ดอาจไม่ได้เป็นเจ้าของที่อยู่นี้"
 }

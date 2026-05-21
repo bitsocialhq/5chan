@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "బాహ్య చిత్రం లోడ్ కాలేదు. VPN ప్రయత్నించండి.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "విస్మరించు"
+  "modQueue.dismiss": "విస్మరించు",
+  "board_address_unverified_warning": "ఈ బోర్డ్ చిరునామా ధృవీకరించబడలేదు. బోర్డ్ యజమాని ఈ చిరునామాకు యజమాని కాకపోవచ్చు."
 }

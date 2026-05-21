@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "外部图片加载失败。试试 VPN。",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "忽略"
+  "modQueue.dismiss": "忽略",
+  "board_address_unverified_warning": "此版面地址尚未验证。版主可能并不拥有此地址。"
 }

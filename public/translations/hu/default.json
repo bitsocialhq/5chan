@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "A külső kép nem töltődött be. Próbálj VPN-t.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "Mellőzés"
+  "modQueue.dismiss": "Mellőzés",
+  "board_address_unverified_warning": "Ez a board-cím nincs ellenőrizve. Lehet, hogy a board tulajdonosa nem birtokolja ezt a címet."
 }

@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "Harici görsel yüklenemedi. VPN deneyin.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "Yoksay"
+  "modQueue.dismiss": "Yoksay",
+  "board_address_unverified_warning": "Bu board adresi doğrulanmamış. Board sahibi bu adresin sahibi olmayabilir."
 }

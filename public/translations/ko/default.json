@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "외부 이미지를 불러오지 못했습니다. VPN을 시도하세요.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "무시"
+  "modQueue.dismiss": "무시",
+  "board_address_unverified_warning": "이 보드 주소는 확인되지 않았습니다. 보드 소유자가 이 주소를 소유하지 않았을 수 있습니다."
 }

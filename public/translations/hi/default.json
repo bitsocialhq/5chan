@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "बाहरी छवि लोड नहीं हुई। VPN आज़माएँ।",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "अनदेखा करें"
+  "modQueue.dismiss": "अनदेखा करें",
+  "board_address_unverified_warning": "इस बोर्ड पते की पुष्टि नहीं हुई है। हो सकता है बोर्ड का मालिक इस पते का मालिक न हो।"
 }

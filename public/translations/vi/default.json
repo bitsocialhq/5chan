@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "Không tải được ảnh bên ngoài. Thử VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "Bỏ qua"
+  "modQueue.dismiss": "Bỏ qua",
+  "board_address_unverified_warning": "Địa chỉ bảng này chưa được xác minh. Chủ bảng có thể không sở hữu địa chỉ này."
 }

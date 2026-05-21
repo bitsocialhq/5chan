@@ -20,6 +20,14 @@ type TestComment = {
   timestamp?: number;
 };
 
+type TestCommunity = {
+  error?: Error;
+  nameResolved?: boolean;
+  shortAddress?: string;
+  state?: string;
+  title?: string;
+};
+
 const testState = vi.hoisted(() => ({
   account: { subscriptions: [] as string[] },
   accountComments: [] as TestComment[],
@@ -60,7 +68,7 @@ const testState = vi.hoisted(() => ({
     shortAddress: 'music-posting.eth',
     state: 'ready',
     title: '/mu/ - Music',
-  },
+  } as TestCommunity,
   communitySnapshot: {
     shortAddress: 'music-posting.eth',
     title: '/mu/ - Music',
@@ -402,6 +410,64 @@ describe('Board', () => {
         publicKey: '12D3KooWR7nTdKZqZ1twGWMfVsXYDGp1XAKUrnYznKP651jFrizE',
       },
     ]);
+  });
+
+  it('warns when a loaded board address is not verified', async () => {
+    testState.directories = [{ address: 'business-and-finance.bso', directoryCode: 'biz', title: '/biz/ - Business & Finance' }];
+    testState.directoryByAddress = {
+      'business-and-finance.bso': {
+        address: 'business-and-finance.bso',
+        features: { postsPerPage: 2 },
+      },
+    };
+    testState.resolvedCommunityAddress = 'business-and-finance.bso';
+    testState.community = {
+      nameResolved: false,
+      shortAddress: 'business-and-finance.bso',
+      state: 'ready',
+      title: '/biz/ - Business & Finance',
+    };
+    testState.communitySnapshot = {
+      shortAddress: 'business-and-finance.bso',
+      title: '/biz/ - Business & Finance',
+    };
+
+    await renderBoard({
+      boardProps: { boardIdentifier: 'business-and-finance.bso', viewType: 'board' },
+      initialEntry: '/business-and-finance.bso',
+      routePath: '/:boardIdentifier/*',
+    });
+
+    expect(container.textContent).toContain('board_address_unverified_warning');
+  });
+
+  it('does not warn when a loaded board address is verified', async () => {
+    testState.directories = [{ address: 'business-and-finance.bso', directoryCode: 'biz', title: '/biz/ - Business & Finance' }];
+    testState.directoryByAddress = {
+      'business-and-finance.bso': {
+        address: 'business-and-finance.bso',
+        features: { postsPerPage: 2 },
+      },
+    };
+    testState.resolvedCommunityAddress = 'business-and-finance.bso';
+    testState.community = {
+      nameResolved: true,
+      shortAddress: 'business-and-finance.bso',
+      state: 'ready',
+      title: '/biz/ - Business & Finance',
+    };
+    testState.communitySnapshot = {
+      shortAddress: 'business-and-finance.bso',
+      title: '/biz/ - Business & Finance',
+    };
+
+    await renderBoard({
+      boardProps: { boardIdentifier: 'business-and-finance.bso', viewType: 'board' },
+      initialEntry: '/business-and-finance.bso',
+      routePath: '/:boardIdentifier/*',
+    });
+
+    expect(container.textContent).not.toContain('board_address_unverified_warning');
   });
 
   it('renders the current page feed, inserts recent account comments, and wires footer actions', async () => {

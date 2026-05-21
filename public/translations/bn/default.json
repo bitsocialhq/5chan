@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "বাইরের ছবি লোড হয়নি। VPN চেষ্টা করুন।",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "উপেক্ষা করুন"
+  "modQueue.dismiss": "উপেক্ষা করুন",
+  "board_address_unverified_warning": "এই বোর্ড ঠিকানাটি যাচাই করা হয়নি। বোর্ডের মালিক এই ঠিকানার মালিক নাও হতে পারেন।"
 }

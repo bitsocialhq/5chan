@@ -388,5 +388,6 @@
   "media_failed_to_load_inline_unknown": "Gambar eksternal gagal. Coba VPN.",
   "expiring_media_link_alert": "Media from {{domain}} expires quickly. Use a stable media link instead.",
   "nothing_found": "Nothing Found",
-  "modQueue.dismiss": "Abaikan"
+  "modQueue.dismiss": "Abaikan",
+  "board_address_unverified_warning": "Alamat board ini belum diverifikasi. Pemilik board mungkin tidak memiliki alamat ini."
 }
