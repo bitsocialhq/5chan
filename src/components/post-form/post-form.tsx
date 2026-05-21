@@ -316,21 +316,6 @@ const PostFormFields = ({
         </td>
       </tr>
     )}
-    <tr className='rules'>
-      <td colSpan={2}>
-        <ul className='rules'>
-          <li>
-            <Trans
-              i18nKey='post_form_rules_faq_prompt'
-              components={{
-                rules: <Link to={rulesPath} />,
-                faq: <Link to='/faq' />,
-              }}
-            />
-          </li>
-        </ul>
-      </td>
-    </tr>
     {((isInPostView && showSpoilerForReply) || (!isInPostView && showSpoilerForPost)) && (
       <tr className={styles.spoilerButton}>
         <td>{t('options')}</td>
@@ -377,6 +362,21 @@ const PostFormFields = ({
         </td>
       </tr>
     )}
+    <tr className='rules'>
+      <td colSpan={2}>
+        <ul className='rules'>
+          <li>
+            <Trans
+              i18nKey='post_form_rules_faq_prompt'
+              components={{
+                rules: <Link to={rulesPath} />,
+                faq: <Link to='/faq' />,
+              }}
+            />
+          </li>
+        </ul>
+      </td>
+    </tr>
   </>
 );
 
