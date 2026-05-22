@@ -1,4 +1,4 @@
-import { getBrowserGatewayPkcOptions, getBrowserPureP2PPkcOptions, isElectronRuntime, isPureP2PBrowserForced, shouldUsePureP2PBrowser } from './p2p-browser-config';
+import { getBrowserGatewayPkcOptions, getBrowserPureP2PPkcOptions, isElectronRuntime, shouldUsePureP2PBrowser } from './p2p-browser-config';
 
 export const P2P_STATS_SECTION_ID = 'p2p-stats-settings';
 
@@ -52,11 +52,8 @@ export const shouldShowP2PSettingsSection = (account?: unknown, targetWindow: Wi
   getP2PRuntimeMode(account, targetWindow) !== null || (canConfigureBrowserPureP2P(targetWindow) && isBrowserPureP2PEnabled(account, targetWindow));
 
 export const isBrowserPureP2PEnabled = (account?: unknown, targetWindow: Window = window) => {
-  const accountShape = toAccountShape(account);
   if (!canConfigureBrowserPureP2P(targetWindow)) return false;
   if (getP2PRuntimeMode(account, targetWindow) === 'browser-libp2p') return true;
-  if (isPureP2PBrowserForced(targetWindow)) return true;
-  if (hasArrayItems(accountShape?.pkcOptions?.ipfsGatewayUrls) || hasArrayItems(accountShape?.pkcOptions?.pubsubKuboRpcClientsOptions)) return false;
   return shouldUsePureP2PBrowser(targetWindow);
 };
 

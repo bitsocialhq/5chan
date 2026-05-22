@@ -1,7 +1,7 @@
 import { memo, RefObject, useRef, useState } from 'react';
 import { setAccount, useAccount, usePkcRpcSettings } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
-import { getBrowserGatewayPkcOptions, getBrowserPureP2PPkcOptions, isPureP2PBrowserForced, setPureP2PBrowserPreference } from '../../../lib/p2p-browser-config';
+import { getBrowserGatewayPkcOptions, getBrowserPureP2PPkcOptions, setPureP2PBrowserPreference } from '../../../lib/p2p-browser-config';
 import { canConfigureBrowserPureP2P, isBrowserPureP2PEnabled } from '../../../lib/p2p-runtime';
 import styles from './advanced-settings.module.css';
 
@@ -205,18 +205,11 @@ const P2pDataPathSettings = ({ p2pDataPathRef }: SettingsProps) => {
 const PureP2PBrowserSettings = ({ pureP2PBrowserRef }: SettingsProps) => {
   const { t } = useTranslation();
   const account = useAccount() as AccountShape | undefined;
-  const isForced = isPureP2PBrowserForced();
 
   return (
     <div className={styles.pureP2PSettings}>
       <label>
-        <input
-          className={styles.pureP2PCheckbox}
-          type='checkbox'
-          defaultChecked={isForced || isBrowserPureP2PEnabled(account)}
-          disabled={isForced}
-          ref={pureP2PBrowserRef}
-        />
+        <input className={styles.pureP2PCheckbox} type='checkbox' defaultChecked={isBrowserPureP2PEnabled(account)} ref={pureP2PBrowserRef} />
         {t('enable_pure_p2p')}
       </label>
       <div className={styles.settingTip}>{t('enable_pure_p2p_tip')}</div>
@@ -261,7 +254,7 @@ const AdvancedSettings = () => {
 
     const pkcRpcClientsOptions = p2pRpcRef.current?.value.trim() ? [p2pRpcRef.current.value.trim()] : undefined;
     const dataPath = p2pDataPathRef.current?.value.trim() || undefined;
-    const pureP2PBrowserPreference = canConfigureBrowserPureP2P() ? isPureP2PBrowserForced() || pureP2PBrowserRef.current?.checked : undefined;
+    const pureP2PBrowserPreference = canConfigureBrowserPureP2P() ? pureP2PBrowserRef.current?.checked : undefined;
 
     const chainProviders: Record<string, { urls: string[] | undefined; chainId: number }> = {};
     if (ethRpcUrls && ethRpcUrls.length > 0) {
