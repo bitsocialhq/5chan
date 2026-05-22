@@ -211,6 +211,8 @@ describe('AdvancedSettings', () => {
   });
 
   it('saves the browser pure p2p toggle through advanced settings', async () => {
+    localStorage.setItem('5chan:pure-p2p-browser-enabled', 'false');
+
     await renderSettings(false);
 
     const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
@@ -239,29 +241,29 @@ describe('AdvancedSettings', () => {
     expect(reloadMock).toHaveBeenCalledOnce();
   });
 
-  it('forces the browser pure p2p toggle on p2p subdomains', async () => {
+  it('allows browser pure p2p to be disabled on p2p subdomains', async () => {
     localStorage.setItem('5chan:pure-p2p-browser-enabled', 'false');
     setTestHostname('p2p.5chan.app');
 
     await renderSettings(false);
 
     const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
-    expect(checkbox?.checked).toBe(true);
-    expect(checkbox?.disabled).toBe(true);
+    expect(checkbox?.checked).toBe(false);
+    expect(checkbox?.disabled).toBe(false);
 
     await clickButton('save_advanced_settings');
 
     expect(testState.setAccountMock).toHaveBeenCalledWith(
       expect.objectContaining({
         pkcOptions: expect.objectContaining({
-          ipfsGatewayUrls: undefined,
-          libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
-          pkcRpcClientsOptions: undefined,
-          pubsubKuboRpcClientsOptions: undefined,
+          ipfsGatewayUrls: ['https://ipfs.old.example'],
+          libp2pJsClientsOptions: undefined,
+          pkcRpcClientsOptions: ['ws://old.example/key'],
+          pubsubKuboRpcClientsOptions: ['https://pubsub.old.example'],
         }),
       }),
     );
-    expect(localStorage.getItem('5chan:pure-p2p-browser-enabled')).toBe('true');
+    expect(localStorage.getItem('5chan:pure-p2p-browser-enabled')).toBe('false');
   });
 
   it('saves gateway mode defaults when browser pure p2p is disabled', async () => {

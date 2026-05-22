@@ -26,8 +26,6 @@ type P2PBrowserConfigWindow = {
   localStorage?: Pick<Storage, 'getItem' | 'setItem'>;
 };
 
-export const isP2PBrowserHostname = (hostname: string) => hostname.toLowerCase().startsWith('p2p.');
-
 export const getBrowserPureP2PPkcOptions = () => ({
   ...P2P_BROWSER_PKC_OPTIONS,
   libp2pJsClientsOptions: P2P_BROWSER_PKC_OPTIONS.libp2pJsClientsOptions.map((options) => ({ ...options })),
@@ -63,17 +61,13 @@ export const setPureP2PBrowserPreference = (enabled: boolean, targetWindow: P2PB
 
 export const isElectronRuntime = (targetWindow: P2PBrowserConfigWindow = window) => targetWindow.electronApi?.isElectron === true || targetWindow.isElectron === true;
 
-export const isPureP2PBrowserForced = (targetWindow: P2PBrowserConfigWindow = window) =>
-  !isElectronRuntime(targetWindow) && isP2PBrowserHostname(targetWindow.location?.hostname ?? '');
-
 export const shouldUsePureP2PBrowser = (targetWindow: P2PBrowserConfigWindow = window) => {
   if (isElectronRuntime(targetWindow)) return false;
-  if (isPureP2PBrowserForced(targetWindow)) return true;
 
   const preference = getPureP2PBrowserPreference(targetWindow);
   if (preference !== undefined) return preference;
 
-  return false;
+  return true;
 };
 
 export const configureP2PBrowserPkcOptions = (targetWindow: P2PBrowserConfigWindow = window) => {

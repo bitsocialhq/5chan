@@ -113,6 +113,8 @@ describe('use-state-string', () => {
   });
 
   it('falls back to publishing and updating states when no client states are available', () => {
+    localStorage.setItem('5chan:pure-p2p-browser-enabled', 'false');
+
     act(() => {
       root.render(createElement(StateStringHarness, { value: { publishingState: 'fetching-ipfs', state: 'publishing' } }));
     });
@@ -130,6 +132,7 @@ describe('use-state-string', () => {
   });
 
   it('formats raw community loading states when no client or update states are available', () => {
+    localStorage.setItem('5chan:pure-p2p-browser-enabled', 'false');
     testState.community = {
       state: 'fetching-community-ipfs',
     };
@@ -156,6 +159,7 @@ describe('use-state-string', () => {
   });
 
   it('sanitizes single-board feed state strings to board wording', () => {
+    localStorage.setItem('5chan:pure-p2p-browser-enabled', 'false');
     testState.community = {
       state: 'updating',
       updatingState: 'fetching-ipfs',
