@@ -363,6 +363,10 @@ describe('EditMenu', () => {
     await click(getCheckbox('pinned'));
     await click(getCheckbox('banUser'));
 
+    const reasonInput = container.querySelector<HTMLInputElement>('input[type="text"]');
+    expect(reasonInput).not.toBeNull();
+    await dispatchInput(reasonInput as HTMLInputElement, 'spam');
+
     const banDurationInput = container.querySelector<HTMLInputElement>('[data-testid="ban-duration-input"]');
     expect(banDurationInput).not.toBeNull();
 
@@ -385,6 +389,7 @@ describe('EditMenu', () => {
       locked: true,
       pinned: true,
       purged: true,
+      reason: 'spam',
       removed: true,
       spoiler: true,
       author: {

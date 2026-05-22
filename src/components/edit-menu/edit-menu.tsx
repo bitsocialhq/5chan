@@ -36,7 +36,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const resolvedPost = withResolvedCommentCommunityAddress(post);
-  const { author, cid, content, deleted, locked, parentCid, pinned, postCid, removed, spoiler } = resolvedPost || {};
+  const { author, cid, content, deleted, locked, parentCid, pinned, postCid, reason, removed, spoiler } = resolvedPost || {};
   const communityAddress = getCommentCommunityAddress(resolvedPost);
   const archived = isCommentArchived(resolvedPost);
   const authorDisplayName = resolvedPost?.author?.displayName;
@@ -78,6 +78,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
             pinned: pinned ?? false,
             removed: removed ?? false,
             purged: purged ?? false,
+            reason: reason ?? '',
             spoiler: spoiler ?? false,
             author: modBanExpiresAt ? { banExpiresAt: modBanExpiresAt } : undefined,
           }
@@ -99,6 +100,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
     deleted,
     locked,
     pinned,
+    reason,
     removed,
     purged,
     spoiler,
@@ -145,6 +147,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
         pinned: publishCommentEditOptions.commentModeration?.pinned,
         removed: publishCommentEditOptions.commentModeration?.removed,
         purged: publishCommentEditOptions.commentModeration?.purged,
+        reason: publishCommentEditOptions.commentModeration?.reason,
         spoiler: publishCommentEditOptions.commentModeration?.spoiler,
         author: publishCommentEditOptions.commentModeration?.author,
       },
@@ -425,6 +428,26 @@ const EditMenu = ({ post }: { post: Comment }) => {
                         ]
                       </div>
                     )}
+                    <div className={`${styles.menuItem} ${styles.menuReason}`}>
+                      <label>
+                        {capitalize(t('reason'))}? ({t('optional')})
+                        <input
+                          type='text'
+                          value={publishCommentEditOptions.commentModeration?.reason || ''}
+                          onChange={(e) => {
+                            const newReason = e.target.value;
+                            setPublishCommentEditOptions((state) => ({
+                              ...state,
+                              commentModeration: {
+                                ...state.commentModeration,
+                                reason: newReason,
+                              },
+                            }));
+                          }}
+                          size={14}
+                        />
+                      </label>
+                    </div>
                   </>
                 )}
                 <div className={styles.bottom}>
