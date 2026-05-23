@@ -82,7 +82,10 @@ export const fetchOwnPublicEndpoint = async (signal?: AbortSignal): Promise<Publ
 
   const ipv4Endpoint = await fetchPublicEndpoint(PUBLIC_IPV4_LOOKUP_URL, signal);
   const fallback = ipv4Endpoint?.ip ? { countryCode: getApproximateCountryCode(`/ip4/${ipv4Endpoint.ip}/tcp/0`), ip: ipv4Endpoint.ip } : undefined;
-  cachedOwnPublicEndpoint = { expiresAt: Date.now() + 30_000, value: fallback };
+  // Don't cache an empty result produced by an aborted lookup (e.g. the panel was
+  // closed mid-request): that is cancellation, not a real failure, so a later
+  // reopen should retry instead of being served a cached blank for 30s.
+  if (!signal?.aborted) cachedOwnPublicEndpoint = { expiresAt: Date.now() + 30_000, value: fallback };
   return fallback;
 };
 
@@ -98,7 +101,9 @@ export const fetchOwnIpCountryCode = async (ip: string, signal?: AbortSignal): P
   if (cached && Date.now() < cached.expiresAt) return cached.value;
   const endpoint = await fetchPublicEndpoint(`${COUNTRY_LOOKUP_URL}/${ip}`, signal);
   const value = endpoint?.countryCode;
-  ownIpCountryCache.set(ip, { expiresAt: Date.now() + 60_000, value });
+  // See fetchOwnPublicEndpoint: skip caching when the lookup was aborted so a
+  // cancelled request does not blank the flag for 60s on the next open.
+  if (!signal?.aborted) ownIpCountryCache.set(ip, { expiresAt: Date.now() + 60_000, value });
   return value;
 };
 

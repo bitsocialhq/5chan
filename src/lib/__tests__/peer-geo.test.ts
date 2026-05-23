@@ -127,6 +127,24 @@ describe('fetchOwnIpCountryCode', () => {
 
     vi.unstubAllGlobals();
   });
+
+  it('does not cache a result from an aborted lookup', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ country: 'VN', ip: '203.0.113.50' }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const controller = new AbortController();
+    controller.abort();
+    // An aborted request is cancellation, not a real result, so it must not be cached.
+    await fetchOwnIpCountryCode('203.0.113.50', controller.signal);
+    // A later non-aborted call must perform a fresh lookup instead of a cached blank.
+    await expect(fetchOwnIpCountryCode('203.0.113.50')).resolves.toBe('vn');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    vi.unstubAllGlobals();
+  });
 });
 
 describe('getApproximateCountryCode', () => {
