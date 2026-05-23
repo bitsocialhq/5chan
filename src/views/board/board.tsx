@@ -25,6 +25,7 @@ import { getPageSlice } from '../../lib/utils/board-feed-pagination';
 import { getPageFromFeedPath, isDirectoryBoard, normalizeMultiboardFeedPath, stripPageFromFeedPath } from '../../lib/utils/route-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
+import { getNonokoPendingAccountCommentIndex } from '../../lib/utils/post-options-utils';
 import { getSearchWithTimeFilter, getTimeFilterSuggestion, type TimeFilterSuggestion } from '../../lib/utils/time-filter-utils';
 import { getPretextItemSizeFromElement, resolveFeedVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
 import ErrorDisplay from '../../components/error-display/error-display';
@@ -299,6 +300,17 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     [communityAddress],
   );
   const { accountComments: recentAccountComments } = useAccountComments(accountCommentLookupOptions);
+  const nonokoPendingAccountCommentIndex = getNonokoPendingAccountCommentIndex(location.state);
+  const nonokoPendingAccountCommentLookupOptions = useMemo(
+    () =>
+      typeof nonokoPendingAccountCommentIndex === 'number'
+        ? {
+            commentIndices: [nonokoPendingAccountCommentIndex],
+          }
+        : EMPTY_ACCOUNT_COMMENT_LOOKUP,
+    [nonokoPendingAccountCommentIndex],
+  );
+  const { accountComments: nonokoPendingAccountComments } = useAccountComments(nonokoPendingAccountCommentLookupOptions);
 
   const pathWithoutSettings = location.pathname.replace(/\/settings$/, '');
   const currentPage = getPageFromFeedPath(pathWithoutSettings);
@@ -315,6 +327,18 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
 
   // show account comments instantly in the feed once published (cid defined), instead of waiting for the feed to update
   const feedCids = useMemo(() => new Set(feed.map((f) => f.cid)), [feed]);
+  const nonokoPendingAccountComment = useMemo(() => {
+    const comment = nonokoPendingAccountComments.find(Boolean);
+    if (!comment) return undefined;
+
+    const { cid, deleted, parentCid, postCid, removed } = comment;
+    const commentCommunityAddress = getCommentCommunityAddress(comment);
+    if (deleted || removed || parentCid || commentCommunityAddress !== communityAddress) return undefined;
+    if (cid && postCid && cid !== postCid) return undefined;
+    if (cid && feedCids.has(cid)) return undefined;
+
+    return comment;
+  }, [nonokoPendingAccountComments, communityAddress, feedCids]);
   const filteredComments = useMemo(
     () =>
       recentAccountComments.filter((comment) => {
@@ -333,16 +357,22 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       }),
     [recentAccountComments, communityAddress, feedCids],
   );
+  const localAccountComments = useMemo(() => {
+    if (!nonokoPendingAccountComment) return filteredComments;
+    if (!nonokoPendingAccountComment.cid) return [nonokoPendingAccountComment, ...filteredComments];
+
+    return [nonokoPendingAccountComment, ...filteredComments.filter((comment) => comment.cid !== nonokoPendingAccountComment.cid)];
+  }, [nonokoPendingAccountComment, filteredComments]);
 
   // show newest account comment at the top of the feed but after pinned posts
   const combinedFeed = useMemo(() => {
     const newFeed = [...feed];
     const lastPinnedIndex = newFeed.map((post) => post.pinned).lastIndexOf(true);
-    if (filteredComments.length > 0) {
-      newFeed.splice(lastPinnedIndex + 1, 0, ...filteredComments);
+    if (localAccountComments.length > 0) {
+      newFeed.splice(lastPinnedIndex + 1, 0, ...localAccountComments);
     }
     return newFeed;
-  }, [feed, filteredComments]);
+  }, [feed, localAccountComments]);
 
   const cappedFeed = useMemo(
     () => (effectiveInfiniteScroll ? combinedFeed : combinedFeed.slice(0, guiPostsPerPage * maxGuiPages)),

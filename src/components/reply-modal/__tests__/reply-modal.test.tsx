@@ -23,6 +23,7 @@ const testState = vi.hoisted(() => ({
   isMobile: false,
   isResolvingExternalQuotes: false,
   isUploading: false,
+  navigateMock: vi.fn(),
   offlineTitle: '' as string | false,
   offlineStates: {} as Record<string, { isOffline: boolean; isOnlineStatusLoading: boolean; offlineTitle: string | false }>,
   offlineStatusLoading: false,
@@ -73,6 +74,14 @@ vi.mock('react-i18next', () => ({
     },
   }),
 }));
+
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => testState.navigateMock,
+  };
+});
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   setAccount: (account: unknown) => testState.setAccountMock(account),
@@ -333,6 +342,7 @@ describe('ReplyModal', () => {
     testState.isMobile = false;
     testState.isResolvingExternalQuotes = false;
     testState.isUploading = false;
+    testState.navigateMock.mockReset();
     testState.offlineTitle = '';
     testState.offlineStates = {};
     testState.offlineStatusLoading = false;
@@ -684,6 +694,29 @@ describe('ReplyModal', () => {
 
     expect(testState.resetPublishReplyOptionsMock).toHaveBeenCalledTimes(1);
     expect(testState.closeModalMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('redirects to the board index after a reply when nonoko is used', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = '';
+    testState.publishReplyMock.mockImplementation(() => {
+      testState.replyIndex = 3;
+    });
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const optionsInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchInput(optionsInput, 'nonoko');
+    await dispatchInput(textarea as HTMLTextAreaElement, 'reply body');
+    await clickButtonByText('post');
+    await rerenderReplyModal('/mu/thread/post-1');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.resetPublishReplyOptionsMock).toHaveBeenCalledTimes(1);
+    expect(testState.closeModalMock).toHaveBeenCalledTimes(1);
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu');
   });
 
   it('inserts quote requests only once and keeps the textarea content stable across rerenders', async () => {

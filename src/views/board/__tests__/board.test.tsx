@@ -10,7 +10,10 @@ import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../.
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 type TestComment = {
-  cid: string;
+  cid?: string;
+  content?: string;
+  index?: number;
+  parentCid?: string;
   pinned?: boolean;
   communityAddress?: string;
   deleted?: boolean;
@@ -30,7 +33,7 @@ type TestCommunity = {
 
 const testState = vi.hoisted(() => ({
   account: { subscriptions: [] as string[] },
-  accountComments: [] as TestComment[],
+  accountComments: [] as Array<TestComment | undefined>,
   accountCommentsCalls: [] as Array<{ commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' } | undefined>,
   accountCommunityAddresses: [] as string[],
   directories: [{ address: 'music-posting.eth', title: '/mu/ - Music' }] as Array<{ address: string; title?: string; directoryCode?: string }>,
@@ -83,7 +86,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 const getScopedAccountComments = (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
-  let scopedComments = [...testState.accountComments];
+  let scopedComments = testState.accountComments.filter(Boolean) as TestComment[];
 
   if (options?.commentIndices?.length) {
     const normalizedCommentIndices = options.commentIndices.filter((commentIndex) => Number.isInteger(commentIndex) && commentIndex >= 0);
@@ -191,7 +194,7 @@ vi.mock('react-virtuoso', () => ({
       return createElement(
         'div',
         { 'data-testid': 'virtuoso' },
-        data.map((item, index) => createElement('div', { key: item.cid }, itemContent(index, item))),
+        data.map((item, index) => createElement('div', { key: item.cid ?? index }, itemContent(index, item))),
         endReached ? createElement('button', { 'data-testid': 'end-reached', onClick: () => endReached(data.length) }, 'end-reached') : null,
         components?.Footer ? createElement(components.Footer) : null,
       );
@@ -272,7 +275,7 @@ vi.mock('../../../components/footer', () => ({
 }));
 
 vi.mock('../../post', () => ({
-  Post: ({ post }: { post?: TestComment }) => createElement('div', { 'data-testid': 'post' }, post?.cid || 'missing-post'),
+  Post: ({ post }: { post?: TestComment }) => createElement('div', { 'data-testid': 'post' }, post?.cid || post?.content || 'missing-post'),
 }));
 
 vi.mock('../../../lib/snow', () => ({
@@ -300,13 +303,24 @@ const flushEffects = async (count = 5) => {
   }
 };
 
-const renderBoard = async ({ boardProps, initialEntry, routePath }: { boardProps?: BoardProps; initialEntry: string; routePath: string }) => {
+const renderBoard = async ({
+  boardProps,
+  initialEntry,
+  initialState,
+  routePath,
+}: {
+  boardProps?: BoardProps;
+  initialEntry: string;
+  initialState?: unknown;
+  routePath: string;
+}) => {
   latestLocation = initialEntry;
+  const initialEntries = initialState === undefined ? [initialEntry] : [{ pathname: initialEntry, state: initialState }];
   await act(async () => {
     root.render(
       createElement(
         MemoryRouter,
-        { initialEntries: [initialEntry] },
+        { initialEntries },
         createElement(
           Routes,
           {},
@@ -523,6 +537,34 @@ describe('Board', () => {
 
     expect(testState.resetMock).toHaveBeenCalledTimes(2);
     expect(testState.setEnableInfiniteScrollMock).toHaveBeenCalledWith(true);
+  });
+
+  it('inserts a nonoko pending account comment after pinned posts on the redirected board index', async () => {
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    testState.feed = [
+      { cid: 'pinned-post', pinned: true, communityAddress: 'music-posting.eth' },
+      { cid: 'older-post', communityAddress: 'music-posting.eth' },
+      { cid: 'oldest-post', communityAddress: 'music-posting.eth' },
+    ];
+    testState.accountComments = [];
+    testState.accountComments[7] = {
+      content: 'pending thread body',
+      communityAddress: 'music-posting.eth',
+      index: 7,
+      state: 'publishing-challenge',
+      timestamp: currentTimestamp,
+    };
+
+    await renderBoard({
+      initialEntry: '/mu',
+      initialState: { nonokoPendingAccountCommentIndex: 7 },
+      routePath: '/:boardIdentifier/*',
+    });
+
+    expect(testState.accountCommentsCalls).toContainEqual({
+      commentIndices: [7],
+    });
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['pinned-post', 'pending thread body']);
   });
 
   it('redirects oversized board pages back to the last available page', async () => {
