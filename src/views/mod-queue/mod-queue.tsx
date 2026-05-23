@@ -1019,6 +1019,8 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
       </PageFooterMobile>
     </>
   );
+  const isInitialFeedLoading = filteredFeed.length === 0 && hasMore;
+  const isQueueEmpty = filteredFeed.length === 0 && !hasMore;
 
   return (
     <>
@@ -1031,8 +1033,8 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
           </div>
         )}
 
-        {filteredFeed.length === 0 && !hasMore ? (
-          <div className={styles.empty}>{t('queue_is_empty')}</div>
+        {isInitialFeedLoading ? (
+          <ModQueueFooter hasMore={hasMore} communityAddresses={communityAddresses} />
         ) : (
           <>
             {viewMode === 'compact' && !isMobile && (
@@ -1047,7 +1049,9 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
                   <div className={styles.actionsHeader}>{t('actions')}</div>
                 </div>
 
-                {hasMore ? (
+                {isQueueEmpty ? (
+                  <div className={`${styles.empty} ${styles.emptyTableRow}`}>{t('queue_is_empty')}</div>
+                ) : hasMore ? (
                   <Virtuoso
                     useWindowScroll
                     data={filteredFeed}
@@ -1087,7 +1091,9 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
 
             {viewMode === 'compact' && isMobile && (
               <>
-                {hasMore ? (
+                {isQueueEmpty ? (
+                  <div className={styles.empty}>{t('queue_is_empty')}</div>
+                ) : hasMore ? (
                   <Virtuoso
                     useWindowScroll
                     data={filteredFeed}
@@ -1126,7 +1132,9 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
 
             {viewMode === 'feed' && (
               <>
-                {hasMore ? (
+                {isQueueEmpty ? (
+                  <div className={styles.empty}>{t('queue_is_empty')}</div>
+                ) : hasMore ? (
                   <Virtuoso
                     useWindowScroll
                     data={filteredFeed}

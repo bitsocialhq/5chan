@@ -113,6 +113,12 @@
   color: var(--mod-queue-time-color);
 }
 
+.emptyTableRow {
+  margin-top: 1px;
+  background: var(--mod-queue-row-background-color);
+  border-bottom: var(--mod-queue-row-border-bottom);
+}
+
 .footer {
   padding: 10px;
   display: flex;
