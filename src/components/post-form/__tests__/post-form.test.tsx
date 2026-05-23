@@ -175,7 +175,9 @@ vi.mock('../../../hooks/use-publish-post', async () => {
             ...sanitizedOptions,
           };
           testState.publishedPostOptions = testState.publishPostOptions;
-          return testState.publishPostMock(options);
+          const result = testState.publishPostMock(options);
+          forceUpdate();
+          return result;
         },
         [getPublishPostOptions],
       );
@@ -907,6 +909,30 @@ describe('PostForm', () => {
     expect(testState.navigateMock).toHaveBeenCalledWith('/pending/7');
   });
 
+  it('redirects new posts to the board index when nonoko is used', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.publishPostMock.mockImplementation(() => {
+      testState.postIndex = 7;
+    });
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const optionsInput = table?.querySelector<HTMLInputElement>('input[aria-label="options"]');
+    const subjectInput = table?.querySelector<HTMLInputElement>('input[aria-label="subject"]');
+
+    await dispatchInput(optionsInput as HTMLInputElement, 'nonoko');
+    await dispatchInput(subjectInput as HTMLInputElement, 'Thread title');
+    await clickByText(table as HTMLTableElement, 'post');
+    await flushEffects();
+
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalledTimes(1);
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { state: { nonokoPendingAccountCommentIndex: 7 } });
+    expect(testState.navigateMock).not.toHaveBeenCalledWith('/pending/7');
+  });
+
   it('resets the reply form after a completed reply publish', async () => {
     testState.comments = {
       'thread-cid': {
@@ -921,6 +947,35 @@ describe('PostForm', () => {
     await flushEffects();
 
     expect(testState.resetPublishReplyOptionsMock).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('table')).toBeNull();
+  });
+
+  it('redirects replies from the inline form to the board index when nonoko is used', async () => {
+    testState.comments = {
+      'thread-cid': {
+        postCid: 'thread-cid',
+      },
+    };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.publishReplyMock.mockImplementation(() => {
+      testState.replyIndex = 4;
+    });
+
+    await renderPostForm('/mu/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
+
+    const table = container.querySelector('table');
+    const optionsInput = table?.querySelector<HTMLInputElement>('input[aria-label="options"]');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchInput(optionsInput as HTMLInputElement, 'nonoko');
+    await dispatchInput(textarea as HTMLTextAreaElement, 'Reply body');
+    await clickByText(table as HTMLTableElement, 'post');
+    await flushEffects();
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.resetPublishReplyOptionsMock).toHaveBeenCalledTimes(1);
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu');
     expect(container.querySelector('table')).toBeNull();
   });
 

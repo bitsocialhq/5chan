@@ -256,6 +256,40 @@ const FAQ_SECTIONS: FAQSection[] = [
         ),
       },
       {
+        id: 'sage',
+        question: 'What is "sage"?',
+        answer: (
+          <>
+            On imageboards, entering <code>sage</code> in the <code>[Options]</code> field while replying means "do not bump this thread." 5chan cannot implement it as a
+            real option yet because boards use the <code>active</code> sort type from pkc-js, and a reply cannot opt out of updating that active order until pkc-js
+            supports configurable page sorts. That work is tracked in{' '}
+            <a href='https://github.com/pkcprotocol/pkc-js/issues/73' {...externalLinkProps}>
+              pkc-js issue #73
+            </a>
+            {'. '}pkc-js is a core Bitsocial library, so <code>sage</code> has to land there before 5chan can make it work. It is not a downvote.
+          </>
+        ),
+      },
+      {
+        id: 'nonoko',
+        question: 'How can I be returned to the board index after I post?',
+        answer: (
+          <>
+            Enter <code>nonoko</code> in the <code>[Options]</code> field before submitting. 5chan normally sends you toward the new or pending post after submission;{' '}
+            <code>nonoko</code> returns you to the board index instead. It works for new threads and replies.
+          </>
+        ),
+      },
+      {
+        id: 'nonokosage',
+        question: 'Can I use nonoko and sage at the same time?',
+        answer: (
+          <>
+            Not yet. <code>nonoko</code> works now, but <code>sage</code> and <code>nonokosage</code> are still blocked on the pkc-js page-sort work above.
+          </>
+        ),
+      },
+      {
         id: 'archive',
         question: 'Can I retrieve an old post or image?',
         answer: (
