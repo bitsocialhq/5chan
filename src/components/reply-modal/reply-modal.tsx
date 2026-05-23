@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
@@ -11,6 +11,7 @@ import {
   getContentWithPostOptionState as getContentWithOptions,
   getPostOptionsDirectoryCode,
   getUnsupportedPostOptionsMessage,
+  hasNonokoOption,
   isUnsupportedPostOptionsMessage,
 } from '../../lib/utils/post-options-utils';
 import { getPublishURLFilename, isValidPublishURL } from '../../lib/utils/url-utils';
@@ -50,6 +51,7 @@ interface ReplyModalProps {
 const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threadNumber, postCid, scrollY, communityAddress }: ReplyModalProps) => {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const params = useParams();
   const isInAllView = isAllView(location.pathname);
   const isInModView = isModView(location.pathname);
@@ -86,6 +88,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const optionsRef = useRef<HTMLInputElement>(null);
   const fortuneEntryRef = useRef<FortuneEntry | null>(null);
   const diceRollRef = useRef<DiceRoll | null>(null);
+  const nonokoRedirectPathRef = useRef<string | null>(null);
   const lastSelectionStartRef = useRef(0);
   const lastSelectionEndRef = useRef(0);
   const lastProcessedQuoteInsertRequestIdRef = useRef(0);
@@ -133,6 +136,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     checkContentLengthRef.current.cancel();
     checkPostOptionsRef.current.cancel();
     setLengthError(null);
+    nonokoRedirectPathRef.current = null;
 
     if (currentOptionsError) {
       setError(currentOptionsError);
@@ -160,15 +164,21 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     }
 
     setError(null);
+    nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
     publishReply({ content: publishContent });
   };
 
   useEffect(() => {
     if (typeof replyIndex === 'number') {
+      const nonokoRedirectPath = nonokoRedirectPathRef.current;
+      nonokoRedirectPathRef.current = null;
       resetPublishReplyOptions();
       closeModal();
+      if (nonokoRedirectPath) {
+        navigate(nonokoRedirectPath);
+      }
     }
-  }, [replyIndex, resetPublishReplyOptions, closeModal]);
+  }, [replyIndex, resetPublishReplyOptions, closeModal, navigate]);
 
   const nodeRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();

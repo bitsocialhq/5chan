@@ -12,8 +12,10 @@ import {
   type FortuneEntry,
   POST_OPTIONS_VALIDATION_DELAY_MS,
   getContentWithPostOptionState as getContentWithOptions,
+  getNonokoPendingRouteState,
   getPostOptionsDirectoryCode,
   getUnsupportedPostOptionsMessage,
+  hasNonokoOption,
   isUnsupportedPostOptionsMessage,
 } from '../../lib/utils/post-options-utils';
 import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
@@ -420,6 +422,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const optionsRef = useRef<HTMLInputElement>(null);
   const fortuneEntryRef = useRef<FortuneEntry | null>(null);
   const diceRollRef = useRef<DiceRoll | null>(null);
+  const nonokoRedirectPathRef = useRef<string | null>(null);
 
   const location = useLocation();
   const isInAllView = isAllView(location.pathname);
@@ -487,6 +490,14 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     setBbcodePreviewContent('');
   };
 
+  const getBoardIndexPath = () => {
+    if (effectiveBoardAddress) {
+      return `/${getBoardPath(effectiveBoardAddress, directories)}`;
+    }
+
+    return params?.boardIdentifier ? `/${params.boardIdentifier}` : null;
+  };
+
   const onPublishPost = () => {
     const currentTitle = subjectRef.current?.value.trim() || '';
     const currentContent = textRef.current?.value || '';
@@ -499,6 +510,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     checkPostOptions.cancel();
     setLengthError(null);
     setFormError(null);
+    nonokoRedirectPathRef.current = null;
 
     if (currentOptionsError) {
       setFormError(currentOptionsError);
@@ -529,6 +541,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       return;
     }
 
+    nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
     publishPost({ content: publishContent });
   };
 
@@ -536,9 +549,15 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const navigate = useNavigate();
   useEffect(() => {
     if (typeof postIndex === 'number') {
+      const nonokoRedirectPath = nonokoRedirectPathRef.current;
+      nonokoRedirectPathRef.current = null;
       resetPublishPostOptions();
       resetFields();
-      navigate(`/pending/${postIndex}`);
+      if (nonokoRedirectPath) {
+        navigate(nonokoRedirectPath, { state: getNonokoPendingRouteState(postIndex) });
+      } else {
+        navigate(`/pending/${postIndex}`);
+      }
     }
   }, [postIndex, resetPublishPostOptions, navigate]);
 
@@ -605,6 +624,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     checkPostOptions.cancel();
     setLengthError(null);
     setFormError(null);
+    nonokoRedirectPathRef.current = null;
 
     if (currentOptionsError) {
       setFormError(currentOptionsError);
@@ -631,15 +651,21 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       return;
     }
 
+    nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
     publishReply({ content: publishContent });
   };
 
   useEffect(() => {
     if (typeof replyIndex === 'number') {
+      const nonokoRedirectPath = nonokoRedirectPathRef.current;
+      nonokoRedirectPathRef.current = null;
       resetFields();
       closeForm();
+      if (nonokoRedirectPath) {
+        navigate(nonokoRedirectPath);
+      }
     }
-  }, [replyIndex, closeForm]);
+  }, [replyIndex, closeForm, navigate]);
 
   const { isUploading, uploadedFileName, handleUpload } = useFileUpload({
     onUploadComplete: (uploadedUrl: string) => {

@@ -77,6 +77,10 @@ export const getPostOptionsDirectoryCode = (directory: PostOptionsDirectory | nu
 };
 
 const isSupportedPostOption = (option: string, directoryCode: string | undefined): boolean => {
+  if (option === 'nonoko') {
+    return true;
+  }
+
   if (option === 'fortune') {
     return !!directoryCode && FORTUNE_DIRECTORY_CODES.has(directoryCode);
   }
@@ -105,6 +109,35 @@ export const getUnsupportedPostOptionsMessage = (value: string, directoryCode: s
 };
 
 export const isUnsupportedPostOptionsMessage = (message: string | null): boolean => message?.startsWith('unsupported options:') === true;
+
+export const hasNonokoOption = (value: string): boolean => parsePostOptions(value).includes('nonoko');
+
+const NONOKO_PENDING_ACCOUNT_COMMENT_INDEX_STATE_KEY = 'nonokoPendingAccountCommentIndex';
+
+type NonokoPendingRouteState = {
+  [NONOKO_PENDING_ACCOUNT_COMMENT_INDEX_STATE_KEY]?: unknown;
+  usr?: unknown;
+};
+
+const getNonokoPendingAccountCommentIndexFromRecord = (state: NonokoPendingRouteState): number | undefined => {
+  const value = state[NONOKO_PENDING_ACCOUNT_COMMENT_INDEX_STATE_KEY];
+  return Number.isInteger(value) && (value as number) >= 0 ? (value as number) : undefined;
+};
+
+export const getNonokoPendingRouteState = (commentIndex: number) => ({
+  [NONOKO_PENDING_ACCOUNT_COMMENT_INDEX_STATE_KEY]: commentIndex,
+});
+
+export const getNonokoPendingAccountCommentIndex = (state: unknown): number | undefined => {
+  if (!state || typeof state !== 'object') return undefined;
+
+  const directIndex = getNonokoPendingAccountCommentIndexFromRecord(state as NonokoPendingRouteState);
+  if (directIndex !== undefined) return directIndex;
+
+  const wrappedState = (state as NonokoPendingRouteState).usr;
+  if (!wrappedState || typeof wrappedState !== 'object') return undefined;
+  return getNonokoPendingAccountCommentIndexFromRecord(wrappedState as NonokoPendingRouteState);
+};
 
 const hasFortuneOption = (value: string, directoryCode: string | undefined): boolean =>
   !!directoryCode && FORTUNE_DIRECTORY_CODES.has(directoryCode) && parsePostOptions(value).includes('fortune');
