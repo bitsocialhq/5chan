@@ -16,8 +16,10 @@ type TestComment = {
 const testState = vi.hoisted(() => ({
   accountCommentIndex: undefined as string | undefined,
   accountComments: [] as TestComment[],
+  challengeCount: 0,
   directories: [] as Array<{ address: string; title?: string }>,
   getBoardPathMock: vi.fn<(address: string) => string>(),
+  locationState: null as { boardPath?: string } | null,
   navigateMock: vi.fn(),
   post: undefined as TestComment | undefined,
 }));
@@ -26,6 +28,9 @@ vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
     ...actual,
+    useLocation: () => ({
+      state: testState.locationState,
+    }),
     useNavigate: () => testState.navigateMock,
     useParams: () => ({
       accountCommentIndex: testState.accountCommentIndex,
@@ -47,6 +52,10 @@ vi.mock('../../../hooks/use-directories', () => ({
 
 vi.mock('../../../lib/utils/route-utils', () => ({
   getBoardPath: (address: string) => testState.getBoardPathMock(address),
+}));
+
+vi.mock('../../../stores/use-challenges-store', () => ({
+  default: (selector: (state: { challenges: unknown[] }) => unknown) => selector({ challenges: Array.from({ length: testState.challengeCount }) }),
 }));
 
 vi.mock('../../post', () => ({
@@ -78,8 +87,10 @@ describe('PendingPost', () => {
     vi.clearAllMocks();
     testState.accountCommentIndex = undefined;
     testState.accountComments = [];
+    testState.challengeCount = 0;
     testState.directories = [];
     testState.getBoardPathMock.mockReset();
+    testState.locationState = null;
     testState.navigateMock.mockReset();
     testState.post = undefined;
 
@@ -149,6 +160,25 @@ describe('PendingPost', () => {
 
     expect(container.querySelector('[data-testid="post-view"]')?.textContent).toBe('no-post');
     expect(testState.navigateMock).not.toHaveBeenCalledWith('/not-found', { replace: true });
+  });
+
+  it('redirects abandoned pending posts back to their board after the challenge closes', async () => {
+    testState.accountCommentIndex = '0';
+    testState.accountComments = [];
+    testState.challengeCount = 1;
+    testState.locationState = { boardPath: 'mu' };
+    testState.post = { index: 0 };
+
+    await renderPendingPost();
+
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+
+    testState.challengeCount = 0;
+    testState.navigateMock.mockClear();
+
+    await renderPendingPost();
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
   });
 
   it('redirects missing sparse pending account comment indices to not found', async () => {

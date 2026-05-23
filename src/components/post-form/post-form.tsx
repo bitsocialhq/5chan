@@ -428,6 +428,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const subscriptions = account?.subscriptions || [];
   const directories = useDirectories();
   const directoryEntry = useDirectoryByAddress(effectiveBoardAddress);
+  const pendingPostBoardPath = effectiveBoardAddress ? getBoardPath(effectiveBoardAddress, directories) : undefined;
   const rulesPath = effectiveBoardAddress ? `/rules/${getBoardPath(effectiveBoardAddress, directories)}` : '/rules';
   const showSpoilerForPost = directoryEntry?.features?.noSpoilers !== true;
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
@@ -538,9 +539,9 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     if (typeof postIndex === 'number') {
       resetPublishPostOptions();
       resetFields();
-      navigate(`/pending/${postIndex}`);
+      navigate(`/pending/${postIndex}`, pendingPostBoardPath ? { state: { boardPath: pendingPostBoardPath } } : undefined);
     }
-  }, [postIndex, resetPublishPostOptions, navigate]);
+  }, [postIndex, pendingPostBoardPath, resetPublishPostOptions, navigate]);
 
   // in post page, publish a reply to the post
   const isInPostView = isPostPageView(location.pathname, params);
