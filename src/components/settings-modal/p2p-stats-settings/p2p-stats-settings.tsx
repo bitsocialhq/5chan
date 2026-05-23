@@ -1,7 +1,10 @@
 import { memo, useEffect, useReducer } from 'react';
 import { useAccount, usePkcRpcSettings } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
+import { getCountryFlagPosition, getCountryLabel } from '../../../lib/country-flags';
+import { getApproximateCountryCode } from '../../../lib/peer-geo';
 import { getP2PRuntimeMode, type P2PRuntimeMode } from '../../../lib/p2p-runtime';
+import PeerWorldMap from './peer-world-map';
 import styles from './p2p-stats-settings.module.css';
 
 type AccountShape = Record<string, any>;
@@ -512,9 +515,9 @@ const getBrowserLibp2pStats = async (account?: AccountShape): Promise<StatRow[]>
   return [
     { name: 'Mode', value: getBrowserMode(client) },
     { name: 'Peer ID', value: libp2p?.peerId?.toString() ?? 'unknown' },
-    getBrowserConnectedPeersRow(peers, connections),
     { name: 'Data received', value: transferStats.downloadedBytes === undefined ? 'unknown' : formatBytes(transferStats.downloadedBytes) },
     { name: 'Data sent', value: transferStats.uploadedBytes === undefined ? 'unknown' : formatBytes(transferStats.uploadedBytes) },
+    getBrowserConnectedPeersRow(peers, connections),
   ];
 };
 
@@ -547,13 +550,13 @@ const getElectronKuboStats = async (rpcState?: string, signal?: AbortSignal): Pr
     { name: 'PKC RPC', value: rpcState ?? 'unknown' },
     { name: 'Peer ID', value: identity.ID ?? 'unknown' },
     { name: 'Agent', value: identity.AgentVersion ?? version.Version ?? 'unknown' },
-    getElectronConnectedPeersRow(peers),
     { name: 'Bandwidth in', value: `${formatBytes(bandwidth.TotalIn)} total, ${formatRate(bandwidth.RateIn)}` },
     { name: 'Bandwidth out', value: `${formatBytes(bandwidth.TotalOut)} total, ${formatRate(bandwidth.RateOut)}` },
     { name: 'Repo size', value: formatBytes(repo.RepoSize) },
     { name: 'Repo objects', value: String(repo.NumObjects ?? 'unknown') },
     { name: 'Bitswap peers', value: formatCount(Array.isArray(bitswap.Peers) ? bitswap.Peers.length : 0, 'peer') },
     { name: 'Bitswap wantlist', value: formatCount(Array.isArray(bitswap.Wantlist) ? bitswap.Wantlist.length : 0, 'item') },
+    getElectronConnectedPeersRow(peers),
   ];
 };
 
@@ -563,31 +566,57 @@ const getP2PStats = async (mode: P2PRuntimeMode, account?: AccountShape, rpcStat
 };
 
 const ConnectedPeersValue = ({ row }: { row: ConnectedPeersStatRow }) => (
-  <details className={styles.connectedPeers} data-testid='connected-peers'>
-    <summary>
-      {formatCount(row.peerCount, 'peer')}, {formatCount(row.connectionCount, 'connection')}
+  <details data-testid='connected-peers' open>
+    <summary className={styles.connectedPeersSummary}>
+      {row.name}: {formatCount(row.peerCount, 'peer')}, {formatCount(row.connectionCount, 'connection')}
     </summary>
+    <PeerWorldMap peers={row.entries} />
     <div className={styles.connectedPeerList}>
       {row.entries.length ? (
-        row.entries.map((entry) => (
-          <div className={styles.connectedPeer} key={entry.id}>
-            <div className={styles.connectedPeerMeta}>
-              <span className={styles.connectionTransport}>{entry.transport}</span>
-              {entry.direction && <span>{entry.direction}</span>}
-              {entry.status && <span>{entry.status}</span>}
+        row.entries.map((entry) => {
+          const countryCode = getApproximateCountryCode(entry.address);
+          const flagPosition = getCountryFlagPosition(countryCode);
+          return (
+            <div className={styles.connectedPeer} key={entry.id}>
+              <div className={styles.connectedPeerMeta}>
+                <span className={styles.connectionTransport}>{entry.transport}</span>
+                {entry.direction && (
+                  <span className={styles.connectionDirection} data-direction={entry.direction}>
+                    {entry.direction}
+                  </span>
+                )}
+                {entry.status && (
+                  <span className={styles.connectionStatus} data-status={entry.status}>
+                    {entry.status}
+                  </span>
+                )}
+              </div>
+              <div className={styles.peerId} title={entry.peerId}>
+                {entry.peerId}
+              </div>
+              <div className={styles.connectionAddressRow}>
+                {flagPosition && (
+                  <span
+                    aria-label={getCountryLabel(countryCode)}
+                    className={styles.peerFlag}
+                    role='img'
+                    style={{ backgroundPosition: `-${flagPosition.x}px -${flagPosition.y}px` }}
+                    title={getCountryLabel(countryCode)}
+                  />
+                )}
+                <code className={styles.connectionAddress} title={entry.address}>
+                  {entry.address}
+                </code>
+              </div>
             </div>
-            <div className={styles.peerId}>{entry.peerId}</div>
-            <code className={styles.connectionAddress}>{entry.address}</code>
-          </div>
-        ))
+          );
+        })
       ) : (
         <div className={styles.connectedPeerEmpty}>No active peer addresses</div>
       )}
     </div>
   </details>
 );
-
-const StatValue = ({ row }: { row: StatRow }) => (row.type === 'connectedPeers' ? <ConnectedPeersValue row={row} /> : row.value);
 
 const P2PStatsSettings = () => {
   const { t } = useTranslation();
@@ -635,14 +664,20 @@ const P2PStatsSettings = () => {
         <>
           <table className={styles.stats}>
             <tbody>
-              {statsState.rows.map((row) => (
-                <tr key={row.name}>
-                  <td className={styles.statName}>{row.name}</td>
-                  <td className={styles.statValue}>
-                    <StatValue row={row} />
-                  </td>
-                </tr>
-              ))}
+              {statsState.rows.map((row) =>
+                row.type === 'connectedPeers' ? (
+                  <tr key={row.name}>
+                    <td className={styles.connectedPeersCell} colSpan={2}>
+                      <ConnectedPeersValue row={row} />
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={row.name}>
+                    <td className={styles.statName}>{row.name}</td>
+                    <td className={styles.statValue}>{row.value}</td>
+                  </tr>
+                ),
+              )}
               {updatedAtLabel && (
                 <tr>
                   <td className={styles.statName}>{t('p2p_stats_updated')}</td>

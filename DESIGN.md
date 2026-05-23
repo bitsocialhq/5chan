@@ -129,6 +129,8 @@ The palette is inherited from classic imageboard themes and should remain recogn
 
 **The No Modern Accent Rule.** Do not introduce a new brand accent, gradient palette, neon crypto palette, or marketing color system for core product UI.
 
+**The Functional Color Exception.** Small, deterministic per-entity colors used as data — for example a hashed swatch that gives each connected peer a stable identity — are allowed. Render them as flat, square, small indicators (not gradients, glows, or large fills). This exception is for conveying data, not for decoration or branding.
+
 ## 3. Typography
 
 **Display Font:** Tahoma, sans-serif.
@@ -178,6 +180,8 @@ The palette is inherited from classic imageboard themes and should remain recogn
 - **Shadow Strategy:** none except the small legacy menu shadow.
 - **Border:** 1px theme borders.
 - **Internal Padding:** compact, commonly `2px`, `5px`, or `0.5em`.
+- **Hover:** do not change a row's or card's background on hover, and do not add CSS transitions or animations to them. Reserve hover feedback for text-link color changes.
+- **Inline labels:** plain text, bold for emphasis. Do not wrap labels (tags, statuses, transports, counts) in pill, capsule, chip, or rounded badge shapes; a label is text, not a button.
 
 ### Inputs / Fields
 
@@ -218,6 +222,8 @@ The palette is inherited from classic imageboard themes and should remain recogn
 
 - Do not modernize core imageboard UI for taste.
 - Do not add rounded cards, gradient hero areas, glass panels, soft shadows, dark-mode defaults, or large marketing sections to product surfaces.
+- Do not use pill, capsule, chip, or rounded badge shapes for labels, tags, statuses, transports, or counts.
+- Do not add hover background fills, color fades, or CSS transitions/animations to rows, cards, or list items.
 - Do not replace compact text links with large icon-button toolbars unless the existing surface already uses that pattern.
 - Do not introduce a new design system that competes with Yotsuba, Yotsuba B, Futaba, or the existing theme variable model.
 - Do not make Bitsocial, crypto, or decentralization visuals dominate routine browsing.
