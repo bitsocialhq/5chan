@@ -38,6 +38,17 @@
   word-break: break-word;
 }
 
+.statValue a {
+  color: var(--post-link-text-color);
+  text-decoration: var(--post-content-link-text-decoration);
+  text-transform: lowercase;
+}
+
+.statValue a:hover {
+  color: var(--post-link-text-color-hover);
+  text-decoration: var(--post-content-link-text-decoration-hover);
+}
+
 /* Connected peers span the full panel width instead of the narrow value column. */
 .stats td.connectedPeersCell {
   padding: 4px 4px 5px 0;
@@ -120,11 +131,23 @@
   min-width: 0;
 }
 
+.nodeEndpoint {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.nodeIp {
+  overflow-wrap: anywhere;
+}
+
 .peerFlag {
   flex-shrink: 0;
   width: 16px;
   height: 11px;
-  background-image: url("/assets/icons/flags-1.png");
+  background-image: url('/assets/icons/flags-1.png');
   background-repeat: no-repeat;
   image-rendering: pixelated;
 }
@@ -159,7 +182,7 @@
 
 .landDot {
   fill: currentColor;
-  opacity: 0.18;
+  opacity: 0.28;
 }
 
 .peerMarker {

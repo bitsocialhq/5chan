@@ -1,5 +1,16 @@
-import { describe, expect, it } from 'vitest';
-import { extractIpv4FromAddress, getApproximateCountryCode, getApproximateLatLon, isPrivateOrReservedIpv4 } from '../peer-geo';
+import { describe, expect, it, vi } from 'vitest';
+import { COUNTRY_CENTROIDS } from '../../data/country-centroids';
+import {
+  extractIpFromAddress,
+  extractIpv4FromAddress,
+  extractIpv6FromAddress,
+  fetchOwnIpCountryCode,
+  fetchOwnPublicEndpoint,
+  getApproximateCountryCode,
+  getApproximateLatLon,
+  getFirstPublicIpFromAddresses,
+  isPrivateOrReservedIpv4,
+} from '../peer-geo';
 
 const addr = (ip: string) => `/ip4/${ip}/tcp/4001/ws/p2p/12D3KooWExample`;
 
@@ -16,6 +27,13 @@ describe('extractIpv4FromAddress', () => {
   it('extracts an IPv4 embedded with dashes in a DNS hostname', () => {
     expect(extractIpv4FromAddress('/dns4/91-234-56-78.host.example/tcp/443/wss')).toBe('91.234.56.78');
     expect(extractIpv4FromAddress('/dns4/ip-203-0-113-9.provider.net/tcp/443/wss')).toBe('203.0.113.9');
+  });
+});
+
+describe('extractIpv6FromAddress', () => {
+  it('extracts the IPv6 from a multiaddr', () => {
+    expect(extractIpv6FromAddress('/ip6/2001:4860:4860::8888/tcp/4001/ws')).toBe('2001:4860:4860::8888');
+    expect(extractIpFromAddress('/ip6/2001:4860:4860::8888/tcp/4001/ws')).toBe('2001:4860:4860::8888');
   });
 });
 
@@ -44,27 +62,17 @@ describe('getApproximateLatLon', () => {
     expect(getApproximateLatLon(addr('8.8.8.8'))).toEqual(getApproximateLatLon(addr('8.8.8.8')));
   });
 
-  it('places addresses in the expected continental region', () => {
-    const na = getApproximateLatLon(addr('8.8.8.8'));
-    expect(na?.lon).toBeLessThan(-80); // North America
-    expect(na?.lat).toBeGreaterThan(30);
-
-    const eu = getApproximateLatLon(addr('80.80.80.80'));
-    expect(eu?.lon).toBeGreaterThan(0);
-    expect(eu?.lon).toBeLessThan(30);
-    expect(eu?.lat).toBeGreaterThan(40);
-
-    const as = getApproximateLatLon(addr('1.1.1.1'));
-    expect(as?.lon).toBeGreaterThan(90);
-
-    const af = getApproximateLatLon(addr('41.0.0.1'));
-    expect(af?.lon).toBeGreaterThan(8);
-    expect(af?.lon).toBeLessThan(34);
-    expect(af?.lat).toBeLessThan(12);
-
-    const sa = getApproximateLatLon(addr('200.0.0.1'));
-    expect(sa?.lon).toBeLessThan(-45);
-    expect(sa?.lat).toBeLessThan(-5);
+  it('snaps a peer to the centroid of its flag country', () => {
+    for (const ip of ['8.8.8.8', '80.80.80.80', '1.1.1.1', '41.0.0.1', '200.0.0.1', '194.110.247.146', '91.234.199.189']) {
+      const country = getApproximateCountryCode(addr(ip));
+      expect(country).toBeDefined();
+      const centroid = COUNTRY_CENTROIDS[country!];
+      expect(centroid).toBeDefined();
+      const loc = getApproximateLatLon(addr(ip))!;
+      // Marker sits at the country centroid, within the small placement jitter.
+      expect(Math.abs(loc.lat - centroid.lat)).toBeLessThanOrEqual(1);
+      expect(Math.abs(loc.lon - centroid.lon)).toBeLessThanOrEqual(1.3);
+    }
   });
 
   it('stays within valid coordinate bounds', () => {
@@ -74,6 +82,50 @@ describe('getApproximateLatLon', () => {
     expect(loc!.lat).toBeLessThanOrEqual(85);
     expect(loc!.lon).toBeGreaterThanOrEqual(-180);
     expect(loc!.lon).toBeLessThanOrEqual(180);
+  });
+});
+
+describe('getFirstPublicIpFromAddresses', () => {
+  it('returns the first public IP from multiaddrs', () => {
+    expect(getFirstPublicIpFromAddresses(['/ip4/127.0.0.1/tcp/4001', '/ip4/147.75.84.175/tcp/4001/ws'])).toBe('147.75.84.175');
+    expect(getFirstPublicIpFromAddresses(['/ip4/127.0.0.1/tcp/4001', '/ip6/2001:4860:4860::8888/tcp/443'])).toBe('2001:4860:4860::8888');
+  });
+
+  it('returns undefined when only private addresses are present', () => {
+    expect(getFirstPublicIpFromAddresses(['/ip4/127.0.0.1/tcp/4001', '/ip4/10.0.0.5/tcp/4001', '/ip6/fd00::1/tcp/4001'])).toBeUndefined();
+  });
+});
+
+describe('fetchOwnPublicEndpoint', () => {
+  it('caches the fetched public endpoint', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ country: 'US', ip: '2001:4860:4860::8888' }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(fetchOwnPublicEndpoint()).resolves.toEqual({ countryCode: 'us', ip: '2001:4860:4860::8888' });
+    await expect(fetchOwnPublicEndpoint()).resolves.toEqual({ countryCode: 'us', ip: '2001:4860:4860::8888' });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    vi.unstubAllGlobals();
+  });
+});
+
+describe('fetchOwnIpCountryCode', () => {
+  it("resolves and caches the accurate country for the node's own ip", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ country: 'VN', ip: '172.225.56.8' }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(fetchOwnIpCountryCode('172.225.56.8')).resolves.toBe('vn');
+    await expect(fetchOwnIpCountryCode('172.225.56.8')).resolves.toBe('vn');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toBe('https://api.country.is/172.225.56.8');
+
+    vi.unstubAllGlobals();
   });
 });
 

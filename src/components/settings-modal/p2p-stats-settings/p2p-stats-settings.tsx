@@ -1,8 +1,8 @@
-import { memo, useEffect, useReducer } from 'react';
+import { Fragment, memo, useEffect, useReducer } from 'react';
 import { useAccount, usePkcRpcSettings } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
-import { getCountryFlagPosition, getCountryLabel } from '../../../lib/country-flags';
-import { getApproximateCountryCode } from '../../../lib/peer-geo';
+import { getCountryFlagPosition, getCountryLabel, normalizeCountryCode } from '../../../lib/country-flags';
+import { fetchOwnIpCountryCode, fetchOwnPublicEndpoint, getApproximateCountryCode, getFirstPublicIpFromAddresses, type PublicEndpoint } from '../../../lib/peer-geo';
 import { getP2PRuntimeMode, type P2PRuntimeMode } from '../../../lib/p2p-runtime';
 import PeerWorldMap from './peer-world-map';
 import styles from './p2p-stats-settings.module.css';
@@ -32,7 +32,14 @@ type ConnectedPeersStatRow = {
   type: 'connectedPeers';
 };
 
-type StatRow = ConnectedPeersStatRow | TextStatRow;
+type NodeEndpointStatRow = {
+  countryCode?: string;
+  ip: string;
+  name: string;
+  type: 'nodeEndpoint';
+};
+
+type StatRow = ConnectedPeersStatRow | NodeEndpointStatRow | TextStatRow;
 
 type StatsState = {
   error?: string;
@@ -59,6 +66,9 @@ type StatsAction =
 type Libp2pClientShape = {
   _helia?: {
     libp2p?: {
+      components?: {
+        addressManager?: Libp2pAddressManagerShape;
+      };
       getConnections?: () => unknown[] | Promise<unknown[]>;
       getMultiaddrs?: () => unknown[] | Promise<unknown[]>;
       getPeers?: () => unknown[] | Promise<unknown[]>;
@@ -81,6 +91,13 @@ type Libp2pClientShape = {
   key?: string;
 };
 
+type Libp2pAddressManagerShape = {
+  getAddressesWithMetadata?: () => unknown[] | Promise<unknown[]>;
+  getObservedAddrs?: () => unknown[] | Promise<unknown[]>;
+};
+
+type BrowserLibp2pShape = NonNullable<NonNullable<NonNullable<Libp2pClientShape['_helia']>['libp2p']>>;
+
 type TransferStats = {
   downloadedBytes?: number;
   uploadedBytes?: number;
@@ -94,6 +111,7 @@ type ObservedTransferStats = {
 };
 
 const KUBO_API_URL = 'http://localhost:50019/api/v0';
+const SEEDER_REPO_URL = 'https://github.com/bitsocialnet/bitsocial-seeder';
 const STATS_REFRESH_MS = 5000;
 const MAX_TRANSFER_COUNTER_DEPTH = 10;
 const MAX_TRANSFER_COUNTER_OBJECTS = 400;
@@ -174,6 +192,21 @@ const getSafeArray = async (getValue?: () => unknown[] | Promise<unknown[]> | un
   } catch {
     return [];
   }
+};
+
+const getAddressManagerAddresses = async (libp2p?: BrowserLibp2pShape): Promise<unknown[]> => {
+  const addressManager = isRecord(libp2p?.components) ? (libp2p.components.addressManager as Libp2pAddressManagerShape | undefined) : undefined;
+  const [observedAddrs, addressesWithMetadata] = await Promise.all([
+    getSafeArray(() => addressManager?.getObservedAddrs?.()),
+    getSafeArray(() => addressManager?.getAddressesWithMetadata?.()),
+  ]);
+  return [
+    ...observedAddrs,
+    ...addressesWithMetadata.flatMap((entry) => {
+      const address = isRecord(entry) ? (entry.multiaddr ?? entry.address) : entry;
+      return address ? [address] : [];
+    }),
+  ];
 };
 
 const getByteLength = (value: unknown): number | undefined => {
@@ -478,6 +511,16 @@ const getBrowserConnectedPeersRow = (peers: unknown[], connections: unknown[]): 
   };
 };
 
+// Resolves the "Your IP" row from the node's own observed addresses. The shown IP
+// is geolocated accurately (it is the user's own address, never a peer's) so the
+// flag matches it, instead of the coarse continent guess used for connected peers.
+// Falls back to a public-endpoint lookup when libp2p only knows local/private addresses.
+const resolveOwnEndpoint = async (addresses: unknown[], signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
+  const ip = getFirstPublicIpFromAddresses(addresses);
+  if (ip) return { countryCode: await fetchOwnIpCountryCode(ip, signal), ip };
+  return fetchOwnPublicEndpoint(signal);
+};
+
 const getElectronConnectedPeersRow = (peers: unknown): ConnectedPeersStatRow => {
   const peerEntries = isRecord(peers) && Array.isArray(peers.Peers) ? peers.Peers : [];
   const entries = peerEntries.map<ConnectedPeerEntry>((peer) => {
@@ -506,15 +549,26 @@ const getElectronConnectedPeersRow = (peers: unknown): ConnectedPeersStatRow => 
   };
 };
 
-const getBrowserLibp2pStats = async (account?: AccountShape): Promise<StatRow[]> => {
+const getBrowserLibp2pStats = async (account?: AccountShape, signal?: AbortSignal): Promise<StatRow[]> => {
   const client = getFirstObjectValue(account?.pkc?.clients?.libp2pJsClients) as Libp2pClientShape | undefined;
   const libp2p = client?._helia?.libp2p;
-  const [peers, connections] = await Promise.all([getSafeArray(() => libp2p?.getPeers?.()), getSafeArray(() => libp2p?.getConnections?.())]);
+  const [peers, connections, multiaddrs, addressManagerAddresses] = await Promise.all([
+    getSafeArray(() => libp2p?.getPeers?.()),
+    getSafeArray(() => libp2p?.getConnections?.()),
+    getSafeArray(() => libp2p?.getMultiaddrs?.()),
+    getAddressManagerAddresses(libp2p),
+  ]);
   const transferStats = await getBrowserTransferStats(client, connections);
+  const localAddresses = connections.flatMap((connection) => {
+    const localAddr = isRecord(connection) ? connection.localAddr : undefined;
+    return localAddr ? [localAddr] : [];
+  });
+  const nodeEndpoint = await resolveOwnEndpoint([...multiaddrs, ...addressManagerAddresses, ...localAddresses], signal);
 
   return [
     { name: 'Mode', value: getBrowserMode(client) },
     { name: 'Peer ID', value: libp2p?.peerId?.toString() ?? 'unknown' },
+    nodeEndpoint ? { countryCode: nodeEndpoint.countryCode, ip: nodeEndpoint.ip, name: 'Your IP', type: 'nodeEndpoint' } : { name: 'Your IP', value: 'unavailable' },
     { name: 'Data received', value: transferStats.downloadedBytes === undefined ? 'unknown' : formatBytes(transferStats.downloadedBytes) },
     { name: 'Data sent', value: transferStats.uploadedBytes === undefined ? 'unknown' : formatBytes(transferStats.uploadedBytes) },
     getBrowserConnectedPeersRow(peers, connections),
@@ -561,8 +615,44 @@ const getElectronKuboStats = async (rpcState?: string, signal?: AbortSignal): Pr
 };
 
 const getP2PStats = async (mode: P2PRuntimeMode, account?: AccountShape, rpcState?: string, signal?: AbortSignal) => {
-  if (mode === 'browser-libp2p') return getBrowserLibp2pStats(account);
+  if (mode === 'browser-libp2p') return getBrowserLibp2pStats(account, signal);
   return getElectronKuboStats(rpcState, signal);
+};
+
+const NodeEndpointValue = ({ row }: { row: NodeEndpointStatRow }) => {
+  const countryCode = normalizeCountryCode(row.countryCode);
+  const flagPosition = getCountryFlagPosition(countryCode);
+  const countryLabel = getCountryLabel(row.countryCode);
+
+  return (
+    <span className={styles.nodeEndpoint}>
+      {flagPosition && (
+        <span
+          aria-label={countryLabel}
+          className={styles.peerFlag}
+          role='img'
+          style={{ backgroundPosition: `-${flagPosition.x}px -${flagPosition.y}px` }}
+          title={countryLabel}
+        />
+      )}
+      <span className={styles.nodeIp}>{row.ip}</span>
+    </span>
+  );
+};
+
+const StatValueCell = ({ row }: { row: TextStatRow }) => {
+  if (row.name === 'Mode' && row.value === 'Leeching') {
+    return (
+      <>
+        Leeching (
+        <a href={SEEDER_REPO_URL} rel='noopener noreferrer' target='_blank'>
+          want to seed?
+        </a>
+        )
+      </>
+    );
+  }
+  return row.value;
 };
 
 const ConnectedPeersValue = ({ row }: { row: ConnectedPeersStatRow }) => (
@@ -666,23 +756,34 @@ const P2PStatsSettings = () => {
             <tbody>
               {statsState.rows.map((row) =>
                 row.type === 'connectedPeers' ? (
+                  <Fragment key={row.name}>
+                    {updatedAtLabel && (
+                      <tr>
+                        <td className={styles.statName}>{t('p2p_stats_updated')}</td>
+                        <td className={styles.statValue}>{updatedAtLabel}</td>
+                      </tr>
+                    )}
+                    <tr>
+                      <td className={styles.connectedPeersCell} colSpan={2}>
+                        <ConnectedPeersValue row={row} />
+                      </td>
+                    </tr>
+                  </Fragment>
+                ) : row.type === 'nodeEndpoint' ? (
                   <tr key={row.name}>
-                    <td className={styles.connectedPeersCell} colSpan={2}>
-                      <ConnectedPeersValue row={row} />
+                    <td className={styles.statName}>{row.name}</td>
+                    <td className={styles.statValue}>
+                      <NodeEndpointValue row={row} />
                     </td>
                   </tr>
                 ) : (
                   <tr key={row.name}>
                     <td className={styles.statName}>{row.name}</td>
-                    <td className={styles.statValue}>{row.value}</td>
+                    <td className={styles.statValue}>
+                      <StatValueCell row={row} />
+                    </td>
                   </tr>
                 ),
-              )}
-              {updatedAtLabel && (
-                <tr>
-                  <td className={styles.statName}>{t('p2p_stats_updated')}</td>
-                  <td className={styles.statValue}>{updatedAtLabel}</td>
-                </tr>
               )}
             </tbody>
           </table>
