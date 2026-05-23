@@ -906,7 +906,7 @@ describe('PostForm', () => {
     await flushEffects();
 
     expect(testState.resetPublishPostOptionsMock).toHaveBeenCalledTimes(1);
-    expect(testState.navigateMock).toHaveBeenCalledWith('/pending/7');
+    expect(testState.navigateMock).toHaveBeenCalledWith('/pending/7', { state: { boardPath: 'mu' } });
   });
 
   it('redirects new posts to the board index when nonoko is used', async () => {

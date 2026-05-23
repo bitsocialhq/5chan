@@ -65,6 +65,13 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
     },
     state: 'succeeded',
   }),
+  useCommunities: ({ communities }: { communities?: Array<{ name: string }> } = {}) => ({
+    communities: (communities ?? []).map(() => ({
+      roles: {
+        '0x123': { role: 'moderator' },
+      },
+    })),
+  }),
   useEditedComment: ({ comment }: { comment?: TestComment }) => ({
     editedComment: comment,
     failedEdits: {},
