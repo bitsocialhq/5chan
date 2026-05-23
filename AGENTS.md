@@ -49,6 +49,7 @@ Agents may use compiled context to navigate quickly, but must verify against sou
 
 | Situation | Required action |
 |---|---|
+| New UI designed or styled, or any visual/component/theme work (`src/components`, `src/views`, CSS modules, `src/themes.css`) | Read `DESIGN.md` first and follow it; self-review the diff against its Do/Don't list before verifying. 5chan is a classic imageboard: square edges, 1px theme borders, flat surfaces, dense text, theme palette. No rounded corners, pill/badge shapes, hover background fills, CSS transitions, or soft shadows on product UI |
 | React UI logic changed (`src/components`, `src/views`, `src/hooks`, UI stores) | Follow React architecture rules below, review the diff with `vercel-react-best-practices` and `vercel:react-best-practices` when available, fix valid findings, then run `yarn doctor` |
 | `package.json` changed | Run `corepack yarn install` to keep `yarn.lock` in sync |
 | Dependencies or import graph changed | Run `yarn knip` as an advisory manifest/import audit |
@@ -107,6 +108,14 @@ src/
 - Avoid copy-paste logic across components. Extract custom hooks in `src/hooks/`.
 - Avoid boolean flag soup for complex flows; model state clearly in Zustand.
 - Use React Router for navigation; no manual history manipulation.
+
+### Design Rules
+
+- Read `DESIGN.md` before designing, styling, or adding any UI, and self-review the diff against its Do/Don't list before verification. `DESIGN.md` is the source of truth for 5chan's classic-imageboard look.
+- Preserve the old-school imageboard aesthetic: square edges, 1px theme borders, flat surfaces, dense compact text, and the existing theme palette (CSS variables in `src/themes.css` or `currentColor`).
+- Do not introduce modern UI patterns on product surfaces: no rounded corners/`border-radius`, no pill/capsule/badge shapes, no hover background-color changes or CSS transitions/animations on rows or cards, and no soft shadows, glass, gradients, or new accent/marketing colors.
+- Functional per-entity colors (e.g. a small hashed swatch identifying a peer) are allowed, but render them flat and square as small indicators, not as decorative gradients.
+- New decentralized/technical surfaces (P2P stats, addresses, tables) still follow the same language: compact, square, theme-aware, terse labels.
 
 ### Code Organization Rules
 

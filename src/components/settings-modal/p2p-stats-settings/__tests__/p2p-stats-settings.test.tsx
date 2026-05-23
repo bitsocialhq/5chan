@@ -132,13 +132,14 @@ describe('P2PStatsSettings', () => {
     await act(async () => Promise.resolve());
 
     const rows = getStatRows();
+    const connectedPeers = container.querySelector('[data-testid="connected-peers"]');
     expect(container.textContent).toContain('Leeching');
     expect(container.textContent).not.toContain('browser Helia');
     expect(container.textContent).not.toContain('seed mode');
     expect(container.textContent).not.toContain('status');
-    expect(rows.get('Connected peers')).toContain('2 peers, 1 connection');
-    expect(rows.get('Connected peers')).toContain('WebSocket');
-    expect(rows.get('Connected peers')).toContain('/ip4/127.0.0.1/tcp/4001/ws/p2p/peer-1');
+    expect(connectedPeers?.textContent).toContain('2 peers, 1 connection');
+    expect(connectedPeers?.textContent).toContain('WebSocket');
+    expect(connectedPeers?.textContent).toContain('/ip4/127.0.0.1/tcp/4001/ws/p2p/peer-1');
     expect(rows.has('connections')).toBe(false);
     expect(rows.has('Listen addresses')).toBe(false);
     expect(rows.has('p2p_stats_updated')).toBe(true);

@@ -38,44 +38,139 @@
   word-break: break-word;
 }
 
-.connectedPeers summary {
+/* Connected peers span the full panel width instead of the narrow value column. */
+.stats td.connectedPeersCell {
+  padding: 4px 4px 5px 0;
+}
+
+.connectedPeersSummary {
   cursor: pointer;
+  padding: 1px 0;
 }
 
 .connectedPeerList {
   display: grid;
-  gap: 6px;
-  margin-top: 5px;
+  gap: 5px;
+  margin-top: 6px;
 }
 
 .connectedPeer {
-  border-top: 1px solid var(--border-color, #d9d9d9);
-  padding-top: 5px;
+  display: grid;
+  gap: 3px;
+  padding: 4px 6px;
+  border: 1px solid rgba(127, 127, 127, 0.28);
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
 }
 
 .connectedPeerMeta {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 5px;
-  font-size: 0.9em;
+  font-size: 0.85em;
 }
 
 .connectionTransport {
   font-weight: 700;
 }
 
-.peerId,
-.connectionAddress {
-  word-break: break-all;
+.connectionDirection,
+.connectionStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: capitalize;
+  opacity: 0.85;
+}
+
+.connectionDirection::before {
+  font-weight: 700;
+}
+
+.connectionDirection[data-direction*='out' i]::before {
+  content: '↑';
+}
+
+.connectionDirection[data-direction*='in' i]::before {
+  content: '↓';
+}
+
+.connectionStatus::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  background: #9aa0a6;
+}
+
+.connectionStatus[data-status*='open' i]::before {
+  background: #3fb950;
+}
+
+.peerId {
+  overflow: hidden;
+  font-family: monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.connectionAddressRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.peerFlag {
+  flex-shrink: 0;
+  width: 16px;
+  height: 11px;
+  background-image: url("/assets/icons/flags-1.png");
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
 }
 
 .connectionAddress {
-  display: block;
-  margin-top: 2px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.85em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.7;
 }
 
 .connectedPeerEmpty {
+  padding: 6px 8px;
   font-style: italic;
+  opacity: 0.7;
+}
+
+.peerWorldMap {
+  margin-top: 6px;
+  border: 1px solid rgba(127, 127, 127, 0.28);
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+}
+
+.peerWorldMapSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.landDot {
+  fill: currentColor;
+  opacity: 0.18;
+}
+
+.peerMarker {
+  fill: #3fb950;
+}
+
+.peerWorldMapCaption {
+  padding: 1px 4px 2px;
+  font-size: 0.8em;
+  font-style: italic;
+  opacity: 0.6;
 }
 
 .statsMeta {

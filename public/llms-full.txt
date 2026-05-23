@@ -220,6 +220,7 @@ Agents may use compiled context to navigate quickly, but must verify against sou
 
 | Situation | Required action |
 |---|---|
+| New UI designed or styled, or any visual/component/theme work (`src/components`, `src/views`, CSS modules, `src/themes.css`) | Read `DESIGN.md` first and follow it; self-review the diff against its Do/Don't list before verifying. 5chan is a classic imageboard: square edges, 1px theme borders, flat surfaces, dense text, theme palette. No rounded corners, pill/badge shapes, hover background fills, CSS transitions, or soft shadows on product UI |
 | React UI logic changed (`src/components`, `src/views`, `src/hooks`, UI stores) | Follow React architecture rules below, review the diff with `vercel-react-best-practices` and `vercel:react-best-practices` when available, fix valid findings, then run `yarn doctor` |
 | `package.json` changed | Run `corepack yarn install` to keep `yarn.lock` in sync |
 | Dependencies or import graph changed | Run `yarn knip` as an advisory manifest/import audit |
@@ -278,6 +279,14 @@ src/
 - Avoid copy-paste logic across components. Extract custom hooks in `src/hooks/`.
 - Avoid boolean flag soup for complex flows; model state clearly in Zustand.
 - Use React Router for navigation; no manual history manipulation.
+
+### Design Rules
+
+- Read `DESIGN.md` before designing, styling, or adding any UI, and self-review the diff against its Do/Don't list before verification. `DESIGN.md` is the source of truth for 5chan's classic-imageboard look.
+- Preserve the old-school imageboard aesthetic: square edges, 1px theme borders, flat surfaces, dense compact text, and the existing theme palette (CSS variables in `src/themes.css` or `currentColor`).
+- Do not introduce modern UI patterns on product surfaces: no rounded corners/`border-radius`, no pill/capsule/badge shapes, no hover background-color changes or CSS transitions/animations on rows or cards, and no soft shadows, glass, gradients, or new accent/marketing colors.
+- Functional per-entity colors (e.g. a small hashed swatch identifying a peer) are allowed, but render them flat and square as small indicators, not as decorative gradients.
+- New decentralized/technical surfaces (P2P stats, addresses, tables) still follow the same language: compact, square, theme-aware, terse labels.
 
 ### Code Organization Rules
 
@@ -609,6 +618,8 @@ The palette is inherited from classic imageboard themes and should remain recogn
 
 **The No Modern Accent Rule.** Do not introduce a new brand accent, gradient palette, neon crypto palette, or marketing color system for core product UI.
 
+**The Functional Color Exception.** Small, deterministic per-entity colors used as data — for example a hashed swatch that gives each connected peer a stable identity — are allowed. Render them as flat, square, small indicators (not gradients, glows, or large fills). This exception is for conveying data, not for decoration or branding.
+
 ## 3. Typography
 
 **Display Font:** Tahoma, sans-serif.
@@ -658,6 +669,8 @@ The palette is inherited from classic imageboard themes and should remain recogn
 - **Shadow Strategy:** none except the small legacy menu shadow.
 - **Border:** 1px theme borders.
 - **Internal Padding:** compact, commonly `2px`, `5px`, or `0.5em`.
+- **Hover:** do not change a row's or card's background on hover, and do not add CSS transitions or animations to them. Reserve hover feedback for text-link color changes.
+- **Inline labels:** plain text, bold for emphasis. Do not wrap labels (tags, statuses, transports, counts) in pill, capsule, chip, or rounded badge shapes; a label is text, not a button.
 
 ### Inputs / Fields
 
@@ -698,6 +711,8 @@ The palette is inherited from classic imageboard themes and should remain recogn
 
 - Do not modernize core imageboard UI for taste.
 - Do not add rounded cards, gradient hero areas, glass panels, soft shadows, dark-mode defaults, or large marketing sections to product surfaces.
+- Do not use pill, capsule, chip, or rounded badge shapes for labels, tags, statuses, transports, or counts.
+- Do not add hover background fills, color fades, or CSS transitions/animations to rows, cards, or list items.
 - Do not replace compact text links with large icon-button toolbars unless the existing surface already uses that pattern.
 - Do not introduce a new design system that competes with Yotsuba, Yotsuba B, Futaba, or the existing theme variable model.
 - Do not make Bitsocial, crypto, or decentralization visuals dominate routine browsing.
