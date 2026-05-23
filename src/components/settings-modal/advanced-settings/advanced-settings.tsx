@@ -13,6 +13,8 @@ interface SettingsProps {
   ethRpcRef?: RefObject<HTMLTextAreaElement>;
   p2pRpcRef?: RefObject<HTMLInputElement>;
   p2pDataPathRef?: RefObject<HTMLInputElement>;
+  onPureP2PBrowserChange?: (enabled: boolean) => void;
+  pureP2PBrowserEnabled?: boolean;
   pureP2PBrowserRef?: RefObject<HTMLInputElement>;
 }
 
@@ -158,31 +160,21 @@ const BlockchainProvidersSettings = ({ ethRpcRef }: SettingsProps) => {
 };
 
 const P2pRPCSettings = ({ p2pRpcRef }: SettingsProps) => {
-  const [showInfo, setShowInfo] = useState(false);
   const account = useAccount() as AccountShape | undefined;
   const protocolOptions = getProtocolOptions(account);
   const pkcRpcClientsOptions = getNodeRpcClientsOptions(protocolOptions);
 
   return (
     <div className={styles.p2pRPCSettings}>
-      <div>
-        <input type='text' defaultValue={pkcRpcClientsOptions} ref={p2pRpcRef} autoCorrect='off' autoCapitalize='off' spellCheck='false' />
-        <button onClick={() => setShowInfo(!showInfo)}>{showInfo ? 'X' : '?'}</button>
-      </div>
-      {showInfo && (
-        <div className={styles.p2pRpcSettingsInfo}>
-          use a P2P full node locally, or remotely with SSL
-          <br />
-          <ol>
-            <li>get secret auth key from the node</li>
-            <li>get IP address and port used by the node</li>
-            <li>
-              enter: <code>{`ws://<IP>:<port>/<secretAuthKey>`}</code>
-            </li>
-            <li>click save to connect</li>
-          </ol>
-        </div>
-      )}
+      <input
+        type='text'
+        defaultValue={pkcRpcClientsOptions}
+        placeholder='ws://<IP>:<port>/<secretAuthKey>'
+        ref={p2pRpcRef}
+        autoCorrect='off'
+        autoCapitalize='off'
+        spellCheck='false'
+      />
     </div>
   );
 };
@@ -202,14 +194,21 @@ const P2pDataPathSettings = ({ p2pDataPathRef }: SettingsProps) => {
   );
 };
 
-const PureP2PBrowserSettings = ({ pureP2PBrowserRef }: SettingsProps) => {
+const PureP2PBrowserSettings = ({ onPureP2PBrowserChange, pureP2PBrowserEnabled, pureP2PBrowserRef }: SettingsProps) => {
   const { t } = useTranslation();
   const account = useAccount() as AccountShape | undefined;
+  const isChecked = pureP2PBrowserEnabled ?? isBrowserPureP2PEnabled(account);
 
   return (
     <div className={styles.pureP2PSettings}>
       <label>
-        <input className={styles.pureP2PCheckbox} type='checkbox' defaultChecked={isBrowserPureP2PEnabled(account)} ref={pureP2PBrowserRef} />
+        <input
+          className={styles.pureP2PCheckbox}
+          type='checkbox'
+          checked={isChecked}
+          ref={pureP2PBrowserRef}
+          onChange={(event) => onPureP2PBrowserChange?.(event.currentTarget.checked)}
+        />
         {t('enable_pure_p2p')}
       </label>
       <div className={styles.settingTip}>{t('enable_pure_p2p_tip')}</div>
@@ -231,6 +230,10 @@ const AdvancedSettings = () => {
   const { t } = useTranslation();
   const account = useAccount() as AccountShape | undefined;
   const protocolOptions = getProtocolOptions(account);
+  const canConfigurePureP2PBrowser = canConfigureBrowserPureP2P();
+  const [browserPureP2PSelection, setBrowserPureP2PSelection] = useState<boolean | undefined>(undefined);
+  const browserPureP2PEnabled = browserPureP2PSelection ?? (canConfigurePureP2PBrowser && isBrowserPureP2PEnabled(account));
+  const shouldShowGatewayModeSettings = !canConfigurePureP2PBrowser || !browserPureP2PEnabled;
 
   const ipfsGatewayUrlsRef = useRef<HTMLTextAreaElement>(null);
   const mediaIpfsGatewayUrlRef = useRef<HTMLInputElement>(null);
@@ -242,11 +245,11 @@ const AdvancedSettings = () => {
   const pureP2PBrowserRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
-    const ipfsGatewayUrls = getTrimmedLines(ipfsGatewayUrlsRef.current?.value);
+    const ipfsGatewayUrls = ipfsGatewayUrlsRef.current ? getTrimmedLines(ipfsGatewayUrlsRef.current.value) : protocolOptions?.ipfsGatewayUrls;
 
-    const mediaIpfsGatewayUrl = mediaIpfsGatewayUrlRef.current?.value.trim();
+    const mediaIpfsGatewayUrl = mediaIpfsGatewayUrlRef.current ? mediaIpfsGatewayUrlRef.current.value.trim() : account?.mediaIpfsGatewayUrl;
 
-    const pubsubKuboRpcClientsOptions = getTrimmedLines(pubsubProvidersRef.current?.value);
+    const pubsubKuboRpcClientsOptions = pubsubProvidersRef.current ? getTrimmedLines(pubsubProvidersRef.current.value) : getPubsubRpcClientsOptions(protocolOptions);
 
     const ethRpcUrls = getTrimmedLines(ethRpcRef.current?.value);
 
@@ -254,7 +257,7 @@ const AdvancedSettings = () => {
 
     const pkcRpcClientsOptions = p2pRpcRef.current?.value.trim() ? [p2pRpcRef.current.value.trim()] : undefined;
     const dataPath = p2pDataPathRef.current?.value.trim() || undefined;
-    const pureP2PBrowserPreference = canConfigureBrowserPureP2P() ? pureP2PBrowserRef.current?.checked : undefined;
+    const pureP2PBrowserPreference = canConfigurePureP2PBrowser ? browserPureP2PEnabled : undefined;
 
     const chainProviders: Record<string, { urls: string[] | undefined; chainId: number }> = {};
     if (ethRpcUrls && ethRpcUrls.length > 0) {
@@ -313,18 +316,22 @@ const AdvancedSettings = () => {
 
   return (
     <div className={styles.content}>
-      <div className={styles.category}>
-        <span className={styles.categoryTitle}>IPFS gateways:</span>
-        <span className={styles.categorySettings}>
-          <IPFSGatewaysSettings ipfsGatewayUrlsRef={ipfsGatewayUrlsRef} mediaIpfsGatewayUrlRef={mediaIpfsGatewayUrlRef} />
-        </span>
-      </div>
-      <div className={styles.category}>
-        <span className={styles.categoryTitle}>pubsub providers:</span>
-        <span className={styles.categorySettings}>
-          <PubsubProvidersSettings pubsubProvidersRef={pubsubProvidersRef} />
-        </span>
-      </div>
+      {shouldShowGatewayModeSettings ? (
+        <>
+          <div className={styles.category}>
+            <span className={styles.categoryTitle}>IPFS gateways:</span>
+            <span className={styles.categorySettings}>
+              <IPFSGatewaysSettings ipfsGatewayUrlsRef={ipfsGatewayUrlsRef} mediaIpfsGatewayUrlRef={mediaIpfsGatewayUrlRef} />
+            </span>
+          </div>
+          <div className={styles.category}>
+            <span className={styles.categoryTitle}>pubsub providers:</span>
+            <span className={styles.categorySettings}>
+              <PubsubProvidersSettings pubsubProvidersRef={pubsubProvidersRef} />
+            </span>
+          </div>
+        </>
+      ) : null}
       <div className={styles.category}>
         <span className={styles.categoryTitle}>http routers:</span>
         <span className={styles.categorySettings}>
@@ -340,7 +347,7 @@ const AdvancedSettings = () => {
         </span>
       </div>
       <div className={styles.category}>
-        <span className={styles.categoryTitle}>Node RPC:</span>
+        <span className={styles.categoryTitle}>Full node WebSocket RPC:</span>
         <span className={styles.categorySettings}>
           <P2pRPCSettings p2pRpcRef={p2pRpcRef} />
         </span>
@@ -353,7 +360,9 @@ const AdvancedSettings = () => {
           </span>
         </div>
       )}
-      {canConfigureBrowserPureP2P() && <PureP2PBrowserSettings pureP2PBrowserRef={pureP2PBrowserRef} />}
+      {canConfigurePureP2PBrowser ? (
+        <PureP2PBrowserSettings pureP2PBrowserEnabled={browserPureP2PEnabled} pureP2PBrowserRef={pureP2PBrowserRef} onPureP2PBrowserChange={setBrowserPureP2PSelection} />
+      ) : null}
       <button className={styles.saveOptions} onClick={handleSave}>
         {t('save_advanced_settings')}
       </button>

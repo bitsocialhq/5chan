@@ -210,6 +210,28 @@ describe('AdvancedSettings', () => {
     expect(textInputs[2]?.value).toBe('/tmp/connected-node');
   });
 
+  it('hides gateway mode settings while browser pure p2p is enabled', async () => {
+    await renderSettings(false);
+
+    expect(container.textContent).not.toContain('IPFS gateways:');
+    expect(container.textContent).not.toContain('pubsub providers:');
+    expect(container.textContent).toContain('http routers:');
+    expect(container.textContent).toContain('Full node WebSocket RPC:');
+
+    const nodeRpcInput = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="text"]')).find(
+      (input) => input.placeholder === 'ws://<IP>:<port>/<secretAuthKey>',
+    );
+    expect(nodeRpcInput).toBeTruthy();
+
+    const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    await act(async () => {
+      checkbox?.click();
+    });
+
+    expect(container.textContent).toContain('IPFS gateways:');
+    expect(container.textContent).toContain('pubsub providers:');
+  });
+
   it('saves the browser pure p2p toggle through advanced settings', async () => {
     localStorage.setItem('5chan:pure-p2p-browser-enabled', 'false');
 
@@ -298,14 +320,16 @@ describe('AdvancedSettings', () => {
     expect(localStorage.getItem('5chan:pure-p2p-browser-enabled')).toBe('false');
   });
 
-  it('toggles the node rpc instructions panel', async () => {
+  it('renders the full node WebSocket RPC field without redundant instructions', async () => {
     await renderSettings(false);
 
-    expect(container.textContent).not.toContain('secret auth key');
-    await clickButton('?');
-    expect(container.textContent).toContain('secret auth key');
-    await clickButton('X');
-    expect(container.textContent).not.toContain('secret auth key');
+    const nodeRpcInput = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="text"]')).find(
+      (input) => input.placeholder === 'ws://<IP>:<port>/<secretAuthKey>',
+    );
+
+    expect(container.textContent).toContain('Full node WebSocket RPC:');
+    expect(nodeRpcInput).toBeTruthy();
+    expect(container.querySelector('button')?.textContent).not.toBe('?');
   });
 
   it('alerts with the error message when saving fails with an Error instance', async () => {
