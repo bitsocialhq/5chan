@@ -57,11 +57,37 @@ hr {
 }
 
 .yellowOfflineIcon {
-  background-image: url('/assets/icons/offline-blue.png');
+  background-image: none;
+  border: 1px solid currentColor;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  box-sizing: border-box;
+  -webkit-animation: offline-loading-spin 800ms steps(8, end) infinite;
+  animation: offline-loading-spin 800ms steps(8, end) infinite;
 }
 
 .redOfflineIcon {
   background-image: url('/assets/icons/offline-red.png');
+}
+
+@keyframes offline-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@-webkit-keyframes offline-loading-spin {
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yellowOfflineIcon {
+    -webkit-animation: none;
+    animation: none;
+  }
 }
 
 @media (max-width: 640px) {

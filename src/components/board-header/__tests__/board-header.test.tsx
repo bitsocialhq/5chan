@@ -200,4 +200,18 @@ describe('BoardHeader', () => {
     expect(container.querySelector('[data-testid="tooltip"]')?.getAttribute('data-content')).toBe('Board offline');
     expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
   });
+
+  it('renders the board loading indicator while online status is still loading', async () => {
+    testState.useIsCommunityOfflineValue = {
+      isOffline: false,
+      isOnlineStatusLoading: true,
+      offlineIconClass: 'yellowOfflineIcon',
+      offlineTitle: 'downloading board...',
+    };
+
+    await renderHeader('/mu');
+
+    expect(container.querySelector('[data-testid="tooltip"]')?.getAttribute('data-content')).toBe('downloading board...');
+    expect(container.querySelector('.yellowOfflineIcon')).not.toBeNull();
+  });
 });
