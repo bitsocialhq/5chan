@@ -1,13 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import {
   filterVisibleModQueueFeed,
+  getModQueueBoardFilterGroups,
   getModQueueCommentRoute,
+  getModQueueSelectedBoardAddresses,
+  getModeratedCommunityAddresses,
   getQueuedCommentRouteState,
   getVisibleQueuedCommentHistory,
   shouldKeepQueuedCommentHistory,
 } from '../mod-queue-utils';
 
 describe('mod queue utils', () => {
+  const directories = [
+    { address: 'anime-primary.bso', publicKey: 'a-primary', directoryCode: 'a', title: '/a/ - Anime & Manga' },
+    { address: 'anime-backup.bso', publicKey: 'a-backup', directoryCode: 'a', title: '/a/ - Anime & Manga' },
+    { address: 'tech-primary.bso', publicKey: 'g-primary', directoryCode: 'g', title: '/g/ - Technology' },
+  ];
+
   it('keeps all queue comments unless they were locally dismissed', () => {
     const feed = [
       { cid: 'pending', communityAddress: 'tech.eth', pendingApproval: true },
@@ -35,6 +44,57 @@ describe('mod queue utils', () => {
     expect(filterVisibleModQueueFeed(feed, 'tech.eth', new Set(['tech-pending']))).toEqual([
       { cid: 'tech-approved', approved: true, communityAddress: 'tech.eth', pendingApproval: true },
     ]);
+  });
+
+  it('applies grouped board filters to all directory aliases', () => {
+    const feed = [
+      { cid: 'a-primary-pending', communityAddress: 'a-primary', pendingApproval: true },
+      { cid: 'a-backup-pending', communityAddress: 'a-backup', pendingApproval: true },
+      { cid: 'g-pending', communityAddress: 'g-primary', pendingApproval: true },
+    ];
+
+    expect(filterVisibleModQueueFeed(feed, 'a', new Set(['a-primary-pending']), ['a-primary', 'a-backup'])).toEqual([
+      { cid: 'a-backup-pending', communityAddress: 'a-backup', pendingApproval: true },
+    ]);
+  });
+
+  it('dedupes mod queue board filters by directory path', () => {
+    expect(getModQueueBoardFilterGroups(['a-backup', 'custom.eth', 'g-primary', 'a-primary'], directories, [['g', 'a']])).toEqual([
+      {
+        addresses: ['g-primary'],
+        boardPath: 'g',
+        filterKey: 'g',
+        isDirectory: true,
+      },
+      {
+        addresses: ['a-backup', 'a-primary'],
+        boardPath: 'a',
+        filterKey: 'a',
+        isDirectory: true,
+      },
+      {
+        addresses: ['custom.eth'],
+        boardPath: 'custom.eth',
+        filterKey: 'custom.eth',
+        isDirectory: false,
+      },
+    ]);
+  });
+
+  it('expands selected directory filters to every matching moderated address', () => {
+    expect(getModQueueSelectedBoardAddresses(['a-primary', 'g-primary', 'a-backup'], 'a', directories)).toEqual(['a-primary', 'a-backup']);
+    expect(getModQueueSelectedBoardAddresses(['a-primary', 'g-primary', 'a-backup'], 'a-primary', directories)).toEqual(['a-primary', 'a-backup']);
+  });
+
+  it('adds live role communities that are not cached on the account', () => {
+    expect(
+      getModeratedCommunityAddresses({
+        accountAddress: 'plebeius.bso',
+        accountCommunityAddresses: ['tech-primary.bso'],
+        candidateCommunityAddresses: ['tech-primary.bso', 'paranormal-posting.bso', 'viewer-board.bso'],
+        communities: [undefined, { roles: { 'plebeius.bso': { role: 'moderator' } } }, { roles: { 'plebeius.bso': { role: 'viewer' } } }],
+      }),
+    ).toEqual(['tech-primary.bso', 'paranormal-posting.bso']);
   });
 
   it('keeps only terminal local moderation states in queue history', () => {

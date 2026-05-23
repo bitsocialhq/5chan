@@ -9,7 +9,7 @@ import useModQueueStore from '../../stores/use-mod-queue-store';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display/error-display';
 import { useFeedStateString } from '../../hooks/use-state-string';
-import { getCommunityAddress, getBoardPath, extractDirectoryFromTitle, areSameBoardAddress } from '../../lib/utils/route-utils';
+import { getCommunityAddress, getBoardPath, areSameBoardAddress } from '../../lib/utils/route-utils';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import getShortAddress from '../../lib/get-short-address';
 import { BOARD_CODE_GROUPS } from '../../constants/board-codes';
@@ -28,14 +28,16 @@ import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { formatErrorForDisplay } from '../../lib/utils/error-utils';
 import {
   filterVisibleModQueueFeed,
+  getModQueueBoardFilterGroups,
+  getModQueueBoardFilterKey,
   getModQueueCommentRoute,
+  getModQueueSelectedBoardAddresses,
   getQueuedCommentRouteState,
   getQueuedCommentSnapshot,
   getVisibleQueuedCommentHistory,
   shouldKeepQueuedCommentHistory,
 } from '../../lib/utils/mod-queue-utils';
 import Tooltip from '../../components/tooltip';
-import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useCurrentTime } from '../../hooks/use-current-time';
@@ -45,6 +47,7 @@ import capitalize from 'lodash/capitalize';
 import lowerCase from 'lodash/lowerCase';
 import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '../../components/footer';
 import footerStyles from '../../components/footer/footer.module.css';
+import { useModeratedCommunityAddresses } from '../../hooks/use-moderated-community-addresses';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -590,15 +593,6 @@ interface ModQueueBoardSummaryProps {
   accountCommunityAddresses: string[];
 }
 
-const findBoardAddressByCode = (code: string, dirs: DirectoryCommunity[]): string | null => {
-  const entry = dirs.find((sub) => {
-    if (!sub.title) return false;
-    const directory = extractDirectoryFromTitle(sub.title);
-    return directory === code;
-  });
-  return entry?.address || null;
-};
-
 const ModQueueBoardCount = ({ normal, urgent }: { normal: number; urgent: number }) => {
   const total = normal + urgent;
   if (total === 0) return null;
@@ -627,18 +621,22 @@ const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses }: 
   const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const currentTime = useCurrentTime();
   const alertThresholdSeconds = getAlertThresholdSeconds();
-  const modAddressSet = useMemo(() => new Set(accountCommunityAddresses), [accountCommunityAddresses]);
   const locallyModeratedFeed = useLocallyModeratedModQueueFeed(feed, currentTime);
+  const boardGroups = useMemo(() => getModQueueBoardFilterGroups(accountCommunityAddresses, directories, BOARD_CODE_GROUPS), [accountCommunityAddresses, directories]);
+  const selectedBoardFilterAddresses = useMemo(
+    () => getModQueueSelectedBoardAddresses(accountCommunityAddresses, selectedBoardFilter, directories),
+    [accountCommunityAddresses, selectedBoardFilter, directories],
+  );
 
   const boardCounts = useMemo(() => {
     const counts = new Map<string, { normal: number; urgent: number }>();
-    for (const address of accountCommunityAddresses) {
-      counts.set(address, { normal: 0, urgent: 0 });
+    for (const group of boardGroups) {
+      counts.set(group.filterKey, { normal: 0, urgent: 0 });
     }
     for (const item of locallyModeratedFeed) {
       const addr = getCommentCommunityAddress(item);
       if (!addr) continue;
-      const entry = counts.get(addr);
+      const entry = counts.get(getModQueueBoardFilterKey(addr, directories));
       if (!entry) continue;
       const isAwaiting = isPendingApprovalAwaiting(item);
       if (!isAwaiting) continue;
@@ -648,7 +646,7 @@ const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses }: 
       else entry.normal++;
     }
     return counts;
-  }, [locallyModeratedFeed, accountCommunityAddresses, currentTime, alertThresholdSeconds]);
+  }, [locallyModeratedFeed, boardGroups, currentTime, alertThresholdSeconds, directories]);
 
   const { totalNormal, totalUrgent } = useMemo(() => {
     let normal = 0;
@@ -660,41 +658,10 @@ const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses }: 
     return { totalNormal: normal, totalUrgent: urgent };
   }, [boardCounts]);
 
-  // Order: All first, then BOARD_CODE_GROUPS order (directory boards), then non-directory boards
-  const orderedAddresses = useMemo(() => {
-    const ordered: string[] = [];
-    const seen = new Set<string>();
-
-    for (const group of BOARD_CODE_GROUPS) {
-      for (const code of group) {
-        const address = findBoardAddressByCode(code, directories);
-        if (address && modAddressSet.has(address) && !seen.has(address)) {
-          ordered.push(address);
-          seen.add(address);
-        }
-      }
-    }
-    // Directory boards not in BOARD_CODE_GROUPS (custom dirs)
-    for (const addr of accountCommunityAddresses) {
-      const path = getBoardPath(addr, directories);
-      if (path !== addr && !seen.has(addr)) {
-        ordered.push(addr);
-        seen.add(addr);
-      }
-    }
-    // Non-directory boards (own category, like subscriptions in boardsbar)
-    for (const addr of accountCommunityAddresses) {
-      if (!seen.has(addr)) {
-        ordered.push(addr);
-      }
-    }
-    return ordered;
-  }, [accountCommunityAddresses, directories, modAddressSet]);
-
   const handleSelectAll = useCallback(() => setSelectedBoardFilter(null), [setSelectedBoardFilter]);
-  const handleSelectBoard = useCallback((address: string) => setSelectedBoardFilter(address), [setSelectedBoardFilter]);
+  const handleSelectBoard = useCallback((filterKey: string) => setSelectedBoardFilter(filterKey), [setSelectedBoardFilter]);
 
-  if (accountCommunityAddresses.length === 0) {
+  if (boardGroups.length === 0) {
     return null;
   }
 
@@ -709,20 +676,23 @@ const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses }: 
           </>
         )}
       </button>
-      {orderedAddresses.map((address) => {
-        const boardPath = getBoardPath(address, directories);
-        const isInDirectory = boardPath !== address;
-        const displayText = isInDirectory ? boardPath : address.endsWith('.eth') || address.endsWith('.sol') ? address : getShortAddress(address) || address;
-        const isSelected = selectedBoardFilter === address;
-        const { normal, urgent } = boardCounts.get(address) ?? { normal: 0, urgent: 0 };
+      {boardGroups.map((group) => {
+        const displayText =
+          group.isDirectory || group.filterKey.endsWith('.eth') || group.filterKey.endsWith('.sol')
+            ? group.filterKey
+            : getShortAddress(group.filterKey) || group.filterKey;
+        const isSelected =
+          selectedBoardFilter === group.filterKey ||
+          group.addresses.some((address) => selectedBoardFilterAddresses?.some((selectedAddress) => areSameBoardAddress(address, selectedAddress)));
+        const { normal, urgent } = boardCounts.get(group.filterKey) ?? { normal: 0, urgent: 0 };
 
         return (
-          <React.Fragment key={address}>
+          <React.Fragment key={group.filterKey}>
             {' / '}
             <button
               type='button'
               className={`${styles.boardSummaryLink} ${isSelected ? styles.boardSummaryLinkSelected : ''}`}
-              onClick={() => handleSelectBoard(address)}
+              onClick={() => handleSelectBoard(group.filterKey)}
             >
               {displayText}
               {normal + urgent > 0 && (
@@ -804,7 +774,7 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
 
   const account = useAccount();
   const accountAddress = account?.author?.address;
-  const accountCommunityAddresses = useAccountCommunityAddresses();
+  const accountCommunityAddresses = useModeratedCommunityAddresses();
 
   const directories = useDirectories();
 
@@ -877,7 +847,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   const rememberCommentsInQueue = useModQueueStore((state) => state.rememberCommentsInQueue);
   const isMobile = useIsMobile();
 
-  const accountCommunityAddresses = useAccountCommunityAddresses();
+  const accountCommunityAddresses = useModeratedCommunityAddresses();
 
   const directories = useDirectories();
 
@@ -931,9 +901,13 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   );
 
   const dismissedCommentCidSet = useMemo(() => new Set(dismissedCommentCids), [dismissedCommentCids]);
+  const selectedBoardFilterAddresses = useMemo(
+    () => getModQueueSelectedBoardAddresses(communityAddresses, selectedBoardFilter, directories),
+    [communityAddresses, selectedBoardFilter, directories],
+  );
   const filteredFeed = useMemo(
-    () => filterVisibleModQueueFeed(feedWithHistory, selectedBoardFilter, dismissedCommentCidSet),
-    [feedWithHistory, selectedBoardFilter, dismissedCommentCidSet],
+    () => filterVisibleModQueueFeed(feedWithHistory, selectedBoardFilter, dismissedCommentCidSet, selectedBoardFilterAddresses),
+    [feedWithHistory, selectedBoardFilter, dismissedCommentCidSet, selectedBoardFilterAddresses],
   );
 
   const addressToPathMap = useMemo(() => {
