@@ -60,6 +60,15 @@ describe('P2PStatsSettings', () => {
     };
     testState.rpcSettings = { state: 'disconnected' };
     testState.setAccountMock.mockReset().mockResolvedValue(undefined);
+    // Default: own-IP country lookups (api.country.is) resolve offline so browser
+    // stats tests never hit the network. Individual tests can override this stub.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ country: 'US', ip: '147.75.84.175' }),
+      }),
+    );
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -68,6 +77,7 @@ describe('P2PStatsSettings', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    vi.unstubAllGlobals();
   });
 
   it('renders browser libp2p stats from the active PKC client', async () => {
@@ -97,7 +107,7 @@ describe('P2PStatsSettings', () => {
                       status: 'open',
                     },
                   ],
-                  getMultiaddrs: () => ['/ip4/127.0.0.1/tcp/4001'],
+                  getMultiaddrs: () => ['/ip4/147.75.84.175/tcp/4001/ws'],
                   getPeers: () => ['peer-1', 'peer-2'],
                   metrics: {
                     toJSON: () => ({
@@ -134,6 +144,15 @@ describe('P2PStatsSettings', () => {
     const rows = getStatRows();
     const connectedPeers = container.querySelector('[data-testid="connected-peers"]');
     expect(container.textContent).toContain('Leeching');
+    expect(container.textContent).toContain('want to seed');
+    const seederLink = container.querySelector('a[href="https://github.com/bitsocialnet/bitsocial-seeder"]');
+    expect(seederLink).not.toBeNull();
+    expect(seederLink?.textContent).toBe('want to seed?');
+    expect(rows.get('Your IP')).toContain('147.75.84.175');
+    // The own IP is geolocated accurately (per-IP lookup), not via the coarse peer guess.
+    expect(fetch).toHaveBeenCalledWith('https://api.country.is/147.75.84.175', expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    const yourIpRow = Array.from(container.querySelectorAll('tr')).find((row) => row.textContent?.includes('Your IP'));
+    expect(yourIpRow?.querySelector('[role="img"]')).not.toBeNull();
     expect(container.textContent).not.toContain('browser Helia');
     expect(container.textContent).not.toContain('seed mode');
     expect(container.textContent).not.toContain('status');
@@ -143,6 +162,14 @@ describe('P2PStatsSettings', () => {
     expect(rows.has('connections')).toBe(false);
     expect(rows.has('Listen addresses')).toBe(false);
     expect(rows.has('p2p_stats_updated')).toBe(true);
+    const tableRows = Array.from(container.querySelectorAll('tr'));
+    const rowTexts = tableRows.map((row) => row.textContent ?? '');
+    const dataSentIndex = rowTexts.findIndex((text) => text.includes('Data sent'));
+    const updatedIndex = rowTexts.findIndex((text) => text.includes('p2p_stats_updated'));
+    const connectedPeersIndex = rowTexts.findIndex((text) => text.includes('Connected peers'));
+    expect(dataSentIndex).toBeGreaterThanOrEqual(0);
+    expect(updatedIndex).toBeGreaterThan(dataSentIndex);
+    expect(connectedPeersIndex).toBeGreaterThan(updatedIndex);
     expect(container.textContent).toContain('self-peer');
     expect(container.textContent).toContain('Peer ID');
     expect(container.textContent).toContain('Data received');
@@ -183,7 +210,7 @@ describe('P2PStatsSettings', () => {
                 },
                 libp2p: {
                   getConnections: () => [],
-                  getMultiaddrs: () => [],
+                  getMultiaddrs: () => ['/ip4/147.75.84.175/tcp/4001/ws'],
                   getPeers: () => [],
                   peerId: { toString: () => 'self-peer' },
                 },
@@ -217,7 +244,7 @@ describe('P2PStatsSettings', () => {
               _helia: {
                 libp2p: {
                   getConnections: () => [],
-                  getMultiaddrs: () => [],
+                  getMultiaddrs: () => ['/ip4/147.75.84.175/tcp/4001/ws'],
                   getPeers: () => [],
                   peerId: { toString: () => 'self-peer' },
                 },
@@ -234,6 +261,55 @@ describe('P2PStatsSettings', () => {
     const rows = getStatRows();
     expect(rows.get('Data received')).toBe('0 B');
     expect(rows.get('Data sent')).toBe('0 B');
+  });
+
+  it('falls back to the browser node public endpoint when Helia exposes no public address', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ country: 'US', ip: '2001:4860:4860::8888' }),
+      }),
+    );
+    testState.account = {
+      ...testState.account,
+      pkcOptions: {
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      },
+      pkc: {
+        clients: {
+          libp2pJsClients: {
+            libp2pjs: {
+              key: 'libp2pjs',
+              _helia: {
+                libp2p: {
+                  getConnections: () => [
+                    {
+                      localAddr: { toString: () => '/ip4/127.0.0.1/tcp/4001/ws' },
+                      remoteAddr: { toString: () => '/ip4/127.0.0.1/tcp/4001/ws/p2p/peer-1' },
+                      remotePeer: { toString: () => 'peer-1' },
+                    },
+                  ],
+                  getMultiaddrs: () => [],
+                  getPeers: () => [],
+                  peerId: { toString: () => 'self-peer' },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    await renderSettings(false);
+    await act(async () => Promise.resolve());
+
+    const rows = getStatRows();
+    expect(rows.get('Your IP')).toContain('2001:4860:4860::8888');
+    expect(rows.get('Your IP')).not.toContain('unknown');
+    const yourIpRow = Array.from(container.querySelectorAll('tr')).find((row) => row.textContent?.includes('Your IP'));
+    expect(yourIpRow?.querySelector('[role="img"]')).not.toBeNull();
+    expect(fetch).toHaveBeenCalledWith('https://api.country.is', expect.objectContaining({ signal: expect.any(AbortSignal) }));
   });
 
   it('reports seeding only when browser Helia can add and publish provider records', async () => {
@@ -253,7 +329,7 @@ describe('P2PStatsSettings', () => {
               _helia: {
                 libp2p: {
                   getConnections: () => [],
-                  getMultiaddrs: () => [],
+                  getMultiaddrs: () => ['/ip4/147.75.84.175/tcp/4001/ws'],
                   getPeers: () => [],
                   peerId: { toString: () => 'self-peer' },
                 },
@@ -275,6 +351,7 @@ describe('P2PStatsSettings', () => {
     await act(async () => Promise.resolve());
 
     expect(container.textContent).toContain('Seeding');
+    expect(container.querySelector('a[href="https://github.com/bitsocialnet/bitsocial-seeder"]')).toBeNull();
     expect(container.textContent).not.toContain('seed mode');
   });
 });
