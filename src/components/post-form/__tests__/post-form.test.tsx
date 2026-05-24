@@ -621,11 +621,11 @@ describe('PostForm', () => {
     expect(textarea).toBeTruthy();
 
     await dispatchInput(optionsInput as HTMLInputElement, 'x y z');
-    expect(container.textContent).not.toContain('unsupported options');
+    expect(container.textContent).not.toContain('Unsupported options');
 
     await waitForOptionsValidation();
-    expect(container.textContent).toContain('unsupported options: x, y, z');
-    const delayedOptionsError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'unsupported options: x, y, z');
+    expect(container.textContent).toContain('Unsupported options: x, y, z.');
+    const delayedOptionsError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'Unsupported options: x, y, z.');
     expect(delayedOptionsError?.className).toContain('error');
     expect(delayedOptionsError?.className).toContain('formError');
 
@@ -636,7 +636,7 @@ describe('PostForm', () => {
 
     await dispatchInput(optionsInput as HTMLInputElement, 'fortune');
 
-    expect(container.textContent).not.toContain('unsupported options');
+    expect(container.textContent).not.toContain('Unsupported options');
     expect(testState.publishPostOptions.content).toBe('fortune body<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>');
 
     await clickByText(table as HTMLTableElement, 'post');
@@ -660,7 +660,7 @@ describe('PostForm', () => {
     await dispatchInput(optionsInput as HTMLInputElement, 'fortune');
     await waitForOptionsValidation();
 
-    expect(container.textContent).not.toContain('unsupported options');
+    expect(container.textContent).not.toContain('Unsupported options');
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'silly fortune');
     await clickByText(table as HTMLTableElement, 'post');
@@ -684,7 +684,7 @@ describe('PostForm', () => {
     await dispatchInput(optionsInput as HTMLInputElement, 'dice+1d6+3');
     await waitForOptionsValidation();
 
-    expect(container.textContent).not.toContain('unsupported options');
+    expect(container.textContent).not.toContain('Unsupported options');
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'dice body');
     await clickByText(table as HTMLTableElement, 'post');
@@ -705,16 +705,36 @@ describe('PostForm', () => {
     const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
 
     await dispatchInput(optionsInput as HTMLInputElement, 'fortune');
-    expect(container.textContent).not.toContain('unsupported options');
+    expect(container.textContent).not.toContain('Unsupported options');
 
     await waitForOptionsValidation();
-    expect(container.textContent).toContain('unsupported options: fortune');
+    expect(container.textContent).toContain('Unsupported options: fortune. Option "fortune" is supported on: /b/, /s5s/.');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/b"]')?.textContent).toBe('/b/');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/s5s"]')?.textContent).toBe('/s5s/');
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'plain body');
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).not.toHaveBeenCalled();
     expect(testState.publishPostOptions.content).toBe('plain body');
+  });
+
+  it('combines unavailable and unknown options in one clear post-form message', async () => {
+    testState.resolvedCommunityAddress = 'politically-incorrect.bso';
+    testState.directories = [...testState.directories, { address: 'politically-incorrect.bso', features: {}, title: '/pol/ - Politically Incorrect' }];
+
+    await renderPostForm('/pol');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const optionsInput = table?.querySelector<HTMLInputElement>('input[aria-label="options"]');
+
+    await dispatchInput(optionsInput as HTMLInputElement, 'sage fortune');
+    await waitForOptionsValidation();
+
+    expect(container.textContent).toContain('Unsupported options: sage, fortune. Option "fortune" is supported on: /b/, /s5s/.');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/b"]')?.textContent).toBe('/b/');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/s5s"]')?.textContent).toBe('/s5s/');
   });
 
   it('treats dice rolls as unsupported outside /tg/ and /qst/', async () => {
@@ -728,10 +748,12 @@ describe('PostForm', () => {
     const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
 
     await dispatchInput(optionsInput as HTMLInputElement, 'dice+1d6');
-    expect(container.textContent).not.toContain('unsupported options');
+    expect(container.textContent).not.toContain('Unsupported options');
 
     await waitForOptionsValidation();
-    expect(container.textContent).toContain('unsupported options: dice+1d6');
+    expect(container.textContent).toContain('Unsupported options: dice+1d6. Option "dice+1d6" is supported on: /qst/, /tg/.');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/qst"]')?.textContent).toBe('/qst/');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/tg"]')?.textContent).toBe('/tg/');
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'plain dice');
     await clickByText(table as HTMLTableElement, 'post');

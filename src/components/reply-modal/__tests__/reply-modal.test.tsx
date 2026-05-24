@@ -141,6 +141,7 @@ vi.mock('../../../stores/use-media-hosting-store', () => ({
 vi.mock('../../../hooks/use-directories', () => ({
   findDirectoryByAddress: (directories: Array<{ address: string; features?: Record<string, unknown>; title?: string }>, address: string | undefined) =>
     directories.find((entry) => entry.address === address),
+  useDirectories: () => Object.values(testState.directoryByAddress),
   useDirectoryByAddress: (address: string) => testState.directoryByAddress[address],
   normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
 }));
@@ -508,11 +509,11 @@ describe('ReplyModal', () => {
     const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
 
     await dispatchInput(optionsInput, 'x y z');
-    expect(container.textContent).not.toContain('unsupported options');
+    expect(container.textContent).not.toContain('Unsupported options');
 
     await waitForOptionsValidation();
-    expect(container.textContent).toContain('unsupported options: x, y, z');
-    const delayedOptionsError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'unsupported options: x, y, z');
+    expect(container.textContent).toContain('Unsupported options: x, y, z.');
+    const delayedOptionsError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'Unsupported options: x, y, z.');
     expect(delayedOptionsError?.className).toContain('error');
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'reply body');
@@ -522,7 +523,7 @@ describe('ReplyModal', () => {
 
     await dispatchInput(optionsInput, 'fortune');
 
-    expect(container.textContent).not.toContain('unsupported options');
+    expect(container.textContent).not.toContain('Unsupported options');
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
       content: 'reply body<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
     });
@@ -547,7 +548,7 @@ describe('ReplyModal', () => {
     await dispatchInput(optionsInput, 'fortune');
     await waitForOptionsValidation();
 
-    expect(container.textContent).not.toContain('unsupported options');
+    expect(container.textContent).not.toContain('Unsupported options');
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'silly reply');
     await clickButtonByText('post');
@@ -572,7 +573,7 @@ describe('ReplyModal', () => {
     await dispatchInput(optionsInput, 'dice+2d6');
     await waitForOptionsValidation();
 
-    expect(container.textContent).not.toContain('unsupported options');
+    expect(container.textContent).not.toContain('Unsupported options');
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'dice reply');
     await clickButtonByText('post');
@@ -594,10 +595,12 @@ describe('ReplyModal', () => {
     const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
 
     await dispatchInput(optionsInput, 'dice+1d6');
-    expect(container.textContent).not.toContain('unsupported options');
+    expect(container.textContent).not.toContain('Unsupported options');
 
     await waitForOptionsValidation();
-    expect(container.textContent).toContain('unsupported options: dice+1d6');
+    expect(container.textContent).toContain('Unsupported options: dice+1d6. Option "dice+1d6" is supported on: /qst/, /tg/.');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/qst"]')?.textContent).toBe('/qst/');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/tg"]')?.textContent).toBe('/tg/');
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'plain dice reply');
     await clickButtonByText('post');
@@ -616,10 +619,12 @@ describe('ReplyModal', () => {
     const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
 
     await dispatchInput(optionsInput, 'fortune');
-    expect(container.textContent).not.toContain('unsupported options');
+    expect(container.textContent).not.toContain('Unsupported options');
 
     await waitForOptionsValidation();
-    expect(container.textContent).toContain('unsupported options: fortune');
+    expect(container.textContent).toContain('Unsupported options: fortune. Option "fortune" is supported on: /b/, /s5s/.');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/b"]')?.textContent).toBe('/b/');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/s5s"]')?.textContent).toBe('/s5s/');
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'plain reply');
     await clickButtonByText('post');

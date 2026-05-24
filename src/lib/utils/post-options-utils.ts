@@ -19,6 +19,20 @@ export interface DiceRoll {
   total: number;
 }
 
+export interface PostOptionsValidationError {
+  unsupportedOptions: string[];
+  supportedDirectoryCodesByOption: Array<{ option: string; directoryCodes: string[] }>;
+}
+
+export const isPostOptionsValidationError = (error: unknown): error is PostOptionsValidationError => {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const value = error as Partial<PostOptionsValidationError>;
+  return Array.isArray(value.unsupportedOptions) && Array.isArray(value.supportedDirectoryCodesByOption);
+};
+
 interface PostOptionsDirectory {
   directoryCode?: string;
   title?: string;
@@ -88,27 +102,62 @@ const isSupportedPostOption = (option: string, directoryCode: string | undefined
   return !!parseDiceOption(option) && !!directoryCode && DICE_DIRECTORY_CODES.has(directoryCode);
 };
 
-const getUnsupportedPostOptions = (value: string, directoryCode: string | undefined): string[] => {
-  let hasDiceOption = false;
+const getSupportedDirectoryCodes = (option: string): string[] => {
+  if (option === 'fortune') {
+    return [...FORTUNE_DIRECTORY_CODES];
+  }
 
-  return parsePostOptions(value).filter((option) => {
+  return parseDiceOption(option) ? [...DICE_DIRECTORY_CODES] : [];
+};
+
+export const getPostOptionsValidationError = (value: string, directoryCode: string | undefined): PostOptionsValidationError | null => {
+  let hasDiceOption = false;
+  const unsupportedOptions: string[] = [];
+  const supportedDirectoryCodesByOption: Array<{ option: string; directoryCodes: string[] }> = [];
+
+  for (const option of parsePostOptions(value)) {
     const diceOption = parseDiceOption(option);
     if (diceOption && directoryCode && DICE_DIRECTORY_CODES.has(directoryCode)) {
       const isExtraDiceOption = hasDiceOption;
       hasDiceOption = true;
-      return isExtraDiceOption;
+      if (isExtraDiceOption) {
+        unsupportedOptions.push(option);
+      }
+      continue;
     }
 
-    return !isSupportedPostOption(option, directoryCode);
-  });
+    if (isSupportedPostOption(option, directoryCode)) {
+      continue;
+    }
+
+    const optionDirectoryCodes = getSupportedDirectoryCodes(option);
+    if (optionDirectoryCodes.length > 0) {
+      unsupportedOptions.push(option);
+      if (!supportedDirectoryCodesByOption.some((entry) => entry.option === option)) {
+        supportedDirectoryCodesByOption.push({ option, directoryCodes: optionDirectoryCodes });
+      }
+    } else {
+      unsupportedOptions.push(option);
+    }
+  }
+
+  return unsupportedOptions.length > 0 ? { unsupportedOptions, supportedDirectoryCodesByOption } : null;
 };
 
 export const getUnsupportedPostOptionsMessage = (value: string, directoryCode: string | undefined): string | null => {
-  const unsupportedOptions = getUnsupportedPostOptions(value, directoryCode);
-  return unsupportedOptions.length > 0 ? `unsupported options: ${unsupportedOptions.join(', ')}` : null;
-};
+  const error = getPostOptionsValidationError(value, directoryCode);
+  if (!error) {
+    return null;
+  }
 
-export const isUnsupportedPostOptionsMessage = (message: string | null): boolean => message?.startsWith('unsupported options:') === true;
+  let message = `Unsupported options: ${error.unsupportedOptions.join(', ')}.`;
+
+  for (const { option, directoryCodes } of error.supportedDirectoryCodesByOption) {
+    message += ` Option "${option}" is supported on: ${directoryCodes.map((code) => `/${code}/`).join(', ')}.`;
+  }
+
+  return message;
+};
 
 export const hasNonokoOption = (value: string): boolean => parsePostOptions(value).includes('nonoko');
 
