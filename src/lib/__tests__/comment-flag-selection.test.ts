@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsFromSelection, getCommentFlagRequestFromSelection } from '../comment-flag-selection';
+import {
+  getCommentFlagOptionsForDirectory,
+  getCommentFlagPublishOptionsForDirectory,
+  getCommentFlagPublishOptionsFromSelection,
+  getCommentFlagRequestFromSelection,
+} from '../comment-flag-selection';
 
 describe('comment-flag-selection', () => {
   it('does not expose options for boards without flags', () => {
@@ -14,6 +19,29 @@ describe('comment-flag-selection', () => {
         title: '/int/ - International',
       }),
     ).toEqual([{ label: 'Geographic Location', value: 'country:auto' }]);
+  });
+
+  it('does not expose a flag selector on /bant/ but still publishes geographic location', () => {
+    expect(
+      getCommentFlagOptionsForDirectory({
+        directoryCode: 'bant',
+        features: { hasFlags: true },
+        title: '/bant/ - International/Random',
+      }),
+    ).toEqual([]);
+
+    expect(
+      getCommentFlagPublishOptionsForDirectory({
+        directoryCode: 'bant',
+        features: { hasFlags: true },
+        title: '/bant/ - International/Random',
+      }),
+    ).toEqual({
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+      },
+      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+    });
   });
 
   it('matches the 4chan /pol/ flag order', () => {

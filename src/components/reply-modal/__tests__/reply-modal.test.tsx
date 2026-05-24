@@ -329,6 +329,12 @@ describe('ReplyModal', () => {
         features: { hasFlags: true },
         title: '/pol/ - Politically Incorrect',
       },
+      'international-nsfw.bso': {
+        address: 'international-nsfw.bso',
+        directoryCode: 'bant',
+        features: { hasFlags: true },
+        title: '/bant/ - International/Random',
+      },
       'random-nsfw.bso': {
         address: 'random-nsfw.bso',
         features: {},
@@ -443,6 +449,24 @@ describe('ReplyModal', () => {
         .slice(0, 3)
         .map((option) => option.textContent),
     ).toEqual(['Geographic Location', 'Anarcho-Capitalist', 'Anarchist']);
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+    expect(Boolean(linkInput!.compareDocumentPosition(flagSelect!) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: '>>42\nselected text',
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+      },
+      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+    });
+  });
+
+  it('publishes geographic location on /bant/ without showing a flag selector', async () => {
+    await renderReplyModal('/bant/thread/post-1', 'international-nsfw.bso');
+
+    expect(container.querySelector<HTMLSelectElement>('select[aria-label="flag"]')).toBeNull();
 
     await clickButtonByText('post');
 

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { getExpiringMediaLinkAlert } from '../../lib/utils/media-link-validation-utils';
-import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsFromSelection } from '../../lib/comment-flag-selection';
+import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory } from '../../lib/comment-flag-selection';
 import {
   type DiceRoll,
   type FortuneEntry,
@@ -169,7 +169,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       return;
     }
 
-    const flagPublishOptions = getCommentFlagPublishOptionsFromSelection(flagRef.current?.value);
+    const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
 
     setError(null);
     nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
@@ -520,6 +520,19 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             }}
           />
         </div>
+        <div className={styles.link}>
+          <input
+            type='text'
+            ref={urlRef}
+            aria-label={requirePostLinkIsMedia ? t('link_to_file') : t('link')}
+            placeholder={requirePostLinkIsMedia ? FILE_LINK_PLACEHOLDER : capitalize(t('link'))}
+            disabled={isUploading}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              setPublishReplyOptions({ link: e.target.value });
+            }}
+          />
+        </div>
         {flagOptions.length > 0 && (
           <div>
             <select
@@ -538,19 +551,6 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             </select>
           </div>
         )}
-        <div className={styles.link}>
-          <input
-            type='text'
-            ref={urlRef}
-            aria-label={requirePostLinkIsMedia ? t('link_to_file') : t('link')}
-            placeholder={requirePostLinkIsMedia ? FILE_LINK_PLACEHOLDER : capitalize(t('link'))}
-            disabled={isUploading}
-            onChange={(e) => {
-              setUrl(e.target.value);
-              setPublishReplyOptions({ link: e.target.value });
-            }}
-          />
-        </div>
         <div className={styles.footer}>
           {showUploadControls && (
             <span className={styles.uploadContainer}>

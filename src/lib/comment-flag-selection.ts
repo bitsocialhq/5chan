@@ -35,6 +35,9 @@ const NO_FLAG_OPTION: CommentFlagSelectOption = {
   label: 'None',
 };
 
+/** Boards that always publish geographic location without showing a flag selector. */
+const AUTO_GEOGRAPHIC_FLAG_DIRECTORY_CODES = new Set(['bant']);
+
 const getDirectoryCode = (directory: Pick<DirectoryCommunity, 'directoryCode' | 'title'> | undefined): string | undefined => {
   const directoryCode = directory?.directoryCode?.trim().toLowerCase();
   return directoryCode || directory?.title?.match(/^\/([^/]+)\//)?.[1]?.toLowerCase();
@@ -52,6 +55,10 @@ export const getCommentFlagOptionsForDirectory = (directory: Pick<DirectoryCommu
   }
 
   const directoryCode = getDirectoryCode(directory);
+  if (directoryCode && AUTO_GEOGRAPHIC_FLAG_DIRECTORY_CODES.has(directoryCode)) {
+    return [];
+  }
+
   if (directoryCode === 'mlp') {
     return [NO_FLAG_OPTION, ...getBoardFlagOptions('pony')];
   }
@@ -61,6 +68,33 @@ export const getCommentFlagOptionsForDirectory = (directory: Pick<DirectoryCommu
   }
 
   return [GEOGRAPHIC_LOCATION_OPTION];
+};
+
+export const getCommentFlagPublishOptionsForDirectory = (
+  directory: Pick<DirectoryCommunity, 'directoryCode' | 'features' | 'title'> | undefined,
+  selectedValue?: string,
+): CommentFlagPublishOptions => {
+  if (directory?.features?.hasFlags !== true) {
+    return {
+      challengeRequest: undefined,
+      flairs: undefined,
+    };
+  }
+
+  const directoryCode = getDirectoryCode(directory);
+  if (directoryCode && AUTO_GEOGRAPHIC_FLAG_DIRECTORY_CODES.has(directoryCode)) {
+    return getCommentFlagPublishOptionsFromSelection(GEOGRAPHIC_LOCATION_FLAG_VALUE);
+  }
+
+  const flagOptions = getCommentFlagOptionsForDirectory(directory);
+  if (flagOptions.length === 0) {
+    return {
+      challengeRequest: undefined,
+      flairs: undefined,
+    };
+  }
+
+  return getCommentFlagPublishOptionsFromSelection(selectedValue ?? flagOptions[0]?.value);
 };
 
 export const getCommentFlagRequestFromSelection = (value: string | undefined): CommentFlagRequest | undefined => {

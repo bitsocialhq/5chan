@@ -24,7 +24,7 @@ import { getPublishURLFilename, isValidPublishURL, isValidURL } from '../../lib/
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
-import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsFromSelection, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
+import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useCommunityField } from '../../hooks/use-stable-community';
@@ -576,7 +576,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       return;
     }
 
-    const flagPublishOptions = getCommentFlagPublishOptionsFromSelection(flagRef.current?.value);
+    const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
 
     nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
     publishPost({ content: publishContent, ...flagPublishOptions });
@@ -688,7 +688,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       return;
     }
 
-    const flagPublishOptions = getCommentFlagPublishOptionsFromSelection(flagRef.current?.value);
+    const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
 
     nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
     publishReply({ content: publishContent, ...flagPublishOptions });
