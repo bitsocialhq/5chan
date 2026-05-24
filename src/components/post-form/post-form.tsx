@@ -24,6 +24,7 @@ import { getPublishURLFilename, isValidPublishURL, isValidURL } from '../../lib/
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsFromSelection, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useCommunityField } from '../../hooks/use-stable-community';
@@ -126,6 +127,7 @@ interface PostFormFieldsProps {
   postCid: string;
   subjectRef: React.Ref<HTMLInputElement>;
   optionsRef: React.RefObject<HTMLInputElement>;
+  flagRef: React.RefObject<HTMLSelectElement>;
   textRef: React.RefObject<HTMLTextAreaElement>;
   urlRef: React.Ref<HTMLInputElement>;
   url: string;
@@ -150,6 +152,7 @@ interface PostFormFieldsProps {
   communityAddress: string | undefined;
   rulesPath: string;
   requirePostLinkIsMedia: boolean;
+  flagOptions: CommentFlagSelectOption[];
   showBbcodeToolbar: boolean;
   onBbcodePreviewToggle: () => void;
   onPublishReply: () => void;
@@ -168,6 +171,7 @@ const PostFormFields = ({
   postCid,
   subjectRef,
   optionsRef,
+  flagRef,
   textRef,
   urlRef,
   url,
@@ -192,6 +196,7 @@ const PostFormFields = ({
   communityAddress,
   rulesPath,
   requirePostLinkIsMedia,
+  flagOptions,
   showBbcodeToolbar,
   onBbcodePreviewToggle,
   onPublishReply,
@@ -294,6 +299,26 @@ const PostFormFields = ({
         {lengthError && <div className={styles.error}>{lengthError}</div>}
       </td>
     </tr>
+    {flagOptions.length > 0 && (
+      <tr>
+        <td>{t('flag')}</td>
+        <td>
+          <select
+            key={flagOptions.map((option) => option.value).join('|')}
+            aria-label={t('flag')}
+            className={styles.flagSelect}
+            ref={flagRef}
+            defaultValue={flagOptions[0]?.value}
+          >
+            {flagOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </td>
+      </tr>
+    )}
     <tr>
       <td>{requirePostLinkIsMedia ? t('link_to_file') : t('link')}</td>
       <td className={styles.linkField}>
@@ -422,6 +447,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const urlRef = useRef<HTMLInputElement>(null);
   const subjectRef = useRef<HTMLInputElement>(null);
   const optionsRef = useRef<HTMLInputElement>(null);
+  const flagRef = useRef<HTMLSelectElement>(null);
   const fortuneEntryRef = useRef<FortuneEntry | null>(null);
   const diceRollRef = useRef<DiceRoll | null>(null);
   const nonokoRedirectPathRef = useRef<string | null>(null);
@@ -440,6 +466,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
+  const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
 
   const accountCommunityAddresses = useAccountCommunityAddresses();
   const accountAddress = account?.author?.address;
@@ -484,6 +511,9 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     }
     if (optionsRef.current) {
       optionsRef.current.value = '';
+    }
+    if (flagRef.current) {
+      flagRef.current.value = flagRef.current.options[0]?.value ?? '';
     }
     checkContentLength.cancel();
     checkPostOptions.cancel();
@@ -545,8 +575,10 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       return;
     }
 
+    const flagPublishOptions = getCommentFlagPublishOptionsFromSelection(flagRef.current?.value);
+
     nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-    publishPost({ content: publishContent });
+    publishPost({ content: publishContent, ...flagPublishOptions });
   };
 
   // redirect to pending page when pending comment is created
@@ -655,8 +687,10 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       return;
     }
 
+    const flagPublishOptions = getCommentFlagPublishOptionsFromSelection(flagRef.current?.value);
+
     nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-    publishReply({ content: publishContent });
+    publishReply({ content: publishContent, ...flagPublishOptions });
   };
 
   useEffect(() => {
@@ -715,6 +749,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             postCid={postCid}
             subjectRef={subjectRef}
             optionsRef={optionsRef}
+            flagRef={flagRef}
             textRef={textRef}
             urlRef={urlRef}
             url={url}
@@ -739,6 +774,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             communityAddress={communityAddress}
             rulesPath={rulesPath}
             requirePostLinkIsMedia={requirePostLinkIsMedia}
+            flagOptions={flagOptions}
             showBbcodeToolbar={showBbcodeToolbar}
             onBbcodePreviewToggle={handleBbcodePreviewToggle}
             onPublishReply={onPublishReply}

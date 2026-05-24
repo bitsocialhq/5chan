@@ -23,11 +23,12 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const account = useAccount();
   const directories = useDirectories();
 
-  const { author, content, link, spoiler, publishCommentOptions } = usePublishReplyStore(
+  const { author, content, link, flairs, spoiler, publishCommentOptions } = usePublishReplyStore(
     useShallow((state) => ({
       author: state.author[parentCid],
       content: state.content[parentCid] || undefined,
       link: state.link[parentCid] || undefined,
+      flairs: state.flairs[parentCid],
       spoiler: state.spoiler[parentCid] || false,
       publishCommentOptions: state.publishCommentOptions[parentCid],
     })),
@@ -57,7 +58,9 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
       postCid: postCid ?? parentCid,
       content,
       link,
+      flairs,
       spoiler,
+      ...(publishCommentOptions?.challengeRequest ? { challengeRequest: publishCommentOptions.challengeRequest } : {}),
     };
 
     const displayName = author?.displayName;
@@ -66,7 +69,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
     }
 
     return baseOptions;
-  }, [author, content, link, parentCid, postCid, spoiler, communityAddress]);
+  }, [author, content, flairs, link, parentCid, postCid, spoiler, communityAddress, publishCommentOptions?.challengeRequest]);
 
   const setPublishReplyOptions = useCallback(
     (options: Partial<Comment>) => {
@@ -142,7 +145,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
     setPublishReplyError(null);
     setPublishReplyStateMessage(null);
     setIsResolvingExternalQuotes(false);
-  }, [blockedReason, content, communityAddress]);
+  }, [blockedReason, content, communityAddress, flairs]);
 
   useEffect(() => {
     if (pendingPublishRequestId === 0 || pendingPublishRequestId === startedPublishRequestIdRef.current) {

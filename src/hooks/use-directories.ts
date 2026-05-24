@@ -136,7 +136,14 @@ export const findDirectoryByAddress = (directories: DirectoryCommunity[], addres
   }
 
   const normalizedAddress = normalizeBoardAddress(address);
-  return directories.find((community) => getDirectoryIdentifiers(community).some((identifier) => normalizeBoardAddress(identifier) === normalizedAddress));
+  const normalizedMatch = directories.find((community) =>
+    getDirectoryIdentifiers(community).some((identifier) => normalizeBoardAddress(identifier) === normalizedAddress),
+  );
+  if (normalizedMatch) {
+    return normalizedMatch;
+  }
+
+  return undefined;
 };
 
 const adaptV1Communities = (value: Record<string, unknown>): DirectoryCommunity[] => {

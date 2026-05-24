@@ -129,6 +129,21 @@
   font-weight: var(--post-name-font-weight);
 }
 
+.authorFlags {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-right: 3px;
+  vertical-align: -1px;
+}
+
+.authorFlag {
+  display: inline-block;
+  flex: 0 0 auto;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
 .postDesktop .postNumLink a, .postDesktop .postNumLink span, .replyDesktop .postNumLink a, .replyDesktop .postNumLink span {
   color: unset;
   text-decoration: unset;

@@ -31,6 +31,7 @@ import EditMenu from '../edit-menu/edit-menu';
 import FailedPublishNotice from '../failed-publish-notice';
 import { canEmbed } from '../embed';
 import LoadingEllipsis from '../loading-ellipsis';
+import PostAuthorFlags from '../post-author-flags';
 import PostMenuDesktop from './post-menu-desktop';
 import ReplyQuotePreview from '../reply-quote-preview';
 import Tooltip from '../tooltip';
@@ -239,7 +240,9 @@ const PostInfo = ({
   const isReply = parentCid;
   const { showOmittedReplies } = useShowOmittedReplies();
   const directories = useDirectories();
+  const directoryEntry = communityAddress ? findDirectoryByAddress(directories, communityAddress) : undefined;
   const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
+  const showAuthorFlags = directoryEntry?.features?.hasFlags === true && !(deleted || removed || purged);
   const postMenuProps = selectPostMenuProps(post);
 
   const params = useParams();
@@ -415,6 +418,7 @@ const PostInfo = ({
             </>
           )}
         </span>
+        <PostAuthorFlags author={author} comment={post} enabled={showAuthorFlags} />
         <span className={styles.dateTime}>
           {isInModQueueView && isOverThreshold ? (
             <>

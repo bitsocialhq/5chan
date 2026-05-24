@@ -438,6 +438,63 @@ describe('ChallengeModal', () => {
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 
+  it('advances through multiple iframe challenges before publishing answers', async () => {
+    const publication = createPublication();
+    testState.challenges = [
+      createStoredChallenge(
+        [
+          {
+            challenge: 'https://spamblocker.bitsocial.net/api/v1/iframe/session-123',
+            type: 'url/iframe',
+          },
+          {
+            challenge: 'https://flags.5chan.app/iframe/session-flag',
+            type: 'url/iframe',
+          },
+        ],
+        publication,
+      ),
+    ];
+
+    await renderModal();
+    await clickButton('Open');
+
+    await act(async () => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: {
+            type: 'challengeAnswer',
+            challengeAnswers: [''],
+            sessionId: 'session-123',
+          },
+          origin: 'https://spamblocker.bitsocial.net',
+        }),
+      );
+    });
+
+    expect(publication.publishChallengeAnswers).not.toHaveBeenCalled();
+    expect(testState.removeChallengeMock).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('mu wants to open flags.5chan.app.');
+
+    await clickButton('Open');
+
+    await act(async () => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: {
+            type: 'challengeAnswer',
+            challengeAnswers: [''],
+            sessionId: 'session-flag',
+          },
+          origin: 'https://flags.5chan.app',
+        }),
+      );
+    });
+
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith(['', '']);
+    expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
+  });
+
   it('ignores iframe completion messages with the wrong session id', async () => {
     const publication = createPublication();
     testState.challenges = [

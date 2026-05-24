@@ -392,5 +392,6 @@
   "board_address_unverified_warning": "Denne boardadresse er ikke verificeret. Boardets ejer ejer muligvis ikke denne adresse.",
   "go_to_settings_to_import_mod_account": "Gå til <1>indstillinger</1> for at importere din mod-konto",
   "post_form_rules_faq_prompt": "Læs venligst <rules>Reglerne</rules> og <faq>FAQ</faq>, før du poster.",
-  "pending_mod_approval_reason": "AI-moderering sendte dette opslag til moderatorkøen. Grund: \"{{reason}}\"."
+  "pending_mod_approval_reason": "AI-moderering sendte dette opslag til moderatorkøen. Grund: \"{{reason}}\".",
+  "flag": "Flag"
 }

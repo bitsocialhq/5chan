@@ -9,7 +9,9 @@ type ReplyState = {
   displayName: { [parentCid: string]: string | undefined };
   content: { [parentCid: string]: string | undefined };
   link: { [parentCid: string]: string | undefined };
+  flairs: { [parentCid: string]: Comment['flairs'] | undefined };
   spoiler: { [parentCid: string]: boolean | undefined };
+  challengeRequest: { [parentCid: string]: Record<string, unknown> | undefined };
   publishCommentOptions: { [parentCid: string]: PublishCommentOptions | undefined };
   setPublishReplyStore: (comment: Comment) => void;
   resetPublishReplyStore: (parentCid: string) => void;
@@ -20,12 +22,14 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
   displayName: {},
   content: {},
   link: {},
+  flairs: {},
   spoiler: {},
+  challengeRequest: {},
   publishCommentOptions: {},
 
   setPublishReplyStore: (comment: Comment) =>
     set((state) => {
-      const { parentCid, author, content, spoiler } = comment;
+      const { parentCid, author, challengeRequest, content, flairs, spoiler } = comment;
       const link = comment.link ? normalizePublishURL(comment.link) : undefined;
       const communityAddress = getCommentCommunityAddress(comment);
 
@@ -42,7 +46,9 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
         postCid: comment?.postCid || parentCid,
         content,
         link,
+        flairs,
         spoiler,
+        ...(challengeRequest ? { challengeRequest } : {}),
         onChallengeVerification: (challengeVerification: ChallengeVerification, comment: Comment) => {
           alertChallengeVerificationFailed(challengeVerification, comment);
         },
@@ -61,7 +67,9 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
         displayName: { ...state.displayName, [parentCid]: displayName },
         content: { ...state.content, [parentCid]: content },
         link: { ...state.link, [parentCid]: link },
+        flairs: { ...state.flairs, [parentCid]: flairs },
         spoiler: { ...state.spoiler, [parentCid]: spoiler },
+        challengeRequest: { ...state.challengeRequest, [parentCid]: challengeRequest },
         publishCommentOptions: { ...state.publishCommentOptions, [parentCid]: publishCommentOptions },
       };
     }),
@@ -72,7 +80,9 @@ const usePublishReplyStore = create<ReplyState>((set) => ({
       displayName: { ...state.displayName, [parentCid]: undefined },
       content: { ...state.content, [parentCid]: undefined },
       link: { ...state.link, [parentCid]: undefined },
+      flairs: { ...state.flairs, [parentCid]: undefined },
       spoiler: { ...state.spoiler, [parentCid]: undefined },
+      challengeRequest: { ...state.challengeRequest, [parentCid]: undefined },
       publishCommentOptions: { ...state.publishCommentOptions, [parentCid]: undefined },
     })),
 }));
