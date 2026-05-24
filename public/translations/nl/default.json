@@ -391,5 +391,6 @@
   "modQueue.dismiss": "Negeren",
   "board_address_unverified_warning": "Dit boardadres is niet geverifieerd. De eigenaar van het board is mogelijk niet de eigenaar van dit adres.",
   "go_to_settings_to_import_mod_account": "Ga naar <1>instellingen</1> om je mod-account te importeren",
-  "post_form_rules_faq_prompt": "Lees de <rules>Regels</rules> en de <faq>FAQ</faq> voordat je plaatst."
+  "post_form_rules_faq_prompt": "Lees de <rules>Regels</rules> en de <faq>FAQ</faq> voordat je plaatst.",
+  "pending_mod_approval_reason": "AI-moderatie heeft dit bericht naar de moderatiewachtrij gestuurd. Reden: \"{{reason}}\"."
 }

@@ -391,5 +391,6 @@
   "modQueue.dismiss": "Ignorieren",
   "board_address_unverified_warning": "Diese Board-Adresse ist nicht verifiziert. Der Board-Betreiber besitzt diese Adresse möglicherweise nicht.",
   "go_to_settings_to_import_mod_account": "Gehe zu <1>Einstellungen</1>, um dein Moderatorkonto zu importieren",
-  "post_form_rules_faq_prompt": "Bitte lesen Sie die <rules>Regeln</rules> und die <faq>FAQ</faq>, bevor Sie posten."
+  "post_form_rules_faq_prompt": "Bitte lesen Sie die <rules>Regeln</rules> und die <faq>FAQ</faq>, bevor Sie posten.",
+  "pending_mod_approval_reason": "Die KI-Moderation hat diesen Beitrag in die Moderationswarteschlange verschoben. Grund: \"{{reason}}\"."
 }

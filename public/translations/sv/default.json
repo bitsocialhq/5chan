@@ -391,5 +391,6 @@
   "modQueue.dismiss": "Avfärda",
   "board_address_unverified_warning": "Den här board-adressen är inte verifierad. Boardets ägare kanske inte äger den här adressen.",
   "go_to_settings_to_import_mod_account": "Gå till <1>inställningar</1> för att importera ditt modkonto",
-  "post_form_rules_faq_prompt": "Läs <rules>Reglerna</rules> och <faq>FAQ</faq> innan du postar."
+  "post_form_rules_faq_prompt": "Läs <rules>Reglerna</rules> och <faq>FAQ</faq> innan du postar.",
+  "pending_mod_approval_reason": "AI-moderering skickade det här inlägget till moderatorkön. Anledning: \"{{reason}}\"."
 }

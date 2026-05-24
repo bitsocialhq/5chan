@@ -391,5 +391,6 @@
   "modQueue.dismiss": "무시",
   "board_address_unverified_warning": "이 보드 주소는 확인되지 않았습니다. 보드 소유자가 이 주소를 소유하지 않았을 수 있습니다.",
   "go_to_settings_to_import_mod_account": "관리자 계정을 가져오려면 <1>설정</1>으로 이동하세요",
-  "post_form_rules_faq_prompt": "게시하기 전에 <rules>규칙</rules>과 <faq>FAQ</faq>을 읽어 주세요."
+  "post_form_rules_faq_prompt": "게시하기 전에 <rules>규칙</rules>과 <faq>FAQ</faq>을 읽어 주세요.",
+  "pending_mod_approval_reason": "AI 모더레이션이 이 게시물을 모더레이터 대기열로 보냈습니다. 이유: \"{{reason}}\"."
 }

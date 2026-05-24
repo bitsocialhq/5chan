@@ -391,5 +391,6 @@
   "modQueue.dismiss": "忽略",
   "board_address_unverified_warning": "此版面地址尚未验证。版主可能并不拥有此地址。",
   "go_to_settings_to_import_mod_account": "前往<1>设置</1>以导入您的版主账户",
-  "post_form_rules_faq_prompt": "发帖前请阅读<rules>规则</rules>和<faq>常见问题</faq>。"
+  "post_form_rules_faq_prompt": "发帖前请阅读<rules>规则</rules>和<faq>常见问题</faq>。",
+  "pending_mod_approval_reason": "AI 审核已将此帖子发送到版主队列。原因：\"{{reason}}\"。"
 }

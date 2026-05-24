@@ -391,5 +391,6 @@
   "modQueue.dismiss": "نظر انداز کریں",
   "board_address_unverified_warning": "اس بورڈ کے پتے کی تصدیق نہیں ہوئی۔ ممکن ہے بورڈ کا مالک اس پتے کا مالک نہ ہو۔",
   "go_to_settings_to_import_mod_account": "اپنا موڈ اکاؤنٹ درآمد کرنے کے لیے <1>ترتیبات</1> پر جائیں",
-  "post_form_rules_faq_prompt": "براہ کرم پوسٹ کرنے سے پہلے <rules>اصول</rules> اور <faq>اکثر پوچھے گئے سوالات</faq> پڑھیں۔"
+  "post_form_rules_faq_prompt": "براہ کرم پوسٹ کرنے سے پہلے <rules>اصول</rules> اور <faq>اکثر پوچھے گئے سوالات</faq> پڑھیں۔",
+  "pending_mod_approval_reason": "AI موڈریشن نے اس پوسٹ کو موڈریٹر قطار میں بھیج دیا۔ وجہ: \"{{reason}}\"."
 }

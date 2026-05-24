@@ -391,5 +391,6 @@
   "modQueue.dismiss": "Ignorer",
   "board_address_unverified_warning": "Denne board-adressen er ikke bekreftet. Board-eieren eier kanskje ikke denne adressen.",
   "go_to_settings_to_import_mod_account": "Gå til <1>innstillinger</1> for å importere modkontoen din",
-  "post_form_rules_faq_prompt": "Vennligst les <rules>Reglene</rules> og <faq>FAQ</faq> før du poster."
+  "post_form_rules_faq_prompt": "Vennligst les <rules>Reglene</rules> og <faq>FAQ</faq> før du poster.",
+  "pending_mod_approval_reason": "AI-moderering sendte dette innlegget til moderatorkøen. Årsak: \"{{reason}}\"."
 }

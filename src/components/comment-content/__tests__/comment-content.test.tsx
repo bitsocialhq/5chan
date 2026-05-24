@@ -69,6 +69,9 @@ vi.mock('react-i18next', () => ({
       if (key === 'reason_reason') {
         return `reason:${options?.reason}`;
       }
+      if (key === 'pending_mod_approval_reason') {
+        return `pending-reason:${options?.reason}`;
+      }
       if (key === 'ban_expires_at') {
         return `ban:${options?.address}:${options?.timestamp}`;
       }
@@ -473,6 +476,7 @@ describe('CommentContent', () => {
     });
 
     expect(container.textContent).toContain('pending_mod_approval');
+    expect(container.textContent).toContain('pending-reason:rules violation');
     const tooltip = container.querySelector('[data-testid="tooltip"]');
     expect(tooltip?.getAttribute('title')).toContain('ban:short:music-posting.eth:2024-01-01 12:00:00');
 

@@ -391,5 +391,6 @@
   "modQueue.dismiss": "無視",
   "board_address_unverified_warning": "このボードアドレスは検証されていません。ボード所有者がこのアドレスを所有していない可能性があります。",
   "go_to_settings_to_import_mod_account": "モデレーターアカウントをインポートするには<1>設定</1>に移動してください",
-  "post_form_rules_faq_prompt": "投稿する前に<rules>ルール</rules>と<faq>FAQ</faq>をお読みください。"
+  "post_form_rules_faq_prompt": "投稿する前に<rules>ルール</rules>と<faq>FAQ</faq>をお読みください。",
+  "pending_mod_approval_reason": "AIモデレーションがこの投稿をモデレーターキューに送りました。理由: \"{{reason}}\"."
 }
