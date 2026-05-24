@@ -9,6 +9,7 @@ import {
   fetchPeerMapLocation,
   getApproximateCountryCode,
   getApproximateLatLon,
+  getCountryConsistentLocation,
   getFirstPublicIpFromAddresses,
   isPrivateOrReservedIpv4,
 } from '../peer-geo';
@@ -86,6 +87,25 @@ describe('getApproximateLatLon', () => {
   });
 });
 
+describe('getCountryConsistentLocation', () => {
+  it('falls back to the selected country centroid when GeoIP databases disagree', () => {
+    expect(
+      getCountryConsistentLocation('VN', {
+        countryCode: 'ca',
+        label: 'Toronto, Ontario, CA',
+        lat: 43.6532,
+        lon: -79.3832,
+        source: 'geoip',
+      }),
+    ).toEqual({
+      ...COUNTRY_CENTROIDS.vn,
+      countryCode: 'vn',
+      label: 'VN',
+      source: 'coarse',
+    });
+  });
+});
+
 describe('getFirstPublicIpFromAddresses', () => {
   it('returns the first public IP from multiaddrs', () => {
     expect(getFirstPublicIpFromAddresses(['/ip4/127.0.0.1/tcp/4001', '/ip4/147.75.84.175/tcp/4001/ws'])).toBe('147.75.84.175');
@@ -98,35 +118,52 @@ describe('getFirstPublicIpFromAddresses', () => {
 });
 
 describe('fetchOwnPublicEndpoint', () => {
-  it('caches the fetched public endpoint', async () => {
-    const fetchMock = vi.fn(async (url: string | URL | Request) => ({
-      ok: true,
-      json: async () =>
-        String(url).startsWith('https://free.freeipapi.com/api/json/')
-          ? {
-              cityName: 'Mountain View',
-              countryCode: 'US',
-              latitude: 37.422,
-              longitude: -122.085,
-              regionName: 'California',
-            }
-          : { country: 'US', ip: '2001:4860:4860::8888' },
-    }));
+  it('prefers and caches the fetched IPv4 public endpoint', async () => {
+    const fetchMock = vi.fn(async (url: string | URL | Request) => {
+      const requestUrl = String(url);
+      if (requestUrl === 'https://api.ipify.org?format=json') {
+        return {
+          ok: true,
+          json: async () => ({ ip: '104.28.68.171' }),
+        };
+      }
+      if (requestUrl === 'https://api.country.is/104.28.68.171') {
+        return {
+          ok: true,
+          json: async () => ({ country: 'VN', ip: '104.28.68.171' }),
+        };
+      }
+      if (requestUrl === 'https://free.freeipapi.com/api/json/104.28.68.171') {
+        return {
+          ok: true,
+          json: async () => ({
+            cityName: 'Toronto',
+            countryCode: 'CA',
+            latitude: 43.6532,
+            longitude: -79.3832,
+            regionName: 'Ontario',
+          }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({ country: 'US', ip: '2001:4860:4860::8888' }),
+      };
+    });
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(fetchOwnPublicEndpoint()).resolves.toMatchObject({
-      countryCode: 'us',
-      ip: '2001:4860:4860::8888',
+      countryCode: 'vn',
+      ip: '104.28.68.171',
       location: {
-        countryCode: 'us',
-        label: 'Mountain View, California, US',
-        lat: 37.422,
-        lon: -122.085,
-        source: 'geoip',
+        countryCode: 'vn',
+        label: 'VN',
+        source: 'coarse',
       },
     });
-    await expect(fetchOwnPublicEndpoint()).resolves.toMatchObject({ countryCode: 'us', ip: '2001:4860:4860::8888' });
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    await expect(fetchOwnPublicEndpoint()).resolves.toMatchObject({ countryCode: 'vn', ip: '104.28.68.171' });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock).not.toHaveBeenCalledWith('https://api.country.is', expect.anything());
 
     vi.unstubAllGlobals();
   });

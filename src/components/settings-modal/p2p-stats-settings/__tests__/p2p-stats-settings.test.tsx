@@ -62,7 +62,7 @@ describe('P2PStatsSettings', () => {
     };
     testState.rpcSettings = { state: 'disconnected' };
     testState.setAccountMock.mockReset().mockResolvedValue(undefined);
-    // Default: own-IP country lookups (api.country.is) resolve offline so browser
+    // Default: own-IP endpoint lookups resolve offline so browser
     // stats tests never hit the network. Individual tests can override this stub.
     vi.stubGlobal(
       'fetch',
@@ -151,8 +151,9 @@ describe('P2PStatsSettings', () => {
     expect(seederLink).not.toBeNull();
     expect(seederLink?.textContent).toBe('want to seed?');
     expect(rows.get('Your IP')).toContain('147.75.84.175');
-    // The own IP is geolocated accurately (per-IP lookup), not via the coarse peer guess.
-    expect(fetch).toHaveBeenCalledWith('https://api.country.is/147.75.84.175', expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    // Browser mode resolves "Your IP" from the browser's public endpoint, not
+    // from libp2p observed/WebRTC addresses.
+    expect(fetch).toHaveBeenCalledWith('https://api.ipify.org?format=json', expect.objectContaining({ signal: expect.any(AbortSignal) }));
     const yourIpRow = Array.from(container.querySelectorAll('tr')).find((row) => row.textContent?.includes('Your IP'));
     expect(yourIpRow?.querySelector('[role="img"]')).not.toBeNull();
     expect(container.textContent).not.toContain('browser Helia');
@@ -254,6 +255,12 @@ describe('P2PStatsSettings', () => {
   it('shows the own IP flag and a red precise map marker when leeching', async () => {
     const fetchMock = vi.fn(async (url: string | URL | Request) => {
       const requestUrl = String(url);
+      if (requestUrl === 'https://api.ipify.org?format=json') {
+        return {
+          ok: true,
+          json: async () => ({ ip: '117.2.120.113' }),
+        };
+      }
       if (requestUrl === 'https://api.country.is/117.2.120.113') {
         return {
           ok: false,
@@ -318,6 +325,98 @@ describe('P2PStatsSettings', () => {
     expect(marker?.getAttribute('data-peer-role')).toBe('leecher');
     expect(Number(marker?.getAttribute('x'))).toBeCloseTo(286.72, 1);
     expect(Number(marker?.getAttribute('y'))).toBeCloseTo(72.43, 1);
+  });
+
+  it('keeps browser "Your IP" on the browser public endpoint when libp2p exposes a different public address', async () => {
+    const fetchMock = vi.fn(async (url: string | URL | Request) => {
+      const requestUrl = String(url);
+      if (requestUrl === 'https://api.ipify.org?format=json') {
+        return {
+          ok: true,
+          json: async () => ({ ip: '104.28.68.171' }),
+        };
+      }
+      if (requestUrl === 'https://api.country.is/104.28.68.171') {
+        return {
+          ok: true,
+          json: async () => ({ country: 'VN', ip: '104.28.68.171' }),
+        };
+      }
+      if (requestUrl === 'https://free.freeipapi.com/api/json/104.28.68.171') {
+        return {
+          ok: true,
+          json: async () => ({
+            cityName: 'Toronto',
+            countryCode: 'CA',
+            ipAddress: '104.28.68.171',
+            latitude: 43.6532,
+            longitude: -79.3832,
+            regionName: 'Ontario',
+          }),
+        };
+      }
+      if (requestUrl === 'https://free.freeipapi.com/api/json/146.75.187.55') {
+        return {
+          ok: true,
+          json: async () => ({
+            cityName: 'Bandar Seri Begawan',
+            countryCode: 'BN',
+            ipAddress: '146.75.187.55',
+            latitude: 4.89234,
+            longitude: 114.942,
+            regionName: 'Brunei-Muara',
+          }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({ country: 'US', ip: '147.75.84.175' }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    testState.account = {
+      ...testState.account,
+      pkcOptions: {
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      },
+      pkc: {
+        clients: {
+          libp2pJsClients: {
+            libp2pjs: {
+              key: 'libp2pjs',
+              _helia: {
+                libp2p: {
+                  getConnections: () => [
+                    {
+                      localAddr: { toString: () => '/ip4/146.75.187.55/udp/4001/webrtc-direct' },
+                    },
+                  ],
+                  getMultiaddrs: () => ['/ip4/146.75.187.55/udp/4001/webrtc-direct'],
+                  getPeers: () => [],
+                  peerId: { toString: () => 'self-peer' },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    await renderSettings(false);
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const rows = getStatRows();
+    const yourIpRow = Array.from(container.querySelectorAll('tr')).find((row) => row.textContent?.includes('Your IP'));
+    const marker = getMarkerByTitle('Your node - VN');
+    expect(rows.get('Your IP')).toContain('104.28.68.171');
+    expect(rows.get('Your IP')).not.toContain('146.75.187.55');
+    expect(yourIpRow?.querySelector('[role="img"]')?.getAttribute('aria-label')).toBe('Vietnam');
+    expect(marker).not.toBeNull();
+    expect(container.querySelector('svg rect title')?.textContent).not.toContain('Toronto');
+    expect(fetchMock).not.toHaveBeenCalledWith('https://free.freeipapi.com/api/json/146.75.187.55', expect.anything());
   });
 
   it('reads browser transfer counters from Helia bitswap ledgers', async () => {
@@ -401,13 +500,20 @@ describe('P2PStatsSettings', () => {
   });
 
   it('falls back to the browser node public endpoint when Helia exposes no public address', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
+    const fetchMock = vi.fn(async (url: string | URL | Request) => {
+      const requestUrl = String(url);
+      if (requestUrl === 'https://api.ipify.org?format=json') {
+        return {
+          ok: true,
+          json: async () => ({ ip: '104.28.68.171' }),
+        };
+      }
+      return {
         ok: true,
-        json: async () => ({ country: 'US', ip: '2001:4860:4860::8888' }),
-      }),
-    );
+        json: async () => ({ country: 'VN', ip: '104.28.68.171' }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
     testState.account = {
       ...testState.account,
       pkcOptions: {
@@ -442,11 +548,11 @@ describe('P2PStatsSettings', () => {
     await act(async () => Promise.resolve());
 
     const rows = getStatRows();
-    expect(rows.get('Your IP')).toContain('2001:4860:4860::8888');
+    expect(rows.get('Your IP')).toContain('104.28.68.171');
     expect(rows.get('Your IP')).not.toContain('unknown');
     const yourIpRow = Array.from(container.querySelectorAll('tr')).find((row) => row.textContent?.includes('Your IP'));
     expect(yourIpRow?.querySelector('[role="img"]')).not.toBeNull();
-    expect(fetch).toHaveBeenCalledWith('https://api.country.is', expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    expect(fetch).toHaveBeenCalledWith('https://api.ipify.org?format=json', expect.objectContaining({ signal: expect.any(AbortSignal) }));
   });
 
   it('reports seeding only when browser Helia can add and publish provider records', async () => {

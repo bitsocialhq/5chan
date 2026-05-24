@@ -8,6 +8,7 @@ import {
   fetchOwnPublicEndpoint,
   fetchPeerMapLocation,
   getApproximateCountryCode,
+  getCountryConsistentLocation,
   getFirstPublicIpFromAddresses,
   isPrivateOrReservedIpv4,
   type PeerMapLocation,
@@ -90,11 +91,7 @@ type StatsAction =
 type Libp2pClientShape = {
   _helia?: {
     libp2p?: {
-      components?: {
-        addressManager?: Libp2pAddressManagerShape;
-      };
       getConnections?: () => unknown[] | Promise<unknown[]>;
-      getMultiaddrs?: () => unknown[] | Promise<unknown[]>;
       getPeers?: () => unknown[] | Promise<unknown[]>;
       peerId?: { toString: () => string };
       services?: {
@@ -114,13 +111,6 @@ type Libp2pClientShape = {
   };
   key?: string;
 };
-
-type Libp2pAddressManagerShape = {
-  getAddressesWithMetadata?: () => unknown[] | Promise<unknown[]>;
-  getObservedAddrs?: () => unknown[] | Promise<unknown[]>;
-};
-
-type BrowserLibp2pShape = NonNullable<NonNullable<NonNullable<Libp2pClientShape['_helia']>['libp2p']>>;
 
 type PkcRpcClientShape = {
   getPeers?: () => unknown | Promise<unknown>;
@@ -262,21 +252,6 @@ const getSafeArray = async (getValue?: () => unknown[] | Promise<unknown[]> | un
   } catch {
     return [];
   }
-};
-
-const getAddressManagerAddresses = async (libp2p?: BrowserLibp2pShape): Promise<unknown[]> => {
-  const addressManager = isRecord(libp2p?.components) ? (libp2p.components.addressManager as Libp2pAddressManagerShape | undefined) : undefined;
-  const [observedAddrs, addressesWithMetadata] = await Promise.all([
-    getSafeArray(() => addressManager?.getObservedAddrs?.()),
-    getSafeArray(() => addressManager?.getAddressesWithMetadata?.()),
-  ]);
-  return [
-    ...observedAddrs,
-    ...addressesWithMetadata.flatMap((entry) => {
-      const address = isRecord(entry) ? (entry.multiaddr ?? entry.address) : entry;
-      return address ? [address] : [];
-    }),
-  ];
 };
 
 const getFirstPkcRpcClient = (account?: AccountShape) => getFirstObjectValue(account?.pkc?.clients?.pkcRpcClients) as PkcRpcClientShape | undefined;
@@ -727,17 +702,18 @@ const resolveConnectedPeerLocations = async (row: ConnectedPeersStatRow, signal?
   return { ...row, entries };
 };
 
-// Resolves the "Your IP" row from observed node addresses for browser/full-node
-// paths. Electron Kubo uses resolveKuboOwnEndpoint below because its address list
-// can include relay/circuit endpoints owned by other peers.
+// Resolves node-owned listen addresses for full-node and Kubo fallback paths.
+// Browser libp2p observed addresses can be WebRTC relay/CDN endpoints, so browser
+// mode uses fetchOwnPublicEndpoint instead.
 const resolveOwnEndpoint = async (addresses: unknown[], signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
   const ip = getFirstPublicIpFromAddresses(addresses);
   if (ip) {
     const [countryCode, location] = await Promise.all([fetchOwnIpCountryCode(ip, signal), fetchIpMapLocation(ip, signal)]);
+    const resolvedCountryCode = countryCode ?? location?.countryCode ?? getApproximateCountryCode(getEndpointAddress(ip));
     return {
-      countryCode: location?.countryCode ?? countryCode ?? getApproximateCountryCode(getEndpointAddress(ip)),
+      countryCode: resolvedCountryCode,
       ip,
-      location,
+      location: getCountryConsistentLocation(resolvedCountryCode, location),
     };
   }
   return fetchOwnPublicEndpoint(signal);
@@ -784,21 +760,12 @@ const getAddressListFromRecord = (record: unknown) =>
 const getBrowserLibp2pStats = async (account?: AccountShape, signal?: AbortSignal): Promise<StatRow[]> => {
   const client = getFirstObjectValue(account?.pkc?.clients?.libp2pJsClients) as Libp2pClientShape | undefined;
   const libp2p = client?._helia?.libp2p;
-  const [peers, connections, multiaddrs, addressManagerAddresses] = await Promise.all([
-    getSafeArray(() => libp2p?.getPeers?.()),
-    getSafeArray(() => libp2p?.getConnections?.()),
-    getSafeArray(() => libp2p?.getMultiaddrs?.()),
-    getAddressManagerAddresses(libp2p),
-  ]);
-  const localAddresses = connections.flatMap((connection) => {
-    const localAddr = isRecord(connection) ? connection.localAddr : undefined;
-    return localAddr ? [localAddr] : [];
-  });
+  const [peers, connections] = await Promise.all([getSafeArray(() => libp2p?.getPeers?.()), getSafeArray(() => libp2p?.getConnections?.())]);
   const connectedPeersRow = getBrowserConnectedPeersRow(peers, connections);
   const mode = getBrowserMode(client);
   const [transferStats, nodeEndpoint, connectedPeers] = await Promise.all([
     getBrowserTransferStats(client, connections),
-    resolveOwnEndpoint([...multiaddrs, ...addressManagerAddresses, ...localAddresses], signal),
+    fetchOwnPublicEndpoint(signal),
     resolveConnectedPeerLocations(connectedPeersRow, signal),
   ]);
   const connectedPeersWithMapEntries = {

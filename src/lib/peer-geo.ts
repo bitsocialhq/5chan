@@ -33,7 +33,7 @@ export type PeerMapLocation = LatLon & {
 };
 
 const COUNTRY_LOOKUP_URL = 'https://api.country.is';
-const PUBLIC_IPV4_LOOKUP_URL = 'https://api64.ipify.org?format=json';
+const PUBLIC_IPV4_LOOKUP_URL = 'https://api.ipify.org?format=json';
 const PEER_LOCATION_LOOKUP_URL = 'https://free.freeipapi.com/api/json';
 const PEER_LOCATION_CACHE_MS = 24 * 60 * 60_000;
 const PEER_LOCATION_FAILURE_CACHE_MS = 10 * 60_000;
@@ -55,6 +55,32 @@ const normalizeLookupCountryCode = (value: unknown) => {
   if (typeof value !== 'string') return undefined;
   const code = value.trim().toLowerCase();
   return /^[a-z]{2}$/.test(code) ? code : undefined;
+};
+
+const getCountryCentroidLocation = (countryCode: string | undefined): PeerMapLocation | undefined => {
+  const normalizedCountryCode = normalizeLookupCountryCode(countryCode);
+  const centroid = normalizedCountryCode ? COUNTRY_CENTROIDS[normalizedCountryCode] : undefined;
+  if (!normalizedCountryCode || !centroid) return undefined;
+  return {
+    ...centroid,
+    countryCode: normalizedCountryCode,
+    label: normalizedCountryCode.toUpperCase(),
+    source: 'coarse',
+  };
+};
+
+export const getCountryConsistentLocation = (countryCode: string | undefined, location: PeerMapLocation | undefined): PeerMapLocation | undefined => {
+  const normalizedCountryCode = normalizeLookupCountryCode(countryCode);
+  if (!normalizedCountryCode) return location;
+  if (!location) return getCountryCentroidLocation(normalizedCountryCode);
+  const locationCountryCode = normalizeLookupCountryCode(location.countryCode);
+  if (!locationCountryCode || locationCountryCode === normalizedCountryCode) {
+    return {
+      ...location,
+      countryCode: locationCountryCode ?? normalizedCountryCode,
+    };
+  }
+  return getCountryCentroidLocation(normalizedCountryCode);
 };
 
 const normalizePlaceName = (value: unknown) => {
@@ -88,6 +114,8 @@ const fetchPublicEndpoint = async (url: string, signal?: AbortSignal): Promise<P
   }
 };
 
+const getIpLookupAddress = (ip: string) => `/ip${ip.includes(':') ? '6' : '4'}/${ip}/tcp/0`;
+
 const parsePeerLocation = (data: unknown): PeerMapLocation | undefined => {
   if (!data || typeof data !== 'object') return undefined;
   const lat = getFiniteCoordinate((data as { latitude?: unknown }).latitude, -85, 85);
@@ -107,6 +135,19 @@ const parsePeerLocation = (data: unknown): PeerMapLocation | undefined => {
   };
 };
 
+const resolveOwnPublicEndpointLocation = async (endpoint: PublicEndpoint, signal?: AbortSignal): Promise<PublicEndpoint> => {
+  const [countryCode, location] = await Promise.all([
+    endpoint.countryCode ? Promise.resolve(endpoint.countryCode) : fetchOwnIpCountryCode(endpoint.ip, signal),
+    fetchIpMapLocation(endpoint.ip, signal),
+  ]);
+  const resolvedCountryCode = endpoint.countryCode ?? countryCode ?? location?.countryCode ?? getApproximateCountryCode(getIpLookupAddress(endpoint.ip));
+  return {
+    ...endpoint,
+    countryCode: resolvedCountryCode,
+    location: getCountryConsistentLocation(resolvedCountryCode, location),
+  };
+};
+
 // Fetches the browser node's own public endpoint for the P2P stats panel when
 // libp2p only advertises local/private listen addresses (common in browser nodes
 // and VPN setups). This only asks about the current browser's public endpoint;
@@ -114,28 +155,24 @@ const parsePeerLocation = (data: unknown): PeerMapLocation | undefined => {
 export const fetchOwnPublicEndpoint = async (signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
   if (cachedOwnPublicEndpoint && Date.now() < cachedOwnPublicEndpoint.expiresAt) return cachedOwnPublicEndpoint.value;
 
-  const endpoint = await fetchPublicEndpoint(COUNTRY_LOOKUP_URL, signal);
-  if (endpoint) {
-    const location = await fetchIpMapLocation(endpoint.ip, signal);
-    const value = {
-      ...endpoint,
-      countryCode: endpoint.countryCode ?? location?.countryCode,
-      location,
-    };
+  const ipv4Endpoint = await fetchPublicEndpoint(PUBLIC_IPV4_LOOKUP_URL, signal);
+  if (ipv4Endpoint) {
+    const value = await resolveOwnPublicEndpointLocation(ipv4Endpoint, signal);
     cachedOwnPublicEndpoint = { expiresAt: Date.now() + 60_000, value };
     return value;
   }
 
-  const ipv4Endpoint = await fetchPublicEndpoint(PUBLIC_IPV4_LOOKUP_URL, signal);
-  const ipv4Location = ipv4Endpoint?.ip ? await fetchIpMapLocation(ipv4Endpoint.ip, signal) : undefined;
-  const fallback = ipv4Endpoint?.ip
-    ? { countryCode: ipv4Location?.countryCode ?? getApproximateCountryCode(`/ip4/${ipv4Endpoint.ip}/tcp/0`), ip: ipv4Endpoint.ip, location: ipv4Location }
-    : undefined;
+  const endpoint = await fetchPublicEndpoint(COUNTRY_LOOKUP_URL, signal);
+  if (endpoint) {
+    const value = await resolveOwnPublicEndpointLocation(endpoint, signal);
+    cachedOwnPublicEndpoint = { expiresAt: Date.now() + 60_000, value };
+    return value;
+  }
   // Don't cache an empty result produced by an aborted lookup (e.g. the panel was
   // closed mid-request): that is cancellation, not a real failure, so a later
   // reopen should retry instead of being served a cached blank for 30s.
-  if (!signal?.aborted) cachedOwnPublicEndpoint = { expiresAt: Date.now() + 30_000, value: fallback };
-  return fallback;
+  if (!signal?.aborted) cachedOwnPublicEndpoint = { expiresAt: Date.now() + 30_000, value: undefined };
+  return undefined;
 };
 
 const ownIpCountryCache = new Map<string, { expiresAt: number; value?: string }>();
@@ -147,7 +184,7 @@ export const fetchOwnIpCountryCode = async (ip: string, signal?: AbortSignal): P
   const cached = ownIpCountryCache.get(ip);
   if (cached && Date.now() < cached.expiresAt) return cached.value;
   const endpoint = await fetchPublicEndpoint(`${COUNTRY_LOOKUP_URL}/${ip}`, signal);
-  const value = endpoint?.countryCode ?? getApproximateCountryCode(`/ip4/${ip}/tcp/0`);
+  const value = endpoint?.countryCode;
   // See fetchOwnPublicEndpoint: skip caching when the lookup was aborted so a
   // cancelled request does not blank the flag for 60s on the next open.
   if (!signal?.aborted) ownIpCountryCache.set(ip, { expiresAt: Date.now() + 60_000, value });
