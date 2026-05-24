@@ -141,15 +141,11 @@ type ObservedTransferStats = {
 };
 
 const KUBO_API_URL = 'http://localhost:50019/api/v0';
-const DNS_JSON_URL = 'https://cloudflare-dns.com/dns-query';
 const SEEDER_REPO_URL = 'https://github.com/bitsocialnet/bitsocial-seeder';
 const STATS_REFRESH_MS = 5000;
 const MAX_TRANSFER_COUNTER_DEPTH = 10;
 const MAX_TRANSFER_COUNTER_OBJECTS = 400;
-const HOST_IP_CACHE_MS = 10 * 60_000;
-const HOST_IP_FAILURE_CACHE_MS = 60_000;
 const observedBrowserTransferStats = new WeakMap<object, ObservedTransferStats>();
-const hostIpCache = new Map<string, { expiresAt: number; value?: string }>();
 
 const statsReducer = (state: StatsState, action: StatsAction): StatsState => {
   if (action.type === 'loading') return { ...state, error: undefined, loading: true };
@@ -558,33 +554,6 @@ const isLikelyPublicIp = (value: string) => {
   return normalized !== '::1' && !normalized.startsWith('fe80:') && !normalized.startsWith('fc') && !normalized.startsWith('fd');
 };
 
-const fetchHostnamePublicIp = async (hostname: string, signal?: AbortSignal) => {
-  const normalizedHostname = hostname.trim().toLowerCase();
-  const cached = hostIpCache.get(normalizedHostname);
-  if (cached && Date.now() < cached.expiresAt) return cached.value;
-
-  let value: string | undefined;
-  try {
-    const response = await fetch(`${DNS_JSON_URL}?name=${encodeURIComponent(normalizedHostname)}&type=A`, {
-      headers: { accept: 'application/dns-json' },
-      signal,
-    });
-    const data = response.ok ? await response.json() : undefined;
-    const answers = isRecord(data) && Array.isArray(data.Answer) ? data.Answer : [];
-    value = answers.map((answer) => (isRecord(answer) ? getStringValue(answer.data, '') : '')).find((address) => isIpv4Address(address) && isLikelyPublicIp(address));
-  } catch {
-    value = undefined;
-  }
-
-  if (!signal?.aborted) {
-    hostIpCache.set(normalizedHostname, {
-      expiresAt: Date.now() + (value ? HOST_IP_CACHE_MS : HOST_IP_FAILURE_CACHE_MS),
-      value,
-    });
-  }
-  return value;
-};
-
 const getHostnameFromUrl = (url: string) => {
   try {
     return new URL(url).hostname.replace(/^\[|\]$/g, '');
@@ -606,8 +575,7 @@ const resolveEndpointFromIp = async (ip: string, signal?: AbortSignal): Promise<
 const resolveEndpointFromHost = async (hostname: string, signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
   const normalizedHostname = hostname.trim().toLowerCase();
   if (!normalizedHostname || normalizedHostname === 'localhost') return undefined;
-  const ip = isLikelyPublicIp(normalizedHostname) ? normalizedHostname : await fetchHostnamePublicIp(normalizedHostname, signal);
-  return ip ? resolveEndpointFromIp(ip, signal) : undefined;
+  return isLikelyPublicIp(normalizedHostname) ? resolveEndpointFromIp(normalizedHostname, signal) : undefined;
 };
 
 const getTransportLabel = (address: string) => {

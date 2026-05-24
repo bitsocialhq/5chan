@@ -45,6 +45,8 @@ const renderSettings = async (isElectron = false) => {
 const getStatRows = () =>
   new Map(Array.from(container.querySelectorAll('tr')).map((row) => [row.children.item(0)?.textContent ?? '', row.children.item(1)?.textContent ?? '']));
 
+const getMarkerByTitle = (title: string) => Array.from(container.querySelectorAll('svg rect')).find((rect) => rect.querySelector('title')?.textContent === title);
+
 describe('P2PStatsSettings', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -240,13 +242,12 @@ describe('P2PStatsSettings', () => {
       await Promise.resolve();
     });
 
-    const marker = container.querySelector('svg rect');
+    const marker = getMarkerByTitle('peer-geo - Haarlem, North Holland, NL');
     expect(marker).not.toBeNull();
     expect(marker?.getAttribute('height')).toBe('3');
     expect(marker?.getAttribute('width')).toBe('3');
     expect(Number(marker?.getAttribute('x'))).toBeCloseTo(183.15, 1);
     expect(Number(marker?.getAttribute('y'))).toBeCloseTo(36.11, 1);
-    expect(container.querySelector('svg rect title')?.textContent).toBe('peer-geo - Haarlem, North Holland, NL');
     expect(fetchMock).toHaveBeenCalledWith('https://free.freeipapi.com/api/json/91.234.199.189', expect.objectContaining({ signal: expect.any(AbortSignal) }));
   });
 
@@ -310,14 +311,13 @@ describe('P2PStatsSettings', () => {
 
     const rows = getStatRows();
     const yourIpRow = Array.from(container.querySelectorAll('tr')).find((row) => row.textContent?.includes('Your IP'));
-    const marker = container.querySelector('svg rect');
+    const marker = getMarkerByTitle('Your node - Da Nang, Da Nang City, VN');
     expect(container.textContent).toContain('Leeching');
     expect(rows.get('Your IP')).toContain('117.2.120.113');
     expect(yourIpRow?.querySelector('[role="img"]')?.getAttribute('aria-label')).toBe('Vietnam');
     expect(marker?.getAttribute('data-peer-role')).toBe('leecher');
     expect(Number(marker?.getAttribute('x'))).toBeCloseTo(286.72, 1);
     expect(Number(marker?.getAttribute('y'))).toBeCloseTo(72.43, 1);
-    expect(container.querySelector('svg rect title')?.textContent).toBe('Your node - Da Nang, Da Nang City, VN');
   });
 
   it('reads browser transfer counters from Helia bitswap ledgers', async () => {
@@ -598,6 +598,43 @@ describe('P2PStatsSettings', () => {
     expect(container.querySelector('a[href="https://github.com/bitsocialnet/bitsocial-seeder"]')).toBeNull();
     expect(ownMarker?.getAttribute('data-peer-role')).toBe('seeder');
     expect(leecherMarker?.getAttribute('data-peer-role')).toBe('leecher');
+  });
+
+  it('does not resolve full-node RPC hostnames through external DNS', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    testState.rpcSettings = { state: 'connected' };
+    testState.account = {
+      ...testState.account,
+      pkcOptions: {
+        pkcRpcClientsOptions: ['ws://node.example:9138'],
+      },
+      pkc: {
+        clients: {
+          pkcRpcClients: {
+            'ws://node.example:9138': {
+              getPeers: vi.fn().mockResolvedValue({ peers: [] }),
+              getStats: vi.fn().mockResolvedValue({
+                bandwidth: { TotalIn: 0, TotalOut: 0 },
+                identity: {
+                  ID: 'hostname-rpc-node',
+                },
+              }),
+              state: 'connected',
+            },
+          },
+        },
+      },
+    };
+
+    await renderSettings(false);
+    await act(async () => Promise.resolve());
+
+    const rows = getStatRows();
+    expect(rows.get('Mode')).toBe('Seeding');
+    expect(rows.get('Peer ID')).toBe('hostname-rpc-node');
+    expect(rows.get('Your IP')).toBe('unavailable');
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('renders Electron Kubo stats as seeding with the node location on the map', async () => {
