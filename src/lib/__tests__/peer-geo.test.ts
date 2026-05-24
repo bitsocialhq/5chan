@@ -99,15 +99,34 @@ describe('getFirstPublicIpFromAddresses', () => {
 
 describe('fetchOwnPublicEndpoint', () => {
   it('caches the fetched public endpoint', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
+    const fetchMock = vi.fn(async (url: string | URL | Request) => ({
       ok: true,
-      json: async () => ({ country: 'US', ip: '2001:4860:4860::8888' }),
-    });
+      json: async () =>
+        String(url).startsWith('https://free.freeipapi.com/api/json/')
+          ? {
+              cityName: 'Mountain View',
+              countryCode: 'US',
+              latitude: 37.422,
+              longitude: -122.085,
+              regionName: 'California',
+            }
+          : { country: 'US', ip: '2001:4860:4860::8888' },
+    }));
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(fetchOwnPublicEndpoint()).resolves.toEqual({ countryCode: 'us', ip: '2001:4860:4860::8888' });
-    await expect(fetchOwnPublicEndpoint()).resolves.toEqual({ countryCode: 'us', ip: '2001:4860:4860::8888' });
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await expect(fetchOwnPublicEndpoint()).resolves.toMatchObject({
+      countryCode: 'us',
+      ip: '2001:4860:4860::8888',
+      location: {
+        countryCode: 'us',
+        label: 'Mountain View, California, US',
+        lat: 37.422,
+        lon: -122.085,
+        source: 'geoip',
+      },
+    });
+    await expect(fetchOwnPublicEndpoint()).resolves.toMatchObject({ countryCode: 'us', ip: '2001:4860:4860::8888' });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
 
     vi.unstubAllGlobals();
   });

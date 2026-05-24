@@ -3,6 +3,7 @@ import { useAccount, usePkcRpcSettings } from '@bitsocial/bitsocial-react-hooks'
 import { useTranslation } from 'react-i18next';
 import { getCountryFlagPosition, getCountryLabel, normalizeCountryCode } from '../../../lib/country-flags';
 import {
+  fetchIpMapLocation,
   fetchOwnIpCountryCode,
   fetchOwnPublicEndpoint,
   fetchPeerMapLocation,
@@ -30,13 +31,25 @@ type ConnectedPeerEntry = {
   id: string;
   location?: PeerMapLocation;
   peerId: string;
+  role?: PeerConnectionRole;
   status?: string;
   transport: string;
+};
+
+type PeerConnectionRole = 'leecher' | 'seeder';
+
+type PeerMapEntry = {
+  address: string;
+  id: string;
+  location?: PeerMapLocation;
+  peerId: string;
+  role?: PeerConnectionRole;
 };
 
 type ConnectedPeersStatRow = {
   connectionCount: number;
   entries: ConnectedPeerEntry[];
+  mapEntries?: PeerMapEntry[];
   name: string;
   peerCount: number;
   type: 'connectedPeers';
@@ -473,6 +486,8 @@ const getBrowserMode = (client?: Libp2pClientShape) => {
   return hasSupportedAdd(client) && hasProviderPublishingRouter(client) ? 'Seeding' : 'Leeching';
 };
 
+const getEndpointAddress = (ip: string) => (ip.includes(':') ? `/ip6/${ip}/tcp/0` : `/ip4/${ip}/tcp/0`);
+
 const getTransportLabel = (address: string) => {
   const normalizedAddress = address.toLowerCase();
   let transport = 'Unknown transport';
@@ -549,9 +564,38 @@ const resolveConnectedPeerLocations = async (row: ConnectedPeersStatRow, signal?
 // Falls back to a public-endpoint lookup when libp2p only knows local/private addresses.
 const resolveOwnEndpoint = async (addresses: unknown[], signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
   const ip = getFirstPublicIpFromAddresses(addresses);
-  if (ip) return { countryCode: await fetchOwnIpCountryCode(ip, signal), ip };
+  if (ip) {
+    const [countryCode, location] = await Promise.all([fetchOwnIpCountryCode(ip, signal), fetchIpMapLocation(ip, signal)]);
+    return {
+      countryCode: location?.countryCode ?? countryCode ?? getApproximateCountryCode(getEndpointAddress(ip)),
+      ip,
+      location,
+    };
+  }
   return fetchOwnPublicEndpoint(signal);
 };
+
+const getOwnMapEntry = (endpoint: PublicEndpoint | undefined, mode: string): PeerMapEntry[] => {
+  if (!endpoint?.location) return [];
+  return [
+    {
+      address: getEndpointAddress(endpoint.ip),
+      id: 'self-node-endpoint',
+      location: endpoint.location,
+      peerId: 'Your node',
+      role: mode === 'Leeching' ? 'leecher' : 'seeder',
+    },
+  ];
+};
+
+const getPeerMapEntries = (row: ConnectedPeersStatRow): PeerMapEntry[] =>
+  row.entries.map((entry) => ({
+    address: entry.address,
+    id: entry.id,
+    location: entry.location,
+    peerId: entry.peerId,
+    role: entry.role ?? 'seeder',
+  }));
 
 const getElectronConnectedPeersRow = (peers: unknown): ConnectedPeersStatRow => {
   const peerEntries = isRecord(peers) && Array.isArray(peers.Peers) ? peers.Peers : [];
@@ -595,19 +639,24 @@ const getBrowserLibp2pStats = async (account?: AccountShape, signal?: AbortSigna
     return localAddr ? [localAddr] : [];
   });
   const connectedPeersRow = getBrowserConnectedPeersRow(peers, connections);
+  const mode = getBrowserMode(client);
   const [transferStats, nodeEndpoint, connectedPeers] = await Promise.all([
     getBrowserTransferStats(client, connections),
     resolveOwnEndpoint([...multiaddrs, ...addressManagerAddresses, ...localAddresses], signal),
     resolveConnectedPeerLocations(connectedPeersRow, signal),
   ]);
+  const connectedPeersWithMapEntries = {
+    ...connectedPeers,
+    mapEntries: [...getOwnMapEntry(nodeEndpoint, mode), ...getPeerMapEntries(connectedPeers)],
+  };
 
   return [
-    { name: 'Mode', value: getBrowserMode(client) },
+    { name: 'Mode', value: mode },
     { name: 'Peer ID', value: libp2p?.peerId?.toString() ?? 'unknown' },
     nodeEndpoint ? { countryCode: nodeEndpoint.countryCode, ip: nodeEndpoint.ip, name: 'Your IP', type: 'nodeEndpoint' } : { name: 'Your IP', value: 'unavailable' },
     { name: 'Data received', value: transferStats.downloadedBytes === undefined ? 'unknown' : formatBytes(transferStats.downloadedBytes) },
     { name: 'Data sent', value: transferStats.uploadedBytes === undefined ? 'unknown' : formatBytes(transferStats.uploadedBytes) },
-    connectedPeers,
+    connectedPeersWithMapEntries,
   ];
 };
 
@@ -696,7 +745,7 @@ const ConnectedPeersValue = ({ row }: { row: ConnectedPeersStatRow }) => (
     <summary className={styles.connectedPeersSummary}>
       {row.name}: {formatCount(row.peerCount, 'peer')}, {formatCount(row.connectionCount, 'connection')}
     </summary>
-    <PeerWorldMap peers={row.entries} />
+    <PeerWorldMap peers={row.mapEntries ?? row.entries} />
     <div className={styles.connectedPeerList}>
       {row.entries.length ? (
         row.entries.map((entry) => {

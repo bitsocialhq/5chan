@@ -189,6 +189,10 @@
   fill: #3fb950;
 }
 
+.peerMarker[data-peer-role='leecher'] {
+  fill: red;
+}
+
 .peerWorldMapCaption {
   padding: 1px 4px 2px;
   font-size: 0.8em;

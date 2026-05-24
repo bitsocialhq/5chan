@@ -56,6 +56,25 @@ describe('PeerWorldMap', () => {
     expect(container.querySelector('svg rect title')?.textContent).toBe('peer-1');
   });
 
+  it('marks leecher locations for red map styling', () => {
+    render(
+      createElement(PeerWorldMap, {
+        peers: [
+          {
+            address: '/ip4/117.2.120.113/tcp/4001',
+            id: 'self',
+            location: { countryCode: 'vn', label: 'Da Nang, Da Nang City, VN', lat: 16.0678, lon: 108.221, source: 'geoip' },
+            peerId: 'Your node',
+            role: 'leecher',
+          },
+        ],
+      }),
+    );
+    const marker = container.querySelector('svg rect');
+    expect(marker?.getAttribute('data-peer-role')).toBe('leecher');
+    expect(container.querySelector('svg rect title')?.textContent).toBe('Your node - Da Nang, Da Nang City, VN');
+  });
+
   it('renders nothing when no peer can be placed offline', () => {
     render(createElement(PeerWorldMap, { peers: [{ address: '/ip4/10.0.0.1/tcp/4001', id: 'c1', peerId: 'peer-1' }] }));
     expect(container.querySelector('svg')).toBeNull();

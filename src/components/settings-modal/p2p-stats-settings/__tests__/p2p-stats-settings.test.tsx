@@ -250,6 +250,76 @@ describe('P2PStatsSettings', () => {
     expect(fetchMock).toHaveBeenCalledWith('https://free.freeipapi.com/api/json/91.234.199.189', expect.objectContaining({ signal: expect.any(AbortSignal) }));
   });
 
+  it('shows the own IP flag and a red precise map marker when leeching', async () => {
+    const fetchMock = vi.fn(async (url: string | URL | Request) => {
+      const requestUrl = String(url);
+      if (requestUrl === 'https://api.country.is/117.2.120.113') {
+        return {
+          ok: false,
+          json: async () => ({}),
+        };
+      }
+      if (requestUrl === 'https://free.freeipapi.com/api/json/117.2.120.113') {
+        return {
+          ok: true,
+          json: async () => ({
+            cityName: 'Da Nang',
+            countryCode: 'VN',
+            ipAddress: '117.2.120.113',
+            latitude: 16.0678,
+            longitude: 108.221,
+            regionName: 'Da Nang City',
+          }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({ country: 'US', ip: '147.75.84.175' }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    testState.account = {
+      ...testState.account,
+      pkcOptions: {
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      },
+      pkc: {
+        clients: {
+          libp2pJsClients: {
+            libp2pjs: {
+              key: 'libp2pjs',
+              _helia: {
+                libp2p: {
+                  getConnections: () => [],
+                  getMultiaddrs: () => ['/ip4/117.2.120.113/tcp/4001/ws'],
+                  getPeers: () => [],
+                  peerId: { toString: () => 'self-peer' },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    await renderSettings(false);
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const rows = getStatRows();
+    const yourIpRow = Array.from(container.querySelectorAll('tr')).find((row) => row.textContent?.includes('Your IP'));
+    const marker = container.querySelector('svg rect');
+    expect(container.textContent).toContain('Leeching');
+    expect(rows.get('Your IP')).toContain('117.2.120.113');
+    expect(yourIpRow?.querySelector('[role="img"]')?.getAttribute('aria-label')).toBe('Vietnam');
+    expect(marker?.getAttribute('data-peer-role')).toBe('leecher');
+    expect(Number(marker?.getAttribute('x'))).toBeCloseTo(286.72, 1);
+    expect(Number(marker?.getAttribute('y'))).toBeCloseTo(72.43, 1);
+    expect(container.querySelector('svg rect title')?.textContent).toBe('Your node - Da Nang, Da Nang City, VN');
+  });
+
   it('reads browser transfer counters from Helia bitswap ledgers', async () => {
     testState.account = {
       ...testState.account,

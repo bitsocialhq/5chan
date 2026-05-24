@@ -7,6 +7,7 @@ type MapPeer = {
   id: string;
   location?: PeerMapLocation;
   peerId: string;
+  role?: 'leecher' | 'seeder';
 };
 
 // Square side per land dot, sized to cover most of a grid cell so the rasterized
@@ -37,10 +38,10 @@ const LAND_PATH = (() => {
 })();
 
 const PeerWorldMap = ({ peers }: { peers: MapPeer[] }) => {
-  const plotted: { id: string; label?: string; peerId: string; x: number; y: number }[] = [];
+  const plotted: { id: string; label?: string; peerId: string; role?: 'leecher' | 'seeder'; x: number; y: number }[] = [];
   for (const peer of peers) {
     const location = peer.location ?? getApproximateLatLon(peer.address);
-    if (location) plotted.push({ id: peer.id, label: peer.location?.label, peerId: peer.peerId, x: location.lon + 180, y: 90 - location.lat });
+    if (location) plotted.push({ id: peer.id, label: peer.location?.label, peerId: peer.peerId, role: peer.role, x: location.lon + 180, y: 90 - location.lat });
   }
 
   if (!plotted.length) return null;
@@ -52,6 +53,7 @@ const PeerWorldMap = ({ peers }: { peers: MapPeer[] }) => {
         {plotted.map((peer) => (
           <rect
             className={styles.peerMarker}
+            data-peer-role={peer.role}
             height={PEER_MARKER_SIZE}
             key={peer.id}
             width={PEER_MARKER_SIZE}
