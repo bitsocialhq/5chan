@@ -192,6 +192,16 @@ describe('use-directories', () => {
     expect(findDirectoryByAddress(communities, undefined)).toBeUndefined();
   });
 
+  it('treats the temporary flags test community as a flags board', () => {
+    const directory = findDirectoryByAddress([], '12D3KooWNFgjQWX2EUEs7pixdjkWSLh21EZ9NeYnV8iMaCyYhLGJ');
+
+    expect(directory).toMatchObject({
+      address: '12D3KooWNFgjQWX2EUEs7pixdjkWSLh21EZ9NeYnV8iMaCyYhLGJ',
+      title: 'Flags Test',
+      features: { hasFlags: true },
+    });
+  });
+
   it('hydrates from localStorage first, then refreshes from GitHub with normalized and deduped data', async () => {
     const cachedData: DirectoriesData = {
       title: 'Cached directories',

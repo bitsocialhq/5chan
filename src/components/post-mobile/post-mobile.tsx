@@ -28,6 +28,7 @@ import CommentContent from '../comment-content';
 import CommentMedia, { MediaLoadFailureInfo } from '../comment-media';
 import FailedPublishNotice from '../failed-publish-notice';
 import LoadingEllipsis from '../loading-ellipsis';
+import PostAuthorFlags from '../post-author-flags';
 import PostMenuMobile from './post-menu-mobile';
 import ReplyQuotePreview from '../reply-quote-preview';
 import Tooltip from '../tooltip';
@@ -87,6 +88,8 @@ const PostInfoAndMedia = ({
   const archived = isCommentArchived(resolvedPost);
   const purged = resolvedPost?.commentModeration?.purged;
   const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
+  const directoryEntry = communityAddress ? findDirectoryByAddress(directories, communityAddress) : undefined;
+  const showAuthorFlags = directoryEntry?.features?.hasFlags === true && !(deleted || removed || purged);
   const displayBoardPath =
     boardPath && communityAddress
       ? boardPath !== communityAddress
@@ -348,6 +351,7 @@ const PostInfoAndMedia = ({
                 ){' '}
               </>
             )}
+            <PostAuthorFlags author={author} comment={resolvedPost} enabled={showAuthorFlags} />
             {pinned && (
               <span className={styles.stickyIconWrapper}>
                 <img src='assets/icons/sticky.gif' alt='' className={styles.stickyIcon} title={t('sticky')} />

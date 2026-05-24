@@ -1,0 +1,100 @@
+import { describe, expect, it } from 'vitest';
+import {
+  getCommentFlagChallengeRequestFromSelection,
+  getCommentFlagOptionsForDirectory,
+  getCommentFlagPublishOptionsFromSelection,
+  getCommentFlagRequestFromSelection,
+} from '../comment-flag-selection';
+
+describe('comment-flag-selection', () => {
+  it('does not expose options for boards without flags', () => {
+    expect(getCommentFlagOptionsForDirectory({ features: {}, title: '/mu/ - Music' })).toEqual([]);
+  });
+
+  it('uses geographic location as the default for country flag boards', () => {
+    expect(
+      getCommentFlagOptionsForDirectory({
+        directoryCode: 'int',
+        features: { hasFlags: true },
+        title: '/int/ - International',
+      }),
+    ).toEqual([{ label: 'Geographic Location', value: 'country:auto' }]);
+  });
+
+  it('matches the 4chan /pol/ flag order', () => {
+    const options = getCommentFlagOptionsForDirectory({
+      directoryCode: 'pol',
+      features: { hasFlags: true },
+      title: '/pol/ - Politically Incorrect',
+    });
+
+    expect(options.slice(0, 6)).toEqual([
+      { label: 'Geographic Location', value: 'country:auto' },
+      { label: 'Anarcho-Capitalist', value: 'pol:AC' },
+      { label: 'Anarchist', value: 'pol:AN' },
+      { label: 'Black Nationalist', value: 'pol:BL' },
+      { label: 'Confederate', value: 'pol:CF' },
+      { label: 'Communist', value: 'pol:CM' },
+    ]);
+  });
+
+  it('matches the 4chan /mlp/ flag default', () => {
+    const options = getCommentFlagOptionsForDirectory({
+      directoryCode: 'mlp',
+      features: { hasFlags: true },
+      title: '/mlp/ - Pony',
+    });
+
+    expect(options.slice(0, 4)).toEqual([
+      { label: 'None', value: 'none' },
+      { label: '4cc /mlp/', value: 'pony:4CC' },
+      { label: 'Adagio Dazzle', value: 'pony:ADA' },
+      { label: 'Anon', value: 'pony:AN' },
+    ]);
+  });
+
+  it('serializes selected flags as challenge-readable flag requests', () => {
+    expect(getCommentFlagRequestFromSelection('country:auto')).toEqual({
+      type: 'country',
+      code: 'auto',
+      text: 'flag:country:auto',
+    });
+    expect(getCommentFlagRequestFromSelection('pol:AC')).toEqual({
+      type: 'pol',
+      code: 'AC',
+      text: 'flag:pol:AC',
+    });
+    expect(getCommentFlagRequestFromSelection('pony:AJ')).toEqual({
+      type: 'pony',
+      code: 'AJ',
+      text: 'flag:pony:AJ',
+    });
+    expect(getCommentFlagRequestFromSelection('none')).toBeUndefined();
+  });
+
+  it('wraps selected flags in the challenge answer namespace', () => {
+    expect(getCommentFlagChallengeRequestFromSelection('country:auto')).toEqual({
+      challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+    });
+    expect(getCommentFlagChallengeRequestFromSelection('pony:AJ')).toEqual({
+      challengeAnswers: ['bitsocial-flags:5chan:flag:pony:AJ'],
+    });
+    expect(getCommentFlagChallengeRequestFromSelection('none')).toBeUndefined();
+  });
+
+  it('publishes selected flags as signed comment flairs and challenge answers', () => {
+    expect(getCommentFlagPublishOptionsFromSelection('country:auto')).toEqual({
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+      },
+      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+    });
+    expect(getCommentFlagPublishOptionsFromSelection('pony:AJ')).toEqual({
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:pony:AJ'],
+      },
+      flairs: [{ type: 'pony', code: 'AJ', text: 'flag:pony:AJ' }],
+    });
+    expect(getCommentFlagPublishOptionsFromSelection('none')).toBeUndefined();
+  });
+});
