@@ -684,6 +684,34 @@ describe('Board', () => {
     );
   });
 
+  it('does not show no threads while an empty all feed is still loading', async () => {
+    testState.feedState = 'initializing';
+    testState.feedStateString = 'Downloading 1 board (music-posting.eth)';
+    testState.hasMore = true;
+
+    await renderBoard({
+      boardProps: { viewType: 'all' },
+      initialEntry: '/all',
+      routePath: '/all/*',
+    });
+
+    expect(container.textContent).not.toContain('no_threads');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('Downloading 1 board (music-posting.eth)');
+  });
+
+  it('shows no threads after an empty all feed finishes loading', async () => {
+    testState.feedStateString = undefined;
+
+    await renderBoard({
+      boardProps: { viewType: 'all' },
+      initialEntry: '/all',
+      routePath: '/all/*',
+    });
+
+    expect(container.textContent).toContain('no_threads');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+  });
+
   it('shows a wider multiboard time-filter suggestion when older threads exist', async () => {
     const now = Math.floor(Date.now() / 1000);
     localStorage.setItem(LAST_VISIT_STORAGE_KEY, String((now - 3 * 24 * 60 * 60) * 1000));

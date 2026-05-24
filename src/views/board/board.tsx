@@ -92,8 +92,11 @@ const BoardFooter = ({
 
   const loadingStateString = useFeedStateString(communityAddresses) || (combinedFeedLength === 0 ? t('downloading_board') : t('looking_for_more_posts'));
   const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
-  const canShowNoThreads = !isSingleCommunityBoard || (isLoadedCommunityState && feedState === 'succeeded');
-  const isEmptyBoardLoading = isSingleCommunityBoard && combinedFeedLength === 0 && !canShowNoThreads && communityState !== 'failed';
+  const isFeedSucceeded = feedState === 'succeeded';
+  const isFeedFailed = feedState === 'failed';
+  const canShowNoThreads = isSingleCommunityBoard ? isLoadedCommunityState && isFeedSucceeded : isFeedSucceeded && !hasMore;
+  const isEmptyFeedLoading = combinedFeedLength === 0 && !canShowNoThreads && (isSingleCommunityBoard ? communityState !== 'failed' : !isFeedFailed);
+  const showFooterLoading = showLoadingEllipsis && (hasMore || isEmptyFeedLoading);
 
   let footerContent;
   if (moreThreadsSuggestion && moreThreadsSuggestionPathname) {
@@ -140,7 +143,7 @@ const BoardFooter = ({
         ) : isInModView && accountCommunityAddressesLength === 0 ? (
           <ModEmptyState />
         ) : (
-          showLoadingEllipsis && (hasMore || isEmptyBoardLoading) && <LoadingEllipsis string={loadingStateString} />
+          showFooterLoading && <LoadingEllipsis string={loadingStateString} />
         )}
       </div>
     </div>

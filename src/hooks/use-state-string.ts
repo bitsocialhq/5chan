@@ -67,6 +67,8 @@ const sanitizeSingleFeedLoadingState = (stateString?: string): string | undefine
   }
 
   return stateString
+    .replace(/\bInitializing\b/g, 'Loading board')
+    .replace(/\binitializing\b/g, 'loading board')
     .replace(/\bDownloading thread\b/g, 'Downloading board')
     .replace(/\bdownloading thread\b/g, 'downloading board')
     .replace(/\bLoading thread\b/g, 'Loading board')
@@ -134,7 +136,8 @@ export const useFeedStateString = (communityAddresses?: string[]): string | unde
   const communityAddress = communityAddresses?.length === 1 ? communityAddresses[0] : undefined;
   const communityIdentifier = communityAddress ? communities[0] : undefined;
   const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
-  const singleCommunityFeedStateString = sanitizeSingleFeedLoadingState(useStateString(community));
+  const rawSingleCommunityFeedStateString = useStateString(communityAddress ? community : undefined);
+  const singleCommunityFeedStateString = communityAddress ? sanitizeSingleFeedLoadingState(rawSingleCommunityFeedStateString) : undefined;
 
   // multiple community feed state string
   const { states } = useCommunitiesStates({ communities });

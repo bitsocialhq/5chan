@@ -172,6 +172,30 @@ describe('use-state-string', () => {
     expect(latestValue).toBe('Downloading board via IPFS');
   });
 
+  it('formats single-board initializing feed states as board loading copy', () => {
+    testState.community = {
+      state: 'initializing',
+    };
+
+    act(() => {
+      root.render(createElement(FeedStateStringHarness, { addresses: ['music-posting.eth'] }));
+    });
+
+    expect(latestValue).toBe('Loading board');
+  });
+
+  it('keeps multi-board feeds on multi-board loading copy while the single community hook initializes', () => {
+    testState.community = {
+      state: 'initializing',
+    };
+
+    act(() => {
+      root.render(createElement(FeedStateStringHarness, { addresses: ['music-posting.eth', 'tech-posting.eth'] }));
+    });
+
+    expect(latestValue).toBe('Downloading 2 boards (music-posting.eth, tech-posting.eth)');
+  });
+
   it('aggregates multi-board feed states across address resolution, threads, and pages', () => {
     testState.communitiesStates = {
       'fetching-ipfs': {
