@@ -1,7 +1,7 @@
 import { readdirSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -59,7 +59,7 @@ writeFileSync(outputPath, output, 'utf8');
 
 // Format with oxfmt so output matches committed (formatted) version
 try {
-  execSync(`npx oxfmt ${outputPath}`, { stdio: 'ignore' });
+  execFileSync('npx', ['oxfmt', outputPath], { stdio: 'ignore' });
 } catch {
   // oxfmt not available (e.g. CI without devDependencies), skip formatting
 }
