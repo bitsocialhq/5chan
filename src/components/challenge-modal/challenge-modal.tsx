@@ -373,19 +373,41 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
     closeModal();
   };
 
+  const completeCurrentChallenge = useCallback(
+    (challengeAnswers: string[]) => {
+      if (!publication) return;
+      const resolvedAnswers = challengeAnswers.length ? challengeAnswers : [''];
+      const updatedAnswers = [...answers];
+      resolvedAnswers.forEach((answer, index) => {
+        updatedAnswers[currentChallengeIndex + index] = answer;
+      });
+
+      const nextChallengeIndex = currentChallengeIndex + resolvedAnswers.length;
+      if (challenges?.[nextChallengeIndex]) {
+        setAnswers(updatedAnswers);
+        setCurrentChallengeIndex(nextChallengeIndex);
+        setReadyIframeChallengeKey('');
+        return;
+      }
+
+      publication.publishChallengeAnswers(updatedAnswers);
+      setAnswers([]);
+      closeModal();
+    },
+    [answers, challenges, closeModal, currentChallengeIndex, publication],
+  );
+
   const onIframeDone = useCallback(() => {
     if (!publication) return;
-    publication.publishChallengeAnswers(['']);
-    closeModal();
-  }, [closeModal, publication]);
+    completeCurrentChallenge(['']);
+  }, [completeCurrentChallenge, publication]);
 
   const onIframeAutoComplete = useCallback(
     (challengeAnswers: string[]) => {
       if (!publication) return;
-      publication.publishChallengeAnswers(challengeAnswers);
-      closeModal();
+      completeCurrentChallenge(challengeAnswers);
     },
-    [closeModal, publication],
+    [completeCurrentChallenge, publication],
   );
 
   const onIframeReady = useCallback(() => {

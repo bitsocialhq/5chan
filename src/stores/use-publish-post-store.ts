@@ -11,7 +11,9 @@ type SubmitState = {
   title: string | undefined;
   content: string | undefined;
   link: string | undefined;
+  flairs: Comment['flairs'] | undefined;
   spoiler: boolean | undefined;
+  challengeRequest: Record<string, unknown> | undefined;
   publishCommentOptions: PublishCommentOptions;
   setPublishPostStore: (data: Partial<SubmitState>) => void;
   resetPublishPostStore: () => void;
@@ -24,11 +26,13 @@ const usePublishPostStore = create<SubmitState>((set) => ({
   title: undefined,
   content: undefined,
   link: undefined,
+  flairs: undefined,
   spoiler: undefined,
+  challengeRequest: undefined,
   publishCommentOptions: {},
   setPublishPostStore: (comment: Comment) =>
     set(() => {
-      const { author, content, spoiler, title } = comment;
+      const { author, challengeRequest, content, flairs, spoiler, title } = comment;
       const link = comment.link ? normalizePublishURL(comment.link) : undefined;
       const communityAddress = getCommentCommunityAddress(comment);
 
@@ -44,7 +48,9 @@ const usePublishPostStore = create<SubmitState>((set) => ({
         title,
         content,
         link,
+        flairs,
         spoiler,
+        ...(challengeRequest ? { challengeRequest } : {}),
         onChallengeVerification: (challengeVerification: ChallengeVerification, comment: Comment) => {
           alertChallengeVerificationFailed(challengeVerification, comment);
         },
@@ -65,7 +71,9 @@ const usePublishPostStore = create<SubmitState>((set) => ({
         title,
         content,
         link,
+        flairs,
         spoiler,
+        challengeRequest,
         publishCommentOptions,
       };
     }),
@@ -77,7 +85,9 @@ const usePublishPostStore = create<SubmitState>((set) => ({
       title: undefined,
       content: undefined,
       link: undefined,
+      flairs: undefined,
       spoiler: undefined,
+      challengeRequest: undefined,
       publishCommentOptions: {},
     }),
 }));

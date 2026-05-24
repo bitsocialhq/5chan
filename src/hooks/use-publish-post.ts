@@ -10,12 +10,13 @@ type UsePublishPostOptions = {
 };
 
 const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
-  const { author, title, content, link, spoiler, publishCommentOptions } = usePublishPostStore(
+  const { author, title, content, link, flairs, spoiler, publishCommentOptions } = usePublishPostStore(
     useShallow((state) => ({
       author: state.author,
       title: state.title || undefined,
       content: state.content || undefined,
       link: state.link || undefined,
+      flairs: state.flairs,
       spoiler: state.spoiler || false,
       publishCommentOptions: state.publishCommentOptions,
     })),
@@ -39,7 +40,9 @@ const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
       title,
       content,
       link,
+      flairs,
       spoiler,
+      ...(publishCommentOptions.challengeRequest ? { challengeRequest: publishCommentOptions.challengeRequest } : {}),
     };
 
     const displayName = author?.displayName;
@@ -48,7 +51,7 @@ const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
     }
 
     return baseOptions;
-  }, [author, content, link, spoiler, communityAddress, title]);
+  }, [author, content, flairs, link, spoiler, communityAddress, title, publishCommentOptions.challengeRequest]);
 
   const setPublishPostOptions = useCallback(
     (options: Partial<Comment>) => {
@@ -90,7 +93,7 @@ const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
 
   useEffect(() => {
     setPublishPostError(null);
-  }, [author?.displayName, blockedReason, communityAddress, content, link, spoiler, title]);
+  }, [author?.displayName, blockedReason, communityAddress, content, flairs, link, spoiler, title]);
 
   const startPublishPost = useCallback(() => {
     if (blockedReason) {

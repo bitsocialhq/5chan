@@ -18,7 +18,7 @@ const testState = vi.hoisted(() => ({
       features: {},
       title: '/mu/ - Music',
     },
-  } as Record<string, { address: string; features?: Record<string, unknown>; title?: string }>,
+  } as Record<string, { address: string; directoryCode?: string; features?: Record<string, unknown>; title?: string }>,
   handleUploadMock: vi.fn(),
   isMobile: false,
   isResolvingExternalQuotes: false,
@@ -322,6 +322,12 @@ describe('ReplyModal', () => {
         features: {},
         title: '/mu/ - Music',
       },
+      'politically-incorrect.bso': {
+        address: 'politically-incorrect.bso',
+        directoryCode: 'pol',
+        features: { hasFlags: true },
+        title: '/pol/ - Politically Incorrect',
+      },
       'random-nsfw.bso': {
         address: 'random-nsfw.bso',
         features: {},
@@ -422,6 +428,52 @@ describe('ReplyModal', () => {
     expect(container.textContent).toContain('posts_last_synced_info:{"time":"ago:1000"}');
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: '>>42\nselected text' });
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ displayName: 'Alice' });
+  });
+
+  it('shows a flag selector on flag boards and publishes the default geographic request', async () => {
+    await renderReplyModal('/pol/thread/post-1', 'politically-incorrect.bso');
+
+    const flagSelect = container.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
+
+    expect(flagSelect).toBeTruthy();
+    expect(flagSelect?.value).toBe('country:auto');
+    expect(
+      Array.from(flagSelect?.options || [])
+        .slice(0, 3)
+        .map((option) => option.textContent),
+    ).toEqual(['Geographic Location', 'Anarcho-Capitalist', 'Anarchist']);
+
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: '>>42\nselected text',
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+      },
+      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+    });
+  });
+
+  it('publishes selected political flags from the reply modal', async () => {
+    await renderReplyModal('/pol/thread/post-1', 'politically-incorrect.bso');
+
+    const flagSelect = container.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
+    await dispatchInput(container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement, 'reply body');
+    await act(async () => {
+      if (flagSelect) {
+        flagSelect.value = 'pol:AC';
+        flagSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: 'reply body',
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:pol:AC'],
+      },
+      flairs: [{ type: 'pol', code: 'AC', text: 'flag:pol:AC' }],
+    });
   });
 
   it('uses the shared loading ellipsis while a reply upload is running', async () => {

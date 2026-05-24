@@ -391,5 +391,6 @@
   "modQueue.dismiss": "Ohita",
   "board_address_unverified_warning": "Tätä laudan osoitetta ei ole vahvistettu. Laudan omistaja ei välttämättä omista tätä osoitetta.",
   "go_to_settings_to_import_mod_account": "Siirry <1>asetuksiin</1> tuodaksesi moderaattoritilisi",
-  "post_form_rules_faq_prompt": "Lue <rules>Säännöt</rules> ja <faq>UKK</faq> ennen julkaisemista."
+  "post_form_rules_faq_prompt": "Lue <rules>Säännöt</rules> ja <faq>UKK</faq> ennen julkaisemista.",
+  "flag": "Lippu"
 }

@@ -20,7 +20,7 @@ const testState = vi.hoisted(() => ({
   directories: [
     { address: 'music-posting.eth', features: {}, title: '/mu/ - Music' },
     { address: 'mod.eth', features: {}, title: '/mod/ - Moderation' },
-  ] as Array<{ address: string; features?: Record<string, unknown>; title?: string }>,
+  ] as Array<{ address: string; directoryCode?: string; features?: Record<string, unknown>; title?: string }>,
   editedComment: undefined as { commentModeration?: { archived?: boolean }; deleted?: boolean; locked?: boolean; postCid?: string; removed?: boolean } | undefined,
   gifFrameStatus: 'idle' as 'idle' | 'ready',
   handleUploadMock: vi.fn(),
@@ -426,6 +426,7 @@ describe('PostForm', () => {
     testState.comments = {};
     testState.directories = [
       { address: 'music-posting.eth', features: {}, title: '/mu/ - Music' },
+      { address: 'politically-incorrect.bso', directoryCode: 'pol', features: { hasFlags: true }, title: '/pol/ - Politically Incorrect' },
       { address: 'random-nsfw.bso', features: {}, title: '/b/ - Random' },
       { address: 'silly-stuff.bso', features: {}, title: '/s5s/ - Silly Stuff' },
       { address: 'traditional-games.bso', features: {}, title: '/tg/ - Traditional Games' },
@@ -604,6 +605,59 @@ describe('PostForm', () => {
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.publishedPostOptions?.link).toBe('https://example.com/fresh.png');
     expect(testState.publishedPostOptions?.content).toBeUndefined();
+  });
+
+  it('shows a 4chan-style flag field on flag boards and publishes the default geographic request', async () => {
+    testState.resolvedCommunityAddress = 'politically-incorrect.bso';
+
+    await renderPostForm('/pol');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const flagSelect = table?.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+
+    expect(flagSelect).toBeTruthy();
+    expect(flagSelect?.value).toBe('country:auto');
+    expect(
+      Array.from(flagSelect?.options || [])
+        .slice(0, 4)
+        .map((option) => option.textContent),
+    ).toEqual(['Geographic Location', 'Anarcho-Capitalist', 'Anarchist', 'Black Nationalist']);
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'flagged post');
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith({
+      content: 'flagged post',
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+      },
+      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+    });
+  });
+
+  it('publishes selected political flags from the post form', async () => {
+    testState.resolvedCommunityAddress = 'politically-incorrect.bso';
+
+    await renderPostForm('/pol');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const flagSelect = table?.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchChange(flagSelect as HTMLSelectElement, 'pol:AC');
+    await dispatchInput(textarea as HTMLTextAreaElement, 'memeflag post');
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith({
+      content: 'memeflag post',
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:pol:AC'],
+      },
+      flairs: [{ type: 'pol', code: 'AC', text: 'flag:pol:AC' }],
+    });
   });
 
   it('validates unsupported options and stores fortune output in post content', async () => {

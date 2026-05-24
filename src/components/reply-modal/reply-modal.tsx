@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { getExpiringMediaLinkAlert } from '../../lib/utils/media-link-validation-utils';
+import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsFromSelection } from '../../lib/comment-flag-selection';
 import {
   type DiceRoll,
   type FortuneEntry,
@@ -61,6 +62,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
+  const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
   const { isResolvingExternalQuotes, publishReply, publishReplyError, publishReplyStateMessage, resetPublishReplyOptions, replyIndex, setPublishReplyOptions } =
     usePublishReply({
       cid: parentCid,
@@ -86,6 +88,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   });
   const urlRef = useRef<HTMLInputElement>(null);
   const optionsRef = useRef<HTMLInputElement>(null);
+  const flagRef = useRef<HTMLSelectElement>(null);
   const fortuneEntryRef = useRef<FortuneEntry | null>(null);
   const diceRollRef = useRef<DiceRoll | null>(null);
   const nonokoRedirectPathRef = useRef<string | null>(null);
@@ -163,9 +166,11 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       return;
     }
 
+    const flagPublishOptions = getCommentFlagPublishOptionsFromSelection(flagRef.current?.value);
+
     setError(null);
     nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
-    publishReply({ content: publishContent });
+    publishReply({ content: publishContent, ...flagPublishOptions });
   };
 
   useEffect(() => {
@@ -512,6 +517,17 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             }}
           />
         </div>
+        {flagOptions.length > 0 && (
+          <div>
+            <select key={flagOptions.map((option) => option.value).join('|')} aria-label={t('flag')} ref={flagRef} defaultValue={flagOptions[0]?.value}>
+              {flagOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className={styles.link}>
           <input
             type='text'

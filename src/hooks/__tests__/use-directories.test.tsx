@@ -189,6 +189,7 @@ describe('use-directories', () => {
     expect(findDirectoryByAddress(communities, 'music-posting.bso')?.address).toBe('music-posting.bso');
     expect(findDirectoryByAddress(communities, 'music-posting.eth')?.address).toBe('music-posting.bso');
     expect(findDirectoryByAddress(communities, '12D3KooWQdQ6TkVA1Xe9zzaFP6vXBgsLeMAewpLpLwbsAYKivnQy')?.address).toBe('music-posting.bso');
+    expect(findDirectoryByAddress([], '12D3KooWNFgjQWX2EUEs7pixdjkWSLh21EZ9NeYnV8iMaCyYhLGJ')).toBeUndefined();
     expect(findDirectoryByAddress(communities, undefined)).toBeUndefined();
   });
 

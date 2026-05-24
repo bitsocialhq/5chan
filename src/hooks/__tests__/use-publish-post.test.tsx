@@ -155,4 +155,30 @@ describe('usePublishPost', () => {
     expect(testState.lastPublishOptions?.content).toBe('Fresh body');
     expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
   });
+
+  it('clears stale flag data from one-shot publish options', async () => {
+    await act(async () => {
+      latestValue.setPublishPostOptions({
+        content: 'Flag body',
+        challengeRequest: {
+          challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+        },
+        flairs: [{ text: 'flag:country:auto', type: 'country', code: 'auto' }],
+      } as never);
+    });
+
+    await act(async () => {
+      latestValue.publishPost({
+        content: 'Plain body',
+        challengeRequest: undefined,
+        flairs: undefined,
+      } as never);
+      await Promise.resolve();
+    });
+
+    expect(testState.lastPublishOptions?.content).toBe('Plain body');
+    expect(testState.lastPublishOptions?.challengeRequest).toBeUndefined();
+    expect(testState.lastPublishOptions?.flairs).toBeUndefined();
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+  });
 });

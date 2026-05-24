@@ -43,6 +43,10 @@ describe('publish stores', () => {
       spoiler: true,
       communityAddress: 'music-posting.eth',
       title: 'Hello',
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+      },
+      flairs: [{ text: 'flag:country:auto', type: 'country', code: 'auto' }],
     };
 
     usePublishPostStore.getState().setPublishPostStore(comment);
@@ -53,6 +57,10 @@ describe('publish stores', () => {
     expect(state.publishCommentOptions.author).toEqual({ address: '0x123', role: 'mod', displayName: 'Poster Alias' });
     expect(state.publishCommentOptions.communityAddress).toBe('music-posting.eth');
     expect(state.publishCommentOptions.title).toBe('Hello');
+    expect(state.publishCommentOptions.challengeRequest).toEqual({
+      challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+    });
+    expect(state.publishCommentOptions.flairs).toEqual([{ text: 'flag:country:auto', type: 'country', code: 'auto' }]);
 
     state.publishCommentOptions.onChallengeVerification?.({} as never, comment);
     expect(testState.alertChallengeVerificationFailedMock).toHaveBeenCalledWith({}, comment);
@@ -88,6 +96,10 @@ describe('publish stores', () => {
       parentCid: 'parent-1',
       spoiler: false,
       communityAddress: 'music-posting.eth',
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:pol:AC'],
+      },
+      flairs: [{ text: 'flag:pol:AC', type: 'pol', code: 'AC' }],
     };
 
     usePublishReplyStore.getState().setPublishReplyStore(comment);
@@ -98,6 +110,10 @@ describe('publish stores', () => {
     expect(state.publishCommentOptions['parent-1']?.communityAddress).toBe('music-posting.eth');
     expect(state.publishCommentOptions['parent-1']?.parentCid).toBe('parent-1');
     expect(state.publishCommentOptions['parent-1']?.postCid).toBe('parent-1');
+    expect(state.publishCommentOptions['parent-1']?.challengeRequest).toEqual({
+      challengeAnswers: ['bitsocial-flags:5chan:flag:pol:AC'],
+    });
+    expect(state.publishCommentOptions['parent-1']?.flairs).toEqual([{ text: 'flag:pol:AC', type: 'pol', code: 'AC' }]);
 
     state.publishCommentOptions['parent-1']?.onChallengeVerification?.({ token: 'challenge' } as never, comment);
     expect(testState.alertChallengeVerificationFailedMock).toHaveBeenCalledWith({ token: 'challenge' }, comment);

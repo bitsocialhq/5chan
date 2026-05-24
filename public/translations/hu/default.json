@@ -391,5 +391,6 @@
   "modQueue.dismiss": "Mellőzés",
   "board_address_unverified_warning": "Ez a board-cím nincs ellenőrizve. Lehet, hogy a board tulajdonosa nem birtokolja ezt a címet.",
   "go_to_settings_to_import_mod_account": "Lépj a <1>beállítások</1> menübe a moderátori fiókod importálásához",
-  "post_form_rules_faq_prompt": "Kérjük, olvasd el a <rules>Szabályokat</rules> és a <faq>GYIK</faq>-et posztolás előtt."
+  "post_form_rules_faq_prompt": "Kérjük, olvasd el a <rules>Szabályokat</rules> és a <faq>GYIK</faq>-et posztolás előtt.",
+  "flag": "Zászló"
 }
