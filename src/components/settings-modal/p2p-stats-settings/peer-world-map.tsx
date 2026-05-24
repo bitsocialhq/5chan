@@ -1,16 +1,19 @@
 import { WORLD_MAP_DOTS } from '../../../data/world-map-dots';
-import { getApproximateLatLon } from '../../../lib/peer-geo';
+import { getApproximateLatLon, type PeerMapLocation } from '../../../lib/peer-geo';
 import styles from './p2p-stats-settings.module.css';
 
 type MapPeer = {
   address: string;
   id: string;
+  location?: PeerMapLocation;
   peerId: string;
 };
 
 // Square side per land dot, sized to cover most of a grid cell so the rasterized
 // Natural Earth land mask (src/data/world-map-dots.ts) reads as a halftone map.
 const DOT_SIZE = WORLD_MAP_DOTS.step * 0.6;
+const PEER_MARKER_SIZE = 3;
+const PEER_MARKER_OFFSET = PEER_MARKER_SIZE / 2;
 
 // Equirectangular projection shared with the peer markers below: x = lon + 180,
 // y = 90 - lat. Expand the land bitmap into one <path> of small squares so the
@@ -34,10 +37,10 @@ const LAND_PATH = (() => {
 })();
 
 const PeerWorldMap = ({ peers }: { peers: MapPeer[] }) => {
-  const plotted: { id: string; peerId: string; x: number; y: number }[] = [];
+  const plotted: { id: string; label?: string; peerId: string; x: number; y: number }[] = [];
   for (const peer of peers) {
-    const location = getApproximateLatLon(peer.address);
-    if (location) plotted.push({ id: peer.id, peerId: peer.peerId, x: location.lon + 180, y: 90 - location.lat });
+    const location = peer.location ?? getApproximateLatLon(peer.address);
+    if (location) plotted.push({ id: peer.id, label: peer.location?.label, peerId: peer.peerId, x: location.lon + 180, y: 90 - location.lat });
   }
 
   if (!plotted.length) return null;
@@ -47,12 +50,19 @@ const PeerWorldMap = ({ peers }: { peers: MapPeer[] }) => {
       <svg className={styles.peerWorldMapSvg} viewBox='0 8 360 140' shapeRendering='crispEdges' role='img' aria-label='Approximate peer locations'>
         <path className={styles.landDot} d={LAND_PATH} />
         {plotted.map((peer) => (
-          <rect className={styles.peerMarker} height={4.5} key={peer.id} width={4.5} x={peer.x - 2.25} y={peer.y - 2.25}>
-            <title>{peer.peerId}</title>
+          <rect
+            className={styles.peerMarker}
+            height={PEER_MARKER_SIZE}
+            key={peer.id}
+            width={PEER_MARKER_SIZE}
+            x={peer.x - PEER_MARKER_OFFSET}
+            y={peer.y - PEER_MARKER_OFFSET}
+          >
+            <title>{peer.label ? `${peer.peerId} - ${peer.label}` : peer.peerId}</title>
           </rect>
         ))}
       </svg>
-      <div className={styles.peerWorldMapCaption}>approximate locations</div>
+      <div className={styles.peerWorldMapCaption}>approximate IP locations</div>
     </div>
   );
 };

@@ -183,6 +183,73 @@ describe('P2PStatsSettings', () => {
     expect(container.textContent).not.toContain('topic subscribers');
   });
 
+  it('places peer map markers from city-level IP locations', async () => {
+    const fetchMock = vi.fn(async (url: string | URL | Request) => {
+      const requestUrl = String(url);
+      if (requestUrl === 'https://free.freeipapi.com/api/json/91.234.199.189') {
+        return {
+          ok: true,
+          json: async () => ({
+            cityName: 'Haarlem',
+            countryCode: 'NL',
+            ipAddress: '91.234.199.189',
+            latitude: 52.3874,
+            longitude: 4.64622,
+            regionName: 'North Holland',
+          }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({ country: 'US', ip: '147.75.84.175' }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    testState.account = {
+      ...testState.account,
+      pkcOptions: {
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      },
+      pkc: {
+        clients: {
+          libp2pJsClients: {
+            libp2pjs: {
+              key: 'libp2pjs',
+              _helia: {
+                libp2p: {
+                  getConnections: () => [
+                    {
+                      remoteAddr: { toString: () => '/ip4/91.234.199.189/tcp/4001/ws/p2p/peer-geo' },
+                      remotePeer: { toString: () => 'peer-geo' },
+                    },
+                  ],
+                  getMultiaddrs: () => ['/ip4/147.75.84.175/tcp/4001/ws'],
+                  getPeers: () => ['peer-geo'],
+                  peerId: { toString: () => 'self-peer' },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    await renderSettings(false);
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const marker = container.querySelector('svg rect');
+    expect(marker).not.toBeNull();
+    expect(marker?.getAttribute('height')).toBe('3');
+    expect(marker?.getAttribute('width')).toBe('3');
+    expect(Number(marker?.getAttribute('x'))).toBeCloseTo(183.15, 1);
+    expect(Number(marker?.getAttribute('y'))).toBeCloseTo(36.11, 1);
+    expect(container.querySelector('svg rect title')?.textContent).toBe('peer-geo - Haarlem, North Holland, NL');
+    expect(fetchMock).toHaveBeenCalledWith('https://free.freeipapi.com/api/json/91.234.199.189', expect.objectContaining({ signal: expect.any(AbortSignal) }));
+  });
+
   it('reads browser transfer counters from Helia bitswap ledgers', async () => {
     testState.account = {
       ...testState.account,

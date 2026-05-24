@@ -2,7 +2,15 @@ import { Fragment, memo, useEffect, useReducer } from 'react';
 import { useAccount, usePkcRpcSettings } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
 import { getCountryFlagPosition, getCountryLabel, normalizeCountryCode } from '../../../lib/country-flags';
-import { fetchOwnIpCountryCode, fetchOwnPublicEndpoint, getApproximateCountryCode, getFirstPublicIpFromAddresses, type PublicEndpoint } from '../../../lib/peer-geo';
+import {
+  fetchOwnIpCountryCode,
+  fetchOwnPublicEndpoint,
+  fetchPeerMapLocation,
+  getApproximateCountryCode,
+  getFirstPublicIpFromAddresses,
+  type PeerMapLocation,
+  type PublicEndpoint,
+} from '../../../lib/peer-geo';
 import { getP2PRuntimeMode, type P2PRuntimeMode } from '../../../lib/p2p-runtime';
 import PeerWorldMap from './peer-world-map';
 import styles from './p2p-stats-settings.module.css';
@@ -17,8 +25,10 @@ type TextStatRow = {
 
 type ConnectedPeerEntry = {
   address: string;
+  countryCode?: string;
   direction?: string;
   id: string;
+  location?: PeerMapLocation;
   peerId: string;
   status?: string;
   transport: string;
@@ -511,6 +521,28 @@ const getBrowserConnectedPeersRow = (peers: unknown[], connections: unknown[]): 
   };
 };
 
+const resolveConnectedPeerLocations = async (row: ConnectedPeersStatRow, signal?: AbortSignal): Promise<ConnectedPeersStatRow> => {
+  if (!row.entries.length) return row;
+  const lookups = new Map<string, Promise<PeerMapLocation | undefined>>();
+  const entries = await Promise.all(
+    row.entries.map(async (entry) => {
+      let lookup = lookups.get(entry.address);
+      if (!lookup) {
+        lookup = fetchPeerMapLocation(entry.address, signal);
+        lookups.set(entry.address, lookup);
+      }
+      const location = await lookup;
+      if (!location) return entry;
+      return {
+        ...entry,
+        countryCode: location.countryCode ?? entry.countryCode,
+        location,
+      };
+    }),
+  );
+  return { ...row, entries };
+};
+
 // Resolves the "Your IP" row from the node's own observed addresses. The shown IP
 // is geolocated accurately (it is the user's own address, never a peer's) so the
 // flag matches it, instead of the coarse continent guess used for connected peers.
@@ -558,12 +590,16 @@ const getBrowserLibp2pStats = async (account?: AccountShape, signal?: AbortSigna
     getSafeArray(() => libp2p?.getMultiaddrs?.()),
     getAddressManagerAddresses(libp2p),
   ]);
-  const transferStats = await getBrowserTransferStats(client, connections);
   const localAddresses = connections.flatMap((connection) => {
     const localAddr = isRecord(connection) ? connection.localAddr : undefined;
     return localAddr ? [localAddr] : [];
   });
-  const nodeEndpoint = await resolveOwnEndpoint([...multiaddrs, ...addressManagerAddresses, ...localAddresses], signal);
+  const connectedPeersRow = getBrowserConnectedPeersRow(peers, connections);
+  const [transferStats, nodeEndpoint, connectedPeers] = await Promise.all([
+    getBrowserTransferStats(client, connections),
+    resolveOwnEndpoint([...multiaddrs, ...addressManagerAddresses, ...localAddresses], signal),
+    resolveConnectedPeerLocations(connectedPeersRow, signal),
+  ]);
 
   return [
     { name: 'Mode', value: getBrowserMode(client) },
@@ -571,7 +607,7 @@ const getBrowserLibp2pStats = async (account?: AccountShape, signal?: AbortSigna
     nodeEndpoint ? { countryCode: nodeEndpoint.countryCode, ip: nodeEndpoint.ip, name: 'Your IP', type: 'nodeEndpoint' } : { name: 'Your IP', value: 'unavailable' },
     { name: 'Data received', value: transferStats.downloadedBytes === undefined ? 'unknown' : formatBytes(transferStats.downloadedBytes) },
     { name: 'Data sent', value: transferStats.uploadedBytes === undefined ? 'unknown' : formatBytes(transferStats.uploadedBytes) },
-    getBrowserConnectedPeersRow(peers, connections),
+    connectedPeers,
   ];
 };
 
@@ -610,7 +646,7 @@ const getElectronKuboStats = async (rpcState?: string, signal?: AbortSignal): Pr
     { name: 'Repo objects', value: String(repo.NumObjects ?? 'unknown') },
     { name: 'Bitswap peers', value: formatCount(Array.isArray(bitswap.Peers) ? bitswap.Peers.length : 0, 'peer') },
     { name: 'Bitswap wantlist', value: formatCount(Array.isArray(bitswap.Wantlist) ? bitswap.Wantlist.length : 0, 'item') },
-    getElectronConnectedPeersRow(peers),
+    await resolveConnectedPeerLocations(getElectronConnectedPeersRow(peers), signal),
   ];
 };
 
@@ -664,7 +700,7 @@ const ConnectedPeersValue = ({ row }: { row: ConnectedPeersStatRow }) => (
     <div className={styles.connectedPeerList}>
       {row.entries.length ? (
         row.entries.map((entry) => {
-          const countryCode = getApproximateCountryCode(entry.address);
+          const countryCode = entry.countryCode ?? getApproximateCountryCode(entry.address);
           const flagPosition = getCountryFlagPosition(countryCode);
           return (
             <div className={styles.connectedPeer} key={entry.id}>
