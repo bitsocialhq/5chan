@@ -6,6 +6,7 @@ import {
   extractIpv6FromAddress,
   fetchOwnIpCountryCode,
   fetchOwnPublicEndpoint,
+  fetchPeerMapLocation,
   getApproximateCountryCode,
   getApproximateLatLon,
   getFirstPublicIpFromAddresses,
@@ -98,15 +99,34 @@ describe('getFirstPublicIpFromAddresses', () => {
 
 describe('fetchOwnPublicEndpoint', () => {
   it('caches the fetched public endpoint', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
+    const fetchMock = vi.fn(async (url: string | URL | Request) => ({
       ok: true,
-      json: async () => ({ country: 'US', ip: '2001:4860:4860::8888' }),
-    });
+      json: async () =>
+        String(url).startsWith('https://free.freeipapi.com/api/json/')
+          ? {
+              cityName: 'Mountain View',
+              countryCode: 'US',
+              latitude: 37.422,
+              longitude: -122.085,
+              regionName: 'California',
+            }
+          : { country: 'US', ip: '2001:4860:4860::8888' },
+    }));
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(fetchOwnPublicEndpoint()).resolves.toEqual({ countryCode: 'us', ip: '2001:4860:4860::8888' });
-    await expect(fetchOwnPublicEndpoint()).resolves.toEqual({ countryCode: 'us', ip: '2001:4860:4860::8888' });
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await expect(fetchOwnPublicEndpoint()).resolves.toMatchObject({
+      countryCode: 'us',
+      ip: '2001:4860:4860::8888',
+      location: {
+        countryCode: 'us',
+        label: 'Mountain View, California, US',
+        lat: 37.422,
+        lon: -122.085,
+        source: 'geoip',
+      },
+    });
+    await expect(fetchOwnPublicEndpoint()).resolves.toMatchObject({ countryCode: 'us', ip: '2001:4860:4860::8888' });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
 
     vi.unstubAllGlobals();
   });
@@ -142,6 +162,65 @@ describe('fetchOwnIpCountryCode', () => {
     // A later non-aborted call must perform a fresh lookup instead of a cached blank.
     await expect(fetchOwnIpCountryCode('203.0.113.50')).resolves.toBe('vn');
     expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    vi.unstubAllGlobals();
+  });
+});
+
+describe('fetchPeerMapLocation', () => {
+  it('resolves and caches a city-level peer location', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        cityName: 'Haarlem',
+        countryCode: 'NL',
+        ipAddress: '91.234.199.189',
+        latitude: 52.3874,
+        longitude: 4.64622,
+        regionName: 'North Holland',
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(fetchPeerMapLocation('/ip4/91.234.199.189/tcp/4001')).resolves.toMatchObject({
+      countryCode: 'nl',
+      label: 'Haarlem, North Holland, NL',
+      lat: 52.3874,
+      lon: 4.64622,
+      source: 'geoip',
+    });
+    await expect(fetchPeerMapLocation('/ip4/91.234.199.189/tcp/4001')).resolves.toMatchObject({
+      lat: 52.3874,
+      lon: 4.64622,
+      source: 'geoip',
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toBe('https://free.freeipapi.com/api/json/91.234.199.189');
+
+    vi.unstubAllGlobals();
+  });
+
+  it('falls back to the offline country estimate when lookup fails', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const location = await fetchPeerMapLocation(addr('80.80.80.80'));
+    const centroid = COUNTRY_CENTROIDS[location!.countryCode!];
+
+    expect(location).toMatchObject({ source: 'coarse' });
+    expect(centroid).toBeDefined();
+    expect(Math.abs(location!.lat - centroid.lat)).toBeLessThanOrEqual(1);
+    expect(Math.abs(location!.lon - centroid.lon)).toBeLessThanOrEqual(1.3);
+
+    vi.unstubAllGlobals();
+  });
+
+  it('does not call GeoIP for private peer addresses', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(fetchPeerMapLocation('/ip4/10.0.0.1/tcp/4001')).resolves.toBeUndefined();
+    expect(fetchMock).not.toHaveBeenCalled();
 
     vi.unstubAllGlobals();
   });
