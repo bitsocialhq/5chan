@@ -55,6 +55,7 @@
 }
 
 .connectedPeersSummary {
+  display: inline-block;
   cursor: pointer;
   padding: 1px 0;
 }

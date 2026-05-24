@@ -608,14 +608,14 @@ describe('P2PStatsSettings', () => {
           ok: true,
           text: async () =>
             JSON.stringify({
-              Addresses: ['/ip4/117.2.120.113/tcp/4001'],
+              Addresses: [
+                '/dns4/77-168-54-121.example/tcp/4001/tls/ws/p2p/relay-peer/p2p-circuit/p2p/desktop-kubo-peer',
+                '/ip4/117.2.120.113/udp/4001/webrtc-direct/p2p/desktop-kubo-peer',
+              ],
               AgentVersion: 'kubo/0.41.0',
               ID: 'desktop-kubo-peer',
             }),
         };
-      }
-      if (requestUrl === 'http://localhost:50019/api/v0/version') {
-        return { ok: true, text: async () => JSON.stringify({ Version: '0.41.0' }) };
       }
       if (requestUrl === 'http://localhost:50019/api/v0/swarm/peers?direction=true&latency=true&streams=true') {
         return {
@@ -641,12 +641,6 @@ describe('P2PStatsSettings', () => {
       }
       if (requestUrl === 'http://localhost:50019/api/v0/stats/bw') {
         return { ok: true, text: async () => JSON.stringify({ RateIn: 12, RateOut: 34, TotalIn: 4096, TotalOut: 8192 }) };
-      }
-      if (requestUrl === 'http://localhost:50019/api/v0/repo/stat') {
-        return { ok: true, text: async () => JSON.stringify({ NumObjects: 7, RepoSize: 16384 }) };
-      }
-      if (requestUrl === 'http://localhost:50019/api/v0/bitswap/stat') {
-        return { ok: true, text: async () => JSON.stringify({ Peers: ['peer-a'], Wantlist: ['cid-a', 'cid-b'] }) };
       }
       if (requestUrl === 'https://free.freeipapi.com/api/json/117.2.120.113') {
         return {
@@ -697,13 +691,29 @@ describe('P2PStatsSettings', () => {
     const ownMarker = markers.find((marker) => marker.querySelector('title')?.textContent?.startsWith('Your node'));
     const leecherMarker = markers.find((marker) => marker.querySelector('title')?.textContent?.startsWith('kubo-leecher'));
     expect(rows.get('Mode')).toBe('Seeding');
+    expect(rows.get('Kubo RPC')).toBe('http://localhost:50019/api/v0');
     expect(rows.get('Peer ID')).toBe('desktop-kubo-peer');
     expect(rows.get('Your IP')).toContain('117.2.120.113');
-    expect(rows.get('Bandwidth in')).toContain('4.00 KB total');
+    expect(rows.get('Your IP')).not.toContain('77.168.54.121');
+    expect(rows.get('Data received')).toBe('4.00 KB');
+    expect(rows.get('Data sent')).toBe('8.00 KB');
+    expect(rows.has('PKC RPC')).toBe(false);
+    expect(rows.has('Agent')).toBe(false);
+    expect(rows.has('Repo size')).toBe(false);
+    expect(rows.has('Repo objects')).toBe(false);
+    expect(rows.has('Bitswap peers')).toBe(false);
+    expect(rows.has('Bitswap wantlist')).toBe(false);
+    expect(rows.has('Bandwidth in')).toBe(false);
+    expect(rows.has('Bandwidth out')).toBe(false);
     expect(container.textContent).toContain('kubo-seeder');
     expect(container.textContent).toContain('kubo-leecher');
     expect(container.textContent).toContain('Leeching');
+    expect(container.textContent).not.toContain('Listen addresses');
     expect(ownMarker?.getAttribute('data-peer-role')).toBe('seeder');
     expect(leecherMarker?.getAttribute('data-peer-role')).toBe('leecher');
+    expect(fetchMock).not.toHaveBeenCalledWith('http://localhost:50019/api/v0/repo/stat', expect.anything());
+    expect(fetchMock).not.toHaveBeenCalledWith('http://localhost:50019/api/v0/bitswap/stat', expect.anything());
+    expect(fetchMock).not.toHaveBeenCalledWith('http://localhost:50019/api/v0/version', expect.anything());
+    expect(fetchMock).not.toHaveBeenCalledWith('http://localhost:50019/api/v0/swarm/addrs/local', expect.anything());
   });
 });

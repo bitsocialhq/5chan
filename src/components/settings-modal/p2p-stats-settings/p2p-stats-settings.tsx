@@ -175,8 +175,6 @@ const formatBytes = (value: unknown) => {
   return `${size.toFixed(size >= 10 ? 1 : 2)} ${units[unitIndex]}`;
 };
 
-const formatRate = (value: unknown) => `${formatBytes(value)}/s`;
-
 const formatOptionalBytes = (value: unknown) => (getFiniteNumber(value) === undefined ? 'unknown' : formatBytes(value));
 
 const getFirstObjectValue = <T,>(value?: Record<string, T>) => (value ? Object.values(value)[0] : undefined);
@@ -761,10 +759,9 @@ const resolveConnectedPeerLocations = async (row: ConnectedPeersStatRow, signal?
   return { ...row, entries };
 };
 
-// Resolves the "Your IP" row from the node's own observed addresses. The shown IP
-// is geolocated accurately (it is the user's own address, never a peer's) so the
-// flag matches it, instead of the coarse continent guess used for connected peers.
-// Falls back to a public-endpoint lookup when libp2p only knows local/private addresses.
+// Resolves the "Your IP" row from observed node addresses for browser/full-node
+// paths. Electron Kubo uses resolveKuboOwnEndpoint below because its address list
+// can include relay/circuit endpoints owned by other peers.
 const resolveOwnEndpoint = async (addresses: unknown[], signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
   const ip = getFirstPublicIpFromAddresses(addresses);
   if (ip) {
@@ -776,6 +773,13 @@ const resolveOwnEndpoint = async (addresses: unknown[], signal?: AbortSignal): P
     };
   }
   return fetchOwnPublicEndpoint(signal);
+};
+
+const resolveKuboOwnEndpoint = async (addresses: unknown[], signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
+  const endpoint = await fetchOwnPublicEndpoint(signal);
+  if (endpoint) return endpoint;
+  const directAddresses = addresses.filter((address) => !getStringValue(address, '').toLowerCase().includes('/p2p-circuit'));
+  return resolveOwnEndpoint(directAddresses.length ? directAddresses : addresses, signal);
 };
 
 const getOwnMapEntry = (endpoint: PublicEndpoint | undefined, mode: string): PeerMapEntry[] => {
@@ -801,6 +805,13 @@ const getPeerMapEntries = (row: ConnectedPeersStatRow): PeerMapEntry[] =>
   }));
 
 const getElectronConnectedPeersRow = (peers: unknown): ConnectedPeersStatRow => getConnectedPeersRowFromRecords(peers);
+
+const getAddressListFromRecord = (record: unknown) =>
+  [
+    ...getAddressValues(getRecordField(record, ['Addresses', 'addresses'])),
+    ...getAddressValues(getRecordField(record, ['listenAddress', 'listenAddresses', 'ListenAddress', 'ListenAddresses'])),
+    ...getAddressValues(getRecordField(record, ['multiaddr', 'multiaddrs', 'Multiaddrs'])),
+  ].filter(Boolean);
 
 const getBrowserLibp2pStats = async (account?: AccountShape, signal?: AbortSignal): Promise<StatRow[]> => {
   const client = getFirstObjectValue(account?.pkc?.clients?.libp2pJsClients) as Libp2pClientShape | undefined;
@@ -836,13 +847,6 @@ const getBrowserLibp2pStats = async (account?: AccountShape, signal?: AbortSigna
     connectedPeersWithMapEntries,
   ];
 };
-
-const getAddressListFromRecord = (record: unknown) =>
-  [
-    ...getAddressValues(getRecordField(record, ['Addresses', 'addresses'])),
-    ...getAddressValues(getRecordField(record, ['listenAddress', 'listenAddresses', 'ListenAddress', 'ListenAddresses'])),
-    ...getAddressValues(getRecordField(record, ['multiaddr', 'multiaddrs', 'Multiaddrs'])),
-  ].filter(Boolean);
 
 const getFullNodeRpcEndpoint = async (account?: AccountShape, signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
   const hostnames = getPkcRpcUrls(account).flatMap((rpcUrl) => {
@@ -941,17 +945,15 @@ const kuboPostJson = async (path: string, params?: Record<string, string | boole
   return firstJsonLine ? JSON.parse(firstJsonLine) : {};
 };
 
-const getElectronKuboStats = async (rpcState?: string, signal?: AbortSignal): Promise<StatRow[]> => {
-  const [identity, version, peers, bandwidth, repo, bitswap] = await Promise.all([
+const getElectronKuboStats = async (signal?: AbortSignal): Promise<StatRow[]> => {
+  const [identity, peers, bandwidth] = await Promise.all([
     kuboPostJson('id', undefined, signal),
-    kuboPostJson('version', undefined, signal),
     kuboPostJson('swarm/peers', { direction: true, latency: true, streams: true }, signal),
     kuboPostJson('stats/bw', undefined, signal),
-    kuboPostJson('repo/stat', undefined, signal),
-    kuboPostJson('bitswap/stat', undefined, signal),
   ]);
+  const peerId = getStringValue(identity.ID, 'unknown');
   const [nodeEndpoint, connectedPeers] = await Promise.all([
-    resolveOwnEndpoint(getAddressListFromRecord(identity), signal),
+    resolveKuboOwnEndpoint(getAddressListFromRecord(identity), signal),
     resolveConnectedPeerLocations(getElectronConnectedPeersRow(peers), signal),
   ]);
   const connectedPeersWithMapEntries = {
@@ -961,16 +963,11 @@ const getElectronKuboStats = async (rpcState?: string, signal?: AbortSignal): Pr
 
   return [
     { name: 'Mode', value: 'Seeding' },
-    { name: 'PKC RPC', value: rpcState ?? 'unknown' },
-    { name: 'Peer ID', value: identity.ID ?? 'unknown' },
+    { name: 'Kubo RPC', value: KUBO_API_URL },
+    { name: 'Peer ID', value: peerId },
     nodeEndpoint ? { countryCode: nodeEndpoint.countryCode, ip: nodeEndpoint.ip, name: 'Your IP', type: 'nodeEndpoint' } : { name: 'Your IP', value: 'unavailable' },
-    { name: 'Agent', value: identity.AgentVersion ?? version.Version ?? 'unknown' },
-    { name: 'Bandwidth in', value: `${formatBytes(bandwidth.TotalIn)} total, ${formatRate(bandwidth.RateIn)}` },
-    { name: 'Bandwidth out', value: `${formatBytes(bandwidth.TotalOut)} total, ${formatRate(bandwidth.RateOut)}` },
-    { name: 'Repo size', value: formatBytes(repo.RepoSize) },
-    { name: 'Repo objects', value: String(repo.NumObjects ?? 'unknown') },
-    { name: 'Bitswap peers', value: formatCount(Array.isArray(bitswap.Peers) ? bitswap.Peers.length : 0, 'peer') },
-    { name: 'Bitswap wantlist', value: formatCount(Array.isArray(bitswap.Wantlist) ? bitswap.Wantlist.length : 0, 'item') },
+    { name: 'Data received', value: formatOptionalBytes(bandwidth.TotalIn) },
+    { name: 'Data sent', value: formatOptionalBytes(bandwidth.TotalOut) },
     connectedPeersWithMapEntries,
   ];
 };
@@ -978,7 +975,7 @@ const getElectronKuboStats = async (rpcState?: string, signal?: AbortSignal): Pr
 const getP2PStats = async (mode: P2PRuntimeMode, account?: AccountShape, rpcState?: string, signal?: AbortSignal) => {
   if (mode === 'browser-libp2p') return getBrowserLibp2pStats(account, signal);
   if (mode === 'full-node-rpc') return getFullNodeRpcStats(account, rpcState, signal);
-  return getElectronKuboStats(rpcState, signal);
+  return getElectronKuboStats(signal);
 };
 
 const NodeEndpointValue = ({ row }: { row: NodeEndpointStatRow }) => {
