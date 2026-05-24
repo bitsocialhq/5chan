@@ -7,12 +7,13 @@ import { getExpiringMediaLinkAlert } from '../../lib/utils/media-link-validation
 import {
   type DiceRoll,
   type FortuneEntry,
+  type PostOptionsValidationError,
   POST_OPTIONS_VALIDATION_DELAY_MS,
   getContentWithPostOptionState as getContentWithOptions,
   getPostOptionsDirectoryCode,
-  getUnsupportedPostOptionsMessage,
+  getPostOptionsValidationError,
   hasNonokoOption,
-  isUnsupportedPostOptionsMessage,
+  isPostOptionsValidationError,
 } from '../../lib/utils/post-options-utils';
 import { getPublishURLFilename, isValidPublishURL } from '../../lib/utils/url-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
@@ -21,7 +22,7 @@ import useSelectedTextStore from '../../stores/use-selected-text-store';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
-import { useDirectoryByAddress } from '../../hooks/use-directories';
+import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
 import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
@@ -29,6 +30,7 @@ import { useCommunityField } from '../../hooks/use-stable-community';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
 import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import LoadingEllipsis from '../loading-ellipsis';
+import PostOptionsErrorMessage from '../post-options-error-message/post-options-error-message';
 import styles from './reply-modal.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
@@ -56,7 +58,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const isInAllView = isAllView(location.pathname);
   const isInModView = isModView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
-  const directoryEntry = useDirectoryByAddress(communityAddress);
+  const directories = useDirectories();
+  const directoryEntry = findDirectoryByAddress(directories, communityAddress);
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
   const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
@@ -98,7 +101,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const quoteInsertNumber = useReplyModalStore((state) => state.quoteInsertNumber);
   const quoteInsertSelectedText = useReplyModalStore((state) => state.quoteInsertSelectedText);
 
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | PostOptionsValidationError | null>(null);
   const [lengthError, setLengthError] = useState<string | null>(null);
   const [url, setUrl] = useState('');
   const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
@@ -118,7 +121,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
   const checkPostOptionsRef = useRef(
     debounce((options: string, directoryCode: string | undefined) => {
-      const nextOptionsError = getUnsupportedPostOptionsMessage(options, directoryCode);
+      const nextOptionsError = getPostOptionsValidationError(options, directoryCode);
       if (nextOptionsError) {
         setLengthError(null);
         setError(nextOptionsError);
@@ -130,7 +133,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     const currentContent = textRef.current?.value || '';
     const currentUrl = urlRef.current?.value.trim() || '';
     const currentOptions = optionsRef.current?.value || '';
-    const currentOptionsError = getUnsupportedPostOptionsMessage(currentOptions, postOptionsDirectoryCode);
+    const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
     const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
 
     checkContentLengthRef.current.cancel();
@@ -345,7 +348,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const handleOptionsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const options = e.target.value;
     handleContentValueChange(textRef.current?.value || '', undefined, undefined, options);
-    setError((currentError) => (isUnsupportedPostOptionsMessage(currentError) ? null : currentError));
+    setError((currentError) => (isPostOptionsValidationError(currentError) ? null : currentError));
     checkPostOptionsRef.current(options, postOptionsDirectoryCode);
   };
 
@@ -556,7 +559,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
         {lengthError ? (
           <div className={styles.error}>{lengthError}</div>
         ) : error ? (
-          <div className={styles.error}>{error}</div>
+          <div className={styles.error}>{isPostOptionsValidationError(error) ? <PostOptionsErrorMessage error={error} directories={directories} /> : error}</div>
         ) : (
           publishReplyError && <div className={styles.error}>{publishReplyError}</div>
         )}

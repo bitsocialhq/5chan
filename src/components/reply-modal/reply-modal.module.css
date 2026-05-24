@@ -155,6 +155,12 @@
   text-shadow: 0 1px rgba(0, 0, 0, 0.20);
 }
 
+.error a,
+.error a:visited {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .status {
   width: 294px;
   font-family: monospace;

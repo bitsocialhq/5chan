@@ -10,13 +10,14 @@ import { getExpiringMediaLinkAlert } from '../../lib/utils/media-link-validation
 import {
   type DiceRoll,
   type FortuneEntry,
+  type PostOptionsValidationError,
   POST_OPTIONS_VALIDATION_DELAY_MS,
   getContentWithPostOptionState as getContentWithOptions,
   getNonokoPendingRouteState,
   getPostOptionsDirectoryCode,
-  getUnsupportedPostOptionsMessage,
+  getPostOptionsValidationError,
   hasNonokoOption,
-  isUnsupportedPostOptionsMessage,
+  isPostOptionsValidationError,
 } from '../../lib/utils/post-options-utils';
 import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import { getPublishURLFilename, isValidPublishURL, isValidURL } from '../../lib/utils/url-utils';
@@ -39,6 +40,7 @@ import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
 import LoadingEllipsis from '../loading-ellipsis';
+import PostOptionsErrorMessage from '../post-options-error-message/post-options-error-message';
 import styles from './post-form.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
@@ -446,7 +448,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const showBbcodeToolbar = hasModQueueAccessRole(accountRole) || (!effectiveBoardAddress && isInModView && accountCommunityAddresses.length > 0);
 
   const [lengthError, setLengthError] = useState<string | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | PostOptionsValidationError | null>(null);
   const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
   const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
 
@@ -463,7 +465,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
 
   const checkPostOptions = useRef(
     debounce((options: string, directoryCode: string | undefined) => {
-      const nextOptionsError = getUnsupportedPostOptionsMessage(options, directoryCode);
+      const nextOptionsError = getPostOptionsValidationError(options, directoryCode);
       if (nextOptionsError) {
         setFormError(nextOptionsError);
       }
@@ -487,6 +489,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     checkPostOptions.cancel();
     fortuneEntryRef.current = null;
     diceRollRef.current = null;
+    setFormError(null);
     setIsBbcodePreviewing(false);
     setBbcodePreviewContent('');
   };
@@ -504,7 +507,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     const currentContent = textRef.current?.value || '';
     const currentUrl = urlRef.current?.value.trim() || '';
     const currentOptions = optionsRef.current?.value || '';
-    const currentOptionsError = getUnsupportedPostOptionsMessage(currentOptions, postOptionsDirectoryCode);
+    const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
     const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
 
     checkContentLength.cancel();
@@ -600,7 +603,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const handleOptionsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const options = e.target.value;
     handleContentValueChange(textRef.current?.value || '', options);
-    setFormError((currentError) => (isUnsupportedPostOptionsMessage(currentError) ? null : currentError));
+    setFormError((currentError) => (isPostOptionsValidationError(currentError) ? null : currentError));
     checkPostOptions(options, postOptionsDirectoryCode);
   };
 
@@ -618,7 +621,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const onPublishReply = () => {
     const currentUrl = urlRef.current?.value.trim() || '';
     const currentOptions = optionsRef.current?.value || '';
-    const currentOptionsError = getUnsupportedPostOptionsMessage(currentOptions, postOptionsDirectoryCode);
+    const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
     const publishContent = getContentWithOptions(textRef.current?.value || '', currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
 
     checkContentLength.cancel();
@@ -746,7 +749,11 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
         </tbody>
       </table>
       {showBbcodeToolbar ? <div className={`${styles.error} ${styles.formError}`}>warning: posting as moderator</div> : null}
-      {formError && <div className={`${styles.error} ${styles.formError}`}>{formError}</div>}
+      {formError ? (
+        <div className={`${styles.error} ${styles.formError}`}>
+          {isPostOptionsValidationError(formError) ? <PostOptionsErrorMessage error={formError} directories={directories} /> : formError}
+        </div>
+      ) : null}
       {publishPostError && <div className={`${styles.error} ${styles.formError}`}>{publishPostError}</div>}
       {publishReplyError && <div className={`${styles.error} ${styles.formError}`}>{publishReplyError}</div>}
       {publishReplyStateMessage && <div className={styles.status}>{publishReplyStateMessage}</div>}

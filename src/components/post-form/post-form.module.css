@@ -233,6 +233,12 @@
   color: red;
 }
 
+.error a,
+.error a:visited {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .formError {
   margin: 8px 0;
   padding: 6px 5px;
