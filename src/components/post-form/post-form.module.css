@@ -69,7 +69,7 @@
   position: relative;
 }
 
-.postFormTable input[type="text"], .postFormTable textarea, .postFormTable select {
+.postFormTable input[type="text"], .postFormTable textarea, .postFormTable select:not(.flagSelector) {
   border: var(--post-form-field-input-border, revert);
   font-family: var(--post-form-field-font-family, revert);
   appearance: var(--post-form-field-input-appearance, revert);
@@ -80,7 +80,7 @@
   font-size: 10pt;
 }
 
-.postFormTable input[type="text"]:focus, .postFormTable textarea:focus, .postFormTable select:focus {
+.postFormTable input[type="text"]:focus, .postFormTable textarea:focus, .postFormTable select:not(.flagSelector):focus {
   border: var(--post-form-field-input-focus-border, revert);
 }
       
@@ -111,10 +111,6 @@
 
 .linkField input[type="text"] {
   width: 190px !important;
-}
-
-.flagSelect {
-  width: 254px;
 }
 
 .spoilerButton input[type="checkbox"] {

@@ -39,7 +39,7 @@
   background-image: var(--close-button-background-image);
 }
 
-.container input[type="text"], .container textarea, .container select {
+.container input[type="text"], .container textarea, .container select:not(.flagSelector) {
   border: var(--reply-modal-field-input-border, revert);
   font-family: var(--post-form-field-font-family, revert);
   appearance: var(--post-form-field-input-appearance, revert);
@@ -53,7 +53,7 @@
   margin-bottom: 1px;
 }
 
-.container input[type="text"]:focus, .container textarea:focus, .container select:focus {
+.container input[type="text"]:focus, .container textarea:focus, .container select:not(.flagSelector):focus {
   border: var(--reply-modal-field-input-border-focus, revert);
 }
 
@@ -139,7 +139,7 @@
     cursor: default;
   }
 
-  .container input[type="text"], .container textarea, .container select {
+  .container input[type="text"], .container textarea, .container select:not(.flagSelector) {
     font-size: 16px;
   }
 }
