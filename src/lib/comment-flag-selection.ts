@@ -35,8 +35,10 @@ const NO_FLAG_OPTION: CommentFlagSelectOption = {
   label: 'None',
 };
 
-const getDirectoryCode = (directory: Pick<DirectoryCommunity, 'directoryCode' | 'title'> | undefined): string | undefined =>
-  directory?.directoryCode?.trim().toLowerCase() ?? directory?.title?.match(/^\/([^/]+)\//)?.[1]?.toLowerCase();
+const getDirectoryCode = (directory: Pick<DirectoryCommunity, 'directoryCode' | 'title'> | undefined): string | undefined => {
+  const directoryCode = directory?.directoryCode?.trim().toLowerCase();
+  return directoryCode || directory?.title?.match(/^\/([^/]+)\//)?.[1]?.toLowerCase();
+};
 
 const getBoardFlagOptions = (kind: BoardFlagKind): CommentFlagSelectOption[] =>
   getBoardFlagDefinitions(kind).map((flag) => ({

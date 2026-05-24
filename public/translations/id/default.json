@@ -391,5 +391,6 @@
   "modQueue.dismiss": "Abaikan",
   "board_address_unverified_warning": "Alamat board ini belum diverifikasi. Pemilik board mungkin tidak memiliki alamat ini.",
   "go_to_settings_to_import_mod_account": "Buka <1>pengaturan</1> untuk mengimpor akun mod Anda",
-  "post_form_rules_faq_prompt": "Silakan baca <rules>Aturan</rules> dan <faq>FAQ</faq> sebelum memposting."
+  "post_form_rules_faq_prompt": "Silakan baca <rules>Aturan</rules> dan <faq>FAQ</faq> sebelum memposting.",
+  "flag": "Bendera"
 }

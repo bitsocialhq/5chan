@@ -433,7 +433,7 @@ describe('ReplyModal', () => {
   it('shows a flag selector on flag boards and publishes the default geographic request', async () => {
     await renderReplyModal('/pol/thread/post-1', 'politically-incorrect.bso');
 
-    const flagSelect = container.querySelector<HTMLSelectElement>('select[aria-label="Flag"]');
+    const flagSelect = container.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
 
     expect(flagSelect).toBeTruthy();
     expect(flagSelect?.value).toBe('country:auto');
@@ -457,7 +457,7 @@ describe('ReplyModal', () => {
   it('publishes selected political flags from the reply modal', async () => {
     await renderReplyModal('/pol/thread/post-1', 'politically-incorrect.bso');
 
-    const flagSelect = container.querySelector<HTMLSelectElement>('select[aria-label="Flag"]');
+    const flagSelect = container.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
     await dispatchInput(container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement, 'reply body');
     await act(async () => {
       if (flagSelect) {

@@ -391,5 +391,6 @@
   "modQueue.dismiss": "Huwag pansinin",
   "board_address_unverified_warning": "Hindi beripikado ang address ng board na ito. Maaaring hindi pag-aari ng may-ari ng board ang address na ito.",
   "go_to_settings_to_import_mod_account": "Pumunta sa <1>mga setting</1> para i-import ang iyong mod account",
-  "post_form_rules_faq_prompt": "Pakibasa ang <rules>Rules</rules> at <faq>FAQ</faq> bago mag-post."
+  "post_form_rules_faq_prompt": "Pakibasa ang <rules>Rules</rules> at <faq>FAQ</faq> bago mag-post.",
+  "flag": "Bandila"
 }

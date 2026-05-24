@@ -299,11 +299,11 @@ const PostFormFields = ({
     </tr>
     {flagOptions.length > 0 && (
       <tr>
-        <td>Flag</td>
+        <td>{t('flag')}</td>
         <td>
           <select
             key={flagOptions.map((option) => option.value).join('|')}
-            aria-label='Flag'
+            aria-label={t('flag')}
             className={styles.flagSelect}
             ref={flagRef}
             defaultValue={flagOptions[0]?.value}

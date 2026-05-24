@@ -189,17 +189,8 @@ describe('use-directories', () => {
     expect(findDirectoryByAddress(communities, 'music-posting.bso')?.address).toBe('music-posting.bso');
     expect(findDirectoryByAddress(communities, 'music-posting.eth')?.address).toBe('music-posting.bso');
     expect(findDirectoryByAddress(communities, '12D3KooWQdQ6TkVA1Xe9zzaFP6vXBgsLeMAewpLpLwbsAYKivnQy')?.address).toBe('music-posting.bso');
+    expect(findDirectoryByAddress([], '12D3KooWNFgjQWX2EUEs7pixdjkWSLh21EZ9NeYnV8iMaCyYhLGJ')).toBeUndefined();
     expect(findDirectoryByAddress(communities, undefined)).toBeUndefined();
-  });
-
-  it('treats the temporary flags test community as a flags board', () => {
-    const directory = findDirectoryByAddress([], '12D3KooWNFgjQWX2EUEs7pixdjkWSLh21EZ9NeYnV8iMaCyYhLGJ');
-
-    expect(directory).toMatchObject({
-      address: '12D3KooWNFgjQWX2EUEs7pixdjkWSLh21EZ9NeYnV8iMaCyYhLGJ',
-      title: 'Flags Test',
-      features: { hasFlags: true },
-    });
   });
 
   it('hydrates from localStorage first, then refreshes from GitHub with normalized and deduped data', async () => {

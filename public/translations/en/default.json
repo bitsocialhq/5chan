@@ -410,5 +410,6 @@
   "directory_status_unavailable_reason": "check only available for top 5 boards",
   "modQueue.dismiss": "Dismiss",
   "board_address_unverified_warning": "This board address is not verified. The board owner might not own this address.",
-  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting."
+  "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting.",
+  "flag": "Flag"
 }

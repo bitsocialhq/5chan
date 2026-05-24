@@ -391,5 +391,6 @@
   "modQueue.dismiss": "Ignoră",
   "board_address_unverified_warning": "Această adresă de board nu este verificată. Proprietarul boardului s-ar putea să nu dețină această adresă.",
   "go_to_settings_to_import_mod_account": "Accesează <1>setările</1> pentru a importa contul tău de moderator",
-  "post_form_rules_faq_prompt": "Citește <rules>Regulile</rules> și <faq>Întrebările frecvente</faq> înainte de a publica."
+  "post_form_rules_faq_prompt": "Citește <rules>Regulile</rules> și <faq>Întrebările frecvente</faq> înainte de a publica.",
+  "flag": "Steag"
 }

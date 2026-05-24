@@ -53,6 +53,19 @@ describe('comment-flag-selection', () => {
     ]);
   });
 
+  it('falls back to the board title when directoryCode is blank', () => {
+    const options = getCommentFlagOptionsForDirectory({
+      directoryCode: ' ',
+      features: { hasFlags: true },
+      title: '/mlp/ - Pony',
+    });
+
+    expect(options.slice(0, 2)).toEqual([
+      { label: 'None', value: 'none' },
+      { label: '4cc /mlp/', value: 'pony:4CC' },
+    ]);
+  });
+
   it('serializes selected flags as challenge-readable flag requests', () => {
     expect(getCommentFlagRequestFromSelection('country:auto')).toEqual({
       type: 'country',

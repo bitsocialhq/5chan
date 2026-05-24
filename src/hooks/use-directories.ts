@@ -38,14 +38,6 @@ const LOCALSTORAGE_TIMESTAMP_KEY = '5chan-directories-cache-timestamp';
 const CACHE_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour
 const FETCH_RETRY_DELAY_MS = 60 * 1000; // 1 minute
 const FETCH_TIMEOUT_MS = 10 * 1000;
-const FLAGS_TEST_COMMUNITY_ADDRESS = '12D3KooWNFgjQWX2EUEs7pixdjkWSLh21EZ9NeYnV8iMaCyYhLGJ';
-const FLAGS_TEST_COMMUNITY: DirectoryCommunity = {
-  address: FLAGS_TEST_COMMUNITY_ADDRESS,
-  name: FLAGS_TEST_COMMUNITY_ADDRESS,
-  publicKey: FLAGS_TEST_COMMUNITY_ADDRESS,
-  title: 'Flags Test',
-  features: { hasFlags: true },
-};
 
 let cacheCommunities: DirectoryCommunity[] | null = null;
 let cacheMetadata: DirectoriesMetadata | null = null;
@@ -151,7 +143,7 @@ export const findDirectoryByAddress = (directories: DirectoryCommunity[], addres
     return normalizedMatch;
   }
 
-  return address === FLAGS_TEST_COMMUNITY_ADDRESS ? FLAGS_TEST_COMMUNITY : undefined;
+  return undefined;
 };
 
 const adaptV1Communities = (value: Record<string, unknown>): DirectoryCommunity[] => {

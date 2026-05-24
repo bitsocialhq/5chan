@@ -114,20 +114,22 @@ const parseTextFlagSource = (text: string | undefined): FlagSource | undefined =
   const flagMatch = text.match(FLAG_TEXT_PATTERN);
   if (flagMatch) {
     const [, kindValue, code] = flagMatch;
-    if (kindValue === 'country' || kindValue === 'geo') {
+    const normalizedKindValue = kindValue.toLowerCase();
+    if (normalizedKindValue === 'country' || normalizedKindValue === 'geo') {
       return { type: 'country', code };
     }
-    const kind = normalizeBoardFlagKind(kindValue);
+    const kind = normalizeBoardFlagKind(normalizedKindValue);
     return kind ? { type: kind, code } : undefined;
   }
 
   const shortMatch = text.match(SHORT_FLAG_TEXT_PATTERN);
   if (shortMatch) {
     const [, kindValue, code] = shortMatch;
-    if (kindValue === 'country' || kindValue === 'geo') {
+    const normalizedKindValue = kindValue.toLowerCase();
+    if (normalizedKindValue === 'country' || normalizedKindValue === 'geo') {
       return { type: 'country', code };
     }
-    const kind = normalizeBoardFlagKind(kindValue);
+    const kind = normalizeBoardFlagKind(normalizedKindValue);
     return kind ? { type: kind, code } : undefined;
   }
 

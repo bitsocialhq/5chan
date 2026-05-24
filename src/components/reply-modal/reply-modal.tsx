@@ -518,8 +518,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           />
         </div>
         {flagOptions.length > 0 && (
-          <div className={styles.flag}>
-            <select key={flagOptions.map((option) => option.value).join('|')} aria-label='Flag' ref={flagRef} defaultValue={flagOptions[0]?.value}>
+          <div>
+            <select key={flagOptions.map((option) => option.value).join('|')} aria-label={t('flag')} ref={flagRef} defaultValue={flagOptions[0]?.value}>
               {flagOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}

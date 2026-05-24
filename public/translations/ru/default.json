@@ -391,5 +391,6 @@
   "modQueue.dismiss": "Скрыть",
   "board_address_unverified_warning": "Этот адрес доски не проверен. Владелец доски может не владеть этим адресом.",
   "go_to_settings_to_import_mod_account": "Перейдите в <1>настройки</1>, чтобы импортировать свой аккаунт модератора",
-  "post_form_rules_faq_prompt": "Пожалуйста, прочитайте <rules>Правила</rules> и <faq>FAQ</faq> перед публикацией."
+  "post_form_rules_faq_prompt": "Пожалуйста, прочитайте <rules>Правила</rules> и <faq>FAQ</faq> перед публикацией.",
+  "flag": "Флаг"
 }

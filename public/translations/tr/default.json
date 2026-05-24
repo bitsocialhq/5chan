@@ -391,5 +391,6 @@
   "modQueue.dismiss": "Yoksay",
   "board_address_unverified_warning": "Bu board adresi doğrulanmamış. Board sahibi bu adresin sahibi olmayabilir.",
   "go_to_settings_to_import_mod_account": "Mod hesabınızı içe aktarmak için <1>ayarlar</1>a gidin",
-  "post_form_rules_faq_prompt": "Lütfen göndermeden önce <rules>Kuralları</rules> ve <faq>SSS</faq>'yi okuyun."
+  "post_form_rules_faq_prompt": "Lütfen göndermeden önce <rules>Kuralları</rules> ve <faq>SSS</faq>'yi okuyun.",
+  "flag": "Bayrak"
 }

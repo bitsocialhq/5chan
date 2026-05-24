@@ -391,5 +391,6 @@
   "modQueue.dismiss": "Ignora",
   "board_address_unverified_warning": "Questo indirizzo della board non è verificato. Il proprietario della board potrebbe non possedere questo indirizzo.",
   "go_to_settings_to_import_mod_account": "Vai alle <1>impostazioni</1> per importare il tuo account mod",
-  "post_form_rules_faq_prompt": "Leggi le <rules>Regole</rules> e le <faq>FAQ</faq> prima di pubblicare."
+  "post_form_rules_faq_prompt": "Leggi le <rules>Regole</rules> e le <faq>FAQ</faq> prima di pubblicare.",
+  "flag": "Bandiera"
 }

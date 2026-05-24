@@ -614,7 +614,7 @@ describe('PostForm', () => {
     await clickByText(container, 'start_new_thread');
 
     const table = container.querySelector('table');
-    const flagSelect = table?.querySelector<HTMLSelectElement>('select[aria-label="Flag"]');
+    const flagSelect = table?.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
     const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
 
     expect(flagSelect).toBeTruthy();
@@ -644,7 +644,7 @@ describe('PostForm', () => {
     await clickByText(container, 'start_new_thread');
 
     const table = container.querySelector('table');
-    const flagSelect = table?.querySelector<HTMLSelectElement>('select[aria-label="Flag"]');
+    const flagSelect = table?.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
     const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
 
     await dispatchChange(flagSelect as HTMLSelectElement, 'pol:AC');

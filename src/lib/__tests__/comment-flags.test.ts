@@ -25,6 +25,12 @@ describe('comment-flags', () => {
     expect(flags[2]).toMatchObject({ label: 'Applejack', x: 80, y: 0 });
   });
 
+  it('normalizes text flag kinds before parsing', () => {
+    const flags = getAuthorFlagViewModels([{ text: 'FLAG:COUNTRY:DE' }, { text: 'POL:AC' }, { text: 'flag:MLP:AJ' }], 1000);
+
+    expect(flags.map((flag) => flag.key)).toEqual(['country:de', 'pol:AC', 'pony:AJ']);
+  });
+
   it('parses structured flag flair fields', () => {
     const flags = getAuthorFlagViewModels(
       [

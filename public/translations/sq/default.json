@@ -391,5 +391,6 @@
   "modQueue.dismiss": "Shpërfill",
   "board_address_unverified_warning": "Kjo adresë e board-it nuk është verifikuar. Pronari i board-it mund të mos e zotërojë këtë adresë.",
   "go_to_settings_to_import_mod_account": "Shkoni te <1>parametrat</1> për të importuar llogarinë tuaj të modit",
-  "post_form_rules_faq_prompt": "Ju lutemi lexoni <rules>Rregullat</rules> dhe <faq>Pyetjet e shpeshta</faq> para se të postoni."
+  "post_form_rules_faq_prompt": "Ju lutemi lexoni <rules>Rregullat</rules> dhe <faq>Pyetjet e shpeshta</faq> para se të postoni.",
+  "flag": "Flamur"
 }
