@@ -2,7 +2,7 @@ import { getBrowserGatewayPkcOptions, getBrowserPureP2PPkcOptions, isElectronRun
 
 export const P2P_STATS_SECTION_ID = 'p2p-stats-settings';
 
-export type P2PRuntimeMode = 'browser-libp2p' | 'electron-kubo-rpc';
+export type P2PRuntimeMode = 'browser-libp2p' | 'electron-kubo-rpc' | 'full-node-rpc';
 
 type AccountProtocolOptions = {
   httpRoutersOptions?: string[];
@@ -39,8 +39,8 @@ export const getP2PRuntimeMode = (account?: unknown, targetWindow: Window = wind
     return 'browser-libp2p';
   }
 
-  if (isElectronRuntime(targetWindow) && (hasArrayItems(protocolOptions?.pkcRpcClientsOptions) || hasObjectItems(clients?.pkcRpcClients))) {
-    return 'electron-kubo-rpc';
+  if (hasArrayItems(protocolOptions?.pkcRpcClientsOptions) || hasObjectItems(clients?.pkcRpcClients)) {
+    return isElectronRuntime(targetWindow) ? 'electron-kubo-rpc' : 'full-node-rpc';
   }
 
   return null;

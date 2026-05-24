@@ -2,7 +2,17 @@ import { Fragment, memo, useEffect, useReducer } from 'react';
 import { useAccount, usePkcRpcSettings } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
 import { getCountryFlagPosition, getCountryLabel, normalizeCountryCode } from '../../../lib/country-flags';
-import { fetchOwnIpCountryCode, fetchOwnPublicEndpoint, getApproximateCountryCode, getFirstPublicIpFromAddresses, type PublicEndpoint } from '../../../lib/peer-geo';
+import {
+  fetchIpMapLocation,
+  fetchOwnIpCountryCode,
+  fetchOwnPublicEndpoint,
+  fetchPeerMapLocation,
+  getApproximateCountryCode,
+  getFirstPublicIpFromAddresses,
+  isPrivateOrReservedIpv4,
+  type PeerMapLocation,
+  type PublicEndpoint,
+} from '../../../lib/peer-geo';
 import { getP2PRuntimeMode, type P2PRuntimeMode } from '../../../lib/p2p-runtime';
 import PeerWorldMap from './peer-world-map';
 import styles from './p2p-stats-settings.module.css';
@@ -17,16 +27,30 @@ type TextStatRow = {
 
 type ConnectedPeerEntry = {
   address: string;
+  countryCode?: string;
   direction?: string;
   id: string;
+  location?: PeerMapLocation;
   peerId: string;
+  role?: PeerConnectionRole;
   status?: string;
   transport: string;
+};
+
+type PeerConnectionRole = 'leecher' | 'seeder';
+
+type PeerMapEntry = {
+  address: string;
+  id: string;
+  location?: PeerMapLocation;
+  peerId: string;
+  role?: PeerConnectionRole;
 };
 
 type ConnectedPeersStatRow = {
   connectionCount: number;
   entries: ConnectedPeerEntry[];
+  mapEntries?: PeerMapEntry[];
   name: string;
   peerCount: number;
   type: 'connectedPeers';
@@ -98,6 +122,12 @@ type Libp2pAddressManagerShape = {
 
 type BrowserLibp2pShape = NonNullable<NonNullable<NonNullable<Libp2pClientShape['_helia']>['libp2p']>>;
 
+type PkcRpcClientShape = {
+  getPeers?: () => unknown | Promise<unknown>;
+  getStats?: () => unknown | Promise<unknown>;
+  state?: string;
+};
+
 type TransferStats = {
   downloadedBytes?: number;
   uploadedBytes?: number;
@@ -141,7 +171,7 @@ const formatBytes = (value: unknown) => {
   return `${size.toFixed(size >= 10 ? 1 : 2)} ${units[unitIndex]}`;
 };
 
-const formatRate = (value: unknown) => `${formatBytes(value)}/s`;
+const formatOptionalBytes = (value: unknown) => (getFiniteNumber(value) === undefined ? 'unknown' : formatBytes(value));
 
 const getFirstObjectValue = <T,>(value?: Record<string, T>) => (value ? Object.values(value)[0] : undefined);
 
@@ -186,6 +216,46 @@ const toArray = (value: unknown): unknown[] => {
   return [];
 };
 
+const getRecordField = (record: unknown, fields: string[]) => {
+  if (!isRecord(record)) return undefined;
+  for (const field of fields) {
+    if (field in record) return record[field];
+  }
+  return undefined;
+};
+
+const getStringField = (record: unknown, fields: string[], fallback = '') => {
+  const value = getRecordField(record, fields);
+  if (Array.isArray(value)) return getStringValue(value[0], fallback);
+  return getStringValue(value, fallback);
+};
+
+const getAddressValues = (value: unknown): string[] => {
+  const iterableValues = Array.isArray(value) ? value : toArray(value);
+  const values = iterableValues.length ? iterableValues : [value];
+  return values.flatMap((entry) => {
+    const address = getStringValue(entry, '');
+    return address ? [address] : [];
+  });
+};
+
+const getNestedValue = (source: unknown, path: string[]) => {
+  let current = source;
+  for (const key of path) {
+    if (!isRecord(current) || !(key in current)) return undefined;
+    current = current[key];
+  }
+  return current;
+};
+
+const getFirstNestedValue = (source: unknown, paths: string[][]) => {
+  for (const path of paths) {
+    const value = getNestedValue(source, path);
+    if (value !== undefined) return value;
+  }
+  return undefined;
+};
+
 const getSafeArray = async (getValue?: () => unknown[] | Promise<unknown[]> | undefined): Promise<unknown[]> => {
   try {
     return toArray(getValue ? await getValue() : undefined);
@@ -207,6 +277,14 @@ const getAddressManagerAddresses = async (libp2p?: BrowserLibp2pShape): Promise<
       return address ? [address] : [];
     }),
   ];
+};
+
+const getFirstPkcRpcClient = (account?: AccountShape) => getFirstObjectValue(account?.pkc?.clients?.pkcRpcClients) as PkcRpcClientShape | undefined;
+
+const getPkcRpcUrls = (account?: AccountShape) => {
+  const optionUrls = Array.isArray(account?.pkcOptions?.pkcRpcClientsOptions) ? account.pkcOptions.pkcRpcClientsOptions : [];
+  const clientUrls = isRecord(account?.pkc?.clients?.pkcRpcClients) ? Object.keys(account.pkc.clients.pkcRpcClients) : [];
+  return [...new Set([...optionUrls, ...clientUrls].filter((url): url is string => typeof url === 'string' && url.trim().length > 0))];
 };
 
 const getByteLength = (value: unknown): number | undefined => {
@@ -463,6 +541,43 @@ const getBrowserMode = (client?: Libp2pClientShape) => {
   return hasSupportedAdd(client) && hasProviderPublishingRouter(client) ? 'Seeding' : 'Leeching';
 };
 
+const getEndpointAddress = (ip: string) => (ip.includes(':') ? `/ip6/${ip}/tcp/0` : `/ip4/${ip}/tcp/0`);
+
+const isIpv4Address = (value: string) => /^\d{1,3}(?:\.\d{1,3}){3}$/.test(value);
+
+const isLikelyPublicIp = (value: string) => {
+  const ip = value.trim();
+  if (!ip) return false;
+  if (isIpv4Address(ip)) return !isPrivateOrReservedIpv4(ip);
+  if (!ip.includes(':')) return false;
+  const normalized = ip.toLowerCase();
+  return normalized !== '::1' && !normalized.startsWith('fe80:') && !normalized.startsWith('fc') && !normalized.startsWith('fd');
+};
+
+const getHostnameFromUrl = (url: string) => {
+  try {
+    return new URL(url).hostname.replace(/^\[|\]$/g, '');
+  } catch {
+    return undefined;
+  }
+};
+
+const resolveEndpointFromIp = async (ip: string, signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
+  if (!isLikelyPublicIp(ip)) return undefined;
+  const location = await fetchIpMapLocation(ip, signal);
+  return {
+    countryCode: location?.countryCode ?? getApproximateCountryCode(getEndpointAddress(ip)),
+    ip,
+    location,
+  };
+};
+
+const resolveEndpointFromHost = async (hostname: string, signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
+  const normalizedHostname = hostname.trim().toLowerCase();
+  if (!normalizedHostname || normalizedHostname === 'localhost') return undefined;
+  return isLikelyPublicIp(normalizedHostname) ? resolveEndpointFromIp(normalizedHostname, signal) : undefined;
+};
+
 const getTransportLabel = (address: string) => {
   const normalizedAddress = address.toLowerCase();
   let transport = 'Unknown transport';
@@ -511,27 +626,66 @@ const getBrowserConnectedPeersRow = (peers: unknown[], connections: unknown[]): 
   };
 };
 
-// Resolves the "Your IP" row from the node's own observed addresses. The shown IP
-// is geolocated accurately (it is the user's own address, never a peer's) so the
-// flag matches it, instead of the coarse continent guess used for connected peers.
-// Falls back to a public-endpoint lookup when libp2p only knows local/private addresses.
-const resolveOwnEndpoint = async (addresses: unknown[], signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
-  const ip = getFirstPublicIpFromAddresses(addresses);
-  if (ip) return { countryCode: await fetchOwnIpCountryCode(ip, signal), ip };
-  return fetchOwnPublicEndpoint(signal);
+const PEER_LIST_FIELDS = ['Peers', 'peers', 'connectedPeers', 'connections'];
+const PEER_ADDRESS_FIELDS = ['Addr', 'address', 'addr', 'remoteAddr', 'multiaddr', 'multiaddrString'];
+const PEER_ID_FIELDS = ['Peer', 'peer', 'peerId', 'id', 'remotePeer'];
+const PEER_DIRECTION_FIELDS = ['Direction', 'direction'];
+const PEER_STATUS_FIELDS = ['Status', 'status', 'state'];
+const PEER_ROLE_FIELDS = ['role', 'Role', 'mode', 'Mode', 'connectionRole', 'connectionType'];
+const PEER_LISTEN_ADDRESS_FIELDS = ['listenAddress', 'listenAddresses', 'ListenAddress', 'ListenAddresses'];
+
+const normalizePeerRecords = (peers: unknown): unknown[] => {
+  if (isRecord(peers)) {
+    for (const field of PEER_LIST_FIELDS) {
+      const value = peers[field];
+      if (Array.isArray(value)) return value;
+    }
+    return Object.values(peers);
+  }
+  return toArray(peers);
 };
 
-const getElectronConnectedPeersRow = (peers: unknown): ConnectedPeersStatRow => {
-  const peerEntries = isRecord(peers) && Array.isArray(peers.Peers) ? peers.Peers : [];
-  const entries = peerEntries.map<ConnectedPeerEntry>((peer) => {
-    const address = isRecord(peer) ? getStringValue(peer.Addr, 'address unavailable') : 'address unavailable';
-    const peerId = isRecord(peer) ? getStringValue(peer.Peer) : 'unknown';
-    const direction = isRecord(peer) ? getStringValue(peer.Direction, '') : undefined;
+const getPeerAddress = (peer: unknown) => {
+  const address = getStringField(peer, PEER_ADDRESS_FIELDS, '');
+  if (address) return address;
+  const listenAddress = getAddressValues(getRecordField(peer, PEER_LISTEN_ADDRESS_FIELDS))[0];
+  return listenAddress || 'address unavailable';
+};
+
+const normalizePeerRole = (value: unknown): PeerConnectionRole | undefined => {
+  const role = getStringValue(value, '').toLowerCase();
+  if (!role) return undefined;
+  if (role.includes('leech') || role === 'client') return 'leecher';
+  if (role.includes('seed') || role === 'server') return 'seeder';
+  return undefined;
+};
+
+const getListenAddressRole = (peer: unknown): PeerConnectionRole | undefined => {
+  if (!isRecord(peer)) return undefined;
+  for (const field of PEER_LISTEN_ADDRESS_FIELDS) {
+    if (!(field in peer)) continue;
+    return getAddressValues(peer[field]).length > 0 ? 'seeder' : 'leecher';
+  }
+  return undefined;
+};
+
+const getPeerConnectionRole = (peer: unknown) => normalizePeerRole(getRecordField(peer, PEER_ROLE_FIELDS)) ?? getListenAddressRole(peer);
+
+const getConnectedPeersRowFromRecords = (peers: unknown): ConnectedPeersStatRow => {
+  const peerRecords = normalizePeerRecords(peers);
+  const entries = peerRecords.map<ConnectedPeerEntry>((peer, index) => {
+    const address = getPeerAddress(peer);
+    const peerId = getStringField(peer, PEER_ID_FIELDS, getStringValue(peer, 'unknown'));
+    const direction = getStringField(peer, PEER_DIRECTION_FIELDS, '');
+    const status = getStringField(peer, PEER_STATUS_FIELDS, '');
+    const fallbackId = `${peerId}-${address}-${direction}-${index}`;
     return {
       address,
-      direction,
-      id: `${peerId}-${address}-${direction ?? ''}`,
+      direction: direction || undefined,
+      id: fallbackId,
       peerId,
+      role: getPeerConnectionRole(peer),
+      status: status || undefined,
       transport: getTransportLabel(address),
     };
   });
@@ -539,15 +693,93 @@ const getElectronConnectedPeersRow = (peers: unknown): ConnectedPeersStatRow => 
     if (entry.peerId && entry.peerId !== 'unknown') ids.add(entry.peerId);
     return ids;
   }, new Set());
+  const peerCount = getFiniteNumber(getRecordField(peers, ['peerCount', 'peersCount', 'PeerCount']));
+  const connectionCount = getFiniteNumber(getRecordField(peers, ['connectionCount', 'connectionsCount', 'ConnectionCount']));
 
   return {
-    connectionCount: entries.length,
+    connectionCount: connectionCount ?? entries.length,
     entries,
     name: 'Connected peers',
-    peerCount: peerIds.size || entries.length,
+    peerCount: peerCount ?? (peerIds.size || entries.length),
     type: 'connectedPeers',
   };
 };
+
+const resolveConnectedPeerLocations = async (row: ConnectedPeersStatRow, signal?: AbortSignal): Promise<ConnectedPeersStatRow> => {
+  if (!row.entries.length) return row;
+  const lookups = new Map<string, Promise<PeerMapLocation | undefined>>();
+  const entries = await Promise.all(
+    row.entries.map(async (entry) => {
+      let lookup = lookups.get(entry.address);
+      if (!lookup) {
+        lookup = fetchPeerMapLocation(entry.address, signal);
+        lookups.set(entry.address, lookup);
+      }
+      const location = await lookup;
+      if (!location) return entry;
+      return {
+        ...entry,
+        countryCode: location.countryCode ?? entry.countryCode,
+        location,
+      };
+    }),
+  );
+  return { ...row, entries };
+};
+
+// Resolves the "Your IP" row from observed node addresses for browser/full-node
+// paths. Electron Kubo uses resolveKuboOwnEndpoint below because its address list
+// can include relay/circuit endpoints owned by other peers.
+const resolveOwnEndpoint = async (addresses: unknown[], signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
+  const ip = getFirstPublicIpFromAddresses(addresses);
+  if (ip) {
+    const [countryCode, location] = await Promise.all([fetchOwnIpCountryCode(ip, signal), fetchIpMapLocation(ip, signal)]);
+    return {
+      countryCode: location?.countryCode ?? countryCode ?? getApproximateCountryCode(getEndpointAddress(ip)),
+      ip,
+      location,
+    };
+  }
+  return fetchOwnPublicEndpoint(signal);
+};
+
+const resolveKuboOwnEndpoint = async (addresses: unknown[], signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
+  const endpoint = await fetchOwnPublicEndpoint(signal);
+  if (endpoint) return endpoint;
+  const directAddresses = addresses.filter((address) => !getStringValue(address, '').toLowerCase().includes('/p2p-circuit'));
+  return resolveOwnEndpoint(directAddresses.length ? directAddresses : addresses, signal);
+};
+
+const getOwnMapEntry = (endpoint: PublicEndpoint | undefined, mode: string): PeerMapEntry[] => {
+  if (!endpoint?.location) return [];
+  return [
+    {
+      address: getEndpointAddress(endpoint.ip),
+      id: 'self-node-endpoint',
+      location: endpoint.location,
+      peerId: 'Your node',
+      role: mode === 'Leeching' ? 'leecher' : 'seeder',
+    },
+  ];
+};
+
+const getPeerMapEntries = (row: ConnectedPeersStatRow): PeerMapEntry[] =>
+  row.entries.map((entry) => ({
+    address: entry.address,
+    id: entry.id,
+    location: entry.location,
+    peerId: entry.peerId,
+    role: entry.role ?? 'seeder',
+  }));
+
+const getElectronConnectedPeersRow = (peers: unknown): ConnectedPeersStatRow => getConnectedPeersRowFromRecords(peers);
+
+const getAddressListFromRecord = (record: unknown) =>
+  [
+    ...getAddressValues(getRecordField(record, ['Addresses', 'addresses'])),
+    ...getAddressValues(getRecordField(record, ['listenAddress', 'listenAddresses', 'ListenAddress', 'ListenAddresses'])),
+    ...getAddressValues(getRecordField(record, ['multiaddr', 'multiaddrs', 'Multiaddrs'])),
+  ].filter(Boolean);
 
 const getBrowserLibp2pStats = async (account?: AccountShape, signal?: AbortSignal): Promise<StatRow[]> => {
   const client = getFirstObjectValue(account?.pkc?.clients?.libp2pJsClients) as Libp2pClientShape | undefined;
@@ -558,20 +790,112 @@ const getBrowserLibp2pStats = async (account?: AccountShape, signal?: AbortSigna
     getSafeArray(() => libp2p?.getMultiaddrs?.()),
     getAddressManagerAddresses(libp2p),
   ]);
-  const transferStats = await getBrowserTransferStats(client, connections);
   const localAddresses = connections.flatMap((connection) => {
     const localAddr = isRecord(connection) ? connection.localAddr : undefined;
     return localAddr ? [localAddr] : [];
   });
-  const nodeEndpoint = await resolveOwnEndpoint([...multiaddrs, ...addressManagerAddresses, ...localAddresses], signal);
+  const connectedPeersRow = getBrowserConnectedPeersRow(peers, connections);
+  const mode = getBrowserMode(client);
+  const [transferStats, nodeEndpoint, connectedPeers] = await Promise.all([
+    getBrowserTransferStats(client, connections),
+    resolveOwnEndpoint([...multiaddrs, ...addressManagerAddresses, ...localAddresses], signal),
+    resolveConnectedPeerLocations(connectedPeersRow, signal),
+  ]);
+  const connectedPeersWithMapEntries = {
+    ...connectedPeers,
+    mapEntries: [...getOwnMapEntry(nodeEndpoint, mode), ...getPeerMapEntries(connectedPeers)],
+  };
 
   return [
-    { name: 'Mode', value: getBrowserMode(client) },
+    { name: 'Mode', value: mode },
     { name: 'Peer ID', value: libp2p?.peerId?.toString() ?? 'unknown' },
     nodeEndpoint ? { countryCode: nodeEndpoint.countryCode, ip: nodeEndpoint.ip, name: 'Your IP', type: 'nodeEndpoint' } : { name: 'Your IP', value: 'unavailable' },
     { name: 'Data received', value: transferStats.downloadedBytes === undefined ? 'unknown' : formatBytes(transferStats.downloadedBytes) },
     { name: 'Data sent', value: transferStats.uploadedBytes === undefined ? 'unknown' : formatBytes(transferStats.uploadedBytes) },
-    getBrowserConnectedPeersRow(peers, connections),
+    connectedPeersWithMapEntries,
+  ];
+};
+
+const getFullNodeRpcEndpoint = async (account?: AccountShape, signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
+  const hostnames = getPkcRpcUrls(account).flatMap((rpcUrl) => {
+    const hostname = getHostnameFromUrl(rpcUrl);
+    return hostname ? [hostname] : [];
+  });
+  const hasRemoteHost = hostnames.some((hostname) => hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '::1');
+  const endpoints = await Promise.all(hostnames.map((hostname) => resolveEndpointFromHost(hostname, signal)));
+  const endpoint = endpoints.find(Boolean);
+  if (endpoint) return endpoint;
+  return hasRemoteHost ? undefined : fetchOwnPublicEndpoint(signal);
+};
+
+const isImplementedRpcMethod = (method: unknown): method is () => unknown | Promise<unknown> => {
+  if (typeof method !== 'function') return false;
+  const source = getFunctionSource(method);
+  return !source?.includes('not implemented');
+};
+
+const callPkcRpcMethod = async (client: PkcRpcClientShape | undefined, methodName: 'getPeers' | 'getStats') => {
+  const method = client?.[methodName];
+  if (!isImplementedRpcMethod(method)) return undefined;
+  try {
+    return await method.call(client);
+  } catch {
+    return undefined;
+  }
+};
+
+const getRpcIdentity = (stats: unknown) => getFirstNestedValue(stats, [['identity'], ['Identity'], ['id'], ['node']]);
+
+const getRpcPeerId = (stats: unknown) => {
+  const identity = getRpcIdentity(stats);
+  return getStringValue(getRecordField(identity, ['ID', 'id', 'PeerID', 'peerId']) ?? getRecordField(stats, ['ID', 'id', 'PeerID', 'peerId']));
+};
+
+const getRpcAgent = (stats: unknown) => {
+  const identity = getRpcIdentity(stats);
+  return getStringValue(getRecordField(identity, ['AgentVersion', 'agentVersion', 'agent']) ?? getRecordField(stats, ['AgentVersion', 'agentVersion', 'agent']));
+};
+
+const getRpcBandwidthValue = (stats: unknown, fields: string[][]) => getFirstNestedValue(stats, fields);
+
+const getFullNodeRpcStats = async (account?: AccountShape, rpcState?: string, signal?: AbortSignal): Promise<StatRow[]> => {
+  const rpcClient = getFirstPkcRpcClient(account);
+  const [stats, rpcPeers] = await Promise.all([callPkcRpcMethod(rpcClient, 'getStats'), callPkcRpcMethod(rpcClient, 'getPeers')]);
+  const identity = getRpcIdentity(stats);
+  const statsAddresses = [...getAddressListFromRecord(identity), ...getAddressListFromRecord(stats)];
+  const peerRecords = rpcPeers ?? getFirstNestedValue(stats, [['peers'], ['Peers'], ['connectedPeers'], ['connections']]);
+  const connectedPeers = await resolveConnectedPeerLocations(getConnectedPeersRowFromRecords(peerRecords), signal);
+  const nodeEndpoint = statsAddresses.length ? await resolveOwnEndpoint(statsAddresses, signal) : await getFullNodeRpcEndpoint(account, signal);
+  const connectedPeersWithMapEntries = {
+    ...connectedPeers,
+    mapEntries: [...getOwnMapEntry(nodeEndpoint, 'Seeding'), ...getPeerMapEntries(connectedPeers)],
+  };
+  const bandwidthIn = getRpcBandwidthValue(stats, [
+    ['bandwidth', 'TotalIn'],
+    ['bandwidth', 'totalIn'],
+    ['Bandwidth', 'TotalIn'],
+    ['TotalIn'],
+    ['totalIn'],
+    ['downloadedBytes'],
+  ]);
+  const bandwidthOut = getRpcBandwidthValue(stats, [
+    ['bandwidth', 'TotalOut'],
+    ['bandwidth', 'totalOut'],
+    ['Bandwidth', 'TotalOut'],
+    ['TotalOut'],
+    ['totalOut'],
+    ['uploadedBytes'],
+  ]);
+
+  return [
+    { name: 'Mode', value: 'Seeding' },
+    { name: 'PKC RPC', value: rpcClient?.state ?? rpcState ?? 'unknown' },
+    { name: 'Peer ID', value: getRpcPeerId(stats) },
+    nodeEndpoint ? { countryCode: nodeEndpoint.countryCode, ip: nodeEndpoint.ip, name: 'Your IP', type: 'nodeEndpoint' } : { name: 'Your IP', value: 'unavailable' },
+    ...(getRpcAgent(stats) !== 'unknown' ? [{ name: 'Agent', value: getRpcAgent(stats) } satisfies TextStatRow] : []),
+    { name: 'Data received', value: formatOptionalBytes(bandwidthIn) },
+    { name: 'Data sent', value: formatOptionalBytes(bandwidthOut) },
+    connectedPeersWithMapEntries,
   ];
 };
 
@@ -589,34 +913,37 @@ const kuboPostJson = async (path: string, params?: Record<string, string | boole
   return firstJsonLine ? JSON.parse(firstJsonLine) : {};
 };
 
-const getElectronKuboStats = async (rpcState?: string, signal?: AbortSignal): Promise<StatRow[]> => {
-  const [identity, version, peers, bandwidth, repo, bitswap] = await Promise.all([
+const getElectronKuboStats = async (signal?: AbortSignal): Promise<StatRow[]> => {
+  const [identity, peers, bandwidth] = await Promise.all([
     kuboPostJson('id', undefined, signal),
-    kuboPostJson('version', undefined, signal),
     kuboPostJson('swarm/peers', { direction: true, latency: true, streams: true }, signal),
     kuboPostJson('stats/bw', undefined, signal),
-    kuboPostJson('repo/stat', undefined, signal),
-    kuboPostJson('bitswap/stat', undefined, signal),
   ]);
+  const peerId = getStringValue(identity.ID, 'unknown');
+  const [nodeEndpoint, connectedPeers] = await Promise.all([
+    resolveKuboOwnEndpoint(getAddressListFromRecord(identity), signal),
+    resolveConnectedPeerLocations(getElectronConnectedPeersRow(peers), signal),
+  ]);
+  const connectedPeersWithMapEntries = {
+    ...connectedPeers,
+    mapEntries: [...getOwnMapEntry(nodeEndpoint, 'Seeding'), ...getPeerMapEntries(connectedPeers)],
+  };
 
   return [
-    { name: 'Mode', value: 'Desktop Kubo' },
-    { name: 'PKC RPC', value: rpcState ?? 'unknown' },
-    { name: 'Peer ID', value: identity.ID ?? 'unknown' },
-    { name: 'Agent', value: identity.AgentVersion ?? version.Version ?? 'unknown' },
-    { name: 'Bandwidth in', value: `${formatBytes(bandwidth.TotalIn)} total, ${formatRate(bandwidth.RateIn)}` },
-    { name: 'Bandwidth out', value: `${formatBytes(bandwidth.TotalOut)} total, ${formatRate(bandwidth.RateOut)}` },
-    { name: 'Repo size', value: formatBytes(repo.RepoSize) },
-    { name: 'Repo objects', value: String(repo.NumObjects ?? 'unknown') },
-    { name: 'Bitswap peers', value: formatCount(Array.isArray(bitswap.Peers) ? bitswap.Peers.length : 0, 'peer') },
-    { name: 'Bitswap wantlist', value: formatCount(Array.isArray(bitswap.Wantlist) ? bitswap.Wantlist.length : 0, 'item') },
-    getElectronConnectedPeersRow(peers),
+    { name: 'Mode', value: 'Seeding' },
+    { name: 'Kubo RPC', value: KUBO_API_URL },
+    { name: 'Peer ID', value: peerId },
+    nodeEndpoint ? { countryCode: nodeEndpoint.countryCode, ip: nodeEndpoint.ip, name: 'Your IP', type: 'nodeEndpoint' } : { name: 'Your IP', value: 'unavailable' },
+    { name: 'Data received', value: formatOptionalBytes(bandwidth.TotalIn) },
+    { name: 'Data sent', value: formatOptionalBytes(bandwidth.TotalOut) },
+    connectedPeersWithMapEntries,
   ];
 };
 
 const getP2PStats = async (mode: P2PRuntimeMode, account?: AccountShape, rpcState?: string, signal?: AbortSignal) => {
   if (mode === 'browser-libp2p') return getBrowserLibp2pStats(account, signal);
-  return getElectronKuboStats(rpcState, signal);
+  if (mode === 'full-node-rpc') return getFullNodeRpcStats(account, rpcState, signal);
+  return getElectronKuboStats(signal);
 };
 
 const NodeEndpointValue = ({ row }: { row: NodeEndpointStatRow }) => {
@@ -660,11 +987,11 @@ const ConnectedPeersValue = ({ row }: { row: ConnectedPeersStatRow }) => (
     <summary className={styles.connectedPeersSummary}>
       {row.name}: {formatCount(row.peerCount, 'peer')}, {formatCount(row.connectionCount, 'connection')}
     </summary>
-    <PeerWorldMap peers={row.entries} />
+    <PeerWorldMap peers={row.mapEntries ?? row.entries} />
     <div className={styles.connectedPeerList}>
       {row.entries.length ? (
         row.entries.map((entry) => {
-          const countryCode = getApproximateCountryCode(entry.address);
+          const countryCode = entry.countryCode ?? getApproximateCountryCode(entry.address);
           const flagPosition = getCountryFlagPosition(countryCode);
           return (
             <div className={styles.connectedPeer} key={entry.id}>
@@ -678,6 +1005,11 @@ const ConnectedPeersValue = ({ row }: { row: ConnectedPeersStatRow }) => (
                 {entry.status && (
                   <span className={styles.connectionStatus} data-status={entry.status}>
                     {entry.status}
+                  </span>
+                )}
+                {entry.role && (
+                  <span className={styles.connectionRole} data-peer-role={entry.role}>
+                    {entry.role === 'leecher' ? 'Leeching' : 'Seeding'}
                   </span>
                 )}
               </div>

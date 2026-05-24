@@ -49,11 +49,11 @@ describe('p2p-runtime', () => {
     expect(getP2PRuntimeMode({ pkc: { clients: { libp2pJsClients: { libp2pjs: {} } } } }, browserWindow)).toBe('browser-libp2p');
   });
 
-  it('detects electron Kubo RPC accounts only in electron runtime', () => {
+  it('detects full-node RPC accounts in browser and electron runtimes', () => {
     const account = { pkcOptions: { pkcRpcClientsOptions: ['ws://localhost:9138'] } };
 
     expect(getP2PRuntimeMode(account, electronWindow)).toBe('electron-kubo-rpc');
-    expect(getP2PRuntimeMode(account, browserWindow)).toBeNull();
+    expect(getP2PRuntimeMode(account, browserWindow)).toBe('full-node-rpc');
   });
 
   it('shows p2p settings in browsers when pure p2p is enabled by default', () => {
@@ -68,6 +68,13 @@ describe('p2p-runtime', () => {
     expect(isBrowserPureP2PEnabled(gatewayAccount, browserWindowWithDisabledPureP2P)).toBe(false);
     expect(shouldShowP2PSettingsSection(gatewayAccount, browserWindowWithDisabledPureP2P)).toBe(false);
     expect(isBrowserPureP2PEnabled(gatewayAccount, p2pBrowserWindowWithDisabledPureP2P)).toBe(false);
+  });
+
+  it('still shows browser full-node RPC stats when browser pure p2p was toggled off', () => {
+    const account = { pkcOptions: { pkcRpcClientsOptions: ['ws://node.example'] } };
+
+    expect(isBrowserPureP2PEnabled(account, browserWindowWithDisabledPureP2P)).toBe(false);
+    expect(shouldShowP2PSettingsSection(account, browserWindowWithDisabledPureP2P)).toBe(true);
   });
 
   it('builds browser p2p and gateway account options without a direct pkc-js import', () => {

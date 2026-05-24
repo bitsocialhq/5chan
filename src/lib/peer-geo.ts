@@ -1,11 +1,8 @@
-// Offline, approximate peer geolocation for the P2P stats world map.
+// Peer geolocation helpers for the P2P stats panel.
 //
-// Connected peer geolocation intentionally avoids any external geolocation API:
-// 5chan is serverless and privacy-focused, so we must not leak the set of peers
-// a user is connected to.
-// Instead we map an IPv4 address to its Regional Internet Registry (RIR) region at
-// continent resolution, using the coarse IANA /8 allocation table below. Positions
-// are therefore approximate ("roughly which continent"), not precise coordinates.
+// The world map first tries a public GeoIP lookup for the peer endpoint IP so the
+// marker can land near the reported city/region. If that lookup fails, the map
+// falls back to the offline RIR/country-centroid estimate below.
 
 import { COUNTRY_CENTROIDS } from '../data/country-centroids';
 
@@ -24,10 +21,22 @@ const formatAddressString = (address: unknown): string => {
 export type PublicEndpoint = {
   countryCode?: string;
   ip: string;
+  location?: PeerMapLocation;
+};
+
+export type LatLon = { lat: number; lon: number };
+
+export type PeerMapLocation = LatLon & {
+  countryCode?: string;
+  label?: string;
+  source: 'coarse' | 'geoip';
 };
 
 const COUNTRY_LOOKUP_URL = 'https://api.country.is';
 const PUBLIC_IPV4_LOOKUP_URL = 'https://api64.ipify.org?format=json';
+const PEER_LOCATION_LOOKUP_URL = 'https://free.freeipapi.com/api/json';
+const PEER_LOCATION_CACHE_MS = 24 * 60 * 60_000;
+const PEER_LOCATION_FAILURE_CACHE_MS = 10 * 60_000;
 
 export const extractIpFromAddress = (address: string): string | null => extractIpv4FromAddress(address) ?? extractIpv6FromAddress(address);
 
@@ -40,11 +49,23 @@ export const getFirstPublicIpFromAddresses = (addresses: unknown[]): string | un
 };
 
 let cachedOwnPublicEndpoint: { expiresAt: number; value?: PublicEndpoint } | undefined;
+const peerLocationCache = new Map<string, { expiresAt: number; value?: PeerMapLocation }>();
 
 const normalizeLookupCountryCode = (value: unknown) => {
   if (typeof value !== 'string') return undefined;
   const code = value.trim().toLowerCase();
   return /^[a-z]{2}$/.test(code) ? code : undefined;
+};
+
+const normalizePlaceName = (value: unknown) => {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
+};
+
+const getFiniteCoordinate = (value: unknown, min: number, max: number) => {
+  const coordinate = Number(value);
+  return Number.isFinite(coordinate) && coordinate >= min && coordinate <= max ? coordinate : undefined;
 };
 
 const parsePublicEndpoint = (data: unknown): PublicEndpoint | undefined => {
@@ -67,21 +88,49 @@ const fetchPublicEndpoint = async (url: string, signal?: AbortSignal): Promise<P
   }
 };
 
+const parsePeerLocation = (data: unknown): PeerMapLocation | undefined => {
+  if (!data || typeof data !== 'object') return undefined;
+  const lat = getFiniteCoordinate((data as { latitude?: unknown }).latitude, -85, 85);
+  const lon = getFiniteCoordinate((data as { longitude?: unknown }).longitude, -180, 180);
+  if (lat === undefined || lon === undefined) return undefined;
+
+  const countryCode = normalizeLookupCountryCode((data as { countryCode?: unknown }).countryCode);
+  const city = normalizePlaceName((data as { cityName?: unknown }).cityName);
+  const region = normalizePlaceName((data as { regionName?: unknown }).regionName);
+  const label = [city, region, countryCode?.toUpperCase()].filter(Boolean).join(', ') || undefined;
+  return {
+    countryCode,
+    label,
+    lat,
+    lon,
+    source: 'geoip',
+  };
+};
+
 // Fetches the browser node's own public endpoint for the P2P stats panel when
 // libp2p only advertises local/private listen addresses (common in browser nodes
 // and VPN setups). This only asks about the current browser's public endpoint;
-// connected peer geolocation remains offline/approximate below.
+// connected peer geolocation uses fetchPeerMapLocation below.
 export const fetchOwnPublicEndpoint = async (signal?: AbortSignal): Promise<PublicEndpoint | undefined> => {
   if (cachedOwnPublicEndpoint && Date.now() < cachedOwnPublicEndpoint.expiresAt) return cachedOwnPublicEndpoint.value;
 
   const endpoint = await fetchPublicEndpoint(COUNTRY_LOOKUP_URL, signal);
   if (endpoint) {
-    cachedOwnPublicEndpoint = { expiresAt: Date.now() + 60_000, value: endpoint };
-    return endpoint;
+    const location = await fetchIpMapLocation(endpoint.ip, signal);
+    const value = {
+      ...endpoint,
+      countryCode: endpoint.countryCode ?? location?.countryCode,
+      location,
+    };
+    cachedOwnPublicEndpoint = { expiresAt: Date.now() + 60_000, value };
+    return value;
   }
 
   const ipv4Endpoint = await fetchPublicEndpoint(PUBLIC_IPV4_LOOKUP_URL, signal);
-  const fallback = ipv4Endpoint?.ip ? { countryCode: getApproximateCountryCode(`/ip4/${ipv4Endpoint.ip}/tcp/0`), ip: ipv4Endpoint.ip } : undefined;
+  const ipv4Location = ipv4Endpoint?.ip ? await fetchIpMapLocation(ipv4Endpoint.ip, signal) : undefined;
+  const fallback = ipv4Endpoint?.ip
+    ? { countryCode: ipv4Location?.countryCode ?? getApproximateCountryCode(`/ip4/${ipv4Endpoint.ip}/tcp/0`), ip: ipv4Endpoint.ip, location: ipv4Location }
+    : undefined;
   // Don't cache an empty result produced by an aborted lookup (e.g. the panel was
   // closed mid-request): that is cancellation, not a real failure, so a later
   // reopen should retry instead of being served a cached blank for 30s.
@@ -93,21 +142,17 @@ const ownIpCountryCache = new Map<string, { expiresAt: number; value?: string }>
 
 // Accurate country code for the local node's OWN public IP, so the P2P stats
 // "Your IP" flag matches the address shown instead of the coarse continent guess.
-// Like fetchOwnPublicEndpoint, this only ever looks up the user's own node
-// address; connected peer geolocation stays offline (getApproximateCountryCode)
-// so the set of peers a user connects to is never sent to an external API.
+// Like fetchOwnPublicEndpoint, this only asks about the user's own node address.
 export const fetchOwnIpCountryCode = async (ip: string, signal?: AbortSignal): Promise<string | undefined> => {
   const cached = ownIpCountryCache.get(ip);
   if (cached && Date.now() < cached.expiresAt) return cached.value;
   const endpoint = await fetchPublicEndpoint(`${COUNTRY_LOOKUP_URL}/${ip}`, signal);
-  const value = endpoint?.countryCode;
+  const value = endpoint?.countryCode ?? getApproximateCountryCode(`/ip4/${ip}/tcp/0`);
   // See fetchOwnPublicEndpoint: skip caching when the lookup was aborted so a
   // cancelled request does not blank the flag for 60s on the next open.
   if (!signal?.aborted) ownIpCountryCache.set(ip, { expiresAt: Date.now() + 60_000, value });
   return value;
 };
-
-export type LatLon = { lat: number; lon: number };
 
 type Region = 'AF' | 'AS' | 'EU' | 'NA' | 'SA';
 
@@ -235,6 +280,11 @@ const isProbablyPublicIpv6 = (ip: string): boolean => {
 
 const isPublicIpAddress = (ip: string): boolean => (ip.includes(':') ? isProbablyPublicIpv6(ip) : !isPrivateOrReservedIpv4(ip));
 
+const getPublicIpFromAddress = (address: string): string | undefined => {
+  const ip = extractIpFromAddress(address);
+  return ip && isPublicIpAddress(ip) ? ip : undefined;
+};
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 const hashOctets = (parts: number[]) => {
@@ -263,6 +313,18 @@ export const getApproximateLatLon = (address: string): LatLon | null => {
   return { lat: clamp(centroid.lat + latOffset, -85, 85), lon: clamp(centroid.lon + lonOffset, -180, 180) };
 };
 
+const getCoarsePeerMapLocation = (address: string): PeerMapLocation | undefined => {
+  const location = getApproximateLatLon(address);
+  if (!location) return undefined;
+  const countryCode = getApproximateCountryCode(address);
+  return {
+    ...location,
+    countryCode,
+    label: countryCode ? countryCode.toUpperCase() : undefined,
+    source: 'coarse',
+  };
+};
+
 // Representative countries per region. The RIR table only resolves to a continent,
 // so the flag is a deterministic, approximate pick from the region's common
 // countries — consistent with the map's "approximate locations" framing, not real
@@ -284,4 +346,32 @@ export const getApproximateCountryCode = (address: string): string | undefined =
   if (!parts) return undefined;
   const pool = REGION_COUNTRIES[REGION_BY_OCTET[parts[0]]];
   return pool[hashOctets(parts) % pool.length];
+};
+
+export const fetchIpMapLocation = async (ip: string, signal?: AbortSignal): Promise<PeerMapLocation | undefined> => {
+  const cached = peerLocationCache.get(ip);
+  if (cached && Date.now() < cached.expiresAt) return cached.value;
+
+  let value: PeerMapLocation | undefined;
+  try {
+    const response = await fetch(`${PEER_LOCATION_LOOKUP_URL}/${encodeURIComponent(ip)}`, { signal });
+    if (response.ok) value = parsePeerLocation(await response.json());
+  } catch {
+    value = undefined;
+  }
+
+  // See fetchOwnPublicEndpoint: a cancelled request should not poison the cache.
+  if (!signal?.aborted) {
+    peerLocationCache.set(ip, {
+      expiresAt: Date.now() + (value ? PEER_LOCATION_CACHE_MS : PEER_LOCATION_FAILURE_CACHE_MS),
+      value,
+    });
+  }
+  return value;
+};
+
+export const fetchPeerMapLocation = async (address: string, signal?: AbortSignal): Promise<PeerMapLocation | undefined> => {
+  const ip = getPublicIpFromAddress(address);
+  if (!ip) return undefined;
+  return (await fetchIpMapLocation(ip, signal)) ?? getCoarsePeerMapLocation(address);
 };

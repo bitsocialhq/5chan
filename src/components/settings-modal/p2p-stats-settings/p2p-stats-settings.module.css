@@ -55,6 +55,7 @@
 }
 
 .connectedPeersSummary {
+  display: inline-block;
   cursor: pointer;
   padding: 1px 0;
 }
@@ -86,7 +87,8 @@
 }
 
 .connectionDirection,
-.connectionStatus {
+.connectionStatus,
+.connectionRole {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -115,6 +117,10 @@
 
 .connectionStatus[data-status*='open' i]::before {
   background: #3fb950;
+}
+
+.connectionRole[data-peer-role='leecher'] {
+  color: red;
 }
 
 .peerId {
@@ -187,6 +193,10 @@
 
 .peerMarker {
   fill: #3fb950;
+}
+
+.peerMarker[data-peer-role='leecher'] {
+  fill: red;
 }
 
 .peerWorldMapCaption {
