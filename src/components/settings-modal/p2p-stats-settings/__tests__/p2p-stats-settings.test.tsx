@@ -491,4 +491,219 @@ describe('P2PStatsSettings', () => {
     expect(container.querySelector('a[href="https://github.com/bitsocialnet/bitsocial-seeder"]')).toBeNull();
     expect(container.textContent).not.toContain('seed mode');
   });
+
+  it('renders browser full-node RPC stats with seeding mode and leecher peer markers', async () => {
+    const fetchMock = vi.fn(async (url: string | URL | Request) => {
+      const requestUrl = String(url);
+      if (requestUrl === 'https://free.freeipapi.com/api/json/147.75.84.175') {
+        return {
+          ok: true,
+          json: async () => ({
+            cityName: 'New York',
+            countryCode: 'US',
+            latitude: 40.7128,
+            longitude: -74.006,
+            regionName: 'New York',
+          }),
+        };
+      }
+      if (requestUrl === 'https://free.freeipapi.com/api/json/91.234.199.189') {
+        return {
+          ok: true,
+          json: async () => ({
+            cityName: 'Haarlem',
+            countryCode: 'NL',
+            latitude: 52.3874,
+            longitude: 4.64622,
+            regionName: 'North Holland',
+          }),
+        };
+      }
+      if (requestUrl === 'https://free.freeipapi.com/api/json/117.2.120.113') {
+        return {
+          ok: true,
+          json: async () => ({
+            cityName: 'Da Nang',
+            countryCode: 'VN',
+            latitude: 16.0678,
+            longitude: 108.221,
+            regionName: 'Da Nang City',
+          }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({ country: 'US', ip: '147.75.84.175' }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    testState.rpcSettings = { state: 'connected' };
+    testState.account = {
+      ...testState.account,
+      pkcOptions: {
+        pkcRpcClientsOptions: ['ws://147.75.84.175:9138'],
+      },
+      pkc: {
+        clients: {
+          pkcRpcClients: {
+            'ws://147.75.84.175:9138': {
+              getPeers: vi.fn().mockResolvedValue({
+                peers: [
+                  {
+                    address: '/ip4/91.234.199.189/tcp/4001',
+                    listenAddress: '/ip4/91.234.199.189/tcp/4001',
+                    peerId: 'seed-peer',
+                  },
+                  {
+                    address: '/ip4/117.2.120.113/tcp/4001',
+                    listenAddress: '',
+                    peerId: 'leech-peer',
+                  },
+                ],
+              }),
+              getStats: vi.fn().mockResolvedValue({
+                bandwidth: { TotalIn: 1024, TotalOut: 2048 },
+                identity: {
+                  AgentVersion: 'kubo/full-node',
+                  ID: 'full-node-peer',
+                  Addresses: ['/ip4/147.75.84.175/tcp/4001'],
+                },
+              }),
+              state: 'connected',
+            },
+          },
+        },
+      },
+    };
+
+    await renderSettings(false);
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const rows = getStatRows();
+    const markers = Array.from(container.querySelectorAll('svg rect'));
+    const ownMarker = markers.find((marker) => marker.querySelector('title')?.textContent?.startsWith('Your node'));
+    const leecherMarker = markers.find((marker) => marker.querySelector('title')?.textContent?.startsWith('leech-peer'));
+    expect(rows.get('Mode')).toBe('Seeding');
+    expect(rows.get('PKC RPC')).toBe('connected');
+    expect(rows.get('Peer ID')).toBe('full-node-peer');
+    expect(rows.get('Your IP')).toContain('147.75.84.175');
+    expect(rows.get('Data received')).toBe('1.00 KB');
+    expect(rows.get('Data sent')).toBe('2.00 KB');
+    expect(container.textContent).toContain('seed-peer');
+    expect(container.textContent).toContain('leech-peer');
+    expect(container.textContent).toContain('Leeching');
+    expect(container.querySelector('a[href="https://github.com/bitsocialnet/bitsocial-seeder"]')).toBeNull();
+    expect(ownMarker?.getAttribute('data-peer-role')).toBe('seeder');
+    expect(leecherMarker?.getAttribute('data-peer-role')).toBe('leecher');
+  });
+
+  it('renders Electron Kubo stats as seeding with the node location on the map', async () => {
+    const fetchMock = vi.fn(async (url: string | URL | Request) => {
+      const requestUrl = String(url);
+      if (requestUrl === 'http://localhost:50019/api/v0/id') {
+        return {
+          ok: true,
+          text: async () =>
+            JSON.stringify({
+              Addresses: ['/ip4/117.2.120.113/tcp/4001'],
+              AgentVersion: 'kubo/0.41.0',
+              ID: 'desktop-kubo-peer',
+            }),
+        };
+      }
+      if (requestUrl === 'http://localhost:50019/api/v0/version') {
+        return { ok: true, text: async () => JSON.stringify({ Version: '0.41.0' }) };
+      }
+      if (requestUrl === 'http://localhost:50019/api/v0/swarm/peers?direction=true&latency=true&streams=true') {
+        return {
+          ok: true,
+          text: async () =>
+            JSON.stringify({
+              Peers: [
+                {
+                  Addr: '/ip4/91.234.199.189/tcp/4001',
+                  Direction: 'outbound',
+                  ListenAddress: '/ip4/91.234.199.189/tcp/4001',
+                  Peer: 'kubo-seeder',
+                },
+                {
+                  Addr: '/ip4/203.0.113.10/tcp/4001',
+                  Direction: 'inbound',
+                  ListenAddress: '',
+                  Peer: 'kubo-leecher',
+                },
+              ],
+            }),
+        };
+      }
+      if (requestUrl === 'http://localhost:50019/api/v0/stats/bw') {
+        return { ok: true, text: async () => JSON.stringify({ RateIn: 12, RateOut: 34, TotalIn: 4096, TotalOut: 8192 }) };
+      }
+      if (requestUrl === 'http://localhost:50019/api/v0/repo/stat') {
+        return { ok: true, text: async () => JSON.stringify({ NumObjects: 7, RepoSize: 16384 }) };
+      }
+      if (requestUrl === 'http://localhost:50019/api/v0/bitswap/stat') {
+        return { ok: true, text: async () => JSON.stringify({ Peers: ['peer-a'], Wantlist: ['cid-a', 'cid-b'] }) };
+      }
+      if (requestUrl === 'https://free.freeipapi.com/api/json/117.2.120.113') {
+        return {
+          ok: true,
+          json: async () => ({
+            cityName: 'Da Nang',
+            countryCode: 'VN',
+            latitude: 16.0678,
+            longitude: 108.221,
+            regionName: 'Da Nang City',
+          }),
+        };
+      }
+      if (requestUrl === 'https://free.freeipapi.com/api/json/91.234.199.189') {
+        return {
+          ok: true,
+          json: async () => ({
+            cityName: 'Haarlem',
+            countryCode: 'NL',
+            latitude: 52.3874,
+            longitude: 4.64622,
+            regionName: 'North Holland',
+          }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({ country: 'VN', ip: '117.2.120.113' }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    testState.rpcSettings = { state: 'connected' };
+    testState.account = {
+      ...testState.account,
+      pkcOptions: {
+        pkcRpcClientsOptions: ['ws://localhost:9138'],
+      },
+    };
+
+    await renderSettings(true);
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const rows = getStatRows();
+    const markers = Array.from(container.querySelectorAll('svg rect'));
+    const ownMarker = markers.find((marker) => marker.querySelector('title')?.textContent?.startsWith('Your node'));
+    const leecherMarker = markers.find((marker) => marker.querySelector('title')?.textContent?.startsWith('kubo-leecher'));
+    expect(rows.get('Mode')).toBe('Seeding');
+    expect(rows.get('Peer ID')).toBe('desktop-kubo-peer');
+    expect(rows.get('Your IP')).toContain('117.2.120.113');
+    expect(rows.get('Bandwidth in')).toContain('4.00 KB total');
+    expect(container.textContent).toContain('kubo-seeder');
+    expect(container.textContent).toContain('kubo-leecher');
+    expect(container.textContent).toContain('Leeching');
+    expect(ownMarker?.getAttribute('data-peer-role')).toBe('seeder');
+    expect(leecherMarker?.getAttribute('data-peer-role')).toBe('leecher');
+  });
 });
