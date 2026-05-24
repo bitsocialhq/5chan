@@ -156,6 +156,7 @@ const CommentContent = ({
   const failedError = getFailedCommentError(resolvedPost);
   const failedErrorMessage = formatErrorMessageForDisplay(failedError);
   const shouldShowUnpublishedStateDetails = !cid && (!hasFailedState || Boolean(failedError));
+  const pendingApprovalReason = pendingApproval ? reason?.trim() : undefined;
 
   const loadingString = (
     <div className={styles.stateString}>
@@ -219,6 +220,18 @@ const CommentContent = ({
               <br />
               <br />
               <span className={styles.pendingApproval}>({t('pending_mod_approval')})</span>
+              {pendingApprovalReason && (
+                <>
+                  <br />
+                  <br />
+                  <span className={styles.grayEditMessage}>
+                    {t('pending_mod_approval_reason', {
+                      reason: pendingApprovalReason,
+                      interpolation: { escapeValue: false },
+                    })}
+                  </span>
+                </>
+              )}
             </>
           )}
           {((!isInPostView && content?.length > 1000 && !showFullComment) || (isInPostView && content?.length > 2000 && !showFullComment)) && (

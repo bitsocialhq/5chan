@@ -391,5 +391,6 @@
   "modQueue.dismiss": "दुर्लक्ष करा",
   "board_address_unverified_warning": "हा बोर्ड पत्ता सत्यापित केलेला नाही. बोर्डचा मालक हा पत्ता मालक नसू शकतो.",
   "go_to_settings_to_import_mod_account": "तुमचे मॉड खाते आयात करण्यासाठी <1>सेटिंग्ज</1> वर जा",
-  "post_form_rules_faq_prompt": "पोस्ट करण्यापूर्वी <rules>नियम</rules> आणि <faq>वारंवार विचारले जाणारे प्रश्न</faq> वाचा."
+  "post_form_rules_faq_prompt": "पोस्ट करण्यापूर्वी <rules>नियम</rules> आणि <faq>वारंवार विचारले जाणारे प्रश्न</faq> वाचा.",
+  "pending_mod_approval_reason": "AI मॉडरेशनने ही पोस्ट मॉड कतारमध्ये पाठवली. कारण: \"{{reason}}\"."
 }
