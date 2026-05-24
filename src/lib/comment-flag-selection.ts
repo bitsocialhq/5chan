@@ -16,13 +16,13 @@ export interface CommentFlagRequest {
   text: string;
 }
 
-export interface CommentFlagChallengeRequest {
+interface CommentFlagChallengeRequest {
   challengeAnswers: string[];
 }
 
 export interface CommentFlagPublishOptions {
-  challengeRequest: CommentFlagChallengeRequest;
-  flairs: CommentFlagRequest[];
+  challengeRequest: CommentFlagChallengeRequest | undefined;
+  flairs: CommentFlagRequest[] | undefined;
 }
 
 const GEOGRAPHIC_LOCATION_OPTION: CommentFlagSelectOption = {
@@ -92,12 +92,7 @@ export const getCommentFlagRequestFromSelection = (value: string | undefined): C
     : undefined;
 };
 
-export const getCommentFlagChallengeRequestFromSelection = (value: string | undefined): CommentFlagChallengeRequest | undefined => {
-  const flag = getCommentFlagRequestFromSelection(value);
-  return flag ? { challengeAnswers: [`${FLAG_CHALLENGE_ANSWER_PREFIX}${flag.text}`] } : undefined;
-};
-
-export const getCommentFlagPublishOptionsFromSelection = (value: string | undefined): CommentFlagPublishOptions | undefined => {
+export const getCommentFlagPublishOptionsFromSelection = (value: string | undefined): CommentFlagPublishOptions => {
   const flag = getCommentFlagRequestFromSelection(value);
   return flag
     ? {
@@ -106,5 +101,8 @@ export const getCommentFlagPublishOptionsFromSelection = (value: string | undefi
         },
         flairs: [flag],
       }
-    : undefined;
+    : {
+        challengeRequest: undefined,
+        flairs: undefined,
+      };
 };

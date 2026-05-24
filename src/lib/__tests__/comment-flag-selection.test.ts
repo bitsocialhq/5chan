@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  getCommentFlagChallengeRequestFromSelection,
-  getCommentFlagOptionsForDirectory,
-  getCommentFlagPublishOptionsFromSelection,
-  getCommentFlagRequestFromSelection,
-} from '../comment-flag-selection';
+import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsFromSelection, getCommentFlagRequestFromSelection } from '../comment-flag-selection';
 
 describe('comment-flag-selection', () => {
   it('does not expose options for boards without flags', () => {
@@ -85,16 +80,6 @@ describe('comment-flag-selection', () => {
     expect(getCommentFlagRequestFromSelection('none')).toBeUndefined();
   });
 
-  it('wraps selected flags in the challenge answer namespace', () => {
-    expect(getCommentFlagChallengeRequestFromSelection('country:auto')).toEqual({
-      challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
-    });
-    expect(getCommentFlagChallengeRequestFromSelection('pony:AJ')).toEqual({
-      challengeAnswers: ['bitsocial-flags:5chan:flag:pony:AJ'],
-    });
-    expect(getCommentFlagChallengeRequestFromSelection('none')).toBeUndefined();
-  });
-
   it('publishes selected flags as signed comment flairs and challenge answers', () => {
     expect(getCommentFlagPublishOptionsFromSelection('country:auto')).toEqual({
       challengeRequest: {
@@ -108,6 +93,16 @@ describe('comment-flag-selection', () => {
       },
       flairs: [{ type: 'pony', code: 'AJ', text: 'flag:pony:AJ' }],
     });
-    expect(getCommentFlagPublishOptionsFromSelection('none')).toBeUndefined();
+  });
+
+  it('clears flag publish data when no flag is selected', () => {
+    expect(getCommentFlagPublishOptionsFromSelection('none')).toEqual({
+      challengeRequest: undefined,
+      flairs: undefined,
+    });
+    expect(getCommentFlagPublishOptionsFromSelection(undefined)).toEqual({
+      challengeRequest: undefined,
+      flairs: undefined,
+    });
   });
 });

@@ -83,8 +83,10 @@ describe('usePublishReply', () => {
     usePostNumberStore.setState({ cidToNumber: {}, numberToCid: { 'music.eth': { 12: 'quoted-cid' } } });
     usePublishReplyStore.setState({
       author: {},
+      challengeRequest: {},
       content: {},
       displayName: {},
+      flairs: {},
       link: {},
       publishCommentOptions: {},
       spoiler: {},
@@ -183,6 +185,33 @@ describe('usePublishReply', () => {
     });
 
     expect(testState.lastPublishOptions?.content).toBe('Fresh reply');
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears stale flag data from one-shot reply options', async () => {
+    await act(async () => {
+      latestValue.setPublishReplyOptions({
+        content: 'Flag reply',
+        challengeRequest: {
+          challengeAnswers: ['bitsocial-flags:5chan:flag:pol:AC'],
+        },
+        flairs: [{ text: 'flag:pol:AC', type: 'pol', code: 'AC' }],
+      } as never);
+    });
+
+    await act(async () => {
+      await latestValue.publishReply({
+        content: 'Plain reply',
+        challengeRequest: undefined,
+        flairs: undefined,
+      } as never);
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(testState.lastPublishOptions?.content).toBe('Plain reply');
+    expect(testState.lastPublishOptions?.challengeRequest).toBeUndefined();
+    expect(testState.lastPublishOptions?.flairs).toBeUndefined();
     expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
   });
 
