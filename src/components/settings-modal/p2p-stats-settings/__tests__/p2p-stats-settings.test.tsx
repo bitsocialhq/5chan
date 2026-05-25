@@ -113,8 +113,8 @@ describe('P2PStatsSettings', () => {
                   getPeers: () => ['peer-1', 'peer-2'],
                   metrics: {
                     toJSON: () => ({
-                      helia_bitswap_data_received_bytes: { global: 2048, peer1: 2048 },
-                      helia_bitswap_sent_data_bytes_total: 1024,
+                      helia_bitswap_data_received_bytes: { global: 2048, 'peer-1': 1536 },
+                      helia_bitswap_sent_data_bytes: { global: 1024, 'peer-1': 512 },
                     }),
                   },
                   peerId: { toString: () => 'self-peer' },
@@ -161,6 +161,10 @@ describe('P2PStatsSettings', () => {
     expect(container.textContent).not.toContain('status');
     expect(connectedPeers?.textContent).toContain('2 peers, 1 connection');
     expect(connectedPeers?.textContent).toContain('WebSocket');
+    expect(connectedPeers?.textContent).toContain('Received 1.50 KB');
+    expect(connectedPeers?.textContent).toContain('Sent 512 B');
+    expect(connectedPeers?.textContent).not.toContain('outbound');
+    expect(connectedPeers?.textContent).not.toContain('open');
     expect(connectedPeers?.textContent).toContain('/ip4/127.0.0.1/tcp/4001/ws/p2p/peer-1');
     expect(rows.has('connections')).toBe(false);
     expect(rows.has('Listen addresses')).toBe(false);
@@ -445,9 +449,14 @@ describe('P2PStatsSettings', () => {
                   },
                 },
                 libp2p: {
-                  getConnections: () => [],
+                  getConnections: () => [
+                    {
+                      remoteAddr: { toString: () => '/ip4/91.234.199.189/tcp/4001/ws/p2p/peer-1' },
+                      remotePeer: { toString: () => 'peer-1' },
+                    },
+                  ],
                   getMultiaddrs: () => ['/ip4/147.75.84.175/tcp/4001/ws'],
-                  getPeers: () => [],
+                  getPeers: () => ['peer-1'],
                   peerId: { toString: () => 'self-peer' },
                 },
               },
@@ -464,6 +473,8 @@ describe('P2PStatsSettings', () => {
     expect(container.textContent).toContain('4.00 KB');
     expect(container.textContent).toContain('Data sent');
     expect(container.textContent).toContain('2.00 KB');
+    expect(container.querySelector('[data-testid="connected-peers"]')?.textContent).toContain('Received 4.00 KB');
+    expect(container.querySelector('[data-testid="connected-peers"]')?.textContent).toContain('Sent 2.00 KB');
   });
 
   it('starts browser transfer counters at zero when Helia exposes no byte totals yet', async () => {
@@ -657,11 +668,13 @@ describe('P2PStatsSettings', () => {
                 peers: [
                   {
                     address: '/ip4/91.234.199.189/tcp/4001',
+                    bandwidth: { TotalIn: 256, TotalOut: 512 },
                     listenAddress: '/ip4/91.234.199.189/tcp/4001',
                     peerId: 'seed-peer',
                   },
                   {
                     address: '/ip4/117.2.120.113/tcp/4001',
+                    bandwidth: { TotalIn: 128, TotalOut: 64 },
                     listenAddress: '',
                     peerId: 'leech-peer',
                   },
@@ -700,6 +713,8 @@ describe('P2PStatsSettings', () => {
     expect(rows.get('Data sent')).toBe('2.00 KB');
     expect(container.textContent).toContain('seed-peer');
     expect(container.textContent).toContain('leech-peer');
+    expect(container.querySelector('[data-testid="connected-peers"]')?.textContent).toContain('Received 256 B');
+    expect(container.querySelector('[data-testid="connected-peers"]')?.textContent).toContain('Sent 64 B');
     expect(container.textContent).toContain('Leeching');
     expect(container.querySelector('a[href="https://github.com/bitsocialnet/bitsocial-seeder"]')).toBeNull();
     expect(ownMarker?.getAttribute('data-peer-role')).toBe('seeder');
