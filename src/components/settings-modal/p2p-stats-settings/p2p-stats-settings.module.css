@@ -211,6 +211,13 @@
   font-size: 0.85em;
 }
 
+.statsLoading {
+  margin: 8px 0 16px;
+  padding-bottom: 8px;
+  text-align: center;
+  font-size: 10pt;
+}
+
 .statsMeta button {
   margin-left: 5px;
 }

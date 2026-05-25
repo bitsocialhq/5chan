@@ -15,6 +15,7 @@ import {
   type PublicEndpoint,
 } from '../../../lib/peer-geo';
 import { getP2PRuntimeMode, type P2PRuntimeMode } from '../../../lib/p2p-runtime';
+import LoadingEllipsis from '../../loading-ellipsis';
 import PeerWorldMap from './peer-world-map';
 import styles from './p2p-stats-settings.module.css';
 
@@ -1087,7 +1088,11 @@ const P2PStatsSettings = () => {
             </tbody>
           </table>
           <div className={styles.statsMeta}>
-            {statsState.loading ? t('p2p_stats_loading') : null}
+            {statsState.loading ? (
+              <div className={styles.statsLoading}>
+                <LoadingEllipsis string={t('p2p_stats_loading')} />
+              </div>
+            ) : null}
             {statsState.error && <div className={styles.error}>{statsState.error}</div>}
           </div>
         </>
