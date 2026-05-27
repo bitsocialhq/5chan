@@ -59,6 +59,7 @@ import { getThreadPostCountsByAuthor } from '../../lib/utils/author-post-counts'
 import { withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getFeedPostHeightEstimate, getReplyHeightEstimates, reportReplyHeightAuditSample } from '../../lib/utils/pretext-height-estimates';
 import { getAuthorBadge } from '../../lib/utils/author-display-utils';
+import { hasCommentFlagsForDirectory } from '../../lib/comment-flag-selection';
 
 const { addChallenge } = useChallengesStore.getState();
 
@@ -89,7 +90,7 @@ const PostInfoAndMedia = ({
   const purged = resolvedPost?.commentModeration?.purged;
   const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
   const directoryEntry = communityAddress ? findDirectoryByAddress(directories, communityAddress) : undefined;
-  const showAuthorFlags = directoryEntry?.features?.hasFlags === true && !(deleted || removed || purged);
+  const showAuthorFlags = hasCommentFlagsForDirectory(directoryEntry) && !(deleted || removed || purged);
   const displayBoardPath =
     boardPath && communityAddress
       ? boardPath !== communityAddress

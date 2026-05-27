@@ -89,8 +89,12 @@ jobs:
           fi
 
       - name: Run React Doctor
-        if: github.event_name != 'pull_request' || steps.react-ui-changes.outputs.changed == 'true'
+        if: github.event_name != 'pull_request'
         run: yarn doctor
+
+      - name: Run React Doctor on changed React files
+        if: github.event_name == 'pull_request' && steps.react-ui-changes.outputs.changed == 'true'
+        run: yarn doctor --diff "${{ github.event.pull_request.base.sha }}" --annotations
 
       - name: Skip React Doctor
         if: github.event_name == 'pull_request' && steps.react-ui-changes.outputs.changed != 'true'

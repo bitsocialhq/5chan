@@ -25,6 +25,8 @@ export interface CommentFlagPublishOptions {
   flairs: CommentFlagRequest[] | undefined;
 }
 
+export type CommentFlagDirectory = Partial<Pick<DirectoryCommunity, 'directoryCode' | 'features' | 'title'>>;
+
 const GEOGRAPHIC_LOCATION_OPTION: CommentFlagSelectOption = {
   value: GEOGRAPHIC_LOCATION_FLAG_VALUE,
   label: 'Geographic Location',
@@ -43,14 +45,18 @@ const getDirectoryCode = (directory: Pick<DirectoryCommunity, 'directoryCode' | 
   return directoryCode || directory?.title?.match(/^\/([^/]+)\//)?.[1]?.toLowerCase();
 };
 
+export const hasCommentFlagsForDirectory = (directory: CommentFlagDirectory | undefined): boolean => {
+  return directory?.features?.hasFlags === true;
+};
+
 const getBoardFlagOptions = (kind: BoardFlagKind): CommentFlagSelectOption[] =>
   getBoardFlagDefinitions(kind).map((flag) => ({
     value: `${flag.kind}:${flag.code}`,
     label: flag.label,
   }));
 
-export const getCommentFlagOptionsForDirectory = (directory: Pick<DirectoryCommunity, 'directoryCode' | 'features' | 'title'> | undefined): CommentFlagSelectOption[] => {
-  if (directory?.features?.hasFlags !== true) {
+export const getCommentFlagOptionsForDirectory = (directory: CommentFlagDirectory | undefined): CommentFlagSelectOption[] => {
+  if (!hasCommentFlagsForDirectory(directory)) {
     return [];
   }
 
@@ -70,11 +76,8 @@ export const getCommentFlagOptionsForDirectory = (directory: Pick<DirectoryCommu
   return [GEOGRAPHIC_LOCATION_OPTION];
 };
 
-export const getCommentFlagPublishOptionsForDirectory = (
-  directory: Pick<DirectoryCommunity, 'directoryCode' | 'features' | 'title'> | undefined,
-  selectedValue?: string,
-): CommentFlagPublishOptions => {
-  if (directory?.features?.hasFlags !== true) {
+export const getCommentFlagPublishOptionsForDirectory = (directory: CommentFlagDirectory | undefined, selectedValue?: string): CommentFlagPublishOptions => {
+  if (!hasCommentFlagsForDirectory(directory)) {
     return {
       challengeRequest: undefined,
       flairs: undefined,

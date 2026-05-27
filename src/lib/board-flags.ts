@@ -21,6 +21,7 @@ const PONY_FLAG_HEIGHT = 16;
 const PONY_FLAG_COLUMNS = 9;
 const PONY_FLAG_SPRITE_PATH = 'assets/icons/flags-pony.png';
 
+// Order follows 4chan's board flag selector. Coordinates follow flags/pol/flags.2.css.
 const POLITICAL_FLAG_ENTRIES = [
   ['AC', 'Anarcho-Capitalist'],
   ['AN', 'Anarchist'],
@@ -42,12 +43,40 @@ const POLITICAL_FLAG_ENTRIES = [
   ['PC', 'Hippie'],
   ['PR', 'Pirate'],
   ['RE', 'Republican'],
-  ['TM', 'Templar'],
   ['MZ', 'Task Force Z'],
+  ['TM', 'Templar'],
   ['TR', 'Tree Hugger'],
   ['UN', 'United Nations'],
   ['WP', 'White Supremacist'],
 ] as const;
+
+const POLITICAL_FLAG_COORDINATES = {
+  AC: [0, 0],
+  AN: [16, 0],
+  BL: [32, 0],
+  CF: [48, 0],
+  CM: [64, 0],
+  CT: [0, 12],
+  DM: [16, 12],
+  EU: [32, 12],
+  FC: [48, 12],
+  GN: [64, 12],
+  GY: [0, 24],
+  JH: [16, 24],
+  KN: [32, 24],
+  MF: [48, 24],
+  MZ: [64, 24],
+  NB: [0, 36],
+  NT: [16, 36],
+  NZ: [32, 36],
+  PC: [48, 36],
+  PR: [64, 36],
+  RE: [0, 48],
+  TM: [16, 48],
+  TR: [32, 48],
+  UN: [48, 48],
+  WP: [64, 48],
+} as const satisfies Record<(typeof POLITICAL_FLAG_ENTRIES)[number][0], readonly [number, number]>;
 
 const PONY_FLAG_ENTRIES = [
   ['4CC', '4cc /mlp/'],
@@ -144,25 +173,37 @@ const buildFlagDefinitions = (
   width: number,
   height: number,
   columns: number,
+  coordinatesByCode?: Readonly<Record<string, readonly [number, number]>>,
 ): ReadonlyMap<string, BoardFlagDefinition> =>
   new Map(
-    entries.map(([code, label], index) => [
-      code,
-      {
-        kind,
+    entries.map(([code, label], index) => {
+      const [x, y] = coordinatesByCode?.[code] ?? [(index % columns) * width, Math.floor(index / columns) * height];
+      return [
         code,
-        label,
-        spritePath,
-        width,
-        height,
-        x: (index % columns) * width,
-        y: Math.floor(index / columns) * height,
-      },
-    ]),
+        {
+          kind,
+          code,
+          label,
+          spritePath,
+          width,
+          height,
+          x,
+          y,
+        },
+      ] as const;
+    }),
   );
 
 const BOARD_FLAGS_BY_KIND: Record<BoardFlagKind, ReadonlyMap<string, BoardFlagDefinition>> = {
-  pol: buildFlagDefinitions(POLITICAL_FLAG_ENTRIES, 'pol', POLITICAL_FLAG_SPRITE_PATH, POLITICAL_FLAG_WIDTH, POLITICAL_FLAG_HEIGHT, POLITICAL_FLAG_COLUMNS),
+  pol: buildFlagDefinitions(
+    POLITICAL_FLAG_ENTRIES,
+    'pol',
+    POLITICAL_FLAG_SPRITE_PATH,
+    POLITICAL_FLAG_WIDTH,
+    POLITICAL_FLAG_HEIGHT,
+    POLITICAL_FLAG_COLUMNS,
+    POLITICAL_FLAG_COORDINATES,
+  ),
   pony: buildFlagDefinitions(PONY_FLAG_ENTRIES, 'pony', PONY_FLAG_SPRITE_PATH, PONY_FLAG_WIDTH, PONY_FLAG_HEIGHT, PONY_FLAG_COLUMNS),
 };
 
