@@ -19,6 +19,30 @@ describe('board-flags', () => {
       x: 0,
       y: 0,
     });
+    expect(getBoardFlagDefinition('pol', 'MZ')).toMatchObject({
+      code: 'MZ',
+      label: 'Task Force Z',
+      x: 64,
+      y: 24,
+    });
+    expect(getBoardFlagDefinition('pol', 'NB')).toMatchObject({
+      code: 'NB',
+      label: 'National Bolshevik',
+      x: 0,
+      y: 36,
+    });
+    expect(getBoardFlagDefinition('pol', 'RE')).toMatchObject({
+      code: 'RE',
+      label: 'Republican',
+      x: 0,
+      y: 48,
+    });
+    expect(getBoardFlagDefinition('pol', 'TM')).toMatchObject({
+      code: 'TM',
+      label: 'Templar',
+      x: 16,
+      y: 48,
+    });
     expect(getBoardFlagDefinition('pol', 'WP')).toMatchObject({ code: 'WP', x: 64, y: 48 });
   });
 

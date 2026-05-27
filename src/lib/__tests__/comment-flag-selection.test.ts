@@ -4,11 +4,17 @@ import {
   getCommentFlagPublishOptionsForDirectory,
   getCommentFlagPublishOptionsFromSelection,
   getCommentFlagRequestFromSelection,
+  hasCommentFlagsForDirectory,
 } from '../comment-flag-selection';
 
 describe('comment-flag-selection', () => {
   it('does not expose options for boards without flags', () => {
     expect(getCommentFlagOptionsForDirectory({ features: {}, title: '/mu/ - Music' })).toEqual([]);
+  });
+
+  it('detects flag-capable directories from directory metadata', () => {
+    expect(hasCommentFlagsForDirectory({ features: {}, title: '/mu/ - Music' })).toBe(false);
+    expect(hasCommentFlagsForDirectory({ features: { hasFlags: true }, title: '/pol/ - Politically Incorrect' })).toBe(true);
   });
 
   it('uses geographic location as the default for country flag boards', () => {
@@ -58,6 +64,14 @@ describe('comment-flag-selection', () => {
       { label: 'Black Nationalist', value: 'pol:BL' },
       { label: 'Confederate', value: 'pol:CF' },
       { label: 'Communist', value: 'pol:CM' },
+    ]);
+    expect(options.slice(-6)).toEqual([
+      { label: 'Republican', value: 'pol:RE' },
+      { label: 'Task Force Z', value: 'pol:MZ' },
+      { label: 'Templar', value: 'pol:TM' },
+      { label: 'Tree Hugger', value: 'pol:TR' },
+      { label: 'United Nations', value: 'pol:UN' },
+      { label: 'White Supremacist', value: 'pol:WP' },
     ]);
   });
 
