@@ -6,6 +6,8 @@ import { useDirectories, DirectoryCommunity, findDirectoryByAddress } from '../.
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { getCommunityAddress, getBoardPath } from '../../lib/utils/route-utils';
 import Markdown from '../../components/markdown';
+import LoadingEllipsis from '../../components/loading-ellipsis';
+import useStateString from '../../hooks/use-state-string';
 import styles from './rules.module.css';
 import { useTranslation } from 'react-i18next';
 import lowerCase from 'lodash/lowerCase';
@@ -23,30 +25,11 @@ const getBoardName = (title?: string): string => {
 };
 
 const BoardRulesDisplay = ({ communityAddress, directories }: { communityAddress: string; directories: DirectoryCommunity[] }) => {
+  const { t } = useTranslation();
   const communityIdentifier = useCommunityIdentifier(communityAddress);
   const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
   const { rules, state, title, shortAddress } = community || {};
-
-  let loadingText: string | null = null;
-  if (!community) {
-    loadingText = 'connecting...';
-  } else {
-    switch (state) {
-      case 'fetching-ipns':
-      case 'fetching-ipfs':
-        loadingText = 'loading...';
-        break;
-      case 'failed':
-        loadingText = 'failed to load';
-        break;
-      case 'succeeded':
-        loadingText = null;
-        break;
-      default:
-        loadingText = state ? `${state}...` : 'loading...';
-    }
-  }
-
+  const stateString = useStateString(community) || t('downloading_board');
   const isLoaded = state === 'succeeded';
 
   const defaultSub = directories.find((sub) => sub.address === communityAddress);
@@ -75,7 +58,7 @@ const BoardRulesDisplay = ({ communityAddress, directories }: { communityAddress
       <div className={styles.boxContent}>
         {!isLoaded ? (
           <p>
-            <em>{loadingText}</em>
+            <em>{state === 'failed' ? t('failed') : <LoadingEllipsis string={stateString} />}</em>
           </p>
         ) : rules && rules.length > 0 ? (
           <ol>

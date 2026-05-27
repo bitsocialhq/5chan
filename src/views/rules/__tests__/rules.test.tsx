@@ -35,6 +35,9 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
+  useClientsStates: () => ({
+    states: {},
+  }),
   useCommunity: (options?: { communityAddress?: string; community?: { name?: string; publicKey?: string } }) => {
     const communityAddress = options?.communityAddress ?? options?.community?.name ?? options?.community?.publicKey;
     return communityAddress ? testState.communities[communityAddress] : undefined;
@@ -56,6 +59,14 @@ vi.mock('../../home', () => ({
 
 vi.mock('../../../components/markdown', () => ({
   default: ({ content }: { content: string }) => createElement('div', { 'data-testid': 'markdown' }, content),
+}));
+
+vi.mock('lodash/debounce', () => ({
+  default: <T extends (...args: any[]) => unknown>(fn: T) => {
+    const wrapped = ((...args: Parameters<T>) => fn(...args)) as T & { cancel: () => void };
+    wrapped.cancel = () => undefined;
+    return wrapped;
+  },
 }));
 
 let container: HTMLDivElement;
@@ -123,5 +134,19 @@ describe('Rules', () => {
     expect(select?.value).toBe('anime-posting.eth');
     expect(Array.from(select?.options ?? []).map((option) => option.value)).toEqual(['', 'anime-posting.eth', 'random-posting.eth']);
     expect(container.textContent).toContain('Rules for: /a/ - Anime & Manga');
+  });
+
+  it('shows a friendly loading state string while board rules are downloading', async () => {
+    testState.boardIdentifier = 'a';
+    testState.communities = {
+      'anime-posting.eth': {
+        state: 'fetching-ipns',
+      },
+    };
+
+    await renderRules();
+
+    expect(container.textContent).toContain('Downloading board from peers');
+    expect(container.textContent).not.toContain('loading...');
   });
 });
