@@ -34,6 +34,22 @@
   text-transform: capitalize;
 }
 
+.hideButton {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  display: inline;
+  font: inherit;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+.hideButton:focus-visible {
+  outline: 1px dotted currentColor;
+  outline-offset: 1px;
+}
+
 .hideButton:hover,
 .actionLink:hover {
   cursor: pointer;

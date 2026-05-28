@@ -118,15 +118,15 @@ const SettingsModal = () => {
 
   return (
     <>
-      <div className={styles.overlay} role='button' tabIndex={0} onClick={closeModal} onKeyDown={handleKeyDown(closeModal)} />
-      <div className={styles.settingsModal} role='dialog' aria-modal='true' aria-labelledby='settings-modal-title'>
+      <button type='button' className={styles.overlay} aria-label={t('close')} tabIndex={0} onClick={closeModal} onKeyDown={handleKeyDown(closeModal)} />
+      <dialog open className={styles.settingsModal} aria-modal='true' aria-labelledby='settings-modal-title'>
         <div className={styles.header}>
           <span id='settings-modal-title' className={styles.title}>
             {t('settings')}
           </span>
-          <span
+          <button
+            type='button'
             className={styles.closeButton}
-            role='button'
             tabIndex={0}
             title='close'
             aria-label={t('close')}
@@ -136,30 +136,30 @@ const SettingsModal = () => {
         </div>
         <div className={styles.expandAllSettings}>
           [
-          <span role='button' tabIndex={0} onClick={handleExpandAll} onKeyDown={handleKeyDown(handleExpandAll)}>
+          <button type='button' tabIndex={0} onClick={handleExpandAll} onKeyDown={handleKeyDown(handleExpandAll)}>
             {allExpanded ? t('collapse_all_settings') : t('expand_all_settings')}
-          </span>
+          </button>
           ]
         </div>
         <div id='interface-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('interface-settings')}>
+          <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('interface-settings')}>
             <span className={showInterfaceSettings ? styles.hideButton : styles.showButton} />
             {t('interface')}
-          </label>
+          </button>
         </div>
         {showInterfaceSettings && <InterfaceSettings />}
         <div id='media-hosting-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('media-hosting-settings')}>
+          <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('media-hosting-settings')}>
             <span className={showMediaHostingSettings ? styles.hideButton : styles.showButton} />
             {t('media_hosting')}
-          </label>
+          </button>
         </div>
         {showMediaHostingSettings && <MediaHostingSettings />}
         <div id='account-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('account-settings')}>
+          <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('account-settings')}>
             <span className={showAccountSettings ? styles.hideButton : styles.showButton} />
             {t('bitsocial_account')}
-          </label>
+          </button>
         </div>
         {showAccountSettings && (
           <>
@@ -171,38 +171,38 @@ const SettingsModal = () => {
           </>
         )}
         <div id='subscriptions-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('subscriptions-settings')}>
+          <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('subscriptions-settings')}>
             <span className={showSubscriptionsSettings ? styles.hideButton : styles.showButton} />
             {t('board_subscriptions')}
-          </label>
+          </button>
         </div>
         {showSubscriptionsSettings && <SubscriptionsSetting />}
         <div id='board-link-permissions-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('board-link-permissions-settings')}>
+          <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('board-link-permissions-settings')}>
             <span className={showBoardLinkPermissionsSettings ? styles.hideButton : styles.showButton} />
             {t('board_link_permissions')}
-          </label>
+          </button>
         </div>
         {showBoardLinkPermissionsSettings && <TrustedBoardLinksSetting />}
         <div id='advanced-settings' className={`${styles.setting} ${styles.category}`}>
-          <label onClick={() => handleCategoryClick('advanced-settings')}>
+          <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('advanced-settings')}>
             <span className={showAdvancedSettings ? styles.hideButton : styles.showButton} />
             {t('advanced_settings')}
-          </label>
+          </button>
         </div>
         {showAdvancedSettings && <AdvancedSettings />}
         {sectionIds.includes(P2P_STATS_SECTION_ID) && (
           <>
             <div id={P2P_STATS_SECTION_ID} className={`${styles.setting} ${styles.category}`}>
-              <label onClick={() => handleCategoryClick(P2P_STATS_SECTION_ID)}>
+              <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick(P2P_STATS_SECTION_ID)}>
                 <span className={showP2PStatsSettings ? styles.hideButton : styles.showButton} />
                 {t('p2p_stats')}
-              </label>
+              </button>
             </div>
             {showP2PStatsSettings && <P2PStatsSettings />}
           </>
         )}
-      </div>
+      </dialog>
     </>
   );
 };

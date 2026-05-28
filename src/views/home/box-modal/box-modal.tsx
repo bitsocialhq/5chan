@@ -7,7 +7,7 @@ const BoxModal = () => {
   const { t } = useTranslation();
   const [showFilterModal, setShowFilterModal] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLSpanElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const { showWorksafeContentOnly, setShowWorksafeContentOnly, showNsfwContentOnly, setShowNsfwContentOnly } = useHomeFiltersStore();
 
@@ -45,9 +45,9 @@ const BoxModal = () => {
 
   return (
     <>
-      <span
+      <button
+        type='button'
         ref={buttonRef}
-        role='button'
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -58,36 +58,36 @@ const BoxModal = () => {
         onClick={() => !showFilterModal && setShowFilterModal(true)}
       >
         {t('options')} ▼
-      </span>
+      </button>
       {showFilterModal && (
         <div ref={modalRef} className={styles.filterModal}>
-          <div
+          <button
+            type='button'
             className={`${styles.option} ${showWorksafeContentOnly ? styles.selected : ''}`}
-            role='button'
             tabIndex={0}
             onKeyDown={(e) => handleKey(e, 'worksafe')}
             onClick={() => selectFilter('worksafe')}
           >
             {t('show_worksafe_content_only')}
-          </div>
-          <div
+          </button>
+          <button
+            type='button'
             className={`${styles.option} ${showNsfwContentOnly ? styles.selected : ''}`}
-            role='button'
             tabIndex={0}
             onKeyDown={(e) => handleKey(e, 'nsfw')}
             onClick={() => selectFilter('nsfw')}
           >
             {t('show_nsfw_content_only')}
-          </div>
-          <div
+          </button>
+          <button
+            type='button'
             className={`${styles.option} ${!showWorksafeContentOnly && !showNsfwContentOnly ? styles.selected : ''}`}
-            role='button'
             tabIndex={0}
             onKeyDown={(e) => handleKey(e, 'all')}
             onClick={() => selectFilter('all')}
           >
             {t('show_all_content')}
-          </div>
+          </button>
         </div>
       )}
     </>

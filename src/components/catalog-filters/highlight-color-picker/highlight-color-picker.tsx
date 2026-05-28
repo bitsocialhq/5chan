@@ -57,10 +57,11 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
 
   return (
     <>
-      <span
+      <button
+        type='button'
+        aria-label={`Select filter color ${index + 1}`}
         className={styles.colorClickbox}
         style={{ backgroundColor: item.color || '#fff' }}
-        role='button'
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -72,11 +73,13 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
         {...getReferenceProps()}
       >
         {!item.color && '∕'}
-      </span>
+      </button>
 
       {isColorPickerOpen && (
         <FloatingPortal>
-          <div
+          <button
+            type='button'
+            aria-label='Close color picker'
             style={{
               position: 'fixed',
               top: 0,
@@ -85,7 +88,6 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
               bottom: 0,
               zIndex: 30,
             }}
-            role='button'
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -111,14 +113,15 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
             >
               <table className={styles.colorGrid}>
                 <tbody>
-                  {colorRows.map((row, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {row.map((color, colorIndex) => (
-                        <td key={colorIndex}>
-                          <span
+                  {colorRows.map((row) => (
+                    <tr key={row.join('|')}>
+                      {row.map((color) => (
+                        <td key={color}>
+                          <button
+                            type='button'
+                            aria-label={`Use color ${color}`}
                             className={styles.colorOption}
                             style={{ backgroundColor: color }}
-                            role='button'
                             tabIndex={0}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' || e.key === ' ') {
@@ -139,13 +142,14 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
                   </tr>
                   <tr>
                     <td className={styles.middleTxt} colSpan={4}>
-                      <input type='text' ref={inputRef} value={customColor} onChange={handleCustomColorChange} />
-                      <span
+                      <input type='text' aria-label='Custom highlight color' ref={inputRef} value={customColor} onChange={handleCustomColorChange} />
+                      <button
+                        type='button'
+                        aria-label='Apply custom highlight color'
                         className={styles.colorPreview}
                         style={{
                           backgroundColor: customColor || '#fff',
                         }}
-                        role='button'
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -159,9 +163,9 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
                   </tr>
                   <tr>
                     <td colSpan={4}>
-                      <span
+                      <button
+                        type='button'
                         className={styles.button}
-                        role='button'
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -172,10 +176,10 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
                         onClick={() => setIsColorPickerOpen(false)}
                       >
                         <span className={styles.buttonText}>Close</span>
-                      </span>
-                      <span
+                      </button>
+                      <button
+                        type='button'
                         className={styles.button}
-                        role='button'
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -186,7 +190,7 @@ const HighlightColorPicker = ({ item, index, updateLocalFilterItem, localFilterI
                         onClick={clearColor}
                       >
                         <span className={styles.buttonText}>Clear</span>
-                      </span>
+                      </button>
                     </td>
                   </tr>
                 </tfoot>

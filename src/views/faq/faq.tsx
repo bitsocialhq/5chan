@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { HashLink } from 'react-router-hash-link';
-import { Footer, HomeLogo } from '../home';
+import { Footer, HomeLogo } from '../home/home';
 import styles from './faq.module.css';
 
 const externalLinkProps = {

@@ -8,12 +8,23 @@
   z-index: 999;
 }
 
-.disclaimerDialog {
+.backdropButton {
+  all: unset;
   position: absolute;
+  inset: 0;
+  cursor: default;
+  z-index: 0;
+}
+
+.disclaimerDialog {
+  position: fixed;
   width: 300px;
-  top: 50px;
+  max-width: calc(100% - 20px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  top: 50%;
   left: 50%;
-  margin-left: -151px;
+  transform: translate(-50%, -50%);
   background-color: var(--disclaimer-modal-background-color, rgb(255, 255, 255));
   border: var(--disclaimer-modal-border, 1px solid rgb(136, 0, 0));
   color: var(--disclaimer-modal-text-color, rgb(136, 0, 0));
@@ -21,7 +32,10 @@
   font-family: arial, helvetica, clean, sans-serif;
   font-size: 13px;
   line-height: 16.003px;
-  z-index: 1000;
+  z-index: 1;
+  color: inherit;
+  margin: 0;
+  padding: 0;
 }
 
 .hd {

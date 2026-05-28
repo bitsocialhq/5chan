@@ -460,7 +460,7 @@ describe('Markdown', () => {
       content: 'https://cdn.example/image.png',
     });
 
-    const toggle = Array.from(container.querySelectorAll('span')).find((node) => node.textContent === 'embed');
+    const toggle = Array.from(container.querySelectorAll('button')).find((node) => node.textContent === 'embed');
     expect(toggle).toBeTruthy();
     expect(container.querySelector('[data-testid="comment-media"]')).toBeNull();
 
@@ -470,7 +470,7 @@ describe('Markdown', () => {
 
     expect(container.querySelector('[data-testid="comment-media"]')?.textContent).toBe('image:https://cdn.example/image.png');
 
-    const removeToggle = Array.from(container.querySelectorAll('span')).find((node) => node.textContent === 'remove');
+    const removeToggle = Array.from(container.querySelectorAll('button')).find((node) => node.textContent === 'remove');
     await act(async () => {
       removeToggle?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });

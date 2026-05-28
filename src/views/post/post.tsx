@@ -283,7 +283,7 @@ const PostPage = () => {
   const resolvedCommunityAddress = useResolvedCommunityAddress();
   const resolvedCommunityIdentifier = useCommunityIdentifier(resolvedCommunityAddress);
   const isInAllView = isAllView(pathname);
-  const routeState = useMemo(() => getEffectiveRouteUserState(locationState), [locationKey, pathname, locationState]);
+  const routeState = useMemo(() => getEffectiveRouteUserState(locationState), [locationState]);
 
   const resolvedComment = useCommentWithFeedCache({ commentCid, autoUpdate: autoUpdateEnabled, community: resolvedCommunityIdentifier });
   const queuedComment = useMemo(() => getQueuedCommentFromRouteState(routeState, commentCid), [routeState, commentCid]);
@@ -370,16 +370,16 @@ const PostPage = () => {
   const queuedReplyHasMore = queuedReplyRepliesResult.hasMore;
   const queuedReplyLoadMore = queuedReplyRepliesResult.loadMore;
   const queuedReplyReset = (queuedReplyRepliesResult as { reset?: () => Promise<void> }).reset;
-  const queuedReplyReplies = (queuedReplyRepliesResult.updatedReplies?.length ? queuedReplyRepliesResult.updatedReplies : queuedReplyRepliesResult.replies) || [];
   const replyPaginationOverride = useMemo(() => {
     if (!queuedReply || !post?.cid) return undefined;
+    const queuedReplyReplies = (queuedReplyRepliesResult.updatedReplies?.length ? queuedReplyRepliesResult.updatedReplies : queuedReplyRepliesResult.replies) || [];
     return {
       hasMore: queuedReplyHasMore,
       loadMore: queuedReplyLoadMore,
       replies: mergeRepliesWithQueuedReply(queuedReplyReplies, queuedReply),
       reset: queuedReplyReset,
     };
-  }, [post?.cid, queuedReply, queuedReplyHasMore, queuedReplyLoadMore, queuedReplyReplies, queuedReplyReset]);
+  }, [post?.cid, queuedReply, queuedReplyHasMore, queuedReplyLoadMore, queuedReplyRepliesResult.replies, queuedReplyRepliesResult.updatedReplies, queuedReplyReset]);
 
   useEffect(() => {
     return () => {

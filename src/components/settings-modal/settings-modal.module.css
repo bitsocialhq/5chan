@@ -1,4 +1,5 @@
 .overlay {
+  all: unset;
   position: fixed;
   top: 0;
   left: 0;
@@ -48,6 +49,9 @@
   border-right: var(--settings-modal-border-right);
   border-bottom: var(--settings-modal-border-bottom);
   border-left: var(--settings-modal-border-left);
+  color: inherit;
+  margin: 0;
+  padding: 2px;
 }
 
 .settingsModal textarea {
@@ -74,6 +78,9 @@
 }
 
 .closeButton {
+  appearance: none;
+  background-color: transparent;
+  border: 0;
   right: 5px;
   width: 18px;
   height: 18px;
@@ -84,6 +91,8 @@
   background-image: var(--settings-modal-close-button-background-image);
   background-position: center;
   background-repeat: no-repeat;
+  margin: 0;
+  padding: 0;
 }
 
 .expandAllSettings {
@@ -91,11 +100,17 @@
   text-transform: capitalize;
 }
 
-.expandAllSettings span {
+.expandAllSettings span, .expandAllSettings button {
+  appearance: none;
+  background: transparent;
+  border: 0;
   color: var(--button-desktop-text-color);
+  font: inherit;
+  margin: 0;
+  padding: 0;
 }
 
-.expandAllSettings span:hover {
+.expandAllSettings span:hover, .expandAllSettings button:hover {
   color: var(--button-desktop-text-color-hover);
   cursor: pointer;
 }
@@ -128,8 +143,21 @@
   margin-bottom: 10px;
 }
 
-.category label {
+.category label, .categoryButton {
   font-weight: 700;
+}
+
+.categoryButton {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: inline;
+  font: inherit;
+  font-weight: 700;
+  margin: 0;
+  padding: 0;
 }
 
 .subSectionHeader {

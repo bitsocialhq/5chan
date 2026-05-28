@@ -33,7 +33,7 @@ import {
 import styles from './app.module.css';
 import { DesktopBoardButtons, MobileAllFeedFilter, MobileBoardButtons } from './components/board-buttons';
 import Blotter from './views/blotter';
-import FAQ from './views/faq';
+import Faq from './views/faq';
 import Home from './views/home';
 import Archive from './views/archive/archive';
 import Directory from './views/directory/directory';
@@ -282,7 +282,7 @@ const App = () => {
       <Routes>
         <Route element={<GlobalLayout />}>
           <Route path='/' element={<Home />} />
-          <Route path='/faq' element={<FAQ />} />
+          <Route path='/faq' element={<Faq />} />
           <Route path='/pass' element={<Pass />} />
           <Route path='/rules/:boardIdentifier?' element={<Rules />} />
           <Route path='/blotter' element={<Blotter />} />

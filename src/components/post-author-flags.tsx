@@ -8,6 +8,7 @@ interface PostAuthorFlagsProps {
 }
 
 const getBackgroundPosition = (x: number, y: number) => `${x === 0 ? 0 : -x}px ${y === 0 ? 0 : -y}px`;
+const transparentPixelSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1" height="1"%3E%3C/svg%3E';
 
 const PostAuthorFlags = ({ author, comment, enabled }: PostAuthorFlagsProps) => {
   if (!enabled) return null;
@@ -18,11 +19,11 @@ const PostAuthorFlags = ({ author, comment, enabled }: PostAuthorFlagsProps) => 
   return (
     <span className={styles.authorFlags}>
       {flags.map((flag) => (
-        <span
+        <img
           key={flag.key}
-          aria-label={flag.label}
+          alt={flag.label}
           className={styles.authorFlag}
-          role='img'
+          src={transparentPixelSrc}
           style={{
             backgroundImage: `url("${flag.spritePath}")`,
             backgroundPosition: getBackgroundPosition(flag.x, flag.y),

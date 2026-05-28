@@ -70,8 +70,8 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
     onClose();
   };
   return (
-    <div
-      role='button'
+    <button
+      type='button'
       tabIndex={0}
       onClick={copyDirectLink}
       onKeyDown={(e) => {
@@ -82,7 +82,7 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
       }}
     >
       <div className={styles.postMenuItem}>{t('copy_direct_link')}</div>
-    </div>
+    </button>
   );
 };
 
@@ -93,8 +93,8 @@ const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => voi
     onClose();
   };
   return (
-    <div
-      role='button'
+    <button
+      type='button'
       tabIndex={0}
       onClick={copyContentId}
       onKeyDown={(e) => {
@@ -105,7 +105,7 @@ const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => voi
       }}
     >
       <div className={styles.postMenuItem}>{t('copy_content_id')}</div>
-    </div>
+    </button>
   );
 };
 
@@ -116,8 +116,8 @@ const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () =
     onClose();
   };
   return (
-    <div
-      role='button'
+    <button
+      type='button'
       tabIndex={0}
       onClick={copyUserId}
       onKeyDown={(e) => {
@@ -128,7 +128,7 @@ const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () =
       }}
     >
       <div className={styles.postMenuItem}>{t('copy_user_id')}</div>
-    </div>
+    </button>
   );
 };
 
@@ -136,8 +136,8 @@ const ImageSearchButtons = ({ url, onClose }: { url: string; onClose: () => void
   const { t } = useTranslation();
   const encodedUrl = encodeURIComponent(url);
   return (
-    <div
-      role='button'
+    <button
+      type='button'
       tabIndex={0}
       onClick={onClose}
       onKeyDown={(e) => {
@@ -156,11 +156,9 @@ const ImageSearchButtons = ({ url, onClose }: { url: string; onClose: () => void
       <a href={`https://saucenao.com/search.php?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer'>
         <div className={styles.postMenuItem}>{t('search_image_on_saucenao')}</div>
       </a>
-    </div>
+    </button>
   );
 };
-
-const { addChallenge } = useChallengesStore.getState();
 
 const ReportPostButton = ({ onClose }: { onClose: () => void }) => {
   const { t } = useTranslation();
@@ -169,8 +167,8 @@ const ReportPostButton = ({ onClose }: { onClose: () => void }) => {
     onClose();
   };
   return (
-    <div
-      role='button'
+    <button
+      type='button'
       tabIndex={0}
       onClick={reportPost}
       onKeyDown={(e) => {
@@ -181,7 +179,7 @@ const ReportPostButton = ({ onClose }: { onClose: () => void }) => {
       }}
     >
       <div className={styles.postMenuItem}>{t('report_post')}</div>
-    </div>
+    </button>
   );
 };
 
@@ -208,7 +206,7 @@ const DeletePostButton = ({ post, onClose }: DeletePostButtonProps) => {
     latestPostRef.current = resolvedPost;
   }, [resolvedPost]);
   const onChallenge = useCallback(async (...args: unknown[]) => {
-    addChallenge([...args, latestPostRef.current]);
+    useChallengesStore.getState().addChallenge([...args, latestPostRef.current]);
   }, []);
 
   const deleteOptions = useMemo(
@@ -252,8 +250,8 @@ const DeletePostButton = ({ post, onClose }: DeletePostButtonProps) => {
   };
 
   return (
-    <div
-      role='button'
+    <button
+      type='button'
       tabIndex={0}
       onClick={deletePost}
       onKeyDown={(e) => {
@@ -264,7 +262,7 @@ const DeletePostButton = ({ post, onClose }: DeletePostButtonProps) => {
       }}
     >
       <div className={styles.postMenuItem}>{t('delete_post')}</div>
-    </div>
+    </button>
   );
 };
 
@@ -283,8 +281,8 @@ const HidePostButton = ({ cid, comment, isReply, onClose, postCid }: HideButtonP
   };
   return (
     (!isInPostView || isReply) && (
-      <div
-        role='button'
+      <button
+        type='button'
         tabIndex={0}
         onClick={togglePostHidden}
         onKeyDown={(e) => {
@@ -297,7 +295,7 @@ const HidePostButton = ({ cid, comment, isReply, onClose, postCid }: HideButtonP
         <div className={styles.postMenuItem}>
           {hidden ? (postCid === cid ? t('unhide_thread') : t('unhide_post')) : postCid === cid ? t('hide_thread') : t('hide_post')}
         </div>
-      </div>
+      </button>
     )
   );
 };
@@ -343,10 +341,10 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
     <>
       {!(deleted || removed) && (
         <>
-          <span
+          <button
+            type='button'
             className={styles.postMenuBtn}
             title='Post menu'
-            role='button'
             tabIndex={0}
             onClick={handleMenuClick}
             onKeyDown={(e) => {
@@ -359,7 +357,7 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
             {...getReferenceProps()}
           >
             ...
-          </span>
+          </button>
           {isMenuOpen &&
             cid &&
             createPortal(

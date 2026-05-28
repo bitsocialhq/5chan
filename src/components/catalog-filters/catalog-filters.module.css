@@ -1,4 +1,5 @@
 .overlay {
+  all: unset;
   position: fixed;
   top: 0;
   left: 0;
@@ -188,6 +189,16 @@
 
 .filtersTable span {
   cursor: pointer;
+}
+
+.filtersTable button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  margin: 0;
+  padding: 0;
 }
 
 .filtersTable tfoot td {

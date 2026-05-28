@@ -19,8 +19,6 @@ import useAuthorPrivileges from '../../hooks/use-author-privileges';
 import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 
-const { addChallenge } = useChallengesStore.getState();
-
 const daysToTimestampInSeconds = (days: number) => {
   const now = new Date();
   now.setDate(now.getDate() + days);
@@ -60,7 +58,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
   useEffect(() => {
     latestPostRef.current = resolvedPost;
   }, [resolvedPost]);
-  const onChallenge = useCallback((...args: any) => addChallenge([...args, latestPostRef.current]), []);
+  const onChallenge = useCallback((...args: any) => useChallengesStore.getState().addChallenge([...args, latestPostRef.current]), []);
 
   const defaultPublishEditOptions = useMemo(() => {
     return {
@@ -102,6 +100,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
     pinned,
     reason,
     removed,
+    parentCid,
     purged,
     spoiler,
     communityAddress,
@@ -289,6 +288,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
       <span className={`${styles.checkbox} ${parentCid && styles.replyCheckbox}`} ref={refs.setReference} {...(cid && getReferenceProps())}>
         <input
           type='checkbox'
+          aria-label={t('edit')}
           onChange={() => {
             if (cid && canOpenEditMenu) {
               if (!isEditMenuOpen) {
@@ -315,7 +315,13 @@ const EditMenu = ({ post }: { post: Comment }) => {
                     <div className={styles.menuItem}>
                       <label>
                         [
-                        <input onChange={onCheckbox} checked={publishCommentEditOptions.deleted ?? false} type='checkbox' id='deleted' />
+                        <input
+                          aria-label={capitalize(t('delete'))}
+                          onChange={onCheckbox}
+                          checked={publishCommentEditOptions.deleted ?? false}
+                          type='checkbox'
+                          id='deleted'
+                        />
                         {capitalize(t('delete'))}?]
                       </label>
                     </div>
@@ -326,13 +332,19 @@ const EditMenu = ({ post }: { post: Comment }) => {
                     <div className={styles.menuItem}>
                       <label>
                         [
-                        <input type='checkbox' onChange={() => setIsContentEditorOpen(!isContentEditorOpen)} checked={isContentEditorOpen} />
+                        <input
+                          type='checkbox'
+                          aria-label={capitalize(t('edit'))}
+                          onChange={() => setIsContentEditorOpen(!isContentEditorOpen)}
+                          checked={isContentEditorOpen}
+                        />
                         {capitalize(t('edit'))}?]
                       </label>
                     </div>
                     {isContentEditorOpen && (
                       <div>
                         <textarea
+                          aria-label={capitalize(t('edit'))}
                           className={styles.editTextarea}
                           value={publishCommentEditOptions.content || ''}
                           onChange={(e) => {
@@ -349,13 +361,25 @@ const EditMenu = ({ post }: { post: Comment }) => {
                     <div className={styles.menuItem}>
                       <label>
                         [
-                        <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.removed ?? false} type='checkbox' id='removed' />
+                        <input
+                          aria-label={capitalize(t('remove'))}
+                          onChange={onCheckbox}
+                          checked={publishCommentEditOptions.commentModeration?.removed ?? false}
+                          type='checkbox'
+                          id='removed'
+                        />
                         {capitalize(t('remove'))}?]
                       </label>{' '}
                       <span className={styles.purgeItem}>
                         <label>
                           [
-                          <input onChange={onPurgeCheckbox} checked={publishCommentEditOptions.commentModeration?.purged ?? false} type='checkbox' id='purged' />
+                          <input
+                            aria-label={capitalize(t('purge'))}
+                            onChange={onPurgeCheckbox}
+                            checked={publishCommentEditOptions.commentModeration?.purged ?? false}
+                            type='checkbox'
+                            id='purged'
+                          />
                           {capitalize(t('purge'))}?]
                         </label>
                       </span>
@@ -364,7 +388,13 @@ const EditMenu = ({ post }: { post: Comment }) => {
                       <div className={styles.menuItem}>
                         [
                         <label>
-                          <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.locked ?? false} type='checkbox' id='locked' />
+                          <input
+                            aria-label={capitalize(t('close_thread'))}
+                            onChange={onCheckbox}
+                            checked={publishCommentEditOptions.commentModeration?.locked ?? false}
+                            type='checkbox'
+                            id='locked'
+                          />
                           {capitalize(t('close_thread'))}?
                         </label>
                         ]
@@ -373,7 +403,13 @@ const EditMenu = ({ post }: { post: Comment }) => {
                     <div className={styles.menuItem}>
                       [
                       <label>
-                        <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.spoiler ?? false} type='checkbox' id='spoiler' />
+                        <input
+                          aria-label={capitalize(t('spoiler'))}
+                          onChange={onCheckbox}
+                          checked={publishCommentEditOptions.commentModeration?.spoiler ?? false}
+                          type='checkbox'
+                          id='spoiler'
+                        />
                         {capitalize(t('spoiler'))}?
                       </label>
                       ]
@@ -382,7 +418,13 @@ const EditMenu = ({ post }: { post: Comment }) => {
                       <div className={styles.menuItem}>
                         [
                         <label>
-                          <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.archived ?? false} type='checkbox' id='archived' />
+                          <input
+                            aria-label={capitalize(t('archived'))}
+                            onChange={onCheckbox}
+                            checked={publishCommentEditOptions.commentModeration?.archived ?? false}
+                            type='checkbox'
+                            id='archived'
+                          />
                           {capitalize(t('archived'))}?
                         </label>
                         ]
@@ -391,7 +433,13 @@ const EditMenu = ({ post }: { post: Comment }) => {
                     <div className={styles.menuItem}>
                       [
                       <label>
-                        <input onChange={onCheckbox} checked={publishCommentEditOptions.commentModeration?.pinned ?? false} type='checkbox' id='pinned' />
+                        <input
+                          aria-label={capitalize(t('sticky'))}
+                          onChange={onCheckbox}
+                          checked={publishCommentEditOptions.commentModeration?.pinned ?? false}
+                          type='checkbox'
+                          id='pinned'
+                        />
                         {capitalize(t('sticky'))}?
                       </label>
                       ]
@@ -402,6 +450,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
                         <label>
                           <input
                             onChange={onCheckbox}
+                            aria-label={capitalize(t('ban'))}
                             checked={publishCommentEditOptions.commentModeration?.author?.banExpiresAt !== undefined}
                             type='checkbox'
                             id='banUser'
@@ -414,6 +463,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
                                 <input
                                   key='ban-duration-input'
                                   className={styles.banInput}
+                                  aria-label={t('ban_duration_days')}
                                   onChange={onBanDurationChange}
                                   type='number'
                                   min={1}
@@ -433,6 +483,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
                         {capitalize(t('reason'))}? ({t('optional')})
                         <input
                           type='text'
+                          aria-label={capitalize(t('reason'))}
                           value={publishCommentEditOptions.commentModeration?.reason || ''}
                           onChange={(e) => {
                             const newReason = e.target.value;
@@ -451,7 +502,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
                   </>
                 )}
                 <div className={styles.bottom}>
-                  <button className={isMobile ? 'button' : ''} onClick={_publishCommentEdit}>
+                  <button type='button' className={isMobile ? 'button' : ''} onClick={_publishCommentEdit}>
                     {t('save')}
                   </button>
                 </div>

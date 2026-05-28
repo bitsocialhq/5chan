@@ -646,7 +646,7 @@ describe('Board', () => {
 
     expect(latestLocation).toBe('/subs');
     expect(container.textContent).toContain('not_subscribed_to_any_board');
-    expect(container.querySelector('[role="status"]')?.className).toContain('searchNothingFound');
+    expect(container.querySelector('output')?.className).toContain('searchNothingFound');
   });
 
   it('links empty mod feeds to account import settings', async () => {
@@ -660,7 +660,7 @@ describe('Board', () => {
 
     expect(container.textContent).toContain('not_mod_of_any_board');
     expect(container.textContent).toContain('go_to_settings_to_import_mod_account');
-    expect(container.querySelector('[role="status"]')?.className).toContain('modEmptyState');
+    expect(container.querySelector('output')?.className).toContain('modEmptyState');
     expect(container.querySelector('a')?.getAttribute('href')).toBe('/mod/settings#account-settings');
   });
 

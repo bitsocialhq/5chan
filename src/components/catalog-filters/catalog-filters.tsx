@@ -152,9 +152,9 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
           {localFilterItems.map((item, index) => (
             <tr key={item.id ?? index}>
               <td>
-                <span
+                <button
+                  type='button'
                   className={styles.orderButton}
-                  role='button'
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -165,11 +165,12 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
                   onClick={() => moveLocalFilterItemUp(index)}
                 >
                   ↑
-                </span>
+                </button>
               </td>
               <td>
                 <input
                   type='checkbox'
+                  aria-label={`Enable filter ${index + 1}`}
                   className={styles.onCheckbox}
                   checked={item.enabled}
                   onChange={(e) => updateLocalFilterItem(index, { ...item, enabled: e.target.checked })}
@@ -178,6 +179,7 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
               <td>
                 <input
                   type='text'
+                  aria-label={`Filter text ${index + 1}`}
                   autoCorrect='off'
                   autoComplete='off'
                   spellCheck='false'
@@ -192,15 +194,25 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
                 <HighlightColorPicker item={item} index={index} updateLocalFilterItem={updateLocalFilterItem} localFilterItems={localFilterItems} />
               </td>
               <td>
-                <input type='checkbox' checked={item.hide} onChange={(e) => updateLocalFilterItem(index, { ...item, hide: e.target.checked })} />
+                <input
+                  type='checkbox'
+                  aria-label={`Hide matches for filter ${index + 1}`}
+                  checked={item.hide}
+                  onChange={(e) => updateLocalFilterItem(index, { ...item, hide: e.target.checked })}
+                />
               </td>
               <td>
-                <input type='checkbox' checked={item.top} onChange={(e) => updateLocalFilterItem(index, { ...item, top: e.target.checked })} />
+                <input
+                  type='checkbox'
+                  aria-label={`Pin matches for filter ${index + 1}`}
+                  checked={item.top}
+                  onChange={(e) => updateLocalFilterItem(index, { ...item, top: e.target.checked })}
+                />
               </td>
               <td>
-                <span
+                <button
+                  type='button'
                   className={styles.deleteButton}
-                  role='button'
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -211,7 +223,7 @@ const FiltersTable = ({ onSave }: { onSave: () => void }) => {
                   onClick={() => removeLocalFilterItem(index)}
                 >
                   ×
-                </span>
+                </button>
               </td>
               <td className={styles.filterHits}>
                 {currentCommunityAddress && item.communityFilteredCids?.has(currentCommunityAddress) && `x${item.communityCounts?.get(currentCommunityAddress) ?? 0}`}
@@ -259,9 +271,10 @@ const FiltersModal = ({ closeModal }: { closeModal: () => void }) => {
 
   return (
     <>
-      <div
+      <button
+        type='button'
+        aria-label={showHelp ? t('close') : t('close')}
         className={styles.overlay}
-        role='button'
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -279,10 +292,11 @@ const FiltersModal = ({ closeModal }: { closeModal: () => void }) => {
         <div className={styles.header}>
           <span className={styles.title}>{showHelp ? t('filter_and_highlights_help') : t('filter_and_highlights')}</span>
           {!showHelp && (
-            <span
+            <button
+              type='button'
               className={styles.openHelpButton}
+              aria-label={t('help')}
               title={t('help')}
-              role='button'
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -293,10 +307,11 @@ const FiltersModal = ({ closeModal }: { closeModal: () => void }) => {
               onClick={openHelp}
             />
           )}
-          <span
+          <button
+            type='button'
             className={styles.closeButton}
+            aria-label={t('close')}
             title={t('close')}
-            role='button'
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -323,9 +338,9 @@ const CatalogFilters = () => {
 
   return (
     <>
-      <span
+      <button
+        type='button'
         className={`${styles.filtersButton} button`}
-        role='button'
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -336,7 +351,7 @@ const CatalogFilters = () => {
         onClick={() => setShowModal(true)}
       >
         {t('filters')}
-      </span>
+      </button>
       {showModal && <FiltersModal closeModal={closeModal} />}
     </>
   );

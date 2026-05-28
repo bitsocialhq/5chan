@@ -50,13 +50,13 @@ const MediaLoadFailure = ({ compact = false, url }: { compact?: boolean; url?: s
     return (
       <>
         <img className={styles.fileDeleted} src='assets/filedeleted-res.gif' alt='' aria-hidden='true' />
-        <span className={styles.mediaLoadFailureStatus} role='status' aria-label={statusLabel} title={statusLabel} />
+        <output className={styles.mediaLoadFailureStatus} aria-label={statusLabel} title={statusLabel} />
       </>
     );
   }
 
   return (
-    <span className={styles.mediaLoadFailure} role='status' aria-label={statusLabel} title={statusLabel}>
+    <output className={styles.mediaLoadFailure} aria-label={statusLabel} title={statusLabel}>
       <img className={styles.fileDeleted} src='assets/filedeleted-res.gif' alt='' aria-hidden='true' />
       <span className={styles.mediaLoadFailureSource}>{inline}</span>
       {url && (
@@ -64,7 +64,7 @@ const MediaLoadFailure = ({ compact = false, url }: { compact?: boolean; url?: s
           {openSourceLabel}
         </a>
       )}
-    </span>
+    </output>
   );
 };
 
@@ -109,92 +109,40 @@ const Thumbnail = ({
   const iframeThumbnail = patternThumbnailUrl || thumbnail;
   const { frameUrl: gifFrameUrl, status: gifFrameStatus } = gifFrameState;
   const hasThumbnail = getHasThumbnail(commentMediaInfo, url);
-  const gifThumbnailButtonProps =
-    gifFrameStatus === 'loading'
-      ? {
-          role: 'button' as const,
-          tabIndex: 0,
-          onKeyDown: (e: React.KeyboardEvent<HTMLSpanElement>) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              setShowThumbnail(false);
-            }
-          },
-          onClick: () => setShowThumbnail(false),
-        }
-      : {};
+  const handleOpenMedia = () => setShowThumbnail(false);
 
   if (type === 'gif') {
     thumbnailComponent =
       gifFrameStatus === 'loading' ? (
-        <span className={styles.gifPlaceholder} aria-label='Loading GIF thumbnail' {...gifThumbnailButtonProps} />
+        <button type='button' className={`${styles.gifPlaceholder} ${styles.mediaToggleButton}`} aria-label='Loading GIF thumbnail' onClick={handleOpenMedia} />
       ) : (
-        <img
-          src={gifFrameUrl || url}
-          alt=''
-          role='button'
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              setShowThumbnail(false);
-            }
-          }}
-          onClick={() => setShowThumbnail(false)}
-        />
+        <button type='button' className={styles.mediaToggleButton} aria-label='Open GIF' onClick={handleOpenMedia}>
+          <img src={gifFrameUrl || url} alt='' />
+        </button>
       );
   } else if (type === 'video') {
     thumbnailComponent = thumbnail ? (
-      <img src={thumbnail} alt='' />
+      <img src={thumbnail} alt='Video thumbnail' />
     ) : (
       // show first frame of the video, as a workaround for Safari not loading thumbnails
-      <video
-        src={`${url}#t=0.001`}
-        role='button'
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setShowThumbnail(false);
-          }
-        }}
-        onClick={() => setShowThumbnail(false)}
-      />
+      <button type='button' className={styles.mediaToggleButton} aria-label='Open video' onClick={handleOpenMedia}>
+        <video src={`${url}#t=0.001`} aria-label='Video thumbnail' />
+      </button>
     );
   } else if (type === 'webpage') {
     thumbnailComponent = (
-      <img
-        src={thumbnail}
-        alt=''
-        role='button'
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setShowThumbnail(false);
-          }
-        }}
-        onClick={() => setShowThumbnail(false)}
-      />
+      <button type='button' className={styles.mediaToggleButton} aria-label='Open webpage preview' onClick={handleOpenMedia}>
+        <img src={thumbnail} alt='' />
+      </button>
     );
   } else if (type === 'iframe') {
     thumbnailComponent = iframeThumbnail ? (
-      <img
-        src={iframeThumbnail}
-        alt=''
-        role='button'
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setShowThumbnail(false);
-          }
-        }}
-        onClick={() => setShowThumbnail(false)}
-      />
+      <button type='button' className={styles.mediaToggleButton} aria-label='Open embedded media preview' onClick={handleOpenMedia}>
+        <img src={iframeThumbnail} alt='' />
+      </button>
     ) : null;
   } else if (type === 'audio') {
-    thumbnailComponent = <audio src={url} controls />;
+    thumbnailComponent = <audio src={url} aria-label='Audio preview' controls />;
   }
 
   const thumbnailSmallPadding = isMobile ? styles.thumbnailMobile : styles.thumbnailReplyDesktop;
@@ -204,8 +152,8 @@ const Thumbnail = ({
   const noThumbnailLink =
     !hasThumbnail && linkWithoutThumbnail ? (
       canEmbed(linkWithoutThumbnail) ? (
-        <span
-          role='button'
+        <button
+          type='button'
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -216,7 +164,7 @@ const Thumbnail = ({
           onClick={() => setShowThumbnail(false)}
         >
           {fallbackLinkLabel}
-        </span>
+        </button>
       ) : (
         <a href={url} target='_blank' rel='noopener noreferrer'>
           {fallbackLinkLabel}
@@ -227,20 +175,9 @@ const Thumbnail = ({
   return deleted || removed || purged ? (
     <img className={styles.fileDeleted} src='assets/filedeleted-res.gif' alt='File deleted' />
   ) : spoiler ? (
-    <img
-      className={styles.spoiler}
-      src='assets/spoiler.png'
-      alt=''
-      role='button'
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          setShowThumbnail(false);
-        }
-      }}
-      onClick={() => setShowThumbnail(false)}
-    />
+    <button type='button' className={styles.mediaToggleButton} aria-label='Open spoiler media' onClick={handleOpenMedia}>
+      <img className={styles.spoiler} src='assets/spoiler.png' alt='' />
+    </button>
   ) : isOutOfFeed ? (
     <span className={`${isFloatingEmbed ? styles.floatingEmbed : styles.communityAvatar}`}>{thumbnailComponent}</span>
   ) : isMobile || isReply ? (
@@ -272,43 +209,23 @@ const Media = ({ commentMediaInfo, disableToggle, isReply, setShowThumbnail }: M
       {type === 'iframe' && url ? (
         <Embed url={url} />
       ) : type === 'gif' ? (
-        <img
-          src={url}
-          alt=''
-          role={disableToggle ? undefined : 'button'}
-          tabIndex={disableToggle ? undefined : 0}
-          onKeyDown={
-            disableToggle
-              ? undefined
-              : (e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setShowThumbnail(true);
-                  }
-                }
-          }
-          onClick={disableToggle ? undefined : () => setShowThumbnail(true)}
-        />
+        disableToggle ? (
+          <img src={url} alt='' />
+        ) : (
+          <button type='button' className={styles.mediaToggleButton} aria-label='Collapse GIF' onClick={() => setShowThumbnail(true)}>
+            <img src={url} alt='' />
+          </button>
+        )
       ) : type === 'video' ? (
-        <video src={url} controls autoPlay loop muted={!unmuteExpandedVideoSound} />
+        <video src={url} aria-label={t('video')} controls autoPlay loop muted={!unmuteExpandedVideoSound} />
       ) : type === 'webpage' ? (
-        <img
-          src={thumbnail}
-          alt=''
-          role={disableToggle ? undefined : 'button'}
-          tabIndex={disableToggle ? undefined : 0}
-          onKeyDown={
-            disableToggle
-              ? undefined
-              : (e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setShowThumbnail(true);
-                  }
-                }
-          }
-          onClick={disableToggle ? undefined : () => setShowThumbnail(true)}
-        />
+        disableToggle ? (
+          <img src={thumbnail} alt='' />
+        ) : (
+          <button type='button' className={styles.mediaToggleButton} aria-label='Collapse webpage preview' onClick={() => setShowThumbnail(true)}>
+            <img src={thumbnail} alt='' />
+          </button>
+        )
       ) : null}
       {isMobile && type && (
         <div className={styles.fileInfo}>
@@ -321,9 +238,9 @@ const Media = ({ commentMediaInfo, disableToggle, isReply, setShowThumbnail }: M
       )}
       {isMobile && (type === 'iframe' || type === 'video' || type === 'audio') && (
         <div className={styles.closeButton}>
-          <span
+          <button
+            type='button'
             className='button'
-            role='button'
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -334,7 +251,7 @@ const Media = ({ commentMediaInfo, disableToggle, isReply, setShowThumbnail }: M
             onClick={() => setShowThumbnail(true)}
           >
             {t('close')}
-          </span>
+          </button>
         </div>
       )}
     </span>
@@ -397,20 +314,9 @@ const Image = ({
         className={`${isOutOfFeed ? styles.communityAvatar : styles.thumbnailBig} ${styles.thumbnail} ${isImageExpanded && isMobile ? styles.removeFloat : ''}`}
         style={spoilerDimensions}
       >
-        <img
-          className={styles.spoiler}
-          src='assets/spoiler.png'
-          alt=''
-          role='button'
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              setIsImageExpanded(true);
-            }
-          }}
-          onClick={() => setIsImageExpanded(true)}
-        />
+        <button type='button' className={styles.mediaToggleButton} aria-label='Open spoiler media' onClick={() => setIsImageExpanded(true)}>
+          <img className={styles.spoiler} src='assets/spoiler.png' alt='' />
+        </button>
       </span>
     );
   }
@@ -424,26 +330,17 @@ const Image = ({
       >
         {hasError ? (
           <MediaLoadFailure compact url={url} />
+        ) : disableToggle ? (
+          <img src={url} onError={handleError} onLoad={handleLoad} alt={isImageExpanded ? 'Collapse image' : 'Expand image'} />
         ) : (
-          <img
-            src={url}
-            onError={handleError}
-            onLoad={handleLoad}
-            alt=''
-            role={disableToggle ? undefined : 'button'}
-            tabIndex={disableToggle ? undefined : 0}
-            onKeyDown={
-              disableToggle
-                ? undefined
-                : (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setIsImageExpanded(!isImageExpanded);
-                    }
-                  }
-            }
-            onClick={disableToggle ? undefined : () => setIsImageExpanded(!isImageExpanded)}
-          />
+          <button
+            type='button'
+            className={styles.mediaToggleButton}
+            aria-label={isImageExpanded ? 'Collapse image' : 'Expand image'}
+            onClick={() => setIsImageExpanded(!isImageExpanded)}
+          >
+            <img src={url} onError={handleError} onLoad={handleLoad} alt='' />
+          </button>
         )}
       </span>
       {isImageExpanded && type && (
@@ -465,26 +362,17 @@ const Image = ({
     >
       {hasError ? (
         <MediaLoadFailure url={url} />
+      ) : disableToggle ? (
+        <img src={url} onError={handleError} onLoad={handleLoad} alt={isImageExpanded ? 'Collapse image' : 'Expand image'} />
       ) : (
-        <img
-          src={url}
-          onError={handleError}
-          onLoad={handleLoad}
-          alt=''
-          role='button'
-          tabIndex={0}
-          onKeyDown={
-            disableToggle
-              ? undefined
-              : (e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setIsImageExpanded(!isImageExpanded);
-                  }
-                }
-          }
-          onClick={disableToggle ? undefined : () => setIsImageExpanded(!isImageExpanded)}
-        />
+        <button
+          type='button'
+          className={styles.mediaToggleButton}
+          aria-label={isImageExpanded ? 'Collapse image' : 'Expand image'}
+          onClick={() => setIsImageExpanded(!isImageExpanded)}
+        >
+          <img src={url} onError={handleError} onLoad={handleLoad} alt='' />
+        </button>
       )}
     </span>
   );

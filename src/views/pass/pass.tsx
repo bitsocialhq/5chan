@@ -149,7 +149,7 @@ const Pass = () => {
                   <Trans
                     i18nKey='pass_answer_nft'
                     components={{
-                      mintPass: <a href='https://github.com/bitsocialnet/mintpass' target='_blank' rel='noopener noreferrer' />,
+                      mintPass: <a href='https://github.com/bitsocialnet/mintpass' target='_blank' rel='noopener noreferrer' aria-label='Mintpass' />,
                     }}
                   />
                 </dd>
@@ -158,7 +158,7 @@ const Pass = () => {
                   <Trans
                     i18nKey='pass_answer_proceeds'
                     components={{
-                      bitsocial: <a href='https://bitsocial.net' target='_blank' rel='noopener noreferrer' />,
+                      bitsocial: <a href='https://bitsocial.net' target='_blank' rel='noopener noreferrer' aria-label='Bitsocial' />,
                     }}
                   />
                 </dd>

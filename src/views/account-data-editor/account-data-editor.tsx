@@ -23,14 +23,13 @@ type EditorState = {
 };
 
 const loadAce = async () => {
-  const aceModule = await import('react-ace');
-  const [workerJsonModule] = await Promise.all([
-    import('ace-builds/src-noconflict/worker-json?url'),
-    import('ace-builds/esm-resolver'),
-    import('ace-builds/src-noconflict/mode-json'),
-    import('ace-builds/src-noconflict/theme-monokai'),
-  ]);
-  // Load react-ace first so esm-resolver sees the global ace instance.
+  const aceModulePromise = import('react-ace');
+  const workerJsonModulePromise = import('ace-builds/src-noconflict/worker-json?url');
+  const modeJsonPromise = import('ace-builds/src-noconflict/mode-json');
+  const themeMonokaiPromise = import('ace-builds/src-noconflict/theme-monokai');
+  const resolverPromise = aceModulePromise.then(() => import('ace-builds/esm-resolver'));
+  const [aceModule, workerJsonModule] = await Promise.all([aceModulePromise, workerJsonModulePromise, resolverPromise, modeJsonPromise, themeMonokaiPromise]);
+  // esm-resolver waits for react-ace so it can see the global ace instance.
   const mod = aceModule.default;
   const Editor = typeof mod === 'function' ? mod : (mod as unknown as { default: typeof mod }).default;
 
@@ -143,6 +142,7 @@ const AccountDataEditor = () => {
           />
         ) : (
           <textarea
+            aria-label={t('account_data')}
             value={text}
             onChange={(e) => setEditorState((current) => ({ ...current, text: e.target.value }))}
             style={{ width: '100%', height: '500px', fontFamily: 'monospace', fontSize: 13 }}

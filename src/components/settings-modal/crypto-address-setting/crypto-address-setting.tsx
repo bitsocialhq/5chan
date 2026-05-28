@@ -178,6 +178,7 @@ const CryptoAddressSettingContent = ({ account }: { account: ReturnType<typeof u
       <div className={styles.cryptoAddressInput}>
         <input
           type='text'
+          aria-label='Crypto address'
           placeholder='myaddress.bso'
           value={cryptoAddress}
           onChange={(e) => {
@@ -186,10 +187,10 @@ const CryptoAddressSettingContent = ({ account }: { account: ReturnType<typeof u
             setCryptoAddress(e.target.value);
           }}
         />
-        <button className={styles.saveButton} onClick={saveCryptoAddress}>
+        <button type='button' className={styles.saveButton} onClick={saveCryptoAddress}>
           {t('save')}
         </button>
-        <button className={styles.infoButton} onClick={() => setShowCryptoAddressInfo(!showCryptoAddressInfo)}>
+        <button type='button' className={styles.infoButton} onClick={() => setShowCryptoAddressInfo(!showCryptoAddressInfo)}>
           {showCryptoAddressInfo ? 'x' : '?'}
         </button>
         {showCryptoAddressInfo && (
@@ -212,7 +213,7 @@ const CryptoAddressSettingContent = ({ account }: { account: ReturnType<typeof u
         {savedCryptoAddress && <span className={styles.saved}>{t('saved')}</span>}
       </div>
       <div className={styles.checkCryptoAddress}>
-        <button className={styles.button} onClick={checkCryptoAddress}>
+        <button type='button' className={styles.button} onClick={checkCryptoAddress}>
           {t('check')}
         </button>{' '}
         <span className={(transientResolutionStatus ?? resolutionStatus).resolveClass}>{(transientResolutionStatus ?? resolutionStatus).resolveString}</span>

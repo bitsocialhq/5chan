@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -373,6 +373,7 @@ const PostFormFields = ({
           <label>
             <input
               type='checkbox'
+              aria-label={capitalize(t('spoiler'))}
               onChange={(e) => (isInPostView ? setPublishReplyOptions({ spoiler: e.target.checked }) : setPublishPostOptions({ spoiler: e.target.checked }))}
             />
             {capitalize(t('spoiler'))}?
@@ -500,7 +501,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     }, POST_OPTIONS_VALIDATION_DELAY_MS),
   ).current;
 
-  const resetFields = () => {
+  const resetFields = useCallback(() => {
     if (textRef.current) {
       textRef.current.value = '';
     }
@@ -523,7 +524,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     setFormError(null);
     setIsBbcodePreviewing(false);
     setBbcodePreviewContent('');
-  };
+  }, [checkContentLength, checkPostOptions]);
 
   const getBoardIndexPath = () => {
     if (effectiveBoardAddress) {
@@ -596,7 +597,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
         navigate(`/pending/${postIndex}`, pendingPostBoardPath ? { state: { boardPath: pendingPostBoardPath } } : undefined);
       }
     }
-  }, [postIndex, pendingPostBoardPath, resetPublishPostOptions, navigate]);
+  }, [postIndex, pendingPostBoardPath, resetFields, resetPublishPostOptions, navigate]);
 
   // in post page, publish a reply to the post
   const isInPostView = isPostPageView(location.pathname, params);
@@ -704,7 +705,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
         navigate(nonokoRedirectPath);
       }
     }
-  }, [replyIndex, closeForm, navigate]);
+  }, [replyIndex, closeForm, navigate, resetFields]);
 
   const { isUploading, uploadedFileName, handleUpload } = useFileUpload({
     onUploadComplete: (uploadedUrl: string) => {
@@ -846,7 +847,7 @@ const PostForm = () => {
           </div>
         ) : (
           <>
-            <button className={`${styles.showFormButton} button`} onClick={() => setShowForm(showForm ? false : true)}>
+            <button type='button' className={`${styles.showFormButton} button`} onClick={() => setShowForm(showForm ? false : true)}>
               {showForm ? t('close_post_form') : isInPostView ? t('post_a_reply') : t('start_new_thread')}
             </button>
             {showForm && <PostFormTable closeForm={() => setShowForm(false)} postCid={postCid} />}
@@ -871,7 +872,7 @@ const PostForm = () => {
       ) : !showForm ? (
         <div>
           [
-          <button className='button' onClick={() => setShowForm(true)}>
+          <button type='button' className='button' onClick={() => setShowForm(true)}>
             {isInPostView ? t('post_a_reply') : t('start_new_thread')}
           </button>
           ]

@@ -109,6 +109,7 @@ const BoardFooter = ({
             1: onExpandTimeWindow ? (
               <button
                 type='button'
+                aria-label={t('load_more')}
                 data-testid='expand-time-window-button'
                 className={styles.morePostsSuggestionAction}
                 onClick={() => {
@@ -137,9 +138,7 @@ const BoardFooter = ({
         {communityState === 'failed' ? (
           <span className='red'>{communityState}</span>
         ) : isInSubscriptionsView && subscriptionsLength === 0 ? (
-          <div className={styles.searchNothingFound} role='status'>
-            {t('not_subscribed_to_any_board')}
-          </div>
+          <output className={styles.searchNothingFound}>{t('not_subscribed_to_any_board')}</output>
         ) : isInModView && accountCommunityAddressesLength === 0 ? (
           <ModEmptyState />
         ) : (
@@ -160,7 +159,7 @@ export interface BoardProps {
 
 const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, timeFilterNameFromCache, isVisible = true }: BoardProps) => {
   const { t } = useTranslation();
-  const location = useLocation();
+  const routerLocation = useLocation();
   const params = useParams();
   const isInAllView = viewType ? viewType === 'all' : false;
   const isInSubscriptionsView = viewType ? viewType === 'subs' : false;
@@ -233,7 +232,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const shouldProbeYearlyFeed = shouldProbeSuggestionFeeds && currentTimeFilterSeconds < YEAR_IN_SECONDS;
   // Keep suggestion feeds on a stable hook identity; the loader widens them by paging, not by recreating the feed.
   const suggestionPostsPerPage = infiniteFeedPostsPerPage;
-  const suggestionRequestKeyBase = `${location.pathname}${location.search}`;
+  const suggestionRequestKeyBase = `${routerLocation.pathname}${routerLocation.search}`;
   const {
     feed: weeklyFeed,
     hasMore: weeklyFeedHasMore,
@@ -303,7 +302,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     [communityAddress],
   );
   const { accountComments: recentAccountComments } = useAccountComments(accountCommentLookupOptions);
-  const nonokoPendingAccountCommentIndex = getNonokoPendingAccountCommentIndex(location.state);
+  const nonokoPendingAccountCommentIndex = getNonokoPendingAccountCommentIndex(routerLocation.state);
   const nonokoPendingAccountCommentLookupOptions = useMemo(
     () =>
       typeof nonokoPendingAccountCommentIndex === 'number'
@@ -315,7 +314,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   );
   const { accountComments: nonokoPendingAccountComments } = useAccountComments(nonokoPendingAccountCommentLookupOptions);
 
-  const pathWithoutSettings = location.pathname.replace(/\/settings$/, '');
+  const pathWithoutSettings = routerLocation.pathname.replace(/\/settings$/, '');
   const currentPage = getPageFromFeedPath(pathWithoutSettings);
   const paginationBasePath = stripPageFromFeedPath(pathWithoutSettings);
 
@@ -396,8 +395,8 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const navigate = useNavigate();
   const defaultFeedVirtualizationMode = isMobile && isMultiboardView ? 'off' : 'item-size';
   const feedVirtualizationMode = useMemo(
-    () => resolveFeedVirtualizationMode(location.search, defaultFeedVirtualizationMode),
-    [defaultFeedVirtualizationMode, location.search],
+    () => resolveFeedVirtualizationMode(routerLocation.search, defaultFeedVirtualizationMode),
+    [defaultFeedVirtualizationMode, routerLocation.search],
   );
   const defaultBoardItemHeight = feedVirtualizationMode === 'item-size' ? (isMobile ? 420 : 480) : isMobile ? 420 : 300;
   // Omit the prop entirely in fallback mode. Passing `itemSize={undefined}` overrides
@@ -407,20 +406,20 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   // Redirect multiboard paths with page-number segments to normalized path (infinite-scroll only)
   useEffect(() => {
     if (!isVisible || !isForcedInfiniteScroll) return;
-    const normalized = normalizeMultiboardFeedPath(location.pathname);
-    if (normalized !== location.pathname) {
-      navigate({ pathname: normalized, search: location.search }, { replace: true });
+    const normalized = normalizeMultiboardFeedPath(routerLocation.pathname);
+    if (normalized !== routerLocation.pathname) {
+      navigate({ pathname: normalized, search: routerLocation.search }, { replace: true });
     }
-  }, [isVisible, isForcedInfiniteScroll, location.pathname, location.search, navigate]);
+  }, [isVisible, isForcedInfiniteScroll, routerLocation.pathname, routerLocation.search, navigate]);
 
   useEffect(() => {
     if (!isVisible) return;
     if (!effectiveInfiniteScroll && currentPage > totalPages && totalPages > 0) {
       const targetPage = totalPages;
       const targetPath = targetPage === 1 ? paginationBasePath : `${paginationBasePath}/${targetPage}`;
-      navigate({ pathname: targetPath, search: location.search }, { replace: true });
+      navigate({ pathname: targetPath, search: routerLocation.search }, { replace: true });
     }
-  }, [isVisible, effectiveInfiniteScroll, currentPage, totalPages, paginationBasePath, location.search, navigate]);
+  }, [isVisible, effectiveInfiniteScroll, currentPage, totalPages, paginationBasePath, routerLocation.search, navigate]);
 
   // Scroll to top instantly when page changes in pagination mode
   useEffect(() => {
@@ -467,7 +466,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
             currentTimeFilterName={currentTimeFilterName}
             moreThreadsSuggestion={moreThreadsSuggestion}
             moreThreadsSuggestionPathname={moreThreadsSuggestionPathname}
-            moreThreadsSuggestionSearch={location.search}
+            moreThreadsSuggestionSearch={routerLocation.search}
             onExpandTimeWindow={expandSuggestionTimeWindow}
             communityState={communityState}
             subscriptionsLength={subscriptions?.length || 0}
@@ -479,7 +478,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               <BoardPagination
                 basePath={paginationBasePath}
                 currentPage={currentPage}
-                search={location.search}
+                search={routerLocation.search}
                 totalPages={totalPages}
                 footerStyle
                 isMultiboard={isForcedInfiniteScroll}
@@ -490,16 +489,16 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
             <div>
               {!isForcedInfiniteScroll && (
                 <div className={mobileFooterStyles.mobileFooterButtons}>
-                  <button className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
+                  <button type='button' className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
                     {t('start_new_thread')}
                   </button>
                 </div>
               )}
               <div className={mobileFooterStyles.mobileFooterButtons}>
-                <button className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
+                <button type='button' className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
                   {t('top')}
                 </button>
-                <button className='button' onClick={() => reset && reset()}>
+                <button type='button' className='button' onClick={() => reset && reset()}>
                   {t('refresh')}
                 </button>
               </div>
@@ -511,7 +510,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
                       <span key={page}>
                         [
                         <Link
-                          to={{ pathname: page === 1 ? paginationBasePath : `${paginationBasePath}/${page}`, search: location.search }}
+                          to={{ pathname: page === 1 ? paginationBasePath : `${paginationBasePath}/${page}`, search: routerLocation.search }}
                           className={page === currentPage ? mobileFooterStyles.mobileFooterPaginationCurrent : undefined}
                         >
                           {page}
@@ -527,7 +526,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               )}
               {hasMore && !effectiveInfiniteScroll && (
                 <div className={mobileFooterStyles.mobileFooterButtons}>
-                  <button className='button' onClick={() => setEnableInfiniteScroll(true)}>
+                  <button type='button' className='button' onClick={() => setEnableInfiniteScroll(true)}>
                     {t('load_more')}
                   </button>
                 </div>
@@ -541,6 +540,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       communityAddresses,
       hasMore,
       combinedFeed.length,
+      isInAllView,
       isInSubscriptionsView,
       isInModView,
       currentTimeFilterName,
@@ -559,13 +559,13 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       totalPages,
       setEnableInfiniteScroll,
       reset,
-      location.search,
+      routerLocation.search,
       t,
     ],
   );
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
-  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${BOARD_SORT_TYPE}` : `${location.pathname}${location.search}-${BOARD_SORT_TYPE}`;
+  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${BOARD_SORT_TYPE}` : `${routerLocation.pathname}${routerLocation.search}-${BOARD_SORT_TYPE}`;
   const navigationType = useNavigationType();
   const boardViewportBuffer = isMultiboardView ? (isMobile ? { bottom: 1400, top: 2400 } : { bottom: 1200, top: 2400 }) : { bottom: 1200, top: 1200 };
   const boardMinOverscanItemCount = isMultiboardView && isMobile ? { bottom: 4, top: 8 } : undefined;
@@ -645,11 +645,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
             <ErrorDisplay error={communityError} />
           </div>
         )}
-        {shouldShowUnverifiedAddressWarning && (
-          <div className={styles.addressWarning} role='status'>
-            {t('board_address_unverified_warning')}
-          </div>
-        )}
+        {shouldShowUnverifiedAddressWarning && <output className={styles.addressWarning}>{t('board_address_unverified_warning')}</output>}
         {effectiveInfiniteScroll ? (
           <Virtuoso
             defaultItemHeight={defaultBoardItemHeight}

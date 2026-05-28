@@ -80,12 +80,12 @@ const render = (initialEntry = '/all/settings') => {
 
 const getLocationText = () => container.querySelector('[data-testid="location"]')?.textContent ?? '';
 
-const getLabelByText = (text: string) => {
-  const label = Array.from(container.querySelectorAll('label')).find((candidate) => (candidate.textContent ?? '').includes(text));
-  if (!label) {
-    throw new Error(`Label containing "${text}" not found`);
+const getSectionToggleByText = (text: string) => {
+  const control = Array.from(container.querySelectorAll<HTMLElement>('label, button')).find((candidate) => (candidate.textContent ?? '').includes(text));
+  if (!control) {
+    throw new Error(`Section toggle containing "${text}" not found`);
   }
-  return label;
+  return control;
 };
 
 describe('SettingsModal', () => {
@@ -115,7 +115,7 @@ describe('SettingsModal', () => {
     expect(getLocationText()).toBe('/all/settings#account-settings');
 
     await act(async () => {
-      getLabelByText('interface').click();
+      getSectionToggleByText('interface').click();
     });
 
     expect(getLocationText()).toBe('/all/settings#interface-settings');
@@ -123,14 +123,14 @@ describe('SettingsModal', () => {
     expect(container.querySelector('[data-testid="account-settings"]')).not.toBeNull();
 
     await act(async () => {
-      getLabelByText('interface').click();
+      getSectionToggleByText('interface').click();
     });
 
     expect(getLocationText()).toBe('/all/settings#account-settings');
     expect(container.querySelector('[data-testid="interface-settings-panel"]')).toBeNull();
 
     await act(async () => {
-      getLabelByText('bitsocial_account').click();
+      getSectionToggleByText('bitsocial_account').click();
     });
 
     expect(getLocationText()).toBe('/all/settings');
@@ -140,7 +140,7 @@ describe('SettingsModal', () => {
   it('expands and collapses all settings sections', async () => {
     render('/all/settings');
 
-    const expandAllControl = Array.from(container.querySelectorAll('[role="button"]')).find((candidate) => (candidate.textContent ?? '').includes('expand_all_settings'));
+    const expandAllControl = Array.from(container.querySelectorAll('button')).find((candidate) => (candidate.textContent ?? '').includes('expand_all_settings'));
     if (!expandAllControl) {
       throw new Error('expand_all_settings control not found');
     }
@@ -157,9 +157,7 @@ describe('SettingsModal', () => {
     expect(container.querySelector('[data-testid="advanced-settings-panel"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="p2p-stats-settings-panel"]')).not.toBeNull();
 
-    const collapseAllControl = Array.from(container.querySelectorAll('[role="button"]')).find((candidate) =>
-      (candidate.textContent ?? '').includes('collapse_all_settings'),
-    );
+    const collapseAllControl = Array.from(container.querySelectorAll('button')).find((candidate) => (candidate.textContent ?? '').includes('collapse_all_settings'));
     if (!collapseAllControl) {
       throw new Error('collapse_all_settings control not found');
     }
@@ -186,7 +184,7 @@ describe('SettingsModal', () => {
   it('closes the modal when the overlay is clicked', async () => {
     render('/all/settings#interface-settings');
 
-    const overlay = container.querySelector('[role="button"]');
+    const overlay = container.querySelector('button');
     if (!overlay) {
       throw new Error('overlay not found');
     }

@@ -45,9 +45,9 @@ const BoardPagination = ({ basePath, currentPage, search = '', totalPages, foote
             {currentPage === 1 && (
               <span className={styles.footerPageItem}>
                 <span className={styles.footerPageBracket}>[</span>
-                <span
+                <button
+                  type='button'
                   className={styles.footerPageLink}
-                  role='button'
                   tabIndex={0}
                   onClick={() => setEnableInfiniteScroll(true)}
                   onKeyDown={(e) => {
@@ -58,7 +58,7 @@ const BoardPagination = ({ basePath, currentPage, search = '', totalPages, foote
                   }}
                 >
                   {t('all')}
-                </span>
+                </button>
                 <span className={styles.footerPageBracket}>]</span>
               </span>
             )}

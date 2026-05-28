@@ -144,21 +144,21 @@ describe('PostMenuDesktop', () => {
     await renderMenu();
 
     await openMenu();
-    const copyLink = Array.from(document.body.querySelectorAll('div')).find((node) => node.textContent === 'copy_direct_link');
+    const copyLink = Array.from(document.body.querySelectorAll('button')).find((node) => node.textContent === 'copy_direct_link');
     await act(async () => {
       copyLink?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(testState.copyShareLinkMock).toHaveBeenCalledWith('mu', 'thread', 'cid-1');
 
     await openMenu();
-    const copyContentId = Array.from(document.body.querySelectorAll('div')).find((node) => node.textContent === 'copy_content_id');
+    const copyContentId = Array.from(document.body.querySelectorAll('button')).find((node) => node.textContent === 'copy_content_id');
     await act(async () => {
       copyContentId?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(testState.copyToClipboardMock).toHaveBeenCalledWith('cid-1');
 
     await openMenu();
-    const copyUserId = Array.from(document.body.querySelectorAll('div')).find((node) => node.textContent === 'copy_user_id');
+    const copyUserId = Array.from(document.body.querySelectorAll('button')).find((node) => node.textContent === 'copy_user_id');
     await act(async () => {
       copyUserId?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
@@ -169,7 +169,7 @@ describe('PostMenuDesktop', () => {
     await renderMenu('/mu');
 
     await openMenu();
-    const hideThread = Array.from(document.body.querySelectorAll('div')).find((node) => node.textContent === 'hide_thread');
+    const hideThread = Array.from(document.body.querySelectorAll('button')).find((node) => node.textContent === 'hide_thread');
     expect(hideThread).toBeTruthy();
 
     await act(async () => {
@@ -181,7 +181,7 @@ describe('PostMenuDesktop', () => {
     await renderMenu('/mu');
     await openMenu();
 
-    const unhideThread = Array.from(document.body.querySelectorAll('div')).find((node) => node.textContent === 'unhide_thread');
+    const unhideThread = Array.from(document.body.querySelectorAll('button')).find((node) => node.textContent === 'unhide_thread');
     expect(unhideThread).toBeTruthy();
 
     await act(async () => {
@@ -205,7 +205,7 @@ describe('PostMenuDesktop', () => {
 
     expect(Array.from(document.body.querySelectorAll('div')).find((node) => node.textContent === 'hide_thread')).toBeUndefined();
 
-    const imageSearch = Array.from(document.body.querySelectorAll('[role="button"]')).find((node) => node.textContent?.includes('Image_search'));
+    const imageSearch = Array.from(document.body.querySelectorAll('button')).find((node) => node.textContent?.includes('Image_search'));
     expect(imageSearch).toBeTruthy();
 
     await act(async () => {

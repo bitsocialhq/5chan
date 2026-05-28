@@ -57,21 +57,36 @@ const InterfaceSettings = () => {
       </div>
       <div className={styles.setting}>
         <label>
-          <input type='checkbox' checked={fitExpandedImagesToScreen} onChange={(e) => setFitExpandedImagesToScreen(e.target.checked)} />
+          <input
+            type='checkbox'
+            aria-label={capitalize(t('fit_expanded_images_to_screen'))}
+            checked={fitExpandedImagesToScreen}
+            onChange={(e) => setFitExpandedImagesToScreen(e.target.checked)}
+          />
           {capitalize(t('fit_expanded_images_to_screen'))}
         </label>
         <div className={styles.settingTip}>{capitalize(t('fit_expanded_images_to_screen_tip'))}</div>
       </div>
       <div className={styles.setting}>
         <label>
-          <input type='checkbox' checked={unmuteExpandedVideoSound} onChange={(e) => setUnmuteExpandedVideoSound(e.target.checked)} />
+          <input
+            type='checkbox'
+            aria-label={capitalize(t('unmute_video_sound'))}
+            checked={unmuteExpandedVideoSound}
+            onChange={(e) => setUnmuteExpandedVideoSound(e.target.checked)}
+          />
           {capitalize(t('unmute_video_sound'))}
         </label>
         <div className={styles.settingTip}>{capitalize(t('unmute_video_sound_tip'))}</div>
       </div>
       <div className={styles.setting}>
         <label>
-          <input type='checkbox' checked={enableInfiniteScroll} onChange={(e) => setEnableInfiniteScroll(e.target.checked)} />
+          <input
+            type='checkbox'
+            aria-label={capitalize(t('enable_infinite_scroll'))}
+            checked={enableInfiniteScroll}
+            onChange={(e) => setEnableInfiniteScroll(e.target.checked)}
+          />
           {capitalize(t('enable_infinite_scroll'))}
         </label>
         <div className={styles.settingTip}>{capitalize(t('enable_infinite_scroll_tip'))}</div>

@@ -10,12 +10,12 @@ import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import { isPostPageView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useStateString from '../../hooks/use-state-string';
-import LoadingEllipsis from '../../components/loading-ellipsis';
+import LoadingEllipsis from '../loading-ellipsis';
 import BbcodeContent from '../../components/bbcode-content/bbcode-content';
 import ErrorDisplay from '../../components/error-display/error-display';
-import ReplyQuotePreview from '../../components/reply-quote-preview';
-import Markdown from '../../components/markdown';
-import Tooltip from '../../components/tooltip';
+import ReplyQuotePreview from '../reply-quote-preview';
+import Markdown from '../markdown';
+import Tooltip from '../tooltip';
 import styles from '../../views/post/post.module.css';
 import capitalize from 'lodash/capitalize';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
@@ -243,9 +243,10 @@ const CommentContent = ({
                 shouldUnescape={true}
                 components={{
                   1: (
-                    <span
+                    <button
+                      type='button'
                       key={cid}
-                      role='button'
+                      aria-label={t('show_replies')}
                       tabIndex={0}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -284,10 +285,11 @@ const CommentContent = ({
                   shouldUnescape={true}
                   components={{
                     1: (
-                      <span
+                      <button
+                        type='button'
                         key={cid}
                         className={styles.showOriginal}
-                        role='button'
+                        aria-label={t('show_original')}
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -306,10 +308,11 @@ const CommentContent = ({
                   shouldUnescape={true}
                   components={{
                     1: (
-                      <span
+                      <button
+                        type='button'
                         key={cid}
                         className={styles.showOriginal}
-                        role='button'
+                        aria-label={t('show_original')}
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {

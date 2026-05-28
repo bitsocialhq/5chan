@@ -11,29 +11,19 @@ const DirectoryModal = () => {
     return null;
   }
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      closeDirectoryModal();
-    }
-  };
-
   return (
-    <div
-      className={`${styles.backdrop} ${isHomeView ? styles.backdropHome : ''}`}
-      role='button'
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          closeDirectoryModal();
-        }
-      }}
-      onClick={handleBackdropClick}
-    >
-      <div className={styles.directoryDialog} role='dialog' aria-modal='true' aria-labelledby='directory-modal-title'>
+    <div className={`${styles.backdrop} ${isHomeView ? styles.backdropHome : ''}`}>
+      <button type='button' className={styles.backdropButton} aria-label='Close directory modal' onClick={closeDirectoryModal} />
+      <dialog open className={styles.directoryDialog} aria-modal='true' aria-labelledby='directory-modal-title'>
         <div className={styles.hd}>
           <h2 id='directory-modal-title'>Submit a Board to a Directory</h2>
-          <button className={`${styles.closeButton} ${isHomeView ? styles.closeButtonHome : ''}`} onClick={closeDirectoryModal} title='Close' aria-label='Close' />
+          <button
+            type='button'
+            className={`${styles.closeButton} ${isHomeView ? styles.closeButtonHome : ''}`}
+            onClick={closeDirectoryModal}
+            title='Close'
+            aria-label='Close'
+          />
         </div>
         <div className={styles.bd}>
           <p className={styles.introMessage}>
@@ -74,9 +64,11 @@ const DirectoryModal = () => {
           </div>
         </div>
         <div className={styles.directoryFooter}>
-          <button onClick={closeDirectoryModal}>Close</button>
+          <button type='button' onClick={closeDirectoryModal}>
+            Close
+          </button>
         </div>
-      </div>
+      </dialog>
     </div>
   );
 };

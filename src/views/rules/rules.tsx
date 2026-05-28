@@ -62,8 +62,8 @@ const BoardRulesDisplay = ({ communityAddress, directories }: { communityAddress
           </p>
         ) : rules && rules.length > 0 ? (
           <ol>
-            {rules.map((rule: string, index: number) => (
-              <li key={index}>
+            {rules.map((rule: string) => (
+              <li key={rule}>
                 <Markdown content={rule} />
               </li>
             ))}
@@ -117,9 +117,9 @@ const BoardSelector = ({
       <div className={styles.boxContent}>
         <div className={styles.selectorRow}>
           <select value={selectedBoardValue} onChange={handleSelectChange} className={styles.boardSelect}>
-            <option value=''>Select board...</option>
-            {[...directories]
-              .sort((a, b) => getBoardShortCode(a.title).localeCompare(getBoardShortCode(b.title)))
+            <option value=''>Select board&hellip;</option>
+            {directories
+              .toSorted((a, b) => getBoardShortCode(a.title).localeCompare(getBoardShortCode(b.title)))
               .map((sub) => {
                 const shortCode = getBoardShortCode(sub.title);
                 const boardName = getBoardName(sub.title);
@@ -134,13 +134,14 @@ const BoardSelector = ({
           <form onSubmit={handleCustomSubmit} className={styles.customAddressForm}>
             <input
               type='text'
+              aria-label={lowerCase(t('enter_board_address'))}
               placeholder={lowerCase(t('enter_board_address'))}
               value={customAddress}
               onChange={(e) => setCustomAddress(e.target.value)}
               className={styles.addressInput}
             />
             <button type='submit' className={styles.goButton}>
-              Go
+              Open Board
             </button>
           </form>
         </div>

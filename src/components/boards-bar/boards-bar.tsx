@@ -70,7 +70,16 @@ const SearchBar = ({ setShowSearchBar }: { setShowSearchBar: (show: boolean) => 
   return (
     <div className={styles.searchBar} ref={searchBarRef}>
       <form onSubmit={handleSearchSubmit}>
-        <input type='text' autoCorrect='off' autoComplete='off' spellCheck='false' autoCapitalize='off' placeholder={placeholder} ref={searchInputRef} />
+        <input
+          type='text'
+          aria-label={placeholder}
+          autoCorrect='off'
+          autoComplete='off'
+          spellCheck='false'
+          autoCapitalize='off'
+          placeholder={placeholder}
+          ref={searchInputRef}
+        />
       </form>
     </div>
   );
@@ -154,9 +163,9 @@ const BoardsBarDesktop = () => {
     const linkContent = (
       <>
         {isPlaceholder ? (
-          <span
+          <button
+            type='button'
             className={styles.placeholder}
-            role='button'
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -168,7 +177,7 @@ const BoardsBarDesktop = () => {
             style={{ cursor: 'pointer' }}
           >
             {code}
-          </span>
+          </button>
         ) : (
           <Link to={`/${code}${catalogSuffix}`} onClick={openDirectoryForPlaceholder}>
             {code}
@@ -209,19 +218,19 @@ const BoardsBarDesktop = () => {
           </>
         )}
         ]{' '}
-        {BOARD_CODE_GROUPS.map((group, groupIndex) => {
+        {BOARD_CODE_GROUPS.map((group) => {
           const visibleCodes = group.filter((code) => directoriesToShow.has(code));
           if (visibleCodes.length === 0) return null;
 
-          return <span key={groupIndex}>[{visibleCodes.map((code, codeIndex) => renderBoardCode(code, codeIndex === visibleCodes.length - 1))}] </span>;
+          return <span key={group.join('|')}>[{visibleCodes.map((code, codeIndex) => renderBoardCode(code, codeIndex === visibleCodes.length - 1))}] </span>;
         })}
         {hasHiddenDirectories && !showAllTemporarily && (
           <>
             {' '}
             [
-            <span
+            <button
+              type='button'
               className={styles.temporaryButton}
-              role='button'
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -234,7 +243,7 @@ const BoardsBarDesktop = () => {
               title='Show all'
             >
               ...
-            </span>
+            </button>
             ]{' '}
           </>
         )}
@@ -242,9 +251,9 @@ const BoardsBarDesktop = () => {
           <>[{visibleSubscriptionAddresses.map((address: string, index: number) => renderSubscription(address, index, visibleSubscriptionAddresses.length))}] </>
         )}
         [
-        <span
+        <button
+          type='button'
           className={styles.temporaryButton}
-          role='button'
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -256,11 +265,11 @@ const BoardsBarDesktop = () => {
           style={{ cursor: 'pointer' }}
         >
           {capitalize(t('edit'))}
-        </span>
+        </button>
         ] [
-        <span
+        <button
+          type='button'
           className={styles.temporaryButton}
-          role='button'
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -272,13 +281,13 @@ const BoardsBarDesktop = () => {
           style={{ cursor: 'pointer' }}
         >
           {t('create_board')}
-        </span>
+        </button>
         ]
       </span>
       <span className={styles.navTopRight}>
         [<Link to={!location.pathname.endsWith('settings') ? location.pathname.replace(/\/$/, '') + '/settings' : location.pathname}>{t('settings')}</Link>] [
-        <span
-          role='button'
+        <button
+          type='button'
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -288,8 +297,8 @@ const BoardsBarDesktop = () => {
           }}
           onClick={() => setShowSearchBar(!showSearchBar)}
         >
-          {t('search')}
-        </span>
+          {capitalize(t('search'))}
+        </button>
         ] [<Link to='/'>{t('home')}</Link>]
       </span>
       {showSearchBar && <SearchBar setShowSearchBar={setShowSearchBar} />}
@@ -387,8 +396,8 @@ const BoardsBarMobile = ({ communityAddress }: { communityAddress?: string }) =>
       </div>
       <div className={styles.pageJump}>
         <Link to={location.pathname.replace(/\/$/, '') + '/settings'}>{t('settings')}</Link>
-        <span
-          role='button'
+        <button
+          type='button'
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -399,7 +408,7 @@ const BoardsBarMobile = ({ communityAddress }: { communityAddress?: string }) =>
           onClick={() => setShowSearchBar(!showSearchBar)}
         >
           {capitalize(t('search'))}
-        </span>
+        </button>
         <Link to='/'>{t('home')}</Link>
         {showSearchBar && <SearchBar setShowSearchBar={setShowSearchBar} />}
       </div>

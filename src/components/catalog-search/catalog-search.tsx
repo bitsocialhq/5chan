@@ -85,9 +85,9 @@ const CatalogSearch = () => {
   return (
     <>
       {!isMobile && '['}
-      <span
+      <button
+        type='button'
         className={`${styles.filtersButton} button`}
-        role='button'
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -98,13 +98,14 @@ const CatalogSearch = () => {
         onClick={handleToggleSearch}
       >
         {t('search')}
-      </span>
+      </button>
       {!isMobile && ']'}
       {openSearch && (
         <div className={styles.searchContainer}>
           <input
             ref={(el) => el?.focus()}
             type='text'
+            aria-label={t('search')}
             value={inputValue}
             onChange={handleSearchChange}
             onKeyDown={(e) => {
@@ -113,9 +114,9 @@ const CatalogSearch = () => {
               }
             }}
           />
-          <span
+          <button
+            type='button'
             className={styles.closeSearch}
-            role='button'
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -126,7 +127,7 @@ const CatalogSearch = () => {
             onClick={handleCloseSearch}
           >
             ✖
-          </span>
+          </button>
         </div>
       )}
     </>

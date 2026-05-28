@@ -3,7 +3,8 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import Catalog, { getCatalogRenderFeed, type CatalogProps } from '../catalog';
+import Catalog, { type CatalogProps } from '../catalog';
+import { getCatalogRenderFeed } from '../catalog-render-feed';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
 import useHiddenCatalogThreadsStore from '../../../stores/use-hidden-catalog-threads-store';
 
@@ -920,7 +921,7 @@ describe('Catalog', () => {
 
     expect(container.textContent).toContain('not_mod_of_any_board');
     expect(container.textContent).toContain('go_to_settings_to_import_mod_account');
-    expect(container.querySelector('[role="status"]')?.className).toContain('modEmptyState');
+    expect(container.querySelector('output')?.className).toContain('modEmptyState');
     expect(container.querySelector('a')?.getAttribute('href')).toBe('/mod/settings#account-settings');
     expect(container.querySelectorAll('[data-testid="catalog-row"]')).toHaveLength(0);
   });
@@ -934,8 +935,8 @@ describe('Catalog', () => {
 
     expect(container.textContent).toContain('nothing_found');
     expect(container.textContent).not.toContain('no_threads');
-    expect(container.querySelector('[role="status"]')?.className).toContain('searchNothingFound');
-    expect(container.querySelector('[role="status"]')?.textContent).toBe('nothing_found');
+    expect(container.querySelector('output')?.className).toContain('searchNothingFound');
+    expect(container.querySelector('output')?.textContent).toBe('nothing_found');
     expect(container.querySelectorAll('[data-testid="catalog-row"]')).toHaveLength(0);
     expect(container.textContent).toContain('search_results_for');
     expect(container.textContent).toContain('asddasd');

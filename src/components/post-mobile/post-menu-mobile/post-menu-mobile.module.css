@@ -1,4 +1,7 @@
 .postMenuBtn {
+  appearance: none;
+  background: transparent;
+  border: 0;
   color: var(--post-mobile-menu-button-color);
   line-height: 1em;
   width: 1em;
@@ -11,6 +14,13 @@
   font-size: 16px;
   height: 100%;
   cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+.postMenuBtn:focus-visible {
+  outline: 1px dotted currentColor;
+  outline-offset: 1px;
 }
 
 .checkbox {
@@ -33,6 +43,20 @@
   text-decoration: none;
   color: inherit;
   outline: none;
+}
+
+.postMenu button {
+  all: unset;
+  box-sizing: border-box;
+  color: inherit;
+  display: block;
+  font: inherit;
+  width: 100%;
+}
+
+.postMenu button:focus-visible {
+  outline: 1px dotted currentColor;
+  outline-offset: -2px;
 }
 
 .postMenuItem {
