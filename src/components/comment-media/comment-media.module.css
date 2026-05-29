@@ -59,7 +59,7 @@
 .thumbnailSmall .noThumbnailButton {
   width: 100%;
   display: inline-block;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   text-align: center;
   cursor: pointer;
 }
