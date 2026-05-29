@@ -200,18 +200,28 @@ const CryptoAddressSettingContent = ({ account }: { account: ReturnType<typeof u
         </button>
         {showCryptoAddressInfo && (
           <div className={styles.cryptoAddressInfo}>
-            steps to set a .bso account address:
-            <br />
+            A <code>.bso</code> address is just an ENS name you own, shown by 5chan with a <code>.bso</code> ending instead of <code>.eth</code>. To use one as your
+            account name:
             <ol>
               <li>
-                buy your desired .bso address as .eth on{' '}
+                Register a name (e.g. <code>yourname.eth</code>) at{' '}
                 <a href='https://app.ens.domains/' target='_blank' rel='noopener noreferrer'>
                   app.ens.domains
-                </a>{' '}
+                </a>
+                .
               </li>
-              <li>once you own the .eth address, go to its page on ENS, click on "records", then "edit records"</li>
-              <li>add a new text record with name "bitsocial" and value: {account?.signer?.address}</li>
-              <li>enter your .bso address in the input field above, click "check" to verify it's yours, then click "save"</li>
+              <li>
+                Open that name on ENS and go to <strong>Records</strong> → <strong>Edit Records</strong>.
+              </li>
+              <li>
+                Add a <strong>text record</strong> named <code>bitsocial</code> and paste this account&apos;s public key as its value:
+                <br />
+                <code>{account?.signer?.address}</code>
+              </li>
+              <li>
+                Come back here, type your name ending in <code>.bso</code> (e.g. <code>yourname.bso</code>) in the field above, press <strong>Check</strong> to confirm it
+                points to this account, then press <strong>Save</strong>.
+              </li>
             </ol>
           </div>
         )}
