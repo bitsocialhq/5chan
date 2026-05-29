@@ -51,7 +51,6 @@
   border-left: var(--settings-modal-border-left);
   color: inherit;
   margin: 0;
-  padding: 2px;
 }
 
 .settingsModal textarea {
