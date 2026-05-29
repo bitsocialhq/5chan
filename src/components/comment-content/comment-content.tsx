@@ -246,7 +246,7 @@ const CommentContent = ({
                     <button
                       type='button'
                       key={cid}
-                      aria-label={t('show_replies')}
+                      aria-label={t('view')}
                       tabIndex={0}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -289,7 +289,7 @@ const CommentContent = ({
                         type='button'
                         key={cid}
                         className={styles.showOriginal}
-                        aria-label={t('show_original')}
+                        aria-label={t('hide')}
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -312,7 +312,7 @@ const CommentContent = ({
                         type='button'
                         key={cid}
                         className={styles.showOriginal}
-                        aria-label={t('show_original')}
+                        aria-label={t('view')}
                         tabIndex={0}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
