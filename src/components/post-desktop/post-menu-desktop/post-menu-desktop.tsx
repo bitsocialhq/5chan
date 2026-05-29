@@ -128,14 +128,22 @@ const ImageSearchButton = ({ url, onClose }: { url: string; onClose: () => void 
 
   return (
     <div
-      className={`${styles.postMenuItem} ${styles.dropdown}`}
+      className={styles.dropdown}
       onMouseOver={() => setIsImageSearchMenuOpen(true)}
       onFocus={() => setIsImageSearchMenuOpen(true)}
       onMouseLeave={() => setIsImageSearchMenuOpen(false)}
       onBlur={() => setIsImageSearchMenuOpen(false)}
       ref={refs.setReference}
     >
-      {capitalize(t('image_search'))} »
+      <button
+        type='button'
+        className={styles.postMenuItem}
+        aria-haspopup='true'
+        aria-expanded={isImageSearchMenuOpen}
+        onClick={() => setIsImageSearchMenuOpen((open) => !open)}
+      >
+        {capitalize(t('image_search'))} »
+      </button>
       {isImageSearchMenuOpen && (
         <div ref={refs.setFloating} style={floatingStyles} className={styles.dropdownMenu}>
           <a href={`https://lens.google.com/uploadbyurl?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
