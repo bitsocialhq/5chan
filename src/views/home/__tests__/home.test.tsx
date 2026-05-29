@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useFeedStateString } from '../../../hooks/use-state-string';
 import Home from '../home';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -19,6 +20,7 @@ const testState = vi.hoisted(() => ({
   navigateMock: vi.fn(),
   communities: {} as Record<string, unknown>,
   communityStats: {} as Record<string, { allPostCount?: number; weekActiveUserCount?: number; state?: string }>,
+  feedStateString: 'Downloading boards',
 }));
 
 vi.mock('react-i18next', () => ({
@@ -74,6 +76,10 @@ vi.mock('../../../stores/use-communities-loading-start-timestamps-store', () => 
 
 vi.mock('../../../hooks/use-now-seconds', () => ({
   useNowSeconds: () => testState.nowSeconds,
+}));
+
+vi.mock('../../../hooks/use-state-string', () => ({
+  useFeedStateString: vi.fn(() => testState.feedStateString),
 }));
 
 vi.mock('../../../components/loading-ellipsis', () => ({
@@ -139,6 +145,7 @@ describe('Home', () => {
       'music-posting.eth': { allPostCount: 5, weekActiveUserCount: 2 },
       'tech-posting.eth': { allPostCount: 7, weekActiveUserCount: 5 },
     };
+    testState.feedStateString = 'Downloading boards';
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -153,6 +160,7 @@ describe('Home', () => {
   it('renders the home view chrome, child sections, collectors, and aggregated stats', () => {
     renderHome();
 
+    expect(vi.mocked(useFeedStateString)).not.toHaveBeenCalled();
     expect(document.title).toBe('5chan');
     expect(container.querySelector('[data-testid="disclaimer-modal"]')?.textContent).toBe('disclaimer-modal');
     expect(container.querySelector('[data-testid="directory-modal"]')?.textContent).toBe('directory-modal');
@@ -175,8 +183,12 @@ describe('Home', () => {
     renderHome();
 
     const loadingValues = Array.from(container.querySelectorAll('[data-testid="loading-ellipsis"]'));
-    expect(loadingValues).toHaveLength(3);
-    expect(loadingValues.map((value) => value.textContent)).toEqual(['loading', 'loading', 'loading']);
+    expect(loadingValues).toHaveLength(1);
+    expect(loadingValues[0]?.textContent).toBe('Downloading boards');
+    expect(vi.mocked(useFeedStateString)).toHaveBeenCalledWith(['music-posting.eth', 'tech-posting.eth']);
+    expect(container.textContent).not.toContain('total_posts');
+    expect(container.textContent).not.toContain('current_users');
+    expect(container.textContent).not.toContain('boards_tracked');
     expect(container.textContent).not.toContain('total_posts 5');
     expect(container.textContent).not.toContain('current_users 2');
     expect(container.textContent).not.toContain('boards_tracked 1');
