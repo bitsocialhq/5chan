@@ -136,27 +136,17 @@ const ImageSearchButtons = ({ url, onClose }: { url: string; onClose: () => void
   const { t } = useTranslation();
   const encodedUrl = encodeURIComponent(url);
   return (
-    <button
-      type='button'
-      tabIndex={0}
-      onClick={onClose}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onClose();
-        }
-      }}
-    >
-      <a href={`https://lens.google.com/uploadbyurl?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer'>
+    <div>
+      <a href={`https://lens.google.com/uploadbyurl?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
         <div className={styles.postMenuItem}>{t('search_image_on_google')}</div>
       </a>
-      <a href={`https://www.yandex.com/images/search?img_url=${encodedUrl}&rpt=imageview`} target='_blank' rel='noopener noreferrer'>
+      <a href={`https://www.yandex.com/images/search?img_url=${encodedUrl}&rpt=imageview`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
         <div className={styles.postMenuItem}>{t('search_image_on_yandex')}</div>
       </a>
-      <a href={`https://saucenao.com/search.php?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer'>
+      <a href={`https://saucenao.com/search.php?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
         <div className={styles.postMenuItem}>{t('search_image_on_saucenao')}</div>
       </a>
-    </button>
+    </div>
   );
 };
 

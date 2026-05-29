@@ -205,7 +205,7 @@ describe('PostMenuDesktop', () => {
 
     expect(Array.from(document.body.querySelectorAll('div')).find((node) => node.textContent === 'hide_thread')).toBeUndefined();
 
-    const imageSearch = Array.from(document.body.querySelectorAll('button')).find((node) => node.textContent?.includes('Image_search'));
+    const imageSearch = Array.from(document.body.querySelectorAll('[class*="dropdown"]')).find((node) => node.textContent?.includes('Image_search'));
     expect(imageSearch).toBeTruthy();
 
     await act(async () => {

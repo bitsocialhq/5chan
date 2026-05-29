@@ -127,38 +127,29 @@ const ImageSearchButton = ({ url, onClose }: { url: string; onClose: () => void 
   });
 
   return (
-    <button
-      type='button'
+    <div
       className={`${styles.postMenuItem} ${styles.dropdown}`}
-      tabIndex={0}
       onMouseOver={() => setIsImageSearchMenuOpen(true)}
       onFocus={() => setIsImageSearchMenuOpen(true)}
       onMouseLeave={() => setIsImageSearchMenuOpen(false)}
       onBlur={() => setIsImageSearchMenuOpen(false)}
       ref={refs.setReference}
-      onClick={onClose}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onClose();
-        }
-      }}
     >
       {capitalize(t('image_search'))} »
       {isImageSearchMenuOpen && (
         <div ref={refs.setFloating} style={floatingStyles} className={styles.dropdownMenu}>
-          <a href={`https://lens.google.com/uploadbyurl?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer'>
+          <a href={`https://lens.google.com/uploadbyurl?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
             <div className={styles.postMenuItem}>Google</div>
           </a>
-          <a href={`https://www.yandex.com/images/search?img_url=${encodedUrl}&rpt=imageview`} target='_blank' rel='noopener noreferrer'>
+          <a href={`https://www.yandex.com/images/search?img_url=${encodedUrl}&rpt=imageview`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
             <div className={styles.postMenuItem}>Yandex</div>
           </a>
-          <a href={`https://saucenao.com/search.php?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer'>
+          <a href={`https://saucenao.com/search.php?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
             <div className={styles.postMenuItem}>SauceNAO</div>
           </a>
         </div>
       )}
-    </button>
+    </div>
   );
 };
 
