@@ -735,8 +735,34 @@
   font-size: var(--post-mobile-abbr-font-size);
 }
 
+.abbr button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: inline;
+  font: inherit;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+.abbr button:focus-visible {
+  outline: 1px dotted currentcolor;
+  outline-offset: 1px;
+}
+
 .showOriginal {
+  appearance: none;
+  background: transparent;
+  border: 0;
   color: var(--post-link-text-color);
+  display: inline;
+  font: inherit;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
   text-decoration: var(--post-content-link-text-decoration);
 }
 
@@ -744,6 +770,11 @@
   cursor: pointer;
   color: var(--post-link-text-color-hover);
   text-decoration: var(--post-content-link-text-decoration-hover);
+}
+
+.showOriginal:focus-visible {
+  outline: 1px dotted currentcolor;
+  outline-offset: 1px;
 }
 
 @media (max-width: 640px) {

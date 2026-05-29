@@ -1,3 +1,11 @@
+.colorPickerBackdrop {
+  all: unset;
+  cursor: default;
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+}
+
 .colorClickbox {
   appearance: none;
   padding: 0;
