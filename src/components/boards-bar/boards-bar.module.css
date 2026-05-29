@@ -18,7 +18,7 @@
 }
 
 .boardNavDesktop button:focus-visible, .boardNavMobile button:focus-visible {
-  outline: 1px dotted currentColor;
+  outline: 1px dotted currentcolor;
   outline-offset: 1px;
 }
 

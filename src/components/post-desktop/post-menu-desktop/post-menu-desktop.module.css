@@ -25,7 +25,7 @@
 }
 
 .postMenu button:focus-visible, .postMenuBtn:focus-visible, .postMenuBtnCatalog:focus-visible {
-  outline: 1px dotted currentColor;
+  outline: 1px dotted currentcolor;
   outline-offset: 1px;
 }
 
