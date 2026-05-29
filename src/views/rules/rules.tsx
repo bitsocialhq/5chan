@@ -62,8 +62,8 @@ const BoardRulesDisplay = ({ communityAddress, directories }: { communityAddress
           </p>
         ) : rules && rules.length > 0 ? (
           <ol>
-            {rules.map((rule: string) => (
-              <li key={rule}>
+            {rules.map((rule: string, index: number) => (
+              <li key={`${index}-${rule}`}>
                 <Markdown content={rule} />
               </li>
             ))}
