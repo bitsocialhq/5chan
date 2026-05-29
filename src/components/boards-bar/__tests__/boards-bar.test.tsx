@@ -220,7 +220,7 @@ describe('BoardsBar', () => {
     await renderBoardsBar('/mu');
 
     await act(async () => {
-      findExactText('search')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      findExactText('Search')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
     const inputs = container.querySelectorAll<HTMLInputElement>('input[type="text"]');

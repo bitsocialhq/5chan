@@ -7,6 +7,28 @@
   z-index: 2;
 }
 
+.postMenu button {
+  appearance: none;
+  font: inherit;
+  margin: 0;
+  color: inherit;
+  text-align: left;
+}
+
+.postMenuBtn, .postMenuBtnCatalog {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+.postMenu button:focus-visible, .postMenuBtn:focus-visible, .postMenuBtnCatalog:focus-visible {
+  outline: 1px dotted currentcolor;
+  outline-offset: 1px;
+}
+
 .postMenuBtnWrapper {
   position: relative;
   display: inline-block;
@@ -28,10 +50,13 @@
 
 .postMenuItem {
   cursor: pointer;
+  display: block;
+  width: 100%;
   padding: 2px 4px;
   border: 1px solid var(--post-menu-desktop-item-border-color);
   background-color: var(--post-menu-desktop-item-background-color);
   border-bottom: none;
+  box-sizing: border-box;
 }
 
 .postMenuItem:hover {
@@ -46,7 +71,7 @@
   position: absolute;
   left: 100%;
   top: -1px;
-  display: none;
+  display: block;
   border-bottom: var(--post-menu-desktop-border-bottom);
   border-right: var(--post-menu-desktop-border-right);
 }
@@ -54,10 +79,6 @@
 .dropdown a {
   text-decoration: none;
   color: inherit;
-}
-
-.dropdown:hover .dropdownMenu {
-  display: block;
 }
 
 .postMenuBtnCatalogWrapper {

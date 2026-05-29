@@ -144,10 +144,6 @@
   "show_worksafe_boards_only": "Показывать только безопасные доски",
   "show_all_content": "Показать весь контент",
   "link_type": "Тип ссылки",
-  "comment_edited_at_timestamp": "Комментарий изменен в <1>{{timestamp}}</1>",
-  "reason_reason": "Причина: \"{{reason}}\".",
-  "click_here_to_show_original": "<1>Нажмите здесь</1> для отображения оригинала.",
-  "click_here_to_hide_original": "<1>Нажмите здесь</1> чтобы скрыть оригинал.",
   "loading": "Загрузка",
   "posted_by": "Опубликовано",
   "by": "от",
@@ -393,5 +389,13 @@
   "go_to_settings_to_import_mod_account": "Перейдите в <1>настройки</1>, чтобы импортировать свой аккаунт модератора",
   "post_form_rules_faq_prompt": "Пожалуйста, прочитайте <rules>Правила</rules> и <faq>FAQ</faq> перед публикацией.",
   "pending_mod_approval_reason": "ИИ-модерация отправила этот пост в очередь модераторов. Причина: \"{{reason}}\".",
-  "flag": "Флаг"
+  "flag": "Флаг",
+  "show_replies": "показать ответы",
+  "hide_replies": "скрыть ответы",
+  "unhide": "показать",
+  "account_data": "данные аккаунта",
+  "ban_duration_days": "продолжительность бана в днях",
+  "challenge_answer": "ответ на задачу",
+  "ban": "блокировка",
+  "timestamp": "временная метка"
 }

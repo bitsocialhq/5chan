@@ -144,10 +144,6 @@
   "show_worksafe_boards_only": "הצג לוחות עבודה בטוחים בלבד",
   "show_all_content": "הצג את כל התוכן",
   "link_type": "סוג קישור",
-  "comment_edited_at_timestamp": "התגובה נערכה ב-<1>{{timestamp}}</1>",
-  "reason_reason": "סיבה: \"{{reason}}\".",
-  "click_here_to_show_original": "<1>לחץ כאן</1> כדי להציג את המקור.",
-  "click_here_to_hide_original": "<1>לחץ כאן</1> כדי להסתיר את המקור.",
   "loading": "טוען",
   "posted_by": "פורסם על ידי",
   "by": "על ידי",
@@ -393,5 +389,13 @@
   "go_to_settings_to_import_mod_account": "עבור אל <1>הגדרות</1> כדי לייבא את חשבון המוד שלך",
   "post_form_rules_faq_prompt": "אנא קרא את <rules>הכללים</rules> ואת <faq>שאלות נפוצות</faq> לפני פרסום.",
   "pending_mod_approval_reason": "סינון ה-AI שלח את הפוסט הזה לתור המודרציה. סיבה: \"{{reason}}\".",
-  "flag": "דגל"
+  "flag": "דגל",
+  "show_replies": "הצג תגובות",
+  "hide_replies": "הסתרת תגובות",
+  "unhide": "הצג",
+  "account_data": "נתוני חשבון",
+  "ban_duration_days": "משך הבן בימים",
+  "challenge_answer": "תשובת אתגר",
+  "ban": "חסימה",
+  "timestamp": "חותמת זמן"
 }

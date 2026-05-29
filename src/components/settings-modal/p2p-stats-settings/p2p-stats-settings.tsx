@@ -140,6 +140,7 @@ type ObservedTransferStats = {
 
 const KUBO_API_URL = 'http://localhost:50019/api/v0';
 const SEEDER_REPO_URL = 'https://github.com/bitsocialnet/bitsocial-seeder';
+const transparentPixelSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1" height="1"%3E%3C/svg%3E';
 const STATS_REFRESH_MS = 5000;
 const MAX_TRANSFER_COUNTER_DEPTH = 10;
 const MAX_TRANSFER_COUNTER_OBJECTS = 400;
@@ -1028,10 +1029,11 @@ const NodeEndpointValue = ({ row }: { row: NodeEndpointStatRow }) => {
   return (
     <span className={styles.nodeEndpoint}>
       {flagPosition && (
-        <span
+        <img
+          alt={countryLabel}
           aria-label={countryLabel}
           className={styles.peerFlag}
-          role='img'
+          src={transparentPixelSrc}
           style={{ backgroundPosition: `-${flagPosition.x}px -${flagPosition.y}px` }}
           title={countryLabel}
         />
@@ -1087,10 +1089,11 @@ const ConnectedPeersValue = ({ row }: { row: ConnectedPeersStatRow }) => (
               </div>
               <div className={styles.connectionAddressRow}>
                 {flagPosition && (
-                  <span
+                  <img
+                    alt={getCountryLabel(countryCode)}
                     aria-label={getCountryLabel(countryCode)}
                     className={styles.peerFlag}
-                    role='img'
+                    src={transparentPixelSrc}
                     style={{ backgroundPosition: `-${flagPosition.x}px -${flagPosition.y}px` }}
                     title={getCountryLabel(countryCode)}
                   />

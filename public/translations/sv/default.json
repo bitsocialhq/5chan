@@ -144,10 +144,6 @@
   "show_worksafe_boards_only": "Visa endast Worksafe-styrelser",
   "show_all_content": "Visa allt innehåll",
   "link_type": "Länktyp",
-  "comment_edited_at_timestamp": "Kommentar redigerad vid <1>{{timestamp}}</1>",
-  "reason_reason": "Anledning: \"{{reason}}\".",
-  "click_here_to_show_original": "<1>Klicka här</1> för att visa original.",
-  "click_here_to_hide_original": "<1>Klicka här</1> för att dölja original.",
   "loading": "Laddar",
   "posted_by": "Postat av",
   "by": "av",
@@ -393,5 +389,13 @@
   "go_to_settings_to_import_mod_account": "Gå till <1>inställningar</1> för att importera ditt modkonto",
   "post_form_rules_faq_prompt": "Läs <rules>Reglerna</rules> och <faq>FAQ</faq> innan du postar.",
   "pending_mod_approval_reason": "AI-moderering skickade det här inlägget till moderatorkön. Anledning: \"{{reason}}\".",
-  "flag": "Flagga"
+  "flag": "Flagga",
+  "show_replies": "visa svar",
+  "hide_replies": "dölj svar",
+  "unhide": "visa",
+  "account_data": "kontoupplysningar",
+  "ban_duration_days": "bannlängd i dagar",
+  "challenge_answer": "svar på utmaning",
+  "ban": "förbjud",
+  "timestamp": "tidsstämpel"
 }

@@ -144,10 +144,6 @@
   "show_worksafe_boards_only": "Csak munkabiztos táblák mutatása",
   "show_all_content": "Mutasd az összes tartalmat",
   "link_type": "Link típusa",
-  "comment_edited_at_timestamp": "Megjegyzés szerkesztve ekkor: <1>{{timestamp}}</1>",
-  "reason_reason": "Ok: \"{{reason}}\".",
-  "click_here_to_show_original": "<1>Kattints ide</1> az eredeti megjelenítéséhez.",
-  "click_here_to_hide_original": "<1>Kattints ide</1> az eredeti elrejtéséhez.",
   "loading": "Betöltés",
   "posted_by": "Írta",
   "by": "által",
@@ -393,5 +389,13 @@
   "go_to_settings_to_import_mod_account": "Lépj a <1>beállítások</1> menübe a moderátori fiókod importálásához",
   "post_form_rules_faq_prompt": "Kérjük, olvasd el a <rules>Szabályokat</rules> és a <faq>GYIK</faq>-et posztolás előtt.",
   "pending_mod_approval_reason": "Az AI-moderáció ezt a bejegyzést a moderátori várólistára küldte. Ok: \"{{reason}}\".",
-  "flag": "Zászló"
+  "flag": "Zászló",
+  "show_replies": "Válaszok megjelenítése",
+  "hide_replies": "válaszok elrejtése",
+  "unhide": "mutat",
+  "account_data": "fiókadat",
+  "ban_duration_days": "kitiltás időtartama napokban",
+  "challenge_answer": "kihívás válasza",
+  "ban": "tiltás",
+  "timestamp": "időbélyeg"
 }

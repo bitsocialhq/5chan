@@ -1,4 +1,18 @@
 import styles from './embed.module.css';
+import {
+  bitchuteHosts,
+  getXTweetId,
+  instagramHosts,
+  odyseeHosts,
+  redditHosts,
+  soundcloudHosts,
+  spotifyHosts,
+  streamableHosts,
+  tiktokHosts,
+  twitchHosts,
+  xHosts,
+  youtubeHosts,
+} from './embed-utils';
 
 interface EmbedProps {
   url: string;
@@ -47,20 +61,7 @@ interface EmbedComponentProps {
 }
 
 const srcDocSandbox = 'allow-scripts allow-popups allow-popups-to-escape-sandbox';
-
-const youtubeHosts = new Set<string>([
-  'youtube.com',
-  'www.youtube.com',
-  'youtu.be',
-  'www.youtu.be',
-  'm.youtube.com',
-  'music.youtube.com',
-  // working Invidious instances - https://docs.invidious.io/instances/ - https://uptime.invidious.io/
-  'yewtu.be',
-  'inv.nadeko.net',
-  'yt.artemislena.eu',
-  'invidious.nerdvpn.de',
-]);
+const remoteEmbedSandbox = `${srcDocSandbox} allow-forms allow-presentation allow-same-origin`;
 
 const YoutubeEmbed = ({ parsedUrl }: EmbedComponentProps) => {
   let embedSrc = '';
@@ -100,22 +101,13 @@ const YoutubeEmbed = ({ parsedUrl }: EmbedComponentProps) => {
         referrerPolicy='origin'
         allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
         allowFullScreen
+        sandbox={remoteEmbedSandbox}
         title={parsedUrl.href}
         src={embedSrc}
       />
     );
   }
   return null;
-};
-
-const xHosts = new Set<string>(['twitter.com', 'www.twitter.com', 'x.com', 'www.x.com']);
-
-const getXTweetId = (parsedUrl: URL): string | undefined => {
-  const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
-  const statusIndex = pathParts.findIndex((part) => part === 'status' || part === 'statuses');
-  const statusId = statusIndex === -1 ? undefined : pathParts[statusIndex + 1];
-
-  return statusId && /^\d+$/.test(statusId) ? statusId : undefined;
 };
 
 const XEmbed = ({ parsedUrl }: EmbedComponentProps) => {
@@ -147,8 +139,6 @@ const XEmbed = ({ parsedUrl }: EmbedComponentProps) => {
   );
 };
 
-const redditHosts = new Set<string>(['reddit.com', 'www.reddit.com', 'old.reddit.com']);
-
 const RedditEmbed = ({ parsedUrl }: EmbedComponentProps) => {
   return (
     <iframe
@@ -175,8 +165,6 @@ const RedditEmbed = ({ parsedUrl }: EmbedComponentProps) => {
   );
 };
 
-const twitchHosts = new Set<string>(['twitch.tv', 'www.twitch.tv']);
-
 const TwitchEmbed = ({ parsedUrl }: EmbedComponentProps) => {
   let iframeUrl;
   if (parsedUrl.pathname.startsWith('/videos/')) {
@@ -194,13 +182,12 @@ const TwitchEmbed = ({ parsedUrl }: EmbedComponentProps) => {
       referrerPolicy='no-referrer'
       allow='accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share'
       allowFullScreen
+      sandbox={remoteEmbedSandbox}
       title={parsedUrl.href}
       src={iframeUrl}
     />
   );
 };
-
-const tiktokHosts = new Set<string>(['tiktok.com', 'www.tiktok.com']);
 
 const TiktokEmbed = ({ parsedUrl }: EmbedComponentProps) => {
   const videoId = parsedUrl.pathname.replace(/.+\/video\//, '').replaceAll('/', '');
@@ -222,8 +209,6 @@ const TiktokEmbed = ({ parsedUrl }: EmbedComponentProps) => {
     />
   );
 };
-
-const instagramHosts = new Set<string>(['instagram.com', 'www.instagram.com']);
 
 const InstagramEmbed = ({ parsedUrl }: EmbedComponentProps) => {
   const pathNames = parsedUrl.pathname.replace(/\/+$/, '').split('/');
@@ -247,8 +232,6 @@ const InstagramEmbed = ({ parsedUrl }: EmbedComponentProps) => {
   );
 };
 
-const odyseeHosts = new Set<string>(['odysee.com', 'www.odysee.com']);
-
 const OdyseeEmbed = ({ parsedUrl }: EmbedComponentProps) => {
   const iframeUrl = `https://odysee.com/$/embed${parsedUrl.pathname}`;
   return (
@@ -259,13 +242,12 @@ const OdyseeEmbed = ({ parsedUrl }: EmbedComponentProps) => {
       referrerPolicy='no-referrer'
       allow='accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share'
       allowFullScreen
+      sandbox={remoteEmbedSandbox}
       title={parsedUrl.href}
       src={iframeUrl}
     />
   );
 };
-
-const bitchuteHosts = new Set<string>(['bitchute.com', 'www.bitchute.com']);
 
 const BitchuteEmbed = ({ parsedUrl }: EmbedComponentProps) => {
   const videoId = parsedUrl.pathname.replace(/\/video\//, '').replaceAll('/', '');
@@ -277,13 +259,12 @@ const BitchuteEmbed = ({ parsedUrl }: EmbedComponentProps) => {
       referrerPolicy='no-referrer'
       allow='accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share'
       allowFullScreen
+      sandbox={remoteEmbedSandbox}
       title={parsedUrl.href}
       src={`https://www.bitchute.com/embed/${videoId}/`}
     />
   );
 };
-
-const streamableHosts = new Set<string>(['streamable.com', 'www.streamable.com']);
 
 const StreamableEmbed = ({ parsedUrl }: EmbedComponentProps) => {
   const videoId = parsedUrl.pathname.replaceAll('/', '');
@@ -295,13 +276,12 @@ const StreamableEmbed = ({ parsedUrl }: EmbedComponentProps) => {
       referrerPolicy='no-referrer'
       allow='accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share'
       allowFullScreen
+      sandbox={remoteEmbedSandbox}
       title={parsedUrl.href}
       src={`https://streamable.com/e/${videoId}`}
     />
   );
 };
-
-const spotifyHosts = new Set<string>(['spotify.com', 'www.spotify.com', 'open.spotify.com']);
 
 const SpotifyEmbed = ({ parsedUrl }: EmbedComponentProps) => {
   const iframeUrl = `https://open.spotify.com/embed${parsedUrl.pathname}?theme=0`;
@@ -313,13 +293,12 @@ const SpotifyEmbed = ({ parsedUrl }: EmbedComponentProps) => {
       referrerPolicy='no-referrer'
       allow='accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share'
       allowFullScreen
+      sandbox={remoteEmbedSandbox}
       title={parsedUrl.href}
       src={iframeUrl}
     />
   );
 };
-
-const soundcloudHosts = new Set(['soundcloud.com', 'www.soundcloud.com', 'on.soundcloud.com', 'api.soundcloud.com', 'w.soundcloud.com']);
 
 // not officially documented https://stackoverflow.com/questions/20870270/how-to-get-soundcloud-embed-code-by-soundcloud-com-url
 const SoundcloudEmbed = ({ parsedUrl }: EmbedComponentProps) => {
@@ -331,37 +310,11 @@ const SoundcloudEmbed = ({ parsedUrl }: EmbedComponentProps) => {
       referrerPolicy='no-referrer'
       allow='accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share'
       allowFullScreen
+      sandbox={remoteEmbedSandbox}
       title={parsedUrl.href}
       src={`https://w.soundcloud.com/player/?url=${parsedUrl.href}`}
     />
   );
-};
-
-const canEmbedHosts = new Set<string>([
-  ...youtubeHosts,
-  ...xHosts,
-  ...redditHosts,
-  ...twitchHosts,
-  ...tiktokHosts,
-  ...instagramHosts,
-  ...odyseeHosts,
-  ...bitchuteHosts,
-  ...soundcloudHosts,
-  ...streamableHosts,
-  ...spotifyHosts,
-]);
-
-export const canEmbed = (parsedUrl: URL): boolean => {
-  if (xHosts.has(parsedUrl.host)) {
-    return Boolean(getXTweetId(parsedUrl));
-  }
-
-  if (redditHosts.has(parsedUrl.host)) {
-    // Reddit posts are not embeddable if the URL does not include '/comments/'
-    return parsedUrl.pathname.includes('/comments/');
-  }
-
-  return canEmbedHosts.has(parsedUrl.host) || (parsedUrl.host.startsWith('yt.') && parsedUrl.searchParams.has('v'));
 };
 
 export default Embed;

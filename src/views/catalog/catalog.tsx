@@ -44,6 +44,7 @@ import {
   readReplyTypographyMetrics,
   resolveCatalogVirtualizationMode,
 } from '../../lib/utils/pretext-height-estimates';
+import { getCatalogRenderFeed } from './catalog-render-feed';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
 const RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS = 60 * 60;
@@ -52,8 +53,6 @@ const MONTH_IN_SECONDS = 30 * 24 * 60 * 60;
 const YEAR_IN_SECONDS = 365 * 24 * 60 * 60;
 // Keep the hook on its indexed fast path when this view should not inject local posts.
 const EMPTY_ACCOUNT_COMMENT_LOOKUP = { commentIndices: [-1] };
-export const getCatalogRenderFeed = <T,>(processedFeed: readonly T[], deferredProcessedFeed: readonly T[]): readonly T[] =>
-  deferredProcessedFeed.length === 0 && processedFeed.length > 0 ? processedFeed : deferredProcessedFeed;
 
 interface CatalogFooterProps {
   communityAddresses: string[];
@@ -97,6 +96,7 @@ const CatalogFooter = ({
             1: onExpandTimeWindow ? (
               <button
                 type='button'
+                aria-label={t('load_more')}
                 data-testid='expand-time-window-button'
                 className={styles.morePostsSuggestionAction}
                 onClick={() => {
@@ -139,11 +139,7 @@ interface CatalogSearchNothingFoundProps {
 const CatalogSearchNothingFound = ({ className }: CatalogSearchNothingFoundProps) => {
   const { t } = useTranslation();
 
-  return (
-    <div className={className ?? styles.searchNothingFound} role='status'>
-      {t('nothing_found')}
-    </div>
-  );
+  return <output className={className ?? styles.searchNothingFound}>{t('nothing_found')}</output>;
 };
 
 interface CatalogLoadingProps {
@@ -188,6 +184,7 @@ const createContentFilter = (
 ) => {
   // Create a unique key based on the enabled filter items
   const enabledFilters = filterItems.filter((item) => item.enabled && item.text.trim() !== '');
+  const filterIndexByItem = new Map(filterItems.map((item, index) => [item, index]));
   const filterKey =
     enabledFilters.length > 0
       ? `content-filter-${enabledFilters.map((item) => `${item.text}-${item.hide ? 'hide' : ''}-${item.top ? 'top' : ''}`).join('-')}`
@@ -206,7 +203,7 @@ const createContentFilter = (
 
         if (commentMatchesPattern(comment, pattern)) {
           // Find the original filter index to increment count
-          const filterIndex = filterItems.findIndex((f) => f.text === item.text && f.enabled);
+          const filterIndex = filterIndexByItem.get(item) ?? -1;
           if (trackMatches && filterIndex !== -1) {
             if (onFilterMatch) {
               onFilterMatch(filterIndex, comment.cid, communityAddress);
@@ -271,7 +268,7 @@ export interface CatalogProps {
 
 const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, timeFilterNameFromCache, isVisible = true }: CatalogProps) => {
   const { t } = useTranslation();
-  const location = useLocation();
+  const routerLocation = useLocation();
   const navigate = useNavigate();
   const params = useParams();
 
@@ -338,15 +335,15 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   // Canonical redirect for multiboard catalog paths with numeric page segment (e.g. /all/catalog/1w/5 -> /all/catalog/1w)
   useEffect(() => {
     if (!(isInAllView || isInSubscriptionsView || isInModView)) return;
-    const canonical = normalizeMultiboardFeedPath(location.pathname);
-    if (location.pathname !== canonical) {
-      navigate({ pathname: canonical, search: location.search }, { replace: true });
+    const canonical = normalizeMultiboardFeedPath(routerLocation.pathname);
+    if (routerLocation.pathname !== canonical) {
+      navigate({ pathname: canonical, search: routerLocation.search }, { replace: true });
     }
-  }, [isInAllView, isInSubscriptionsView, isInModView, location.pathname, location.search, navigate]);
+  }, [isInAllView, isInSubscriptionsView, isInModView, routerLocation.pathname, routerLocation.search, navigate]);
 
   const sortType = useSortingStore((state) => state.sortType);
   const feedSortType = sortType === 'new' ? 'new' : 'active';
-  const catalogVirtualizationMode = useMemo(() => resolveCatalogVirtualizationMode(location.search, 'item-size'), [location.search]);
+  const catalogVirtualizationMode = useMemo(() => resolveCatalogVirtualizationMode(routerLocation.search, 'item-size'), [routerLocation.search]);
   const themeKey = typeof document !== 'undefined' ? document.body.className : '';
   const hadVisibleHiddenThreadsRef = useRef(false);
 
@@ -441,7 +438,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   );
   // Keep suggestion feeds on a stable hook identity; the loader widens them by paging, not by recreating the feed.
   const suggestionPostsPerPage = multiboardCatalogPostsPerPage;
-  const suggestionRequestKeyBase = `${location.pathname}${location.search}`;
+  const suggestionRequestKeyBase = `${routerLocation.pathname}${routerLocation.search}`;
   const {
     feed: weeklyFeed,
     hasMore: weeklyFeedHasMore,
@@ -599,10 +596,11 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const footerMoreThreadsSuggestion = showHiddenThreads ? null : moreThreadsSuggestion;
   const footerShowLoadingEllipsis = showHiddenThreads ? isLoadingHiddenCatalogThreads : effectiveInfiniteScroll;
 
-  const catalogFooterFirstRow = (
-    <CatalogFooterFirstRow communityAddress={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+  const catalogFooterFirstRow = useMemo(
+    () => <CatalogFooterFirstRow communityAddress={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />,
+    [communityAddress, isInAllView, isInSubscriptionsView, isInModView],
   );
-  const catalogFooterStyleRow = <CatalogFooterStyleRow />;
+  const catalogFooterStyleRow = useMemo(() => <CatalogFooterStyleRow />, []);
 
   // Memoize footer component to preserve identity across renders (Virtuoso optimization)
   // Note: useFeedStateString is called inside CatalogFooter to isolate re-renders from backend state changes
@@ -617,7 +615,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
             currentTimeFilterName={currentTimeFilterName}
             moreThreadsSuggestion={footerMoreThreadsSuggestion}
             moreThreadsSuggestionPathname={moreThreadsSuggestionPathname}
-            moreThreadsSuggestionSearch={location.search}
+            moreThreadsSuggestionSearch={routerLocation.search}
             onExpandTimeWindow={expandSuggestionTimeWindow}
             showLoadingEllipsis={footerShowLoadingEllipsis}
           />
@@ -647,7 +645,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       isInAllView,
       isInSubscriptionsView,
       isInModView,
-      location.search,
+      routerLocation.search,
       footerShowLoadingEllipsis,
     ],
   );
@@ -661,7 +659,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
           currentTimeFilterName={currentTimeFilterName}
           moreThreadsSuggestion={footerMoreThreadsSuggestion}
           moreThreadsSuggestionPathname={moreThreadsSuggestionPathname}
-          moreThreadsSuggestionSearch={location.search}
+          moreThreadsSuggestionSearch={routerLocation.search}
           onExpandTimeWindow={expandSuggestionTimeWindow}
           showLoadingEllipsis={footerShowLoadingEllipsis}
         />
@@ -690,7 +688,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
       isInAllView,
       isInSubscriptionsView,
       isInModView,
-      location.search,
+      routerLocation.search,
       footerShowLoadingEllipsis,
     ],
   );
@@ -757,7 +755,13 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
         continue;
       }
 
-      const firstMatch = activeColoredFilters.find((item) => commentMatchesPattern(comment, item.text));
+      let firstMatch: (typeof activeColoredFilters)[number] | undefined;
+      for (const filter of activeColoredFilters) {
+        if (commentMatchesPattern(comment, filter.text)) {
+          firstMatch = filter;
+          break;
+        }
+      }
       if (firstMatch?.color) {
         nextMatchedFilterColors.set(cid, firstMatch.color);
       }
@@ -788,7 +792,11 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
     return nextRows;
   }, [catalogRenderFeed, columnCount, isFeedLoaded]);
 
-  const catalogMetrics = useMemo(() => readReplyTypographyMetrics(), [themeKey, windowWidth]);
+  const catalogMetrics = useMemo(() => {
+    void themeKey;
+    void windowWidth;
+    return readReplyTypographyMetrics();
+  }, [themeKey, windowWidth]);
   const rowHeightEstimates = useMemo(
     () =>
       catalogVirtualizationMode === 'off'
@@ -812,7 +820,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
   const virtuosoStateKey = feedCacheKey
     ? `${feedCacheKey}-${sortType}-${processedFeedMode}`
-    : `${location.pathname}${location.search}-${sortType}-${processedFeedMode}-catalog`;
+    : `${routerLocation.pathname}${routerLocation.search}-${sortType}-${processedFeedMode}-catalog`;
   const navigationType = useNavigationType();
 
   const hasBeenVisibleRef = useRef(false);

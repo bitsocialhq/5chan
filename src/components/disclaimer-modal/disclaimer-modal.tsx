@@ -14,12 +14,6 @@ const DisclaimerModal = () => {
     return null;
   }
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      closeDisclaimerModal();
-    }
-  };
-
   const handleAccept = () => {
     // If there's no board path (placeholder), show directory modal instead
     if (!targetBoardPath) {
@@ -31,22 +25,18 @@ const DisclaimerModal = () => {
   };
 
   return (
-    <div
-      className={styles.backdrop}
-      role='button'
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          closeDisclaimerModal();
-        }
-      }}
-      onClick={handleBackdropClick}
-    >
-      <div className={styles.disclaimerDialog} role='dialog' aria-modal='true' aria-labelledby='disclaimer-modal-title'>
+    <div className={styles.backdrop}>
+      <button type='button' className={styles.backdropButton} aria-label='Close disclaimer modal' onClick={closeDisclaimerModal} />
+      <dialog open className={styles.disclaimerDialog} aria-modal='true' aria-labelledby='disclaimer-modal-title'>
         <div className={styles.hd}>
           <h2 id='disclaimer-modal-title'>Disclaimer</h2>
-          <button className={`${styles.closeButton} ${isHomeView ? styles.closeButtonHome : ''}`} onClick={closeDisclaimerModal} title='Close' aria-label='Close' />
+          <button
+            type='button'
+            className={`${styles.closeButton} ${isHomeView ? styles.closeButtonHome : ''}`}
+            onClick={closeDisclaimerModal}
+            title='Close'
+            aria-label='Close'
+          />
         </div>
         <div className={styles.bd}>
           <p>This web application may contain content for mature audiences only. By clicking &quot;Accept,&quot; you confirm that:</p>
@@ -57,10 +47,14 @@ const DisclaimerModal = () => {
           </ol>
         </div>
         <div className={styles.disclaimerFooter}>
-          <button onClick={handleAccept}>Accept</button>
-          <button onClick={closeDisclaimerModal}>Cancel</button>
+          <button type='button' onClick={handleAccept}>
+            Accept
+          </button>
+          <button type='button' onClick={closeDisclaimerModal}>
+            Cancel
+          </button>
         </div>
-      </div>
+      </dialog>
     </div>
   );
 };

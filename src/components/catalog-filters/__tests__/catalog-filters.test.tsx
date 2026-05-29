@@ -122,7 +122,7 @@ const renderCatalogFilters = () => {
 };
 
 const openModal = async () => {
-  const button = Array.from(container.querySelectorAll('[role="button"]')).find((candidate) => candidate.textContent === 'filters');
+  const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'filters');
   await click(button ?? null);
 };
 
@@ -176,7 +176,7 @@ describe('CatalogFilters', () => {
     expect(container.querySelector('[data-testid="filters-protip"]')?.textContent).toBe('filters-protip');
     expect(container.textContent).toContain('filter_and_highlights_help');
 
-    const overlay = Array.from(container.querySelectorAll('[role="button"]')).find((candidate) => candidate.tagName === 'DIV');
+    const overlay = container.querySelector<HTMLButtonElement>('button[class*="overlay"]');
     await click(overlay ?? null);
 
     expect(container.querySelector('[data-testid="filters-protip"]')).toBeNull();
@@ -220,14 +220,15 @@ describe('CatalogFilters', () => {
     expect(container.textContent).toContain('x4');
 
     const initialRows = getRows();
-    const moveUpButton = initialRows[1]?.querySelector('[role="button"]');
+    const moveUpButton = initialRows[1]?.querySelector('button');
     await click(moveUpButton ?? null);
 
     const reorderedInputs = getTextInputs();
     expect(reorderedInputs[0]?.value).toBe('beta');
     expect(reorderedInputs[1]?.value).toBe('alpha');
 
-    const deleteButton = getRows()[1]?.querySelectorAll('[role="button"]')[1];
+    const rowButtons = Array.from(getRows()[1]?.querySelectorAll('button') ?? []);
+    const deleteButton = rowButtons.at(-1);
     await click(deleteButton ?? null);
 
     expect(getTextInputs()).toHaveLength(1);

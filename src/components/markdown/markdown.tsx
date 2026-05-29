@@ -91,9 +91,9 @@ const ContentLinkEmbed = ({ children, href, linkMediaInfo }: ContentLinkEmbedPro
         {children}
       </a>{' '}
       [
-      <span
+      <button
+        type='button'
         className={styles.embedButton}
-        role='button'
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -106,7 +106,7 @@ const ContentLinkEmbed = ({ children, href, linkMediaInfo }: ContentLinkEmbedPro
         {...getReferenceProps()}
       >
         {showMedia ? t('remove') : isMobile ? t('open') : t('embed')}
-      </span>
+      </button>
       ]
       {showMedia && (
         <>
@@ -489,7 +489,7 @@ const renderQstBbcodeElement = (tag: QstBbcodeTag, key: string, children: React.
   );
 };
 
-const renderQstBbcodeText = (text: string, keyPrefix: string): React.ReactNode[] => {
+const getQstBbcodeTextNodes = (text: string, keyPrefix: string): React.ReactNode[] => {
   const elements: React.ReactNode[] = [];
   const regex = new RegExp(QST_BBCODE_OPEN_REGEX.source, 'g');
   let lastIndex = 0;
@@ -511,7 +511,9 @@ const renderQstBbcodeText = (text: string, keyPrefix: string): React.ReactNode[]
 
     const closeEnd = closeStart + tag.length + 3;
     const childKeyPrefix = `${keyPrefix}${tag}-${matchStart}-`;
-    elements.push(renderQstBbcodeElement(tag, `${keyPrefix}${tag}-${matchStart}-${closeEnd}`, renderQstBbcodeText(text.slice(contentStart, closeStart), childKeyPrefix)));
+    elements.push(
+      renderQstBbcodeElement(tag, `${keyPrefix}${tag}-${matchStart}-${closeEnd}`, getQstBbcodeTextNodes(text.slice(contentStart, closeStart), childKeyPrefix)),
+    );
     lastIndex = closeEnd;
     regex.lastIndex = closeEnd;
   }
@@ -523,7 +525,7 @@ const renderQstBbcodeText = (text: string, keyPrefix: string): React.ReactNode[]
   return elements;
 };
 
-const QstBbcodeText = ({ text, tokenKey }: { text: string; tokenKey: string }) => <>{renderQstBbcodeText(text, `${tokenKey}/`)}</>;
+const QstBbcodeText = ({ text, tokenKey }: { text: string; tokenKey: string }) => <>{getQstBbcodeTextNodes(text, `${tokenKey}/`)}</>;
 
 const Fortune = ({ color, text }: { color: string; text: string }) => (
   <span className='fortune' style={{ color }}>
@@ -608,12 +610,16 @@ const Markdown = ({ content, title, postCid, communityAddress }: MarkdownProps) 
     const normalized = normalizeContent(content || '');
     const lines = normalized.split('\n');
     const elements: React.ReactNode[] = [];
+    let lineOffset = 0;
 
     const context = { isInCatalogView, postCid, communityAddress, enableQstBbcode };
 
     lines.forEach((line, lineIndex) => {
+      const lineKey = `line-${lineOffset}`;
+      lineOffset += line.length + 1;
+
       if (lineIndex > 0) {
-        elements.push(<br key={`br-${lineIndex}`} />);
+        elements.push(<br key={`br-${lineKey}`} />);
       }
 
       if (line.length === 0) return;
@@ -624,12 +630,12 @@ const Markdown = ({ content, title, postCid, communityAddress }: MarkdownProps) 
 
       if (isGreentext) {
         elements.push(
-          <span key={`line-${lineIndex}`} className='greentext'>
+          <span key={lineKey} className='greentext'>
             {lineElements}
           </span>,
         );
       } else {
-        elements.push(<React.Fragment key={`line-${lineIndex}`}>{lineElements}</React.Fragment>);
+        elements.push(<React.Fragment key={lineKey}>{lineElements}</React.Fragment>);
       }
     });
 

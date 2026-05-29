@@ -51,9 +51,9 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
     onClose();
   };
   return (
-    <div
+    <button
+      type='button'
       className={styles.postMenuItem}
-      role='button'
       tabIndex={0}
       onClick={copyDirectLink}
       onKeyDown={(e) => {
@@ -64,7 +64,7 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
       }}
     >
       {t('copy_direct_link')}
-    </div>
+    </button>
   );
 };
 
@@ -75,9 +75,9 @@ const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => voi
     onClose();
   };
   return (
-    <div
+    <button
+      type='button'
       className={styles.postMenuItem}
-      role='button'
       tabIndex={0}
       onClick={copyContentId}
       onKeyDown={(e) => {
@@ -88,7 +88,7 @@ const CopyContentIdButton = ({ cid, onClose }: { cid: string; onClose: () => voi
       }}
     >
       {t('copy_content_id')}
-    </div>
+    </button>
   );
 };
 
@@ -99,9 +99,9 @@ const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () =
     onClose();
   };
   return (
-    <div
+    <button
+      type='button'
       className={styles.postMenuItem}
-      role='button'
       tabIndex={0}
       onClick={copyUserId}
       onKeyDown={(e) => {
@@ -112,7 +112,7 @@ const CopyUserIdButton = ({ address, onClose }: { address: string; onClose: () =
       }}
     >
       {t('copy_user_id')}
-    </div>
+    </button>
   );
 };
 
@@ -128,30 +128,31 @@ const ImageSearchButton = ({ url, onClose }: { url: string; onClose: () => void 
 
   return (
     <div
-      className={`${styles.postMenuItem} ${styles.dropdown}`}
-      role='button'
-      tabIndex={0}
+      className={styles.dropdown}
       onMouseOver={() => setIsImageSearchMenuOpen(true)}
+      onFocus={() => setIsImageSearchMenuOpen(true)}
       onMouseLeave={() => setIsImageSearchMenuOpen(false)}
+      onBlur={() => setIsImageSearchMenuOpen(false)}
       ref={refs.setReference}
-      onClick={onClose}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onClose();
-        }
-      }}
     >
-      {capitalize(t('image_search'))} »
+      <button
+        type='button'
+        className={styles.postMenuItem}
+        aria-haspopup='true'
+        aria-expanded={isImageSearchMenuOpen}
+        onClick={() => setIsImageSearchMenuOpen((open) => !open)}
+      >
+        {capitalize(t('image_search'))} »
+      </button>
       {isImageSearchMenuOpen && (
         <div ref={refs.setFloating} style={floatingStyles} className={styles.dropdownMenu}>
-          <a href={`https://lens.google.com/uploadbyurl?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer'>
+          <a href={`https://lens.google.com/uploadbyurl?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
             <div className={styles.postMenuItem}>Google</div>
           </a>
-          <a href={`https://www.yandex.com/images/search?img_url=${encodedUrl}&rpt=imageview`} target='_blank' rel='noopener noreferrer'>
+          <a href={`https://www.yandex.com/images/search?url=${encodedUrl}&rpt=imageview`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
             <div className={styles.postMenuItem}>Yandex</div>
           </a>
-          <a href={`https://saucenao.com/search.php?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer'>
+          <a href={`https://saucenao.com/search.php?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
             <div className={styles.postMenuItem}>SauceNAO</div>
           </a>
         </div>
@@ -202,10 +203,10 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
   return (
     <>
       <span className={isInCatalogView ? styles.postMenuBtnCatalogWrapper : styles.postMenuBtnWrapper} ref={refs.setReference} {...getReferenceProps()}>
-        <span
+        <button
+          type='button'
           className={isInCatalogView ? styles.postMenuBtnCatalog : styles.postMenuBtn}
           title='Post menu'
-          role='button'
           tabIndex={0}
           onClick={handleMenuClick}
           onKeyDown={(e) => {
@@ -217,16 +218,16 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
           style={{ transform: menuBtnRotated && cid ? 'rotate(90deg)' : 'rotate(0deg)' }}
         >
           ▶
-        </span>
+        </button>
       </span>
       {menuBtnRotated &&
         cid &&
         createPortal(
           <FloatingFocusManager context={context} modal={false}>
             <div className={styles.postMenu} ref={refs.setFloating} style={floatingStyles} aria-labelledby={headingId} {...getFloatingProps()}>
-              <div
+              <button
+                type='button'
                 className={styles.postMenuItem}
-                role='button'
                 tabIndex={0}
                 onClick={() => {
                   alert("Reporting isn't available yet.");
@@ -241,11 +242,11 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
                 }}
               >
                 {t('report_post')}
-              </div>
+              </button>
               {!(isInPostPageView && postCid === cid) && (
-                <div
+                <button
+                  type='button'
                   className={styles.postMenuItem}
-                  role='button'
                   tabIndex={0}
                   onClick={() => {
                     if (hidden) {
@@ -268,7 +269,7 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
                   }}
                 >
                   {hidden ? (postCid === cid ? t('unhide_thread') : t('unhide_post')) : postCid === cid ? t('hide_thread') : t('hide_post')}
-                </div>
+                </button>
               )}
               {cid && communityAddress && <CopyLinkButton cid={cid} communityAddress={communityAddress} linkType='thread' onClose={handleClose} />}
               {cid && <CopyContentIdButton cid={cid} onClose={handleClose} />}

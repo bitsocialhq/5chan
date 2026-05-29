@@ -144,10 +144,6 @@
   "show_worksafe_boards_only": "Pokaż tylko bezpieczne tablice",
   "show_all_content": "Pokaż całą zawartość",
   "link_type": "Typ łącza",
-  "comment_edited_at_timestamp": "Komentarz edytowany <1>{{timestamp}}</1>",
-  "reason_reason": "Powód: \"{{reason}}\".",
-  "click_here_to_show_original": "<1>Kliknij tutaj</1>, aby pokazać oryginał.",
-  "click_here_to_hide_original": "<1>Kliknij tutaj</1>, aby ukryć oryginał.",
   "loading": "Ładowanie",
   "posted_by": "Opublikowane przez",
   "by": "przez",
@@ -393,5 +389,13 @@
   "go_to_settings_to_import_mod_account": "Przejdź do <1>ustawień</1>, aby zaimportować swoje konto moderatora",
   "post_form_rules_faq_prompt": "Przed opublikowaniem przeczytaj <rules>Zasady</rules> i <faq>FAQ</faq>.",
   "pending_mod_approval_reason": "Moderacja AI wysłała ten post do kolejki moderatorów. Powód: \"{{reason}}\".",
-  "flag": "Flaga"
+  "flag": "Flaga",
+  "show_replies": "Pokaż odpowiedzi",
+  "hide_replies": "ukryj odpowiedzi",
+  "unhide": "pokaż",
+  "account_data": "dane konta",
+  "ban_duration_days": "czas trwania banu w dniach",
+  "challenge_answer": "odpowiedź na wyzwanie",
+  "ban": "zbanować",
+  "timestamp": "znacznik czasu"
 }

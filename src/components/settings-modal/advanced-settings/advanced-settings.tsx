@@ -64,6 +64,7 @@ const IPFSGatewaysSettings = ({ ipfsGatewayUrlsRef, mediaIpfsGatewayUrlRef }: Se
     <div className={styles.ipfsGatewaysSettings}>
       <div className={styles.ipfsGatewaysSetting}>
         <textarea
+          aria-label='IPFS gateway URLs'
           defaultValue={ipfsGatewayUrlsDefaultValue}
           ref={ipfsGatewayUrlsRef}
           disabled={isConnectedToRpc}
@@ -77,6 +78,7 @@ const IPFSGatewaysSettings = ({ ipfsGatewayUrlsRef, mediaIpfsGatewayUrlRef }: Se
       <div>
         <input
           type='text'
+          aria-label='Media IPFS gateway URL'
           defaultValue={mediaIpfsGatewayUrl}
           ref={mediaIpfsGatewayUrlRef}
           disabled={isConnectedToRpc}
@@ -100,6 +102,7 @@ const PubsubProvidersSettings = ({ pubsubProvidersRef }: SettingsProps) => {
   return (
     <div className={styles.pubsubProvidersSettings}>
       <textarea
+        aria-label='Pubsub providers'
         defaultValue={pubsubProvidersDefaultValue}
         ref={pubsubProvidersRef}
         disabled={isConnectedToRpc}
@@ -124,6 +127,7 @@ const HttpRoutersSettings = ({ httpRoutersRef }: SettingsProps) => {
   return (
     <div className={styles.httpRoutersSettings}>
       <textarea
+        aria-label='HTTP routers'
         defaultValue={httpRoutersDefaultValue}
         ref={httpRoutersRef}
         disabled={isConnectedToRpc}
@@ -147,6 +151,7 @@ const BlockchainProvidersSettings = ({ ethRpcRef }: SettingsProps) => {
       <span className={styles.settingTip}>Ethereum RPC, for .eth domains</span>
       <div>
         <textarea
+          aria-label='Ethereum RPC URLs'
           defaultValue={ethRpcDefaultValue}
           ref={ethRpcRef}
           autoCorrect='off'
@@ -168,6 +173,7 @@ const P2pRPCSettings = ({ p2pRpcRef }: SettingsProps) => {
     <div className={styles.p2pRPCSettings}>
       <input
         type='text'
+        aria-label='P2P RPC clients'
         defaultValue={pkcRpcClientsOptions}
         placeholder='ws://<IP>:<port>/<secretAuthKey>'
         ref={p2pRpcRef}
@@ -188,7 +194,16 @@ const P2pDataPathSettings = ({ p2pDataPathRef }: SettingsProps) => {
   return (
     <div className={styles.p2pDataPathSettings}>
       <div>
-        <input autoCorrect='off' autoCapitalize='off' spellCheck='false' type='text' defaultValue={path} disabled={!isConnectedToRpc} ref={p2pDataPathRef} />
+        <input
+          autoCorrect='off'
+          autoCapitalize='off'
+          spellCheck='false'
+          type='text'
+          aria-label='P2P data path'
+          defaultValue={path}
+          disabled={!isConnectedToRpc}
+          ref={p2pDataPathRef}
+        />
       </div>
     </div>
   );
@@ -205,6 +220,7 @@ const PureP2PBrowserSettings = ({ onPureP2PBrowserChange, pureP2PBrowserEnabled,
         <input
           className={styles.pureP2PCheckbox}
           type='checkbox'
+          aria-label='Pure P2P browser mode'
           checked={isChecked}
           ref={pureP2PBrowserRef}
           onChange={(event) => onPureP2PBrowserChange?.(event.currentTarget.checked)}
@@ -363,7 +379,7 @@ const AdvancedSettings = () => {
       {canConfigurePureP2PBrowser ? (
         <PureP2PBrowserSettings pureP2PBrowserEnabled={browserPureP2PEnabled} pureP2PBrowserRef={pureP2PBrowserRef} onPureP2PBrowserChange={setBrowserPureP2PSelection} />
       ) : null}
-      <button className={styles.saveOptions} onClick={handleSave}>
+      <button type='button' className={styles.saveOptions} onClick={handleSave}>
         {t('save_advanced_settings')}
       </button>
     </div>

@@ -25,12 +25,25 @@
 }
 
 .clickableSubtitle {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
   cursor: pointer;
   display: inline-block;
+  font: inherit;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
 }
 
 .clickableSubtitle:hover {
   text-decoration: underline;
+}
+
+.clickableSubtitle:focus-visible {
+  outline: 1px dotted currentcolor;
+  outline-offset: 1px;
 }
 
 .content hr {

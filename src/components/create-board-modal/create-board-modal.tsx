@@ -8,29 +8,13 @@ const CreateBoardModal = () => {
     return null;
   }
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      closeCreateBoardModal();
-    }
-  };
-
   return (
-    <div
-      className={styles.backdrop}
-      role='button'
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          closeCreateBoardModal();
-        }
-      }}
-      onClick={handleBackdropClick}
-    >
-      <div className={styles.createBoardDialog} role='dialog' aria-modal='true' aria-labelledby='create-board-modal-title'>
+    <div className={styles.backdrop}>
+      <button type='button' className={styles.backdropButton} aria-label='Close create board modal' onClick={closeCreateBoardModal} />
+      <dialog open className={styles.createBoardDialog} aria-modal='true' aria-labelledby='create-board-modal-title'>
         <div className={styles.hd}>
           <h2 id='create-board-modal-title'>Create a Board</h2>
-          <button className={styles.closeButton} onClick={closeCreateBoardModal} title='Close' aria-label='Close' />
+          <button type='button' className={styles.closeButton} onClick={closeCreateBoardModal} title='Close' aria-label='Close' />
         </div>
         <div className={styles.bd}>
           <div className={styles.section}>
@@ -73,9 +57,11 @@ const CreateBoardModal = () => {
           </div>
         </div>
         <div className={styles.createBoardFooter}>
-          <button onClick={closeCreateBoardModal}>Close</button>
+          <button type='button' onClick={closeCreateBoardModal}>
+            Close
+          </button>
         </div>
-      </div>
+      </dialog>
     </div>
   );
 };

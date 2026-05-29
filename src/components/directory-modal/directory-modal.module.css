@@ -12,12 +12,23 @@
   background-color: rgba(128, 128, 128, 0.5);
 }
 
-.directoryDialog {
+.backdropButton {
+  all: unset;
   position: absolute;
+  inset: 0;
+  cursor: default;
+  z-index: 0;
+}
+
+.directoryDialog {
+  position: fixed;
   width: 500px;
-  top: 50px;
+  max-width: calc(100% - 20px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  top: 50%;
   left: 50%;
-  margin-left: -251px;
+  transform: translate(-50%, -50%);
   background-color: var(--directory-modal-background-color, #f0e0d6);
   border: var(--directory-modal-border, 1px solid #d9bfb7);
   color: var(--directory-modal-text-color, #800);
@@ -25,7 +36,9 @@
   font-family: arial, helvetica, clean, sans-serif;
   font-size: 13px;
   line-height: 18px;
-  z-index: 1000;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
 }
 
 @media (max-width: 600px) {
@@ -34,10 +47,7 @@
     max-width: 500px;
     left: 50%;
     top: 50%;
-    margin-left: 0;
     transform: translate(-50%, -50%);
-    max-height: calc(100vh - 40px);
-    overflow-y: auto;
   }
 }
 
@@ -132,5 +142,3 @@
   justify-content: center;
   gap: 10px;
 }
-
-

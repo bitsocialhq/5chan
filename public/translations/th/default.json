@@ -144,10 +144,6 @@
   "show_worksafe_boards_only": "แสดงบอร์ด Worksafe เท่านั้น",
   "show_all_content": "แสดงเนื้อหาทั้งหมด",
   "link_type": "ประเภทลิงก์",
-  "comment_edited_at_timestamp": "แก้ไขความคิดเห็นที่ <1>{{timestamp}}</1>",
-  "reason_reason": "เหตุผล: \"{{reason}}\".",
-  "click_here_to_show_original": "<1>คลิกที่นี่</1> เพื่อแสดงข้อมูลต้นฉบับ",
-  "click_here_to_hide_original": "<1>คลิกที่นี่</1> เพื่อซ่อนข้อมูลต้นฉบับ",
   "loading": "กำลังโหลด",
   "posted_by": "โพสต์โดย",
   "by": "โดย",
@@ -393,5 +389,13 @@
   "go_to_settings_to_import_mod_account": "ไปที่ <1>การตั้งค่า</1> เพื่อนำเข้าบัญชีผู้ดูแลของคุณ",
   "post_form_rules_faq_prompt": "โปรดอ่าน<rules>กฎ</rules>และ<faq>คำถามที่พบบ่อย</faq>ก่อนโพสต์",
   "pending_mod_approval_reason": "การกลั่นกรองด้วย AI ส่งโพสต์นี้ไปยังคิวผู้ดูแล เหตุผล: \"{{reason}}\".",
-  "flag": "ธง"
+  "flag": "ธง",
+  "show_replies": "แสดงคำตอบ",
+  "hide_replies": "ซ่อนคำตอบ",
+  "unhide": "แสดง",
+  "account_data": "ข้อมูลบัญชี",
+  "ban_duration_days": "ระยะเวลาแบนในวัน",
+  "challenge_answer": "คำตอบความท้าทาย",
+  "ban": "แบน",
+  "timestamp": "แสตมป์เวลา"
 }

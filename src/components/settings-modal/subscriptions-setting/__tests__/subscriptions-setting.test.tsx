@@ -47,7 +47,7 @@ const render = () => {
 };
 
 const getButtonByText = (text: string) => {
-  const button = Array.from(container.querySelectorAll('[role="button"]')).find((candidate) => (candidate.textContent ?? '').includes(text));
+  const button = Array.from(container.querySelectorAll('button')).find((candidate) => (candidate.textContent ?? '').includes(text));
   if (!button) {
     throw new Error(`Button containing "${text}" not found`);
   }

@@ -31,14 +31,24 @@
 }
 
 .closeSearch {
+  appearance: none;
+  background: transparent;
   cursor: pointer;
   border: none;
+  font: inherit;
+  margin: 0;
+  padding: 0;
   white-space: nowrap;
   color: var(--button-desktop-text-color, revert);
 }
 
 .closeSearch:hover {
   color: var(--button-desktop-text-color-hover, revert);
+}
+
+.closeSearch:focus-visible {
+  outline: 1px dotted currentcolor;
+  outline-offset: 1px;
 }
 
 @media (max-width: 640px) {

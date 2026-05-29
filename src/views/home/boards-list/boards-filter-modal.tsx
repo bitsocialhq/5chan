@@ -8,7 +8,7 @@ const BoardsFilterModal = () => {
   const { t } = useTranslation();
   const [showFilterModal, setShowFilterModal] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLSpanElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const { useCatalogLinks, setUseCatalogLinks, boardFilter, setBoardFilter } = useBoardsFilterStore();
 
@@ -38,9 +38,9 @@ const BoardsFilterModal = () => {
 
   return (
     <>
-      <span
+      <button
+        type='button'
         ref={buttonRef}
-        role='button'
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -51,13 +51,13 @@ const BoardsFilterModal = () => {
         onClick={() => !showFilterModal && setShowFilterModal(true)}
       >
         {t('filter')} ▼
-      </span>
+      </button>
       {showFilterModal && (
         <div ref={modalRef} className={styles.filterModal}>
           {/* Always shown: Use Catalog */}
-          <div
+          <button
+            type='button'
             className={`${styles.option} ${useCatalogLinks && styles.selected}`}
-            role='button'
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -72,15 +72,15 @@ const BoardsFilterModal = () => {
             }}
           >
             {t('use_catalog')}
-          </div>
+          </button>
 
           {/* Conditionally shown: Filtering options (only after disclaimer accepted) */}
           {disclaimerAccepted && (
             <>
               <div className={styles.separator} />
-              <div
+              <button
+                type='button'
                 className={`${styles.option} ${boardFilter === 'all' && styles.selected}`}
-                role='button'
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -95,10 +95,10 @@ const BoardsFilterModal = () => {
                 }}
               >
                 {t('show_all_boards')}
-              </div>
-              <div
+              </button>
+              <button
+                type='button'
                 className={`${styles.option} ${boardFilter === 'nsfw' && styles.selected}`}
-                role='button'
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -113,10 +113,10 @@ const BoardsFilterModal = () => {
                 }}
               >
                 {t('show_nsfw_boards_only')}
-              </div>
-              <div
+              </button>
+              <button
+                type='button'
                 className={`${styles.option} ${boardFilter === 'worksafe' && styles.selected}`}
-                role='button'
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -131,7 +131,7 @@ const BoardsFilterModal = () => {
                 }}
               >
                 {t('show_worksafe_boards_only')}
-              </div>
+              </button>
             </>
           )}
         </div>

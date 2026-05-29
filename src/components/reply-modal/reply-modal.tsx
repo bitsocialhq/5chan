@@ -97,6 +97,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const nonokoRedirectPathRef = useRef<string | null>(null);
   const lastSelectionStartRef = useRef(0);
   const lastSelectionEndRef = useRef(0);
+  const initializedReplyContentKeyRef = useRef('');
   const lastProcessedQuoteInsertRequestIdRef = useRef(0);
   const { selectedText } = useSelectedTextStore();
   const openEmpty = useReplyModalStore((state) => state.openEmpty);
@@ -243,9 +244,12 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   );
 
   useEffect(() => {
+    const checkContentLength = checkContentLengthRef.current;
+    const checkPostOptions = checkPostOptionsRef.current;
+
     return () => {
-      checkContentLengthRef.current.cancel();
-      checkPostOptionsRef.current.cancel();
+      checkContentLength.cancel();
+      checkPostOptions.cancel();
       restoreBodyTextSelection();
     };
   }, []);
@@ -293,28 +297,37 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
   // Enable spellcheck after initial content is injected into the textarea.
   useEffect(() => {
-    if (showReplyModal && textRef.current) {
-      textRef.current.spellcheck = false;
-      textRef.current.value = openEmpty ? selectedText || '' : `${defaultParentQuote}${selectedText || ''}`;
-      const len = textRef.current.value.length;
-      lastSelectionStartRef.current = len;
-      lastSelectionEndRef.current = len;
-      const content = textRef.current.value;
-      const publishContent = getContentWithOptions(content, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
-      setPublishReplyOptions({ content: publishContent });
-      checkContentLengthRef.current(publishContent, t);
-
-      const spellcheckTimeout = window.setTimeout(() => {
-        if (textRef.current) {
-          textRef.current.spellcheck = true;
-        }
-      }, 100);
-
-      return () => {
-        window.clearTimeout(spellcheckTimeout);
-      };
+    if (!showReplyModal || !textRef.current) {
+      initializedReplyContentKeyRef.current = '';
+      return;
     }
-  }, [showReplyModal, openEmpty, defaultParentQuote, selectedText]);
+
+    const initialContent = openEmpty ? selectedText || '' : `${defaultParentQuote}${selectedText || ''}`;
+    const initialContentKey = `${parentCid}:${openEmpty ? 'empty' : 'quoted'}:${initialContent}`;
+    if (initializedReplyContentKeyRef.current === initialContentKey) {
+      return;
+    }
+    initializedReplyContentKeyRef.current = initialContentKey;
+
+    textRef.current.spellcheck = false;
+    textRef.current.value = initialContent;
+    const len = textRef.current.value.length;
+    lastSelectionStartRef.current = len;
+    lastSelectionEndRef.current = len;
+    const publishContent = getContentWithOptions(initialContent, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+    setPublishReplyOptions({ content: publishContent });
+    checkContentLengthRef.current(publishContent, t);
+
+    const spellcheckTimeout = window.setTimeout(() => {
+      if (textRef.current) {
+        textRef.current.spellcheck = true;
+      }
+    }, 100);
+
+    return () => {
+      window.clearTimeout(spellcheckTimeout);
+    };
+  }, [showReplyModal, parentCid, openEmpty, defaultParentQuote, selectedText, postOptionsDirectoryCode, setPublishReplyOptions, t]);
 
   useEffect(() => {
     if (!showReplyModal) {
@@ -414,7 +427,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     const publishContent = getContentWithOptions(nextValue, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
     setPublishReplyOptions({ content: publishContent });
     checkContentLengthRef.current(publishContent, t);
-  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, setPublishReplyOptions, t]);
+  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, postOptionsDirectoryCode, setPublishReplyOptions, t]);
 
   const { isUploading, uploadedFileName, handleUpload } = useFileUpload({
     onUploadComplete: (uploadedUrl: string) => {
@@ -568,7 +581,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             <span className={styles.spoilerButton}>
               [
               <label>
-                <input type='checkbox' onChange={(e) => setPublishReplyOptions({ spoiler: e.target.checked })} />
+                <input type='checkbox' aria-label={capitalize(t('spoiler'))} onChange={(e) => setPublishReplyOptions({ spoiler: e.target.checked })} />
                 {capitalize(t('spoiler'))}?
               </label>
               ]

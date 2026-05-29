@@ -10,12 +10,12 @@ const ModEmptyState = () => {
   const { t } = useTranslation();
 
   return (
-    <div className={styles.modEmptyState} role='status'>
+    <output className={styles.modEmptyState}>
       <div className={styles.modEmptyStateTitle}>{t('not_mod_of_any_board')}</div>
       <div className={styles.modEmptyStateAction}>
         <Trans i18nKey='go_to_settings_to_import_mod_account' components={MOD_ACCOUNT_SETTINGS_LINK_COMPONENTS} />
       </div>
-    </div>
+    </output>
   );
 };
 

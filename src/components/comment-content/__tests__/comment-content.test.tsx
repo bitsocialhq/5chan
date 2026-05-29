@@ -393,41 +393,6 @@ describe('CommentContent', () => {
     expect(container.querySelector('[data-testid="tooltip"]')?.getAttribute('title')).toContain('ban:short:music-posting.eth:2024-01-01 12:00:00');
   });
 
-  it('shows and hides the original content for edited comments', async () => {
-    await renderContent({
-      cid: 'post-1',
-      content: 'edited body',
-      edit: {
-        timestamp: 1_704_067_200,
-      },
-      original: {
-        content: 'original body',
-      },
-      postCid: 'post-1',
-      reason: 'typo',
-    });
-
-    expect(queryMarkdownText()).toEqual(['edited body']);
-    expect(container.textContent).toContain('comment_edited_at_timestamp:2024-01-01 12:00:00');
-    expect(container.textContent).toContain('reason:typo');
-
-    const showOriginal = container.querySelector('[data-testid="trans-action-click_here_to_show_original"]');
-    expect(showOriginal).toBeTruthy();
-
-    await act(async () => {
-      showOriginal?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
-
-    expect(queryMarkdownText()).toEqual(['original body']);
-
-    const hideOriginal = container.querySelector('[data-testid="trans-action-click_here_to_hide_original"]');
-    await act(async () => {
-      hideOriginal?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
-
-    expect(queryMarkdownText()).toEqual(['edited body']);
-  });
-
   it('renders moderation and deletion states with the expected messaging', async () => {
     await renderContent({
       cid: 'post-1',

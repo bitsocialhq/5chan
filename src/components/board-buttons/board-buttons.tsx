@@ -110,7 +110,7 @@ export const ArchiveButton = ({ address, isInAllView, isInSubscriptionsView, isI
   }
 
   return (
-    <button className='button' onClick={() => navigate(archivePath)}>
+    <button type='button' className='button' onClick={() => navigate(archivePath)}>
       {t('archive')}
     </button>
   );
@@ -121,7 +121,7 @@ const SubscribeButton = ({ address }: BoardButtonsProps) => {
   const { subscribed, subscribe, unsubscribe } = useSubscribe({ communityAddress: address });
 
   return (
-    <button className='button' onClick={subscribed ? unsubscribe : subscribe}>
+    <button type='button' className='button' onClick={subscribed ? unsubscribe : subscribe}>
       {subscribed ? t('unsubscribe') : t('subscribe')}
     </button>
   );
@@ -186,7 +186,7 @@ export const RefreshButton = () => {
   const { t } = useTranslation();
   const reset = useFeedResetStore((state) => state.reset);
   return (
-    <button className='button' onClick={() => reset && reset()}>
+    <button type='button' className='button' onClick={() => reset && reset()}>
       {t('refresh')}
     </button>
   );
@@ -250,7 +250,7 @@ export const UpdateButton = () => {
   const { t } = useTranslation();
   const requestUpdate = useThreadLiveUpdatesStore((state) => state.requestUpdate);
   return (
-    <button className='button' onClick={() => requestUpdate()}>
+    <button type='button' className='button' onClick={() => requestUpdate()}>
       {t('update')}
     </button>
   );
@@ -281,7 +281,7 @@ export const BottomButton = () => {
     window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
   };
   return (
-    <button className='button' onClick={scrollToBottom}>
+    <button type='button' className='button' onClick={scrollToBottom}>
       {t('bottom')}
     </button>
   );
@@ -293,7 +293,7 @@ export const TopButton = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   };
   return (
-    <button className='button' onClick={scrollToTop}>
+    <button type='button' className='button' onClick={scrollToTop}>
       {t('top')}
     </button>
   );
@@ -381,6 +381,7 @@ const ModQueueAlertThreshold = () => {
         {t('alert_threshold')}:
         <input
           type='number'
+          aria-label={t('alert_threshold')}
           min='1'
           step='1'
           value={alertThresholdValue}
@@ -670,7 +671,7 @@ export const CatalogSearchResultsLabel = () => {
     return (
       <span className={styles.filteredThreadsCount}>
         {' '}
-        — {t('search_results_for')}: <strong>{searchText}</strong>
+        ({t('search_results_for')}: <strong>{searchText}</strong>)
       </span>
     );
   }
@@ -679,7 +680,7 @@ export const CatalogSearchResultsLabel = () => {
     return (
       <span className={styles.filteredThreadsCount}>
         {' '}
-        — {t('filtered_threads')}: <strong>{filteredCount}</strong>
+        ({t('filtered_threads')}: <strong>{filteredCount}</strong>)
       </span>
     );
   }
@@ -865,5 +866,13 @@ const SearchOPsBar = () => {
     }
   };
 
-  return <input type='text' placeholder={t('search_ops_placeholder', 'Search OPs...')} onKeyDown={handleSearch} className={styles.searchOPsInput} />;
+  return (
+    <input
+      type='text'
+      aria-label={t('search_ops_placeholder', 'Search OPs...')}
+      placeholder={t('search_ops_placeholder', 'Search OPs...')}
+      onKeyDown={handleSearch}
+      className={styles.searchOPsInput}
+    />
+  );
 };

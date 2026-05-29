@@ -8,6 +8,14 @@
   z-index: 999;
 }
 
+.backdropButton {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  cursor: default;
+  z-index: 0;
+}
+
 .boardsbarEditDialog {
   position: absolute;
   width: 400px;
@@ -25,9 +33,12 @@
   box-shadow: rgba(0, 0, 0, 0.25) 0px 0px 5px 0px;
   font-size: var(--body-font-size);
   line-height: normal;
-  z-index: 1000;
+  z-index: 1;
   display: flex;
   flex-direction: column;
+  color: inherit;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 @media (max-width: 600px) {

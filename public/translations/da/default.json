@@ -144,10 +144,6 @@
   "show_worksafe_boards_only": "Vis kun Worksafe boards",
   "show_all_content": "Vis alt indhold",
   "link_type": "Link type",
-  "comment_edited_at_timestamp": "Kommentaren blev redigeret den <1>{{timestamp}}</1>",
-  "reason_reason": "Grund: \"{{reason}}\".",
-  "click_here_to_show_original": "<1>Klik her</1> for at vise originalen.",
-  "click_here_to_hide_original": "<1>Klik her</1> for at skjule originalen.",
   "loading": "Indlæser",
   "posted_by": "Skrevet af",
   "by": "af",
@@ -393,5 +389,13 @@
   "go_to_settings_to_import_mod_account": "Gå til <1>indstillinger</1> for at importere din mod-konto",
   "post_form_rules_faq_prompt": "Læs venligst <rules>Reglerne</rules> og <faq>FAQ</faq>, før du poster.",
   "pending_mod_approval_reason": "AI-moderering sendte dette opslag til moderatorkøen. Grund: \"{{reason}}\".",
-  "flag": "Flag"
+  "flag": "Flag",
+  "show_replies": "Vis svar",
+  "hide_replies": "skjul svar",
+  "unhide": "unhide",
+  "account_data": "kontodata",
+  "ban_duration_days": "banvarighed i dage",
+  "challenge_answer": "svar på udfordring",
+  "ban": "forbyd",
+  "timestamp": "tidsstempel"
 }

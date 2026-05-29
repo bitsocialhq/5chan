@@ -196,9 +196,18 @@
 }
 
 .statusUnavailableHelp {
+  all: unset;
   margin-left: 2px;
   font-weight: 700;
+  font-size: 0.75em;
+  vertical-align: super;
+  line-height: 0;
   cursor: help;
+}
+
+.statusUnavailableHelp:focus-visible {
+  outline: 1px dotted currentcolor;
+  outline-offset: 1px;
 }
 
 .directoryFootnote {

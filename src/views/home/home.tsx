@@ -44,10 +44,13 @@ const SearchBar = () => {
           spellCheck='false'
           autoCapitalize='off'
           type='text'
+          aria-label={lowerCase(t('enter_board_address'))}
           placeholder={lowerCase(t('enter_board_address'))}
           ref={searchInputRef}
         />
-        <button className={styles.searchButton}>{t('go')}</button>
+        <button type='submit' className={styles.searchButton}>
+          {t('go')}
+        </button>
       </form>
     </div>
   );
@@ -77,7 +80,15 @@ const InfoBox = () => {
             i18nKey='no_global_rules_info'
             shouldUnescape={true}
             components={{
-              1: <a key='releases-link' href='https://github.com/bitsocialnet/5chan/releases/latest' target='_blank' rel='noopener noreferrer' />,
+              1: (
+                <a
+                  key='releases-link'
+                  href='https://github.com/bitsocialnet/5chan/releases/latest'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  aria-label='5chan releases'
+                />
+              ),
             }}
           />
         ) : (

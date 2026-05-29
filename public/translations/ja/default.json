@@ -144,10 +144,6 @@
   "show_worksafe_boards_only": "Worksafeボードのみ表示",
   "show_all_content": "すべてのコンテンツを表示",
   "link_type": "リンクの種類",
-  "comment_edited_at_timestamp": "<1>{{timestamp}}</1> にコメントを編集しました",
-  "reason_reason": "理由: \"{{reason}}\".",
-  "click_here_to_show_original": "<1>ここをクリック</1> して元の表示。",
-  "click_here_to_hide_original": "<1>ここをクリック</1> して元を非表示にする。",
   "loading": "読み込み中",
   "posted_by": "投稿者",
   "by": "によって",
@@ -393,5 +389,13 @@
   "go_to_settings_to_import_mod_account": "モデレーターアカウントをインポートするには<1>設定</1>に移動してください",
   "post_form_rules_faq_prompt": "投稿する前に<rules>ルール</rules>と<faq>FAQ</faq>をお読みください。",
   "pending_mod_approval_reason": "AIモデレーションがこの投稿をモデレーターキューに送りました。理由: \"{{reason}}\".",
-  "flag": "旗"
+  "flag": "旗",
+  "show_replies": "返信を表示",
+  "hide_replies": "返信を非表示",
+  "unhide": "表示",
+  "account_data": "アカウントデータ",
+  "ban_duration_days": "バン期間（日数）",
+  "challenge_answer": "チャレンジ回答",
+  "ban": "ブロック",
+  "timestamp": "タイムスタンプ"
 }

@@ -144,10 +144,6 @@
   "show_worksafe_boards_only": "Mostra solo le board Worksafe",
   "show_all_content": "Mostra tutti i contenuti",
   "link_type": "Tipo di link",
-  "comment_edited_at_timestamp": "Commento modificato il <1>{{timestamp}}</1>",
-  "reason_reason": "Motivo: \"{{reason}}\".",
-  "click_here_to_show_original": "<1>Clicca qui</1> per mostrare l'originale.",
-  "click_here_to_hide_original": "<1>Clicca qui</1> per nascondere l'originale.",
   "loading": "Caricamento",
   "posted_by": "Pubblicato da",
   "by": "da",
@@ -393,5 +389,13 @@
   "go_to_settings_to_import_mod_account": "Vai alle <1>impostazioni</1> per importare il tuo account mod",
   "post_form_rules_faq_prompt": "Leggi le <rules>Regole</rules> e le <faq>FAQ</faq> prima di pubblicare.",
   "pending_mod_approval_reason": "La moderazione AI ha inviato questo post alla coda di moderazione. Motivo: \"{{reason}}\".",
-  "flag": "Bandiera"
+  "flag": "Bandiera",
+  "show_replies": "mostra risposte",
+  "hide_replies": "nascondi risposte",
+  "unhide": "mostra",
+  "account_data": "dati account",
+  "ban_duration_days": "durata del ban in giorni",
+  "challenge_answer": "risposta alla sfida",
+  "ban": "vietare",
+  "timestamp": "marca temporale"
 }

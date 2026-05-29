@@ -55,12 +55,29 @@
 }
 
 .thumbnailSmall span,
-.thumbnailSmall a {
+.thumbnailSmall a,
+.thumbnailSmall .noThumbnailButton {
   width: 100%;
   display: inline-block;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   text-align: center;
   cursor: pointer;
+}
+
+.noThumbnailButton {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+.noThumbnailButton:focus-visible {
+  outline: 1px dotted var(--post-link-text-color);
+  outline-offset: 1px;
 }
 
 .thumbnail {
@@ -73,6 +90,33 @@
 
 .thumbnail video {
   cursor: pointer;
+}
+
+.mediaToggleButton {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  max-height: 100%;
+  line-height: 0;
+}
+
+.mediaToggleButton:focus-visible {
+  outline: 1px dotted var(--post-link-text-color);
+  outline-offset: 1px;
+}
+
+.mediaToggleButton img,
+.mediaToggleButton video {
+  display: block;
+}
+
+.thumbnailBig > .mediaToggleButton,
+.thumbnailSmall > .mediaToggleButton {
+  width: 100%;
+  height: 100%;
 }
 
 .hide {

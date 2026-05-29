@@ -144,10 +144,6 @@
   "show_worksafe_boards_only": "Sadece Worksafe Panoları Göster",
   "show_all_content": "Tüm İçeriği Göster",
   "link_type": "Bağlantı türü",
-  "comment_edited_at_timestamp": "<1>{{timestamp}}</1> tarihinde yorum düzenlendi",
-  "reason_reason": "Sebep: \"{{reason}}\".",
-  "click_here_to_show_original": "<1>Buraya tıklayın</1> orijinali göstermek için.",
-  "click_here_to_hide_original": "<1>Buraya tıklayın</1> orijinali gizlemek için.",
   "loading": "Yükleniyor",
   "posted_by": "Tarafından gönderildi",
   "by": "tarafından",
@@ -393,5 +389,13 @@
   "go_to_settings_to_import_mod_account": "Mod hesabınızı içe aktarmak için <1>ayarlar</1>a gidin",
   "post_form_rules_faq_prompt": "Lütfen göndermeden önce <rules>Kuralları</rules> ve <faq>SSS</faq>'yi okuyun.",
   "pending_mod_approval_reason": "AI moderasyonu bu gönderiyi moderatör kuyruğuna gönderdi. Neden: \"{{reason}}\".",
-  "flag": "Bayrak"
+  "flag": "Bayrak",
+  "show_replies": "yanıtları göster",
+  "hide_replies": "yanıtları gizle",
+  "unhide": "göster",
+  "account_data": "hesap verileri",
+  "ban_duration_days": "ban süresi gün cinsinden",
+  "challenge_answer": "zorluk yanıtı",
+  "ban": "yasakla",
+  "timestamp": "zaman damgası"
 }

@@ -34,6 +34,9 @@
 }
 
 .postDesktop .hideButton {
+  appearance: none;
+  background-color: transparent;
+  border: 0;
   background-repeat: no-repeat;
   background-position: center;
   width: 18px;
@@ -42,6 +45,8 @@
   image-rendering: pixelated;
   cursor: pointer;
   transform: translateY(-1px);
+  margin: 0;
+  padding: 0;
 }
 
 .postDesktopHidden {
@@ -109,6 +114,12 @@
 }
 
 .userAddress {
+  appearance: none;
+  border: 0;
+  display: inline;
+  font: inherit;
+  line-height: inherit;
+  margin: 0;
   padding: 0 5px;
   border-radius: 6px;
   font-size: 0.8em;
@@ -144,12 +155,18 @@
   image-rendering: pixelated;
 }
 
-.postDesktop .postNumLink a, .postDesktop .postNumLink span, .replyDesktop .postNumLink a, .replyDesktop .postNumLink span {
+.postDesktop .postNumLink a, .postDesktop .postNumLink span, .postDesktop .postNumLink button, .replyDesktop .postNumLink a, .replyDesktop .postNumLink span, .replyDesktop .postNumLink button {
+  appearance: none;
+  background: transparent;
+  border: 0;
   color: unset;
+  font: inherit;
+  margin: 0;
+  padding: 0;
   text-decoration: unset;
 }
 
-.postDesktop .postNumLink a:hover, .postDesktop .postNumLink span:hover, .replyDesktop .postNumLink a:hover, .replyDesktop .postNumLink span:hover {
+.postDesktop .postNumLink a:hover, .postDesktop .postNumLink span:hover, .postDesktop .postNumLink button:hover, .replyDesktop .postNumLink a:hover, .replyDesktop .postNumLink span:hover, .replyDesktop .postNumLink button:hover {
   color: var(--button-desktop-text-color-hover);
 }
 
@@ -179,7 +196,13 @@
 }
 
 .postDesktop .closeMedia {
+  appearance: none;
+  background: transparent;
+  border: 0;
   color: var(--button-desktop-text-color);
+  font: inherit;
+  margin: 0;
+  padding: 0;
   text-decoration: underline;
   text-transform: capitalize;
 }
@@ -310,6 +333,9 @@
 }
 
 .postDesktop .summary .omittedRepliesButtonWrapper {
+  appearance: none;
+  background-color: transparent;
+  border: 0;
   background-repeat: no-repeat;
   background-position: center;
   width: 18px;
@@ -317,6 +343,8 @@
   display: inline-block;
   image-rendering: pixelated;
   cursor: pointer;
+  margin: 0;
+  padding: 0;
 }
 
 .postDesktop .summary .hideOmittedReplies {
@@ -361,7 +389,7 @@
   justify-content: center;
 }
 
-.mobileUnhideButton span {
+.mobileUnhideButton span, .mobileUnhideButton button {
   padding: 5px 18px 5px;
 }
 
@@ -600,7 +628,14 @@
 }
 
 .replyToPost {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
   cursor: pointer;
+  font: inherit;
+  margin: 0;
+  padding: 0;
 }
 
 .redEditMessage {
@@ -695,20 +730,28 @@
   padding: 1.5px 0;
 }
 
-.editedInfo {
-  color: var(--post-mobile-abbr-text-color);
-  font-size: var(--post-mobile-abbr-font-size);
-}
-
-.showOriginal {
+.abbr button {
+  appearance: none;
+  background: transparent;
+  border: 0;
   color: var(--post-link-text-color);
+  cursor: pointer;
+  display: inline;
+  font: inherit;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
   text-decoration: var(--post-content-link-text-decoration);
 }
 
-.showOriginal:hover {
-  cursor: pointer;
+.abbr button:hover {
   color: var(--post-link-text-color-hover);
   text-decoration: var(--post-content-link-text-decoration-hover);
+}
+
+.abbr button:focus-visible {
+  outline: 1px dotted currentcolor;
+  outline-offset: 1px;
 }
 
 @media (max-width: 640px) {

@@ -1,5 +1,5 @@
 import type { MouseEvent } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -64,21 +64,24 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
   const boardLabel = getExternalQuoteBoardLabel(reference, directories);
   const linkLabel = isOP ? `${reference.raw} (OP)` : reference.raw;
 
-  const updatePreviewPosition = (anchor: HTMLElement | null) => {
-    if (!anchor || isMobile) {
-      return;
-    }
+  const updatePreviewPosition = useCallback(
+    (anchor: HTMLElement | null) => {
+      if (!anchor || isMobile) {
+        return;
+      }
 
-    const padding = 10;
-    const rect = anchor.getBoundingClientRect();
-    const previewWidth = previewRef.current?.offsetWidth ?? Math.min(360, window.innerWidth - padding * 2);
-    const previewHeight = previewRef.current?.offsetHeight ?? 0;
-    const shouldPlaceLeft = rect.right + previewWidth + padding > window.innerWidth && rect.left - previewWidth - padding >= padding;
-    const left = shouldPlaceLeft ? Math.max(padding, rect.left - previewWidth - 8) : Math.min(window.innerWidth - previewWidth - padding, rect.right + 8);
-    const top = Math.min(Math.max(padding, rect.top - 8), Math.max(padding, window.innerHeight - previewHeight - padding));
+      const padding = 10;
+      const rect = anchor.getBoundingClientRect();
+      const previewWidth = previewRef.current?.offsetWidth ?? Math.min(360, window.innerWidth - padding * 2);
+      const previewHeight = previewRef.current?.offsetHeight ?? 0;
+      const shouldPlaceLeft = rect.right + previewWidth + padding > window.innerWidth && rect.left - previewWidth - padding >= padding;
+      const left = shouldPlaceLeft ? Math.max(padding, rect.left - previewWidth - 8) : Math.min(window.innerWidth - previewWidth - padding, rect.right + 8);
+      const top = Math.min(Math.max(padding, rect.top - 8), Math.max(padding, window.innerHeight - previewHeight - padding));
 
-    setPreviewPosition({ left, top });
-  };
+      setPreviewPosition({ left, top });
+    },
+    [isMobile],
+  );
 
   useEffect(() => {
     if (!isPreviewOpen || isMobile) {
@@ -95,7 +98,7 @@ const ExternalNumberQuoteLink = ({ isOP = false, reference }: ExternalNumberQuot
       window.removeEventListener('resize', reposition);
       window.removeEventListener('scroll', reposition, true);
     };
-  }, [isMobile, isPreviewOpen, previewState.kind]);
+  }, [isMobile, isPreviewOpen, previewState.kind, updatePreviewPosition]);
 
   const getInitialSearchMessage = () =>
     getExternalQuoteStatusMessage(t, {
