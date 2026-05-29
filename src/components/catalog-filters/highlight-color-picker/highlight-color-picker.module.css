@@ -1,4 +1,8 @@
 .colorClickbox {
+  appearance: none;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
   width: 16px;
   height: 16px;
   line-height: 16px;
@@ -35,6 +39,9 @@
 }
 
 .colorOption {
+  appearance: none;
+  padding: 0;
+  box-sizing: border-box;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
   margin: auto;
   width: 16px;
@@ -52,6 +59,9 @@
 }
 
 .colorPreview {
+  appearance: none;
+  padding: 0;
+  box-sizing: border-box;
   display: inline-block;
   width: 16px;
   height: 16px;
@@ -100,6 +110,11 @@
 }
 
 .colorPickerModal tfoot .button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  padding: 0;
   color: var(--button-desktop-text-color);
   cursor: pointer;
   margin: 0 2px;
@@ -117,4 +132,12 @@
 .colorPickerModal tfoot .button::after{
   content: ']';
   color: var(--body-font-color);
+}
+
+.colorClickbox:focus-visible,
+.colorOption:focus-visible,
+.colorPreview:focus-visible,
+.colorPickerModal tfoot .button:focus-visible {
+  outline: 1px dotted currentcolor;
+  outline-offset: 1px;
 }
