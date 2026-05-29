@@ -145,8 +145,16 @@
   word-break: break-all;
 }
 
-.ownerCell {
+.ownerCell,
+.statusCell {
   text-align: center;
+  vertical-align: middle;
+}
+
+.statusLoading {
+  display: block;
+  width: fit-content;
+  margin-inline: auto;
 }
 
 .ownerName {
