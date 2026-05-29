@@ -212,8 +212,19 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+:global(body.spooky) .rowOdd td {
+  background: #1b1024;
+}
+
 :global(body.tomorrow) .flashListing thead th,
 :global(body.tomorrow) .flashListing thead td {
+  background: var(--post-form-field-title-background-color);
+  color: var(--post-form-field-title-color);
+  border: none;
+}
+
+:global(body.spooky) .flashListing thead th,
+:global(body.spooky) .flashListing thead td {
   background: var(--post-form-field-title-background-color);
   color: var(--post-form-field-title-color);
   border: none;

@@ -26,9 +26,12 @@ describe('snow', () => {
     mathRandomSpy.mockRestore();
   });
 
-  it('prefers the special theme store and otherwise falls back to christmas dates', async () => {
+  it('shows snow only for christmas special theme dates', async () => {
     const useSpecialThemeStore = (await import('../../stores/use-special-theme-store')).default;
     const { shouldShowSnow } = await import('../snow');
+
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2024-12-24T00:00:00Z'));
 
     useSpecialThemeStore.setState({ isEnabled: true });
     expect(shouldShowSnow()).toBe(true);
@@ -37,9 +40,14 @@ describe('snow', () => {
     expect(shouldShowSnow()).toBe(false);
 
     useSpecialThemeStore.setState({ isEnabled: null });
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2024-12-24T00:00:00Z'));
     expect(shouldShowSnow()).toBe(true);
+
+    vi.setSystemTime(new Date('2024-10-31T00:00:00Z'));
+    useSpecialThemeStore.setState({ isEnabled: true });
+    expect(shouldShowSnow()).toBe(false);
+
+    useSpecialThemeStore.setState({ isEnabled: null });
+    expect(shouldShowSnow()).toBe(false);
 
     vi.setSystemTime(new Date('2024-07-04T00:00:00Z'));
     expect(shouldShowSnow()).toBe(false);

@@ -1,4 +1,5 @@
 import useSpecialThemeStore from '../stores/use-special-theme-store';
+import { getActiveSpecialTheme } from './utils/time-utils';
 
 interface SnowOptions {
   flakeCount: number;
@@ -84,10 +85,11 @@ export const removeSnow = (): void => {
 
 export const shouldShowSnow = (): boolean => {
   const isEnabled = useSpecialThemeStore.getState().isEnabled;
+  const activeSpecialTheme = getActiveSpecialTheme();
 
   // Check store value first
   if (isEnabled !== null) {
-    return isEnabled;
+    return isEnabled && activeSpecialTheme === 'christmas';
   }
 
   // Check manual override second
@@ -95,8 +97,5 @@ export const shouldShowSnow = (): boolean => {
     return manualSnowOverride;
   }
 
-  const today = new Date();
-  const month = today.getMonth();
-  const day = today.getDate();
-  return month === 11 && (day === 24 || day === 25);
+  return activeSpecialTheme === 'christmas';
 };

@@ -92,3 +92,30 @@ export const isChristmas = (): boolean => {
   const day = today.getDate();
   return month === 11 && (day === 24 || day === 25);
 };
+
+export const isHalloween = (): boolean => {
+  const today = new Date();
+  const month = today.getMonth();
+  const day = today.getDate();
+  return month === 9 && day === 31;
+};
+
+export type ActiveSpecialTheme = 'christmas' | 'halloween';
+export type SpecialThemeClass = 'tomorrow' | 'spooky';
+
+export const getActiveSpecialTheme = (): ActiveSpecialTheme | null => {
+  if (isChristmas()) {
+    return 'christmas';
+  }
+  if (isHalloween()) {
+    return 'halloween';
+  }
+  return null;
+};
+
+export const getSpecialThemeClass = (specialTheme: ActiveSpecialTheme): SpecialThemeClass => {
+  if (specialTheme === 'halloween') {
+    return 'spooky';
+  }
+  return 'tomorrow';
+};

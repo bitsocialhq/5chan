@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { isChristmas } from '../lib/utils/time-utils';
+import { getActiveSpecialTheme } from '../lib/utils/time-utils';
 
 interface SpecialThemeStore {
   isEnabled: boolean | null;
@@ -12,7 +12,7 @@ const useSpecialThemeStore = create(
     (set) => ({
       isEnabled: null,
       setIsEnabled: (value: boolean) => {
-        if (value && !isChristmas()) {
+        if (value && !getActiveSpecialTheme()) {
           return;
         }
         set({ isEnabled: value });
@@ -22,7 +22,7 @@ const useSpecialThemeStore = create(
       name: 'Special-theme-storage',
       onRehydrateStorage: () => {
         return (state) => {
-          if (state && !isChristmas()) {
+          if (state && !getActiveSpecialTheme()) {
             state.isEnabled = null;
           }
         };

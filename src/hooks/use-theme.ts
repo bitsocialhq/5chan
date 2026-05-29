@@ -5,12 +5,12 @@ import useThemeStore from '../stores/use-theme-store';
 import { useDirectories } from './use-directories';
 import { useResolvedCommunityAddress } from './use-resolved-community-address';
 import useSpecialThemeStore from '../stores/use-special-theme-store';
-import { isChristmas } from '../lib/utils/time-utils';
+import { getActiveSpecialTheme, getSpecialThemeClass } from '../lib/utils/time-utils';
 import { isSfwBoard, updateFavicon } from '../lib/update-favicon';
 import useSafeAccountComment from './use-safe-account-comment';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
 
-const themeClasses = ['yotsuba', 'yotsuba-b', 'futaba', 'burichan', 'tomorrow', 'photon'];
+const themeClasses = ['yotsuba', 'yotsuba-b', 'futaba', 'burichan', 'tomorrow', 'photon', 'spooky'];
 
 const updateThemeClass = (newTheme: string) => {
   document.body.classList.remove(...themeClasses);
@@ -39,16 +39,15 @@ const useTheme = (): [string, (theme: string) => void] => {
   const routeIdentifier = params.boardIdentifier;
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || pendingPostCommunityAddress || routeIdentifier;
+  const activeSpecialTheme = getActiveSpecialTheme();
 
   useEffect(() => {
-    const isChristmasTime = isChristmas();
-
-    if (isChristmasTime && isEnabled === null && communityAddress && !isInAllView && !isInSubscriptionsView && !isInModView) {
+    if (activeSpecialTheme && isEnabled === null && communityAddress && !isInAllView && !isInSubscriptionsView && !isInModView) {
       setIsEnabled(true);
-    } else if (!isChristmasTime && isEnabled) {
+    } else if (!activeSpecialTheme && isEnabled) {
       setIsEnabled(false);
     }
-  }, [isEnabled, setIsEnabled, communityAddress, isInAllView, isInSubscriptionsView, isInModView]);
+  }, [activeSpecialTheme, isEnabled, setIsEnabled, communityAddress, isInAllView, isInSubscriptionsView, isInModView]);
 
   const currentTheme = useMemo(() => {
     if (location.pathname === '/') {
@@ -59,8 +58,8 @@ const useTheme = (): [string, (theme: string) => void] => {
       return 'yotsuba';
     }
 
-    if (isEnabled) {
-      return 'tomorrow';
+    if (isEnabled && activeSpecialTheme) {
+      return getSpecialThemeClass(activeSpecialTheme);
     }
 
     let storedTheme = null;
@@ -76,7 +75,7 @@ const useTheme = (): [string, (theme: string) => void] => {
     }
 
     return storedTheme || 'yotsuba';
-  }, [location.pathname, isEnabled, isInAllView, isInSubscriptionsView, isInModView, communityAddress, directories, themes]);
+  }, [location.pathname, isEnabled, activeSpecialTheme, isInAllView, isInSubscriptionsView, isInModView, communityAddress, directories, themes]);
 
   const sfw = isSfwBoard({
     pathname: location.pathname,

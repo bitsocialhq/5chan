@@ -1,27 +1,25 @@
 import { useEffect } from 'react';
 import useTheme from '../../hooks/use-theme';
 import useSpecialThemeStore from '../../stores/use-special-theme-store';
-import { isChristmas } from '../../lib/utils/time-utils';
+import { getActiveSpecialTheme } from '../../lib/utils/time-utils';
 import styles from './style-selector.module.css';
 
 const StyleSelector = () => {
   const [theme, setTheme] = useTheme();
   const { isEnabled, setIsEnabled } = useSpecialThemeStore();
-  const isChristmasTime = isChristmas();
+  const activeSpecialTheme = getActiveSpecialTheme();
 
   useEffect(() => {
-    if (!isChristmasTime && isEnabled) {
+    if (!activeSpecialTheme && isEnabled) {
       setIsEnabled(false);
-      setTheme('tomorrow');
     }
-  }, [isChristmasTime, isEnabled, setIsEnabled, setTheme]);
+  }, [activeSpecialTheme, isEnabled, setIsEnabled]);
 
   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newTheme = e.target.value;
 
     if (newTheme === 'special') {
       setIsEnabled(true);
-      setTheme('tomorrow');
     } else {
       setIsEnabled(false);
       setTheme(newTheme);
@@ -36,7 +34,7 @@ const StyleSelector = () => {
       <option value='burichan'>Burichan</option>
       <option value='tomorrow'>Tomorrow</option>
       <option value='photon'>Photon</option>
-      {isChristmasTime && <option value='special'>Special</option>}
+      {activeSpecialTheme && <option value='special'>Special</option>}
     </select>
   );
 };
