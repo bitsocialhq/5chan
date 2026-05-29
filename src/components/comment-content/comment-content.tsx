@@ -1,11 +1,11 @@
-import { Fragment, type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useComment } from '@bitsocial/bitsocial-react-hooks';
 import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import getShortAddress from '../../lib/get-short-address';
-import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
+import { getFormattedDate } from '../../lib/utils/time-utils';
 import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import { isPostPageView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
@@ -95,15 +95,15 @@ const CommentContent = ({
   const params = useParams();
   const location = useLocation();
   const isInPostView = isPostPageView(location.pathname, params);
-  const [showOriginal, setShowOriginal] = useState(false);
   const isMobile = useIsMobile();
   const resolvedPost = withResolvedCommentCommunityAddress(post);
 
-  const { cid, content, deleted, edit, original, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state } = resolvedPost || {};
+  const { cid, content, deleted, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state } = resolvedPost || {};
   const communityAddress = getCommentCommunityAddress(resolvedPost);
   const authorAddress = resolvedPost?.author?.address;
   const authorRole = getRoleByAddress(roles, authorAddress);
-  const shouldRenderBbcode = hasModQueueAccessRole(authorRole);
+  const isPrivilegedAuthor = hasModQueueAccessRole(authorRole);
+  const shouldRenderBbcode = isPrivilegedAuthor;
   const purged = resolvedPost?.commentModeration?.purged;
   const banExpiresAt = resolvedPost?.author?.community?.banExpiresAt;
   const banned = !!banExpiresAt;
@@ -111,9 +111,9 @@ const CommentContent = ({
   const [showFullComment, setShowFullComment] = useState(false);
   const displayContent =
     content &&
-    (!isInPostView && content.length > 1000 && !showFullComment
+    (!isInPostView && content.length > 1000 && !showFullComment && !isPrivilegedAuthor
       ? content.slice(0, 1000)
-      : isInPostView && content.length > 2000 && !showFullComment
+      : isInPostView && content.length > 2000 && !showFullComment && !isPrivilegedAuthor
         ? content.slice(0, 2000)
         : content);
 
@@ -214,7 +214,7 @@ const CommentContent = ({
         )
       ) : (
         <>
-          {!showOriginal && renderContent(displayContent)}
+          {displayContent && renderContent(displayContent)}
           {pendingApproval && (
             <>
               <br />
@@ -234,7 +234,7 @@ const CommentContent = ({
               )}
             </>
           )}
-          {((!isInPostView && content?.length > 1000 && !showFullComment) || (isInPostView && content?.length > 2000 && !showFullComment)) && (
+          {((!isInPostView && content?.length > 1000 && !showFullComment) || (isInPostView && content?.length > 2000 && !showFullComment)) && !isPrivilegedAuthor && (
             <span className={styles.abbr}>
               <br />
               <br />
@@ -259,73 +259,6 @@ const CommentContent = ({
                   ),
                 }}
               />
-            </span>
-          )}
-          {edit && original?.content !== content && (
-            <span className={styles.editedInfo}>
-              {showOriginal && renderContent(original?.content)}
-              <br />
-              <br />
-              <Trans
-                i18nKey={'comment_edited_at_timestamp'}
-                values={{ timestamp: getFormattedDate(edit?.timestamp) }}
-                shouldUnescape={true}
-                components={{
-                  1: (
-                    <Tooltip key={edit?.timestamp} content={getFormattedTimeAgo(edit?.timestamp)}>
-                      <Fragment key={edit?.timestamp}></Fragment>
-                    </Tooltip>
-                  ),
-                }}
-              />{' '}
-              {reason && <>{t('reason_reason', { reason: reason, interpolation: { escapeValue: false } })} </>}
-              {showOriginal ? (
-                <Trans
-                  i18nKey={'click_here_to_hide_original'}
-                  shouldUnescape={true}
-                  components={{
-                    1: (
-                      <button
-                        type='button'
-                        key={cid}
-                        className={styles.showOriginal}
-                        aria-label={t('hide')}
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            setShowOriginal(!showOriginal);
-                          }
-                        }}
-                        onClick={() => setShowOriginal(!showOriginal)}
-                      />
-                    ),
-                  }}
-                />
-              ) : (
-                <Trans
-                  i18nKey={'click_here_to_show_original'}
-                  shouldUnescape={true}
-                  components={{
-                    1: (
-                      <button
-                        type='button'
-                        key={cid}
-                        className={styles.showOriginal}
-                        aria-label={t('view')}
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            setShowOriginal(!showOriginal);
-                          }
-                        }}
-                        onClick={() => setShowOriginal(!showOriginal)}
-                      />
-                    ),
-                  }}
-                />
-              )}
             </span>
           )}
         </>
