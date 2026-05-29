@@ -168,6 +168,12 @@
   cursor: pointer;
 }
 
+.boxBar > button:focus-visible,
+.filterModal .option:focus-visible {
+  outline: 1px solid currentcolor;
+  outline-offset: -1px;
+}
+
 .filterModal .selected::before {
   content: '✓ ';
 }
