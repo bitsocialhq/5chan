@@ -154,6 +154,7 @@ const Thumbnail = ({
       canEmbed(linkWithoutThumbnail) ? (
         <button
           type='button'
+          className={styles.noThumbnailButton}
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -331,7 +332,7 @@ const Image = ({
         {hasError ? (
           <MediaLoadFailure compact url={url} />
         ) : disableToggle ? (
-          <img src={url} onError={handleError} onLoad={handleLoad} alt={isImageExpanded ? 'Collapse image' : 'Expand image'} />
+          <img src={url} onError={handleError} onLoad={handleLoad} alt='' />
         ) : (
           <button
             type='button'
@@ -363,7 +364,7 @@ const Image = ({
       {hasError ? (
         <MediaLoadFailure url={url} />
       ) : disableToggle ? (
-        <img src={url} onError={handleError} onLoad={handleLoad} alt={isImageExpanded ? 'Collapse image' : 'Expand image'} />
+        <img src={url} onError={handleError} onLoad={handleLoad} alt='' />
       ) : (
         <button
           type='button'
