@@ -141,7 +141,7 @@ const ImageSearchButton = ({ url, onClose }: { url: string; onClose: () => void 
           <a href={`https://lens.google.com/uploadbyurl?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
             <div className={styles.postMenuItem}>Google</div>
           </a>
-          <a href={`https://www.yandex.com/images/search?img_url=${encodedUrl}&rpt=imageview`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
+          <a href={`https://www.yandex.com/images/search?url=${encodedUrl}&rpt=imageview`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
             <div className={styles.postMenuItem}>Yandex</div>
           </a>
           <a href={`https://saucenao.com/search.php?url=${encodedUrl}`} target='_blank' rel='noopener noreferrer' onClick={onClose}>
