@@ -246,27 +246,26 @@ const CatalogPost = memo(
             ) : hasThumbnail ? (
               <>
                 {shouldShowSnow() && hasThumbnail && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
-                <Link to={postLink}>
-                  <div
-                    className={`${styles.mediaPaddingWrapper} ${shouldMaskPost && styles.hidden}`}
-                    ref={refs.setReference}
-                    onMouseOver={() => (timeoutRef.current = setTimeout(() => setShowPortal(true), 250))}
-                    onFocus={() => (timeoutRef.current = setTimeout(() => setShowPortal(true), 250))}
-                    onMouseLeave={() => {
-                      setShowPortal(false);
-                      if (timeoutRef.current) {
-                        clearTimeout(timeoutRef.current);
-                        timeoutRef.current = null;
-                      }
-                    }}
-                    onBlur={() => {
-                      setShowPortal(false);
-                      if (timeoutRef.current) {
-                        clearTimeout(timeoutRef.current);
-                        timeoutRef.current = null;
-                      }
-                    }}
-                  >
+                <Link
+                  to={postLink}
+                  onMouseOver={() => (timeoutRef.current = setTimeout(() => setShowPortal(true), 250))}
+                  onFocus={() => (timeoutRef.current = setTimeout(() => setShowPortal(true), 250))}
+                  onMouseLeave={() => {
+                    setShowPortal(false);
+                    if (timeoutRef.current) {
+                      clearTimeout(timeoutRef.current);
+                      timeoutRef.current = null;
+                    }
+                  }}
+                  onBlur={() => {
+                    setShowPortal(false);
+                    if (timeoutRef.current) {
+                      clearTimeout(timeoutRef.current);
+                      timeoutRef.current = null;
+                    }
+                  }}
+                >
+                  <div className={`${styles.mediaPaddingWrapper} ${shouldMaskPost && styles.hidden}`} ref={refs.setReference}>
                     {threadIcons}
                     {spoiler ? (
                       <img src='assets/spoiler.png' alt='' />
