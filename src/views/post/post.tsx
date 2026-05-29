@@ -283,7 +283,13 @@ const PostPage = () => {
   const resolvedCommunityAddress = useResolvedCommunityAddress();
   const resolvedCommunityIdentifier = useCommunityIdentifier(resolvedCommunityAddress);
   const isInAllView = isAllView(pathname);
-  const routeState = useMemo(() => getEffectiveRouteUserState(locationState), [locationState]);
+  const routeState = useMemo(() => {
+    // locationKey/pathname are intentional deps: getEffectiveRouteUserState falls back to the
+    // non-reactive window.history.state, so the memo must re-run on every navigation to re-read it.
+    void locationKey;
+    void pathname;
+    return getEffectiveRouteUserState(locationState);
+  }, [locationKey, pathname, locationState]);
 
   const resolvedComment = useCommentWithFeedCache({ commentCid, autoUpdate: autoUpdateEnabled, community: resolvedCommunityIdentifier });
   const queuedComment = useMemo(() => getQueuedCommentFromRouteState(routeState, commentCid), [routeState, commentCid]);
