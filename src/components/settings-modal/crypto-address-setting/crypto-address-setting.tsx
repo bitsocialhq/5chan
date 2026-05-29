@@ -190,7 +190,12 @@ const CryptoAddressSettingContent = ({ account }: { account: ReturnType<typeof u
         <button type='button' className={styles.saveButton} onClick={saveCryptoAddress}>
           {t('save')}
         </button>
-        <button type='button' className={styles.infoButton} onClick={() => setShowCryptoAddressInfo(!showCryptoAddressInfo)}>
+        <button
+          type='button'
+          className={styles.infoButton}
+          aria-label={showCryptoAddressInfo ? 'Hide crypto address help' : 'Show crypto address help'}
+          onClick={() => setShowCryptoAddressInfo(!showCryptoAddressInfo)}
+        >
           {showCryptoAddressInfo ? 'x' : '?'}
         </button>
         {showCryptoAddressInfo && (
