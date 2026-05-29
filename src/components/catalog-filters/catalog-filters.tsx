@@ -273,7 +273,7 @@ const FiltersModal = ({ closeModal }: { closeModal: () => void }) => {
     <>
       <button
         type='button'
-        aria-label={showHelp ? t('close') : t('close')}
+        aria-label={t('close')}
         className={styles.overlay}
         tabIndex={0}
         onKeyDown={(e) => {
