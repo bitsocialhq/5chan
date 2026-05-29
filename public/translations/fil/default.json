@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "Pumunta sa <1>mga setting</1> para i-import ang iyong mod account",
   "post_form_rules_faq_prompt": "Pakibasa ang <rules>Rules</rules> at <faq>FAQ</faq> bago mag-post.",
   "pending_mod_approval_reason": "Ipinadala ng AI moderation ang post na ito sa mod queue. Dahilan: \"{{reason}}\".",
-  "flag": "Bandila"
+  "flag": "Bandila",
+  "show_replies": "Ipakita ang mga sagot",
+  "hide_replies": "itago ang mga sagot",
+  "unhide": "ipakita",
+  "account_data": "data ng account",
+  "ban_duration_days": "tagal ng ban sa araw",
+  "challenge_answer": "sagot sa hamon",
+  "ban": "ipagbawal",
+  "timestamp": "timestamp"
 }

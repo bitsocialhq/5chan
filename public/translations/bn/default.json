@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "আপনার মড অ্যাকাউন্ট আমদানি করতে <1>সেটিংস</1>-এ যান",
   "post_form_rules_faq_prompt": "পোস্ট করার আগে <rules>নিয়ম</rules> এবং <faq>প্রশ্নোত্তর</faq> পড়ুন।",
   "pending_mod_approval_reason": "AI মডারেশন এই পোস্টটি মডারেটর কিউতে পাঠিয়েছে। কারণ: \"{{reason}}\".",
-  "flag": "পতাকা"
+  "flag": "পতাকা",
+  "show_replies": "উত্তরগুলি দেখান",
+  "hide_replies": "উত্তরগুলি লুকান",
+  "unhide": "লুকানো সরান",
+  "account_data": "অ্যাকাউন্ট ডেটা",
+  "ban_duration_days": "ব্যান মেয়াদ দিনে",
+  "challenge_answer": "চ্যালেঞ্জ উত্তর",
+  "ban": "নিষেধ করুন",
+  "timestamp": "টাইমস্ট্যাম্প"
 }

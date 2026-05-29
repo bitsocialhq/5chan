@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "Vào <1>cài đặt</1> để nhập tài khoản mod của bạn",
   "post_form_rules_faq_prompt": "Vui lòng đọc <rules>Quy tắc</rules> và <faq>Câu hỏi thường gặp</faq> trước khi đăng.",
   "pending_mod_approval_reason": "Kiểm duyệt AI đã gửi bài viết này vào hàng đợi kiểm duyệt. Lý do: \"{{reason}}\".",
-  "flag": "Cờ"
+  "flag": "Cờ",
+  "show_replies": "hiển thị câu trả lời",
+  "hide_replies": "ẩn các trả lời",
+  "unhide": "hiển thị",
+  "account_data": "dữ liệu tài khoản",
+  "ban_duration_days": "thời gian cấm theo ngày",
+  "challenge_answer": "câu trả lời thử thách",
+  "ban": "cấm",
+  "timestamp": "dấu thời gian"
 }

@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "Ga naar <1>instellingen</1> om je mod-account te importeren",
   "post_form_rules_faq_prompt": "Lees de <rules>Regels</rules> en de <faq>FAQ</faq> voordat je plaatst.",
   "pending_mod_approval_reason": "AI-moderatie heeft dit bericht naar de moderatiewachtrij gestuurd. Reden: \"{{reason}}\".",
-  "flag": "Vlag"
+  "flag": "Vlag",
+  "show_replies": "antwoorden weergeven",
+  "hide_replies": "reacties verbergen",
+  "unhide": "weergeven",
+  "account_data": "accountgegevens",
+  "ban_duration_days": "banningsduur in dagen",
+  "challenge_answer": "antwoord op uitdaging",
+  "ban": "verbannen",
+  "timestamp": "tijdstempel"
 }

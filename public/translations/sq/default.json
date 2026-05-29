@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "Shkoni te <1>parametrat</1> për të importuar llogarinë tuaj të modit",
   "post_form_rules_faq_prompt": "Ju lutemi lexoni <rules>Rregullat</rules> dhe <faq>Pyetjet e shpeshta</faq> para se të postoni.",
   "pending_mod_approval_reason": "Moderimi me AI e dërgoi këtë postim në radhën e moderatorëve. Arsye: \"{{reason}}\".",
-  "flag": "Flamur"
+  "flag": "Flamur",
+  "show_replies": "Shfaq përgjigjet",
+  "hide_replies": "fsheh përgjigjet",
+  "unhide": "shfaq",
+  "account_data": "të dhënat e llogarisë",
+  "ban_duration_days": "kohëzgjatja e ndalimit në ditë",
+  "challenge_answer": "përgjigje ndaj sfidës",
+  "ban": "ndalim",
+  "timestamp": "vulë kohe"
 }

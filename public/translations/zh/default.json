@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "前往<1>设置</1>以导入您的版主账户",
   "post_form_rules_faq_prompt": "发帖前请阅读<rules>规则</rules>和<faq>常见问题</faq>。",
   "pending_mod_approval_reason": "AI 审核已将此帖子发送到版主队列。原因：\"{{reason}}\"。",
-  "flag": "旗帜"
+  "flag": "旗帜",
+  "show_replies": "显示回复",
+  "hide_replies": "隐藏回复",
+  "unhide": "显示",
+  "account_data": "账户数据",
+  "ban_duration_days": "封禁时长（天数）",
+  "challenge_answer": "挑战答案",
+  "ban": "封禁",
+  "timestamp": "时间戳"
 }

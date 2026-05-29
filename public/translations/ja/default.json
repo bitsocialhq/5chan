@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "モデレーターアカウントをインポートするには<1>設定</1>に移動してください",
   "post_form_rules_faq_prompt": "投稿する前に<rules>ルール</rules>と<faq>FAQ</faq>をお読みください。",
   "pending_mod_approval_reason": "AIモデレーションがこの投稿をモデレーターキューに送りました。理由: \"{{reason}}\".",
-  "flag": "旗"
+  "flag": "旗",
+  "show_replies": "返信を表示",
+  "hide_replies": "返信を非表示",
+  "unhide": "表示",
+  "account_data": "アカウントデータ",
+  "ban_duration_days": "バン期間（日数）",
+  "challenge_answer": "チャレンジ回答",
+  "ban": "ブロック",
+  "timestamp": "タイムスタンプ"
 }

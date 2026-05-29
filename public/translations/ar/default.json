@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "انتقل إلى <1>الإعدادات</1> لاستيراد حساب المشرف الخاص بك",
   "post_form_rules_faq_prompt": "يُرجى قراءة <rules>القواعد</rules> و<faq>الأسئلة الشائعة</faq> قبل النشر.",
   "pending_mod_approval_reason": "أرسل الإشراف بالذكاء الاصطناعي هذا المنشور إلى قائمة انتظار المشرفين. السبب: \"{{reason}}\".",
-  "flag": "علم"
+  "flag": "علم",
+  "show_replies": "عرض الردود",
+  "hide_replies": "إخفاء الردود",
+  "unhide": "إظهار",
+  "account_data": "بيانات الحساب",
+  "ban_duration_days": "مدة الحظر بالأيام",
+  "challenge_answer": "إجابة التحدي",
+  "ban": "حظر",
+  "timestamp": "الطابع الزمني"
 }

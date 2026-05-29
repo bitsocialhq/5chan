@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "Gå til <1>innstillinger</1> for å importere modkontoen din",
   "post_form_rules_faq_prompt": "Vennligst les <rules>Reglene</rules> og <faq>FAQ</faq> før du poster.",
   "pending_mod_approval_reason": "AI-moderering sendte dette innlegget til moderatorkøen. Årsak: \"{{reason}}\".",
-  "flag": "Flagg"
+  "flag": "Flagg",
+  "show_replies": "vis svar",
+  "hide_replies": "skjul svar",
+  "unhide": "vis",
+  "account_data": "kontodata",
+  "ban_duration_days": "bannvarighet i dager",
+  "challenge_answer": "svar på utfordring",
+  "ban": "forbud",
+  "timestamp": "tidsstempel"
 }

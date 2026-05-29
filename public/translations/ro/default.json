@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "Accesează <1>setările</1> pentru a importa contul tău de moderator",
   "post_form_rules_faq_prompt": "Citește <rules>Regulile</rules> și <faq>Întrebările frecvente</faq> înainte de a publica.",
   "pending_mod_approval_reason": "Moderarea AI a trimis această postare în coada moderatorilor. Motiv: \"{{reason}}\".",
-  "flag": "Steag"
+  "flag": "Steag",
+  "show_replies": "arată răspunsuri",
+  "hide_replies": "ascunde răspunsuri",
+  "unhide": "afișează",
+  "account_data": "date cont",
+  "ban_duration_days": "durata banului în zile",
+  "challenge_answer": "răspunsul la provocare",
+  "ban": "interzice",
+  "timestamp": "marcă de timp"
 }

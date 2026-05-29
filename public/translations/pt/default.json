@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "Vá para <1>configurações</1> para importar sua conta de mod",
   "post_form_rules_faq_prompt": "Leia as <rules>Regras</rules> e as <faq>FAQ</faq> antes de publicar.",
   "pending_mod_approval_reason": "A moderação por IA enviou esta postagem para a fila de moderação. Razão: \"{{reason}}\".",
-  "flag": "Bandeira"
+  "flag": "Bandeira",
+  "show_replies": "mostrar respostas",
+  "hide_replies": "ocultar respostas",
+  "unhide": "mostrar",
+  "account_data": "dados da conta",
+  "ban_duration_days": "duração do banimento em dias",
+  "challenge_answer": "resposta do desafio",
+  "ban": "banir",
+  "timestamp": "marca de tempo"
 }

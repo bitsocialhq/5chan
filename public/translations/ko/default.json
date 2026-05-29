@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "관리자 계정을 가져오려면 <1>설정</1>으로 이동하세요",
   "post_form_rules_faq_prompt": "게시하기 전에 <rules>규칙</rules>과 <faq>FAQ</faq>을 읽어 주세요.",
   "pending_mod_approval_reason": "AI 모더레이션이 이 게시물을 모더레이터 대기열로 보냈습니다. 이유: \"{{reason}}\".",
-  "flag": "깃발"
+  "flag": "깃발",
+  "show_replies": "답글 표시",
+  "hide_replies": "답글 숨기기",
+  "unhide": "표시",
+  "account_data": "계정 데이터",
+  "ban_duration_days": "차단 기간(일)",
+  "challenge_answer": "챌린지 답변",
+  "ban": "차단",
+  "timestamp": "타임스탬프"
 }

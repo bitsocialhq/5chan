@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "Przejdź do <1>ustawień</1>, aby zaimportować swoje konto moderatora",
   "post_form_rules_faq_prompt": "Przed opublikowaniem przeczytaj <rules>Zasady</rules> i <faq>FAQ</faq>.",
   "pending_mod_approval_reason": "Moderacja AI wysłała ten post do kolejki moderatorów. Powód: \"{{reason}}\".",
-  "flag": "Flaga"
+  "flag": "Flaga",
+  "show_replies": "Pokaż odpowiedzi",
+  "hide_replies": "ukryj odpowiedzi",
+  "unhide": "pokaż",
+  "account_data": "dane konta",
+  "ban_duration_days": "czas trwania banu w dniach",
+  "challenge_answer": "odpowiedź na wyzwanie",
+  "ban": "zbanować",
+  "timestamp": "znacznik czasu"
 }

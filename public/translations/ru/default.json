@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "Перейдите в <1>настройки</1>, чтобы импортировать свой аккаунт модератора",
   "post_form_rules_faq_prompt": "Пожалуйста, прочитайте <rules>Правила</rules> и <faq>FAQ</faq> перед публикацией.",
   "pending_mod_approval_reason": "ИИ-модерация отправила этот пост в очередь модераторов. Причина: \"{{reason}}\".",
-  "flag": "Флаг"
+  "flag": "Флаг",
+  "show_replies": "показать ответы",
+  "hide_replies": "скрыть ответы",
+  "unhide": "показать",
+  "account_data": "данные аккаунта",
+  "ban_duration_days": "продолжительность бана в днях",
+  "challenge_answer": "ответ на задачу",
+  "ban": "блокировка",
+  "timestamp": "временная метка"
 }

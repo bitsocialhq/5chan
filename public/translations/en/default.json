@@ -412,5 +412,13 @@
   "board_address_unverified_warning": "This board address is not verified. The board owner might not own this address.",
   "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting.",
   "pending_mod_approval_reason": "AI moderation sent this post to the mod queue. Reason: \"{{reason}}\".",
-  "flag": "Flag"
+  "flag": "Flag",
+  "show_replies": "show replies",
+  "hide_replies": "hide replies",
+  "unhide": "unhide",
+  "account_data": "account data",
+  "ban_duration_days": "ban duration in days",
+  "challenge_answer": "challenge answer",
+  "ban": "ban",
+  "timestamp": "timestamp"
 }

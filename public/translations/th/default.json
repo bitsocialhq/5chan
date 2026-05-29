@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "ไปที่ <1>การตั้งค่า</1> เพื่อนำเข้าบัญชีผู้ดูแลของคุณ",
   "post_form_rules_faq_prompt": "โปรดอ่าน<rules>กฎ</rules>และ<faq>คำถามที่พบบ่อย</faq>ก่อนโพสต์",
   "pending_mod_approval_reason": "การกลั่นกรองด้วย AI ส่งโพสต์นี้ไปยังคิวผู้ดูแล เหตุผล: \"{{reason}}\".",
-  "flag": "ธง"
+  "flag": "ธง",
+  "show_replies": "แสดงคำตอบ",
+  "hide_replies": "ซ่อนคำตอบ",
+  "unhide": "แสดง",
+  "account_data": "ข้อมูลบัญชี",
+  "ban_duration_days": "ระยะเวลาแบนในวัน",
+  "challenge_answer": "คำตอบความท้าทาย",
+  "ban": "แบน",
+  "timestamp": "แสตมป์เวลา"
 }

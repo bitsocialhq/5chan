@@ -393,5 +393,13 @@
   "go_to_settings_to_import_mod_account": "اپنا موڈ اکاؤنٹ درآمد کرنے کے لیے <1>ترتیبات</1> پر جائیں",
   "post_form_rules_faq_prompt": "براہ کرم پوسٹ کرنے سے پہلے <rules>اصول</rules> اور <faq>اکثر پوچھے گئے سوالات</faq> پڑھیں۔",
   "pending_mod_approval_reason": "AI موڈریشن نے اس پوسٹ کو موڈریٹر قطار میں بھیج دیا۔ وجہ: \"{{reason}}\".",
-  "flag": "پرچم"
+  "flag": "پرچم",
+  "show_replies": "جوابات دکھائیں",
+  "hide_replies": "جوابات چھپائیں",
+  "unhide": "دکھائیں",
+  "account_data": "اکاؤنٹ ڈیٹا",
+  "ban_duration_days": "بین کی مدت دنوں میں",
+  "challenge_answer": "چ یلنج کا جواب",
+  "ban": "روک",
+  "timestamp": "ٹائم سٹیمپ"
 }
