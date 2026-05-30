@@ -78,7 +78,7 @@ const getPatternThumbnailUrl = (url: URL): string | undefined => {
 };
 
 // Known media file extensions - only these will be classified as media files
-const KNOWN_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff'];
+const KNOWN_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'jpe', 'jfif', 'jif', 'png', 'apng', 'gif', 'webp', 'avif', 'svg', 'bmp', 'ico', 'tiff'];
 const KNOWN_VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'avi', 'mkv', 'flv', 'wmv', 'm4v'];
 const KNOWN_AUDIO_EXTENSIONS = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma'];
 const KNOWN_SWF_EXTENSIONS = ['swf'];
