@@ -64,6 +64,7 @@
     "prebuild": "corepack yarn sync:directories && corepack yarn generate:assets",
     "prestart": "corepack yarn sync:directories && corepack yarn generate:assets",
     "start": "node scripts/start-dev.js",
+    "start:preview": "node scripts/start-preview.js",
     "start:android-usb": "node scripts/start-android-usb.mjs",
     "build": "cross-env PUBLIC_URL=./ GENERATE_SOURCEMAP=false vite build",
     "build:fdroid": "cross-env PUBLIC_URL=./ GENERATE_SOURCEMAP=false VITE_APP_DISTRIBUTION=fdroid vite build",
