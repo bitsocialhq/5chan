@@ -171,7 +171,7 @@
     "playwright": "1.56.1",
     "progress": "2.0.3",
     "react-doctor": "0.2.6",
-    "react-grab": "0.1.32",
+    "react-grab": "0.1.37",
     "react-scan": "0.5.3",
     "stream-browserify": "3.0.0",
     "vite": "8.0.5",
