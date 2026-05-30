@@ -1,0 +1,1244 @@
+{
+  "title": "5chan Directory Defaults",
+  "description": "Expected 5chan UX defaults by directory code. These defaults apply to the directory, not to individual candidate boards.",
+  "createdAt": 1779262179,
+  "updatedAt": 1780129468,
+  "directories": {
+    "3": {
+      "directoryCode": "3",
+      "title": "/3/ - 3DCG",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Images and discussion should relate to 3D modeling and imagery.",
+        "Remember: This is a worksafe board! No adult content is allowed."
+      ]
+    },
+    "a": {
+      "directoryCode": "a",
+      "title": "/a/ - Anime & Manga",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All images and resulting discussion should pertain to anime or manga.",
+        "The use of spoiler tags is highly recommended. To spoilerize text, enclose it like so: [spoiler]spoiled text[/spoiler]. In addition, images may be spoilerized by checking the \"[Spoiler Image?]\" box on the submission form.",
+        "Purposeful spoiling of a series may result in post deletion and temporary ban.",
+        "The discussion of \"live action\" television shows is permitted so long as they are distinctly rooted in, or based off of an anime or manga series.",
+        "Japanese visual novels should be posted in /jp/, and Western on /vg/.",
+        "Threads should be created with substantial OP text containing a meaningful topic of discussion. Please refrain from posting catch-phrase or template threads."
+      ]
+    },
+    "f": {
+      "directoryCode": "f",
+      "title": "/f/ - Flash",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": false,
+        "hasFlags": false,
+        "postFlairs": true,
+        "requirePostFlairs": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": false,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 50
+      },
+      "rules": [
+        "The tagging of uploaded files is mandatory. Improperly tagged items may be removed without notice. Abuse of the tagging system may result in temporary ban."
+      ]
+    },
+    "adv": {
+      "directoryCode": "adv",
+      "title": "/adv/ - Advice",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All advice threads welcome. Offering or requesting is allowed.",
+        "This is the destination for all questions regarding specific personal problems.",
+        "All threads are expected to be constructive in nature; BAWWWing and venting is discouraged.",
+        "No hookup or camwhore threads! Take that to /soc/."
+      ]
+    },
+    "an": {
+      "directoryCode": "an",
+      "title": "/an/ - Animals & Nature",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All images of animals and nature are welcome.",
+        "Posting images depicting animal cruelty is strictly forbidden."
+      ]
+    },
+    "b": {
+      "directoryCode": "b",
+      "title": "/b/ - Random",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": false,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "ZOMG NONE!!!1*",
+        "Note: \"ZOMG NONE!!!1\" applies to moderators as well."
+      ]
+    },
+    "bant": {
+      "directoryCode": "bant",
+      "title": "/bant/ - International/Random",
+      "features": {
+        "pseudonymityMode": "per-post",
+        "safeForWork": false,
+        "hasFlags": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Porn dump threads are not permitted. Please use the appropriate boards for porn."
+      ]
+    },
+    "biz": {
+      "directoryCode": "biz",
+      "title": "/biz/ - Business & Finance",
+      "features": {
+        "pseudonymityMode": "per-post",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 20
+      },
+      "rules": [
+        "All discussion should pertain to business, finance, and economics related topics. This includes financial markets, securities, currencies (including cryptocurrencies), and commodities—as well as topics relating to starting and running a business.",
+        "All political discussion belongs in /pol/. Conspiracy theories belong in /x/.",
+        "Absolutely no advertising, soliciting, or promotion of any kind. You may not discuss projects you have an interest in without making that disclosure. We will remove anything that remotely breaks this rule.",
+        "Begging/asking (including tipping) for cryptocurrencies or asking for money/capital is also strictly forbidden."
+      ]
+    },
+    "c": {
+      "directoryCode": "c",
+      "title": "/c/ - Anime/Cute",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Images should be cute (\"moe\") in nature.",
+        "Ecchi belongs on its respective board. Males belong on the cute/male board.",
+        "Heterosexual couples are allowed."
+      ]
+    },
+    "ck": {
+      "directoryCode": "ck",
+      "title": "/ck/ - Food & Cooking",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Images and discussion should relate to food and cooking.",
+        "Recipes are welcome! Feel free to talk about your favorite dishes and discuss past cooking experiences."
+      ]
+    },
+    "co": {
+      "directoryCode": "co",
+      "title": "/co/ - Comics & Cartoons",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Images and discussion should pertain to media of Western origin.",
+        "Spoiler tag use is enforced. Don't know how to use spoiler tags? Read [this](/faq#spoiler)."
+      ]
+    },
+    "diy": {
+      "directoryCode": "diy",
+      "title": "/diy/ - Do It Yourself",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "MAKERS GONNA MAKE!",
+        "Do not post or request instructions for how to make weapons or any device that might bring harm to a person. Think \"Instructables\" and \"Make Magazine\" not \"Anarchist's Cookbook.\""
+      ]
+    },
+    "fa": {
+      "directoryCode": "fa",
+      "title": "/fa/ - Fashion",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Images and discussion should pertain to fashion and apparel."
+      ]
+    },
+    "fit": {
+      "directoryCode": "fit",
+      "title": "/fit/ - Fitness",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Images and discussion related to dieting, exercise, healthy living, and workout plans is welcome here.",
+        "Relationship, dating advice, and \"mental health\" threads belong on /adv/."
+      ]
+    },
+    "g": {
+      "directoryCode": "g",
+      "title": "/g/ - Technology",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Images depicting the technology of past, present, and future are all welcome here.",
+        "Tech support threads should be posted on /wsr/.",
+        "Trolling is not permitted. Do not instigate or participate in flamewars.",
+        "You may use [code] tags to highlight syntax and preserve whitespace. To use them, just wrap your code snippets [code]like this[/code]."
+      ]
+    },
+    "gd": {
+      "directoryCode": "gd",
+      "title": "/gd/ - Graphic Design",
+      "features": {
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "safeForWork": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "pseudonymityMode": "per-reply",
+        "hasFlags": false,
+        "bumpLimit": 300,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "This board is for the discussion of graphic design software and computer-aided graphic design techniques (ie. \"Photoshopping\").",
+        "Requests for Photoshopping or any other work should go on /wsr/."
+      ]
+    },
+    "gif": {
+      "directoryCode": "gif",
+      "title": "/gif/ - Adult GIF",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": false,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All GIFs should be animated-no static images."
+      ]
+    },
+    "his": {
+      "directoryCode": "his",
+      "title": "/his/ - History & Humanities",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "1. All images and discussion should pertain to the humanities: history, philosophy, religion, law, classical artwork, archeology, anthropology, ancient languages, etc.",
+        "2. Discussions about books, poetry, and other forms of literature should be posted on /lit/.",
+        "3. Discussions about politics and current events should be posted on /pol/.",
+        "4. Please do not start threads about events taking place less than 25 years ago."
+      ]
+    },
+    "i": {
+      "directoryCode": "i",
+      "title": "/i/ - Oekaki",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": false,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Oekakis can be random in nature, but please, no \"junk\" drawings. Quality over quantity!"
+      ]
+    },
+    "ic": {
+      "directoryCode": "ic",
+      "title": "/ic/ - Artwork/Critique",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All images and discussion should pertain to the critique of visual artwork.",
+        "User-created artwork is submitted for critique, and visual art is discussed. Do not claim authorship of works you did not create.",
+        "Only constructive criticism will be accepted. Rude or offensive comments will result in a ban.",
+        "Requests for free work of any sort are forbidden.",
+        "Don't bring community vendettas onto this board. Singling out individual artists for the purposes of trolling them will not be tolerated.",
+        "All discussion of artists should pertain directly to their work, and not their personal lives."
+      ]
+    },
+    "int": {
+      "directoryCode": "int",
+      "title": "/int/ - International",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "This board is for the discussion of foreign culture and language. Please be respectful.",
+        "Posting in languages other than English is allowed-and encouraged!",
+        "All politics and current events belong on /pol/."
+      ]
+    },
+    "jp": {
+      "directoryCode": "jp",
+      "title": "/jp/ - Otaku Culture",
+      "features": {
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "safeForWork": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "pseudonymityMode": "per-reply",
+        "hasFlags": false,
+        "bumpLimit": 300,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All images and discussion should pertain to light and visual novels, figures and other otaku paraphernalia, Touhou Project, Vocaloid, doujin works and music, and diverse niche Japanese interests (kigurumi, idols, mahjong, tea).",
+        "This is the appropriate board for the discussion of Japanese visual novels and light novels. Western visual novels should be posted to /vg/, and translated visual novels are fine on either board."
+      ]
+    },
+    "k": {
+      "directoryCode": "k",
+      "title": "/k/ - Weapons",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All weaponry is welcome. Military vehicles/knives/other weapons are included, this board isn't just for firearms!"
+      ]
+    },
+    "lit": {
+      "directoryCode": "lit",
+      "title": "/lit/ - Literature",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All literature discussion is welcome, however fan-fic is not allowed."
+      ]
+    },
+    "m": {
+      "directoryCode": "m",
+      "title": "/m/ - Mecha",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All mecha and mecha-related (ex: pilots, core fighter, mecha girl, hobby model) images are allowed."
+      ]
+    },
+    "mlp": {
+      "directoryCode": "mlp",
+      "title": "/mlp/ - Pony",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "This is the destination for all cartoon/anime pony related content on 4chan.",
+        "This is a work safe board. No pornographic images or other not safe for work content is allowed (this includes clop).",
+        "Topics must be show-related. When discussing people, they must be associated with the show and not the fandom.",
+        "No roleplay.",
+        "Ponies only—no anthro."
+      ]
+    },
+    "mu": {
+      "directoryCode": "mu",
+      "title": "/mu/ - Music",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Discuss music, artists, and instruments here. All images should relate to the topic at hand.",
+        "Trolling, instigating, or participating in a flamewar will result in a ban.",
+        "Please try to keep duplicate topics to a minimum by always searching for an old or active thread before posting a new one.",
+        "Do not post a continuation of a thread until the bump limit is reached."
+      ]
+    },
+    "n": {
+      "directoryCode": "n",
+      "title": "/n/ - Transportation",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All sorts of transportation pictures and discussion welcome. Trains, planes, ships, bicycles, flying elevators—post 'em all!",
+        "Please keep automobiles on the auto board.",
+        "Military vehicles should be posted on the weapons board."
+      ]
+    },
+    "news": {
+      "directoryCode": "news",
+      "title": "/news/ - Current News",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": false,
+        "requirePostLinkIsMedia": false,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All topics and discussion should be about current news articles. The OP must contain a valid URL of an article from a credible news site (i.e., a newspaper, news magazine, or TV channel). Blog and editorial articles are not acceptable.",
+        "News articles should be current; no articles older than 48 hours should be posted.",
+        "Blatant trolling and racism is not permitted.",
+        "Note that you can also discuss news articles on /pol/; /news/ is specifically for current news articles."
+      ]
+    },
+    "o": {
+      "directoryCode": "o",
+      "title": "/o/ - Auto",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All motor vehicle pictures are allowed.",
+        "Photos of models and \"race queens\" are permitted, so long as they are sufficiently clothed."
+      ]
+    },
+    "out": {
+      "directoryCode": "out",
+      "title": "/out/ - Outdoors",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "This board is for discussions about hiking, camping, geocaching, orienteering, farming, gardening, etc.",
+        "GO OUTSIDE AND TOSS A BALL OR SOMETHING."
+      ]
+    },
+    "p": {
+      "directoryCode": "p",
+      "title": "/p/ - Photography",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Only upload images that you, the photographer, have taken.",
+        "Post only photos that show at least trace amounts of thoughtful composition. Do not upload random snapshots.",
+        "Even though EXIF data is made available when encoded, please post as much relevant technical information as possible, such as: camera, kit, lens, etc.",
+        "Include a short description with your photograph, such as when and where it was photographed and under what circumstances.",
+        "As with the art critique board, only constructive criticism will be tolerated."
+      ]
+    },
+    "po": {
+      "directoryCode": "po",
+      "title": "/po/ - Papercraft & Origami",
+      "features": {
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "safeForWork": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "pseudonymityMode": "per-reply",
+        "hasFlags": false,
+        "bumpLimit": 300,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Upload your papercraft and origami images here!",
+        "Requesting is permitted."
+      ]
+    },
+    "pol": {
+      "directoryCode": "pol",
+      "title": "/pol/ - Politically Incorrect",
+      "features": {
+        "pseudonymityMode": "per-post",
+        "safeForWork": false,
+        "hasFlags": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 20
+      },
+      "rules": [
+        "Debate and discussion related to politics and current events is welcome.",
+        "You are free to speak your mind, but *do not attack other users.* You may challenge one another, but *keep it civil!*",
+        "Posting pornography is not permitted. This is a politics board, not a porn board."
+      ]
+    },
+    "pw": {
+      "directoryCode": "pw",
+      "title": "/pw/ - Professional Wrestling",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All images and discussion should pertain to professional wrestling."
+      ]
+    },
+    "qst": {
+      "directoryCode": "qst",
+      "title": "/qst/ - Quests",
+      "features": {
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "safeForWork": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "pseudonymityMode": "per-reply",
+        "hasFlags": false,
+        "bumpLimit": 300,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "This board is for author-driven collaborative storytelling (i.e. \"quests\"). All threads posted here should be part of a new or ongoing quest.",
+        "The author controls the story of the quest. They can take suggestions from other posters, or not, at their sole discretion. If things don't go your way don't complain!",
+        "All threads on this board should be created by the associated quest author. Please refrain from making meta-threads.",
+        "Erotic roleplay is not permitted. Frequent explicit descriptions of sexual encounters by a quest author may result in mod intervention."
+      ]
+    },
+    "r9k": {
+      "directoryCode": "r9k",
+      "title": "/r9k/ - ROBOT9002",
+      "features": {
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "safeForWork": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "pseudonymityMode": "per-reply",
+        "hasFlags": false,
+        "bumpLimit": 300,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "A place for hanging out and posting greentext stories.",
+        "Advice threads belong on /adv/, and \"rate me,\" meetup, and camwhore threads on /soc/.",
+        "Purposefully evading the ROBOT9002 filter is not permitted."
+      ]
+    },
+    "s5s": {
+      "directoryCode": "s5s",
+      "title": "/s5s/ - Shit 5chan Says",
+      "features": {
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "safeForWork": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "pseudonymityMode": "per-reply",
+        "hasFlags": false,
+        "bumpLimit": 300,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "You must check your #fortune in order to post on this board.",
+        "No porn dump threads. Keep that shit on /b/.",
+        "Moderators must check their #fortune as well."
+      ]
+    },
+    "sci": {
+      "directoryCode": "sci",
+      "title": "/sci/ - Science & Math",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All science and math related topics welcome.",
+        "Homework threads will be deleted, and the poster banned.",
+        "No \"religion vs. science\" threads."
+      ]
+    },
+    "soc": {
+      "directoryCode": "soc",
+      "title": "/soc/ - Cams & Meetups",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": false,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All images and discussion should be related to camming and socializing with other users (\"rate me,\" meetup, report in, etc). Photos should be of yourself (timestamps encouraged!)—random porn dumps are not allowed.",
+        "No whining (aka \"BAWWW\") or \"life\" threads. This is not your personal blog.",
+        "Tinychat and Amazon wishlist/begging threads are not allowed.",
+        "Soliciting or offering payments for photos, webcam shows, etc is not allowed.",
+        "Do not stalk or harass any users. Be civil to camwhores.",
+        "Requesting contact info outside of contact and meetup threads is not allowed. Offering your contact info unsolicited is also disallowed. Responding to a request for contact info is allowed.",
+        "Asking a user to write on a sign is not allowed, unless said user is actively taking requests. Timestamp requests are permitted.",
+        "Please try to keep duplicate topics to a minimum by always searching for an old or active thread before posting a new one. Do not post a continuation of a thread until the bump limit is reached.",
+        "Respect the gender of a thread. If the OP specifies women, only women should reply with images (and vice versa for men). tl;dr: Men, don't post pictures of yourself or your nether regions in female threads."
+      ]
+    },
+    "sp": {
+      "directoryCode": "sp",
+      "title": "/sp/ - Sports",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All sports welcome.",
+        "In the interest of keeping this board general, please combine threads related to similar topics (example: specific teams, games, players, etc.).",
+        "Discussion of \"eSports\" (i.e., video games) belongs on /v/. General threads about eSports belong on /vg/."
+      ]
+    },
+    "t": {
+      "directoryCode": "t",
+      "title": "/t/ - Torrents",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": false,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "No illegal stuff. Warez is allowed."
+      ]
+    },
+    "tg": {
+      "directoryCode": "tg",
+      "title": "/tg/ - Traditional Games",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Board games, paper games, war games, card games, etc. go here!"
+      ]
+    },
+    "toy": {
+      "directoryCode": "toy",
+      "title": "/toy/ - Toys",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Toys, toys, toys!",
+        "Absolutely no Japanese figurines. Action figures are permitted.",
+        "No \"hot glue\" fetish images."
+      ]
+    },
+    "trv": {
+      "directoryCode": "trv",
+      "title": "/trv/ - Travel",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Post images and information about various locales, places you've traveled, or hope to visit in the future.",
+        "Feel free to ask questions about other cultures, and post in native languages.",
+        "This board is for all the countries of the world. The more diverse, the better!",
+        "Discussions of prostitution or sex tourism are not permitted."
+      ]
+    },
+    "tv": {
+      "directoryCode": "tv",
+      "title": "/tv/ - Television & Film",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Content should pertain to television shows, movies, actors/actresses, film equipment, etc.",
+        "All actress and actor discussion should pertain directly to their roles and careers. Off-topic discussion will be deleted.",
+        "All images of actresses should be accompanied by relevant discussion.",
+        "Please make use of the spoiler image checkbox and spoiler tags. Purposeful spoiling of a series or movie is not allowed."
+      ]
+    },
+    "v": {
+      "directoryCode": "v",
+      "title": "/v/ - Video Games",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All posts should pertain to video games, their consoles, and video game culture. Threads should remain on topic and stay in theme with the board. Don't post off-topic garbage.",
+        "Flaming/flagrant \"fanboyism\"/etc. will not be tolerated.",
+        "Threads should not devolve into flamewars. Instigating or encouraging such activity will not be tolerated.",
+        "Please refrain from reposting. If possible, try to skim the board for threads pertaining to your topics/info that may have already been posted.",
+        "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate.",
+        "\"Generals\"—long-term, recurring threads about a specific game—should be posted in >>>/vg/. This is not to say threads about specific games cannot be created on /v/, just that long-term, recurring threads belong in /vg/."
+      ]
+    },
+    "vg": {
+      "directoryCode": "vg",
+      "title": "/vg/ - Video Game Generals",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 20
+      },
+      "rules": [
+        "This board is for the posting of video game \"general\" threads, which are long-term, recurring threads about a specific topic.",
+        "Western visual novels should be posted here, and Japanese visual novels on /jp/. Translated visual novels are allowed on either board.",
+        "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate."
+      ]
+    },
+    "vip": {
+      "directoryCode": "vip",
+      "title": "/vip/ - Very Important Posts",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Only [5chan pass](/pass) and/or [BSO](https://bso.network) holders shall post in here."
+      ]
+    },
+    "vm": {
+      "directoryCode": "vm",
+      "title": "/vm/ - Video Games/Multiplayer",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All topics should pertain to multiplayer games, i.e., games that are played with more than one person, either online or locally, competitive or co-op, on console, handheld, or PC. If a game includes a single player component, discussion should be primarily based around the multiplayer component.",
+        "Flagrant fanboy threads are not allowed, nor are threads for the purpose of instigating a flamewar. All mobile platforms are welcome on this board; device wars are not.",
+        "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate."
+      ]
+    },
+    "vmg": {
+      "directoryCode": "vmg",
+      "title": "/vmg/ - Video Games/Mobile",
+      "features": {
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "safeForWork": true,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "pseudonymityMode": "per-reply",
+        "hasFlags": false,
+        "bumpLimit": 300,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All topics should pertain to mobile games, i.e., games that are played on Android, iOS, or other phones or tablets. All mobile platforms are welcome. Threads about console or PC video games should not be posted here.",
+        "Flagrant fanboy threads are not allowed, nor are threads for the purpose of instigating a flamewar. All mobile platforms are welcome on this board; device wars are not.",
+        "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate."
+      ]
+    },
+    "vp": {
+      "directoryCode": "vp",
+      "title": "/vp/ - Pokémon",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "For Pokémon related discussion.",
+        "No non-work safe or \"furry\" material should be posted on this board.",
+        "Post all Pokégirl hentai to /h/.",
+        "Do not incite genwars. Keep discussions civil and don't let them devolve into flaming.",
+        "GOTTA CATCH 'EM ALL. This will be severely punished and strictly enforced.",
+        "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate."
+      ]
+    },
+    "vr": {
+      "directoryCode": "vr",
+      "title": "/vr/ - Retro Games",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "This board is for the discussion of classic, or \"retro\" games, including consoles, computer games, arcade games (including pinball) and any other forms of video games. Retro gaming means platforms launched in 2001 and earlier, and official game titles for those platforms released no later than December 2007 (homebrew console games made after this date will be permitted).",
+        "Please do not instigate or participate in flamewars. Personal attacks will not be tolerated."
+      ]
+    },
+    "vrpg": {
+      "directoryCode": "vrpg",
+      "title": "/vrpg/ - Video Games/RPG",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All topics should pertain to role-playing video games, including both western and JRPG styled RPGs, turn-based and action RPGs, and MMOs. All platforms are welcome. Threads about video games that do not belong to the role-playing genre should not be posted here.",
+        "Flagrant fanboy threads are not allowed, nor are threads for the purpose of instigating a flamewar. All platforms and consoles are welcome on this board; console wars are not.",
+        "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate."
+      ]
+    },
+    "vst": {
+      "directoryCode": "vst",
+      "title": "/vst/ - Video Games/Strategy",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All topics should pertain to strategy video games, including both turn-based and real-time strategy games, turn-based tactics and real-time tactics games, single-player or multiplayer (including MOBAs). All platforms are welcome. Threads about video games that do not belong to the strategy genre should not be posted here.",
+        "Flagrant fanboy threads are not allowed, nor are threads for the purpose of instigating a flamewar. All platforms and consoles are welcome on this board; console wars are not.",
+        "Purposeful spoiling of a game's plot or other details may result in post deletion and temporary ban. Use spoiler tags where appropriate."
+      ]
+    },
+    "vt": {
+      "directoryCode": "vt",
+      "title": "/vt/ - Virtual YouTubers",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All images and discussion should pertain to virtual YouTubers (\"VTubers\").",
+        "All VTuber discussion should pertain directly to their streams and content. Off-topic and 'IRL' discussion will be deleted.",
+        "Singling out individual VTubers for the purposes of trolling them will not be tolerated. Do not stalk or harass any VTubers."
+      ]
+    },
+    "w": {
+      "directoryCode": "w",
+      "title": "/w/ - Anime/Wallpapers",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Wallpapers should be distinctly anime or J-pop related. They can be real world pictures, just make sure they're noticeably tied to Japanese culture.",
+        "Image quality is a must. A minimum resolution of 480x600 pixels is enforced on this board."
+      ]
+    },
+    "wg": {
+      "directoryCode": "wg",
+      "title": "/wg/ - Wallpapers/General",
+      "features": {
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "safeForWork": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "pseudonymityMode": "per-reply",
+        "hasFlags": false,
+        "bumpLimit": 300,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "Wallpapers may depict anything within reason. Artistic nudes are allowed, but please do not post hardcore or other pornographic content.",
+        "Image quality is a must. A minimum resolution of 480x600 pixels is enforced on this board."
+      ]
+    },
+    "wsg": {
+      "directoryCode": "wsg",
+      "title": "/wsg/ - Worksafe GIF",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "All worksafe GIFs welcome.",
+        "All GIFs should be animated-no static images."
+      ]
+    },
+    "wsr": {
+      "directoryCode": "wsr",
+      "title": "/wsr/ - Worksafe Requests",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "This board is for asking for help in finding an image or the source of an image, or more of a certain kind of image.",
+        "This board is for asking for photoshop requests.",
+        "This board is for asking for recommendations for a new anime or TV series to watch, or a new manga or comic series to read.",
+        "This board is for asking for tech support or help with your homework.",
+        "This board is for any other kind of work-safe request.",
+        "Once you have posted your request, please check the catalog for requests that you can help others with.",
+        "All threads and images should pertain to work-safe material. For adult content please use /r/ - Requests and for help with personal matters please use /adv/ - Advice.",
+        "Do not post or request personal information (\"dox\") or calls to invasion (\"raids\").",
+        "Personal army requests of any form are strictly forbidden."
+      ]
+    },
+    "x": {
+      "directoryCode": "x",
+      "title": "/x/ - Paranormal",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "For all your creepy images and stories."
+      ]
+    },
+    "xs": {
+      "directoryCode": "xs",
+      "title": "/xs/ - Extreme Sports",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "This board is for the discussion of extreme sports and similar physical activities. This includes topics such as skydiving, surfing, skateboarding, climbing, bungee-jumping, parkour, BMX, airsoft, paintball, etc.",
+        "Discussions about professional sports teams, leagues, and athletes should be posted to /sp/. Discussions about eSports should be posted to /vg/. Discussions about professional wrestling should be posted to /pw/."
+      ]
+    }
+  }
+}

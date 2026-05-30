@@ -1,0 +1,13 @@
+{
+  "description": "Boards competing to host the /trv/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-trv-directory.json",
+  "createdAt": 1779357555,
+  "updatedAt": 1779357555,
+  "boards": [
+    {
+      "address": "travel-posting.bso",
+      "publicKey": "12D3KooWP9kG9qYxHoyxfDSWiNpeuGfuxwbDdfu6vtRwvVY9uU96",
+      "addedAt": 1779357555,
+      "owner": "plebeius.bso"
+    }
+  ]
+}

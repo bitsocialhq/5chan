@@ -1,0 +1,13 @@
+{
+  "description": "Boards competing to host the /soc/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-soc-directory.json",
+  "createdAt": 1779357555,
+  "updatedAt": 1779357555,
+  "boards": [
+    {
+      "address": "cams-and-meetups.bso",
+      "publicKey": "12D3KooWCGnYfbrm8UZpv8YxViXgJJx9hha486LCAFFXSEYNtj1B",
+      "addedAt": 1779357555,
+      "owner": "plebeius.bso"
+    }
+  ]
+}

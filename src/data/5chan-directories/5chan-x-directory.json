@@ -1,0 +1,13 @@
+{
+  "description": "Boards competing to host the /x/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-x-directory.json",
+  "createdAt": 1779182014,
+  "updatedAt": 1779182014,
+  "boards": [
+    {
+      "address": "paranormal-posting.bso",
+      "publicKey": "12D3KooWFZn7r5gYKbq5YQMr1FYQ5eUwoZr41Tjd8KmTgQ4dxTTP",
+      "addedAt": 1779182014,
+      "owner": "plebeius.bso"
+    }
+  ]
+}

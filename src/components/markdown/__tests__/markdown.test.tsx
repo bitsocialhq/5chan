@@ -179,7 +179,10 @@ vi.mock('../external-number-quote-link', () => ({
 let container: HTMLDivElement;
 let root: Root;
 
-const renderMarkdown = async (props: { content: string; postCid?: string; communityAddress?: string; title?: string }, initialEntry = '/mu/thread/post-1') => {
+const renderMarkdown = async (
+  props: { content: string; postCid?: string; communityAddress?: string; title?: string; parseSpoilers?: boolean },
+  initialEntry = '/mu/thread/post-1',
+) => {
   await act(async () => {
     root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(Markdown, props)));
   });
@@ -228,6 +231,16 @@ describe('Markdown', () => {
     const links = Array.from(container.querySelectorAll('a'));
     expect(links.map((link) => link.getAttribute('href'))).toEqual(expect.arrayContaining(['/fit', '/mu']));
     expect(links.find((link) => link.getAttribute('href') === '/fit')?.textContent).toBe('>>>/fit/');
+  });
+
+  it('keeps spoiler markup visible when parseSpoilers is false', async () => {
+    await renderMarkdown({
+      content: 'enclose it like so: [spoiler]spoiled text[/spoiler].',
+      parseSpoilers: false,
+    });
+
+    expect(container.querySelector('.spoilertext')).toBeNull();
+    expect(container.textContent).toContain('[spoiler]spoiled text[/spoiler]');
   });
 
   it('renders greentext for any leading marker run while preserving quote links', async () => {

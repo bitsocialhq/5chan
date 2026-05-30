@@ -1,0 +1,19 @@
+{
+  "description": "Boards competing to host the /biz/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-biz-directory.json",
+  "createdAt": 1779182014,
+  "updatedAt": 1779212075,
+  "boards": [
+    {
+      "address": "business-and-finance.bso",
+      "publicKey": "12D3KooWNMybS8JqELi38ZBX897PrjWbCrGoMKfw3bgoqzC2n1Dh",
+      "addedAt": 1779182014,
+      "owner": "rinse12.bso"
+    },
+    {
+      "address": "bizraelis.bso",
+      "publicKey": "12D3KooWR7nTdKZqZ1twGWMfVsXYDGp1XAKUrnYznKP651jFrizE",
+      "addedAt": 1779212075,
+      "owner": "plebeius.bso"
+    }
+  ]
+}

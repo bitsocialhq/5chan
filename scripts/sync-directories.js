@@ -1,8 +1,10 @@
-// Best-effort sync of per-directory 5chan lists from GitHub.
-// Updates the vendored fallback in src/data/ so production builds ship a fresh snapshot.
-// Never fails the build: if the fetch fails (offline, rate-limited, etc.), the existing file is kept.
+// Best-effort mirror of the 5chan directories folder from GitHub.
+// Keeps src/data/5chan-directories/ a byte-for-byte copy of
+// https://github.com/bitsocialnet/lists/tree/master/5chan-directories so the app has an
+// offline fallback (loaded via src/data/vendored-directory-lists.ts) when GitHub is down.
+// Never fails the build: if the fetch fails (offline, rate-limited, etc.), existing files are kept.
 
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'fs';
 import { isAbsolute, join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -12,256 +14,14 @@ const __dirname = dirname(__filename);
 const GITHUB_CONTENTS_URL = 'https://api.github.com/repos/bitsocialnet/lists/contents/5chan-directories?ref=master';
 const GITHUB_RAW_BASE_URL = 'https://raw.githubusercontent.com/bitsocialnet/lists/master/5chan-directories';
 const DIRECTORIES_SOURCE_PATH = process.env.DIRECTORIES_SOURCE_PATH;
-const OUTPUT_PATH = join(__dirname, '..', 'src', 'data', '5chan-directory-lists.json');
+const OUTPUT_DIR = join(__dirname, '..', 'src', 'data', '5chan-directories');
 const TIMEOUT_MS = 5000;
-const DEFAULT_METADATA = {
-  title: '5chan directories',
-  description: 'Directory assignments built from per-directory candidate lists in https://github.com/bitsocialnet/lists/tree/master/5chan-directories',
-  createdAt: 0,
-  updatedAt: 0,
-};
 
-const DEFAULTS_FILE_NAME = '5chan-directories-defaults.json';
-const DIRECTORY_LIST_FILE_RE = /^5chan-.+-directory\.json$/;
-const FLASH_DIRECTORY_RULES = [
-  'The tagging of uploaded files is mandatory. Improperly tagged items may be removed without notice. Abuse of the tagging system may result in temporary ban.',
-];
-const DIRECTORY_CODE_ORDER = [
-  'a',
-  'f',
-  'co',
-  'ck',
-  'pol',
-  'biz',
-  'sci',
-  'g',
-  'v',
-  'vg',
-  'vr',
-  'fit',
-  'sp',
-  'tg',
-  'adv',
-  'wsg',
-  'diy',
-  'out',
-  'i',
-  'ic',
-  'mu',
-  'int',
-  'lit',
-  'his',
-  'tv',
-  't',
-  'x',
-  'vip',
-  'gif',
-  'bant',
-  'b',
-  'an',
-];
-const DIRECTORY_CODE_ORDER_INDEX = new Map(DIRECTORY_CODE_ORDER.map((code, index) => [code, index]));
-
-const BOOTSTRAP_DIRECTORY_LISTS = [
-  {
-    directoryCode: 'f',
-    title: '/f/ - Flash',
-    description:
-      'Boards competing to host the /f/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-f-directory.json',
-    features: {
-      pseudonymityMode: 'per-reply',
-      safeForWork: false,
-      hasFlags: false,
-      postFlairs: true,
-      requirePostFlairs: true,
-      requirePostLink: true,
-      requirePostLinkIsMedia: false,
-      bumpLimit: 300,
-      noSpoilers: true,
-      noSpoilerReplies: true,
-      postsPerPage: 50,
-    },
-    rules: FLASH_DIRECTORY_RULES,
-    createdAt: 1780123897,
-    updatedAt: 1780123897,
-    boards: [
-      {
-        address: 'flash-posting.bso',
-        publicKey: '12D3KooWPFckNTD8YHVJrjpa9hRYvuomvM9VsvQQkJqjWRtpLv1F',
-        owner: 'plebeius.bso',
-        addedAt: 1780123897,
-      },
-    ],
-  },
-];
-
+const isJsonFile = (fileName) => typeof fileName === 'string' && fileName.endsWith('.json');
 const isRecord = (value) => typeof value === 'object' && value !== null;
-const isDirectoryListFile = (fileName) => DIRECTORY_LIST_FILE_RE.test(fileName);
-const toNumber = (value) => (typeof value === 'number' && Number.isFinite(value) ? value : undefined);
-const toString = (value) => (typeof value === 'string' && value.length > 0 ? value : undefined);
-
-const normalizeRules = (value) => {
-  if (!Array.isArray(value)) {
-    return undefined;
-  }
-
-  const rules = value.filter((rule) => typeof rule === 'string' && rule.length > 0);
-  return rules.length > 0 ? rules : undefined;
-};
-
-const normalizeFeatures = (value) => {
-  if (!isRecord(value)) {
-    return undefined;
-  }
-
-  const normalizedFeatures = Object.entries(value).reduce((acc, [key, featureValue]) => {
-    if (typeof featureValue === 'string' || typeof featureValue === 'boolean' || typeof featureValue === 'number') {
-      acc[key] = featureValue;
-    }
-    return acc;
-  }, {});
-
-  return Object.keys(normalizedFeatures).length > 0 ? normalizedFeatures : undefined;
-};
-
-const deriveNsfw = ({ nsfw, features }) => {
-  const safeForWork = typeof features?.safeForWork === 'boolean' ? features.safeForWork : undefined;
-  if (safeForWork !== undefined) {
-    return !safeForWork;
-  }
-  const featuresNsfw = typeof features?.nsfw === 'boolean' ? features.nsfw : undefined;
-  return typeof nsfw === 'boolean' ? nsfw : featuresNsfw;
-};
-
-const normalizeBoard = (raw) => {
-  if (!isRecord(raw)) return null;
-  const address = toString(raw.address) || toString(raw.name);
-  if (!address) return null;
-  const features = normalizeFeatures(raw.features);
-  const nsfw = deriveNsfw({ nsfw: raw.nsfw, features });
-  const score = toNumber(raw.score);
-
-  return {
-    address,
-    ...(toString(raw.publicKey) ? { publicKey: toString(raw.publicKey) } : {}),
-    ...(toString(raw.owner) ? { owner: toString(raw.owner) } : {}),
-    ...(score !== undefined ? { score } : {}),
-    ...(toNumber(raw.addedAt) !== undefined ? { addedAt: toNumber(raw.addedAt) } : {}),
-    ...(features ? { features } : {}),
-    ...(nsfw !== undefined ? { nsfw } : {}),
-  };
-};
-
-const normalizeDirectoryDefaultsEntry = (code, raw) => {
-  if (!isRecord(raw)) {
-    return { directoryCode: code };
-  }
-
-  const features = normalizeFeatures(raw.features);
-  const rules = normalizeRules(raw.rules);
-  return {
-    directoryCode: toString(raw.directoryCode) || code,
-    ...(toString(raw.title) ? { title: toString(raw.title) } : {}),
-    ...(features ? { features } : {}),
-    ...(rules ? { rules } : {}),
-  };
-};
-
-const normalizeDirectoryDefaultsData = (raw) => {
-  const directoriesRaw = isRecord(raw) && isRecord(raw.directories) ? raw.directories : {};
-  const directories = Object.fromEntries(Object.entries(directoriesRaw).map(([code, value]) => [code, normalizeDirectoryDefaultsEntry(code, value)]));
-  return {
-    ...(isRecord(raw) && toString(raw.title) ? { title: toString(raw.title) } : {}),
-    ...(isRecord(raw) && toString(raw.description) ? { description: toString(raw.description) } : {}),
-    ...(isRecord(raw) && toNumber(raw.createdAt) !== undefined ? { createdAt: toNumber(raw.createdAt) } : {}),
-    ...(isRecord(raw) && toNumber(raw.updatedAt) !== undefined ? { updatedAt: toNumber(raw.updatedAt) } : {}),
-    directories,
-  };
-};
-
-const normalizeDirectoryList = (raw, fallbackCode, defaults) => {
-  if (!isRecord(raw)) return null;
-  const boardsRaw = Array.isArray(raw.boards) ? raw.boards : Array.isArray(raw.communities) ? raw.communities : null;
-  if (!boardsRaw) return null;
-
-  const boards = boardsRaw.map(normalizeBoard).filter(Boolean);
-  if (boards.length === 0) return null;
-  const rawCode = toString(raw.directoryCode);
-  const defaultEntry = defaults?.directories?.[rawCode || fallbackCode] || defaults?.directories?.[fallbackCode];
-  const features = normalizeFeatures(defaultEntry?.features) || normalizeFeatures(raw.features);
-  const rules = normalizeRules(raw.rules);
-
-  return {
-    directoryCode: toString(defaultEntry?.directoryCode) || rawCode || fallbackCode,
-    ...(toString(defaultEntry?.title) ? { title: toString(defaultEntry.title) } : toString(raw.title) ? { title: toString(raw.title) } : {}),
-    ...(toString(raw.description) ? { description: toString(raw.description) } : {}),
-    ...(features ? { features } : {}),
-    ...(rules ? { rules } : {}),
-    ...(toNumber(raw.createdAt) !== undefined ? { createdAt: toNumber(raw.createdAt) } : {}),
-    ...(toNumber(raw.updatedAt) !== undefined ? { updatedAt: toNumber(raw.updatedAt) } : {}),
-    boards,
-  };
-};
-
-const getCodeFromFileName = (fileName) => fileName.replace(/^5chan-/, '').replace(/-directory\.json$/, '');
-
-const sortDirectoryLists = (lists) =>
-  [...lists].sort((a, b) => {
-    const aIndex = DIRECTORY_CODE_ORDER_INDEX.get(a.directoryCode) ?? Number.MAX_SAFE_INTEGER;
-    const bIndex = DIRECTORY_CODE_ORDER_INDEX.get(b.directoryCode) ?? Number.MAX_SAFE_INTEGER;
-    if (aIndex !== bIndex) {
-      return aIndex - bIndex;
-    }
-    return a.directoryCode.localeCompare(b.directoryCode);
-  });
-
-const addBootstrapDirectoryLists = (directories) => {
-  const codes = new Set(directories.map((directory) => directory.directoryCode));
-  return [...directories, ...BOOTSTRAP_DIRECTORY_LISTS.filter((directory) => !codes.has(directory.directoryCode))];
-};
-
-const toDirectoryListsData = (directories, fallbackMetadata = DEFAULT_METADATA) => {
-  const directoryLists = addBootstrapDirectoryLists(directories);
-  const timestamps = [fallbackMetadata.createdAt, fallbackMetadata.updatedAt, ...directoryLists.flatMap((list) => [list.createdAt, list.updatedAt])].filter(
-    (value) => typeof value === 'number',
-  );
-  return {
-    title: fallbackMetadata.title || DEFAULT_METADATA.title,
-    description: fallbackMetadata.description || DEFAULT_METADATA.description,
-    createdAt: timestamps.length > 0 ? Math.min(...timestamps) : fallbackMetadata.createdAt,
-    updatedAt: timestamps.length > 0 ? Math.max(...timestamps) : fallbackMetadata.updatedAt,
-    directories: sortDirectoryLists(directoryLists),
-  };
-};
-
-const normalizeDirectoryListsData = (value, fallbackMetadata = DEFAULT_METADATA, defaults) => {
-  if (!isRecord(value) || !Array.isArray(value.directories)) {
-    return null;
-  }
-
-  const directories = value.directories
-    .map((directory, index) => {
-      if (!isRecord(directory)) {
-        return null;
-      }
-      const fallbackCode = toString(directory.directoryCode) || Object.keys(defaults?.directories || {})[index];
-      return fallbackCode ? normalizeDirectoryList(directory, fallbackCode, defaults) : null;
-    })
-    .filter(Boolean);
-
-  const metadata = {
-    title: toString(value.title) || fallbackMetadata.title,
-    description: toString(value.description) || fallbackMetadata.description,
-    createdAt: toNumber(value.createdAt) ?? fallbackMetadata.createdAt,
-    updatedAt: toNumber(value.updatedAt) ?? fallbackMetadata.updatedAt,
-  };
-
-  return directories.length > 0 ? toDirectoryListsData(directories, metadata) : null;
-};
-
 const getErrorMessage = (error) => (error instanceof Error ? error.message : String(error));
 
-const fetchJson = async (url) => {
+const fetchWithTimeout = async (url, asJson) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
@@ -269,109 +29,103 @@ const fetchJson = async (url) => {
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    return await response.json();
+    return asJson ? response.json() : response.text();
   } finally {
     clearTimeout(timeout);
   }
 };
 
+// Load the { fileName -> verbatim text } map from a local mirror directory.
 const loadFromLocalDirectory = (directoryPath) => {
-  console.log(`ℹ️  Syncing vendored directories from local directory: ${directoryPath}`);
-  const defaultsPath = join(directoryPath, DEFAULTS_FILE_NAME);
-  const defaults = existsSync(defaultsPath) ? normalizeDirectoryDefaultsData(JSON.parse(readFileSync(defaultsPath, 'utf8'))) : normalizeDirectoryDefaultsData({});
-  const directories = readdirSync(directoryPath)
-    .filter(isDirectoryListFile)
-    .map((fileName) => {
-      const raw = JSON.parse(readFileSync(join(directoryPath, fileName), 'utf8'));
-      return normalizeDirectoryList(raw, getCodeFromFileName(fileName), defaults);
-    })
-    .filter(Boolean);
-
-  return toDirectoryListsData(directories, {
-    title: DEFAULT_METADATA.title,
-    description: DEFAULT_METADATA.description,
-    createdAt: defaults.createdAt ?? DEFAULT_METADATA.createdAt,
-    updatedAt: defaults.updatedAt ?? DEFAULT_METADATA.updatedAt,
-  });
+  console.log(`ℹ️  Mirroring directories from local directory: ${directoryPath}`);
+  const files = {};
+  for (const fileName of readdirSync(directoryPath).filter(isJsonFile)) {
+    files[fileName] = readFileSync(join(directoryPath, fileName), 'utf8');
+  }
+  return files;
 };
 
-const loadDirectoriesSource = async () => {
-  if (DIRECTORIES_SOURCE_PATH) {
-    const resolvedSourcePath = isAbsolute(DIRECTORIES_SOURCE_PATH) ? DIRECTORIES_SOURCE_PATH : resolve(process.cwd(), DIRECTORIES_SOURCE_PATH);
-    if (!existsSync(resolvedSourcePath)) {
-      throw new Error(`Local directories source not found: ${resolvedSourcePath}`);
-    }
-
-    if (statSync(resolvedSourcePath).isDirectory()) {
-      return loadFromLocalDirectory(resolvedSourcePath);
-    }
-
-    console.log(`ℹ️  Syncing vendored directories from local file: ${resolvedSourcePath}`);
-    return JSON.parse(readFileSync(resolvedSourcePath, 'utf8'));
-  }
-
-  console.log(`ℹ️  Syncing vendored directories from GitHub folder: ${GITHUB_CONTENTS_URL}`);
-  const contents = await fetchJson(GITHUB_CONTENTS_URL);
+// Load the { fileName -> verbatim text } map from the GitHub folder.
+const loadFromGitHub = async () => {
+  console.log(`ℹ️  Mirroring directories from GitHub folder: ${GITHUB_CONTENTS_URL}`);
+  const contents = await fetchWithTimeout(GITHUB_CONTENTS_URL, true);
   if (!Array.isArray(contents)) {
     throw new Error('Invalid GitHub directory listing');
   }
 
   const fileNames = contents
-    .map((entry) => (isRecord(entry) ? entry.name : undefined))
-    .filter((name) => typeof name === 'string' && isDirectoryListFile(name))
+    .filter((entry) => isRecord(entry) && entry.type === 'file' && isJsonFile(entry.name))
+    .map((entry) => entry.name)
     .sort();
-  const defaults = normalizeDirectoryDefaultsData(await fetchJson(`${GITHUB_RAW_BASE_URL}/${DEFAULTS_FILE_NAME}`));
-  const directories = await Promise.all(
+
+  const files = {};
+  await Promise.all(
     fileNames.map(async (fileName) => {
-      const raw = await fetchJson(`${GITHUB_RAW_BASE_URL}/${fileName}`);
-      return normalizeDirectoryList(raw, getCodeFromFileName(fileName), defaults);
+      files[fileName] = await fetchWithTimeout(`${GITHUB_RAW_BASE_URL}/${fileName}`, false);
     }),
   );
+  return files;
+};
 
-  return toDirectoryListsData(directories.filter(Boolean), {
-    title: DEFAULT_METADATA.title,
-    description: DEFAULT_METADATA.description,
-    createdAt: defaults.createdAt ?? DEFAULT_METADATA.createdAt,
-    updatedAt: defaults.updatedAt ?? DEFAULT_METADATA.updatedAt,
-  });
+const loadSourceFiles = async () => {
+  if (DIRECTORIES_SOURCE_PATH) {
+    const resolvedSourcePath = isAbsolute(DIRECTORIES_SOURCE_PATH) ? DIRECTORIES_SOURCE_PATH : resolve(process.cwd(), DIRECTORIES_SOURCE_PATH);
+    if (!existsSync(resolvedSourcePath) || !statSync(resolvedSourcePath).isDirectory()) {
+      throw new Error(`Local directories source folder not found: ${resolvedSourcePath}`);
+    }
+    return loadFromLocalDirectory(resolvedSourcePath);
+  }
+  return loadFromGitHub();
 };
 
 const sync = async () => {
   try {
-    let existing = '';
-    let fallbackMetadata = DEFAULT_METADATA;
-    try {
-      existing = readFileSync(OUTPUT_PATH, 'utf8');
-      const parsedExisting = JSON.parse(existing);
-      const normalizedExisting = normalizeDirectoryListsData(parsedExisting);
-      if (normalizedExisting) {
-        fallbackMetadata = {
-          title: normalizedExisting.title,
-          description: normalizedExisting.description,
-          createdAt: normalizedExisting.createdAt,
-          updatedAt: normalizedExisting.updatedAt,
-        };
+    const files = await loadSourceFiles();
+    const fileNames = Object.keys(files);
+    if (fileNames.length === 0) {
+      throw new Error('No directory files found in source');
+    }
+
+    // Validate every file parses as JSON before touching disk, so a transient HTML error page
+    // (or a truncated download) can never overwrite a good vendored mirror.
+    for (const [fileName, text] of Object.entries(files)) {
+      try {
+        JSON.parse(text);
+      } catch {
+        throw new Error(`Invalid JSON for ${fileName}`);
       }
-    } catch {
-      // File does not exist yet or is invalid JSON.
     }
 
-    const data = normalizeDirectoryListsData(await loadDirectoriesSource(), fallbackMetadata);
-    if (!data) {
-      throw new Error('Invalid directory lists payload');
+    mkdirSync(OUTPUT_DIR, { recursive: true });
+
+    let written = 0;
+    for (const [fileName, text] of Object.entries(files)) {
+      const outputPath = join(OUTPUT_DIR, fileName);
+      // Write verbatim; the upstream files are the source of truth, mirror them byte-for-byte.
+      const existing = existsSync(outputPath) ? readFileSync(outputPath, 'utf8') : null;
+      if (existing !== text) {
+        writeFileSync(outputPath, text, 'utf8');
+        written += 1;
+      }
     }
 
-    const formatted = `${JSON.stringify(data, null, 2)}\n`;
+    // Prune local json files that no longer exist upstream so the mirror stays exact.
+    const sourceNames = new Set(fileNames);
+    let removed = 0;
+    for (const fileName of readdirSync(OUTPUT_DIR).filter(isJsonFile)) {
+      if (!sourceNames.has(fileName)) {
+        rmSync(join(OUTPUT_DIR, fileName));
+        removed += 1;
+      }
+    }
 
-    if (formatted === existing) {
-      console.log('✅ Vendored directory lists already up to date');
+    if (written === 0 && removed === 0) {
+      console.log(`✅ Vendored directories already up to date (${fileNames.length} files)`);
       return;
     }
-
-    writeFileSync(OUTPUT_PATH, formatted, 'utf8');
-    console.log(`✅ Synced vendored directory lists (${data.directories.length} directories)`);
+    console.log(`✅ Mirrored directories (${fileNames.length} files, ${written} updated, ${removed} removed)`);
   } catch (e) {
-    console.warn(`⚠️  Could not sync directory lists from GitHub (keeping existing file): ${getErrorMessage(e)}`);
+    console.warn(`⚠️  Could not mirror directories from GitHub (keeping existing files): ${getErrorMessage(e)}`);
   }
 };
 

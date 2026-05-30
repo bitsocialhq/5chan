@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import directoryListsData from '../data/5chan-directory-lists.json';
+import { vendoredDirectoryLists as directoryListsData, vendoredDirectoryDefaults as directoryDefaultsData } from '../data/vendored-directory-lists';
 import {
   directoryListToCommunity,
   isRecord,
@@ -15,7 +15,7 @@ import {
 } from '../lib/utils/directory-list-utils';
 import { normalizeBoardAddress } from '../lib/utils/directory-list-lookup-utils';
 
-export type { DirectoriesData, DirectoryCommunity } from '../lib/utils/directory-list-utils';
+export type { DirectoriesData, DirectoryCommunity, DirectoryDefaultsData } from '../lib/utils/directory-list-utils';
 export { normalizeBoardAddress };
 
 interface DirectoriesMetadata {
@@ -44,6 +44,7 @@ let cacheMetadata: DirectoriesMetadata | null = null;
 let inFlightGitHubFetch: Promise<DirectoriesData> | null = null;
 let lastSuccessfulGitHubFetchAt: number | null = null;
 let lastGitHubFetchAttemptAt: number | null = null;
+let cacheDefaults: DirectoryDefaultsData | null = null;
 // Exposed for deterministic unit tests around module-level cache state.
 export const __resetDirectoriesModuleStateForTests = () => {
   cacheCommunities = null;
@@ -51,7 +52,9 @@ export const __resetDirectoriesModuleStateForTests = () => {
   inFlightGitHubFetch = null;
   lastSuccessfulGitHubFetchAt = null;
   lastGitHubFetchAttemptAt = null;
+  cacheDefaults = null;
   fallbackDirectoriesData = null;
+  fallbackDirectoryDefaults = null;
 };
 
 const getDirectoryIdentifiers = (community: DirectoryCommunity): string[] => [
@@ -212,6 +215,13 @@ const normalizeDirectoriesData = (value: unknown): DirectoriesData | null => {
 };
 
 let fallbackDirectoriesData: DirectoriesData | null = null;
+let fallbackDirectoryDefaults: DirectoryDefaultsData | null = null;
+
+export const getFallbackDirectoryDefaults = (): DirectoryDefaultsData => {
+  if (fallbackDirectoryDefaults) return fallbackDirectoryDefaults;
+  fallbackDirectoryDefaults = normalizeDirectoryDefaultsData(directoryDefaultsData as unknown);
+  return fallbackDirectoryDefaults;
+};
 
 export const getFallbackDirectoriesData = (): DirectoriesData => {
   if (fallbackDirectoriesData) return fallbackDirectoriesData;
@@ -329,6 +339,7 @@ const fetchDirectoryListFromGitHub = async (code: string, defaults: DirectoryDef
 
 const fetchDirectoriesFromGitHub = async (): Promise<DirectoriesData> => {
   const defaults = await fetchDirectoryDefaultsFromGitHub();
+  cacheDefaults = defaults;
   const fallbackLists = getFallbackDirectoryLists(defaults);
   const fallbackListsByCode = new Map(fallbackLists.map((list) => [list.directoryCode, list]));
   const codes = [...new Set([...Object.keys(defaults.directories), ...fallbackLists.map((list) => list.directoryCode)])];
@@ -461,6 +472,31 @@ export const useDirectories = () => {
   // Only use state.communities during initial load before cache is populated
   // This ensures a stable reference for memoization in consuming hooks
   return cacheCommunities || state.communities || getFallbackDirectoriesData().communities;
+};
+
+export const useDirectoryDefaults = (): DirectoryDefaultsData => {
+  // Vendored defaults render directory rules instantly; GitHub refresh reuses the shared deduped fetch (no extra request).
+  const [defaults, setDefaults] = useState<DirectoryDefaultsData>(() => cacheDefaults ?? getFallbackDirectoryDefaults());
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        await fetchDirectoriesFromGitHubDeduped();
+      } catch (e) {
+        console.warn('Failed to fetch directory defaults from GitHub:', e);
+      }
+      if (isMounted && cacheDefaults) {
+        setDefaults(cacheDefaults);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return cacheDefaults ?? defaults;
 };
 
 export const useDirectoriesState = () => {

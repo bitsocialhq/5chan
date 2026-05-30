@@ -1,0 +1,13 @@
+{
+  "description": "Boards competing to host the /jp/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-jp-directory.json",
+  "createdAt": 1779517639,
+  "updatedAt": 1779517639,
+  "boards": [
+    {
+      "address": "otaku-culture.bso",
+      "publicKey": "12D3KooWFtPbTBQ6Lit5wH2PHCvQQqj3RB5v2QHPtT1cnGeKjBaW",
+      "addedAt": 1779517639,
+      "owner": "plebeius.bso"
+    }
+  ]
+}

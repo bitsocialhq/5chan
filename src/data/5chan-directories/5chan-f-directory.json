@@ -1,0 +1,16 @@
+{
+  "description": "Boards competing to host the /f/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-f-directory.json",
+  "createdAt": 1780123897,
+  "updatedAt": 1780123897,
+  "rules": [
+    "The tagging of uploaded files is mandatory. Improperly tagged items may be removed without notice. Abuse of the tagging system may result in temporary ban."
+  ],
+  "boards": [
+    {
+      "address": "flash-posting.bso",
+      "publicKey": "12D3KooWPFckNTD8YHVJrjpa9hRYvuomvM9VsvQQkJqjWRtpLv1F",
+      "addedAt": 1780123897,
+      "owner": "plebeius.bso"
+    }
+  ]
+}
