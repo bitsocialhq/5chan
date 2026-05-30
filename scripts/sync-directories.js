@@ -41,6 +41,7 @@ const DIRECTORY_CODE_ORDER = [
   'wsg',
   'diy',
   'out',
+  'i',
   'ic',
   'mu',
   'int',
@@ -259,7 +260,10 @@ const loadDirectoriesSource = async () => {
     throw new Error('Invalid GitHub directory listing');
   }
 
-  const fileNames = contents.map((entry) => (isRecord(entry) ? entry.name : undefined)).filter((name) => typeof name === 'string' && isDirectoryListFile(name)).sort();
+  const fileNames = contents
+    .map((entry) => (isRecord(entry) ? entry.name : undefined))
+    .filter((name) => typeof name === 'string' && isDirectoryListFile(name))
+    .sort();
   const defaults = normalizeDirectoryDefaultsData(await fetchJson(`${GITHUB_RAW_BASE_URL}/${DEFAULTS_FILE_NAME}`));
   const directories = await Promise.all(
     fileNames.map(async (fileName) => {

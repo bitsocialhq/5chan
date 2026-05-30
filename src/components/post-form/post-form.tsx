@@ -36,11 +36,13 @@ import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
+import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
 import LoadingEllipsis from '../loading-ellipsis';
+import OekakiDrawingControls from '../oekaki-drawing-controls';
 import PostOptionsErrorMessage from '../post-options-error-message/post-options-error-message';
 import styles from './post-form.module.css';
 import capitalize from 'lodash/capitalize';
@@ -141,6 +143,7 @@ interface PostFormFieldsProps {
   isUploading: boolean;
   uploadedFileName: string | null | undefined;
   showUploadControls: boolean;
+  showOekakiControls: boolean;
   showSpoilerForPost: boolean;
   showSpoilerForReply: boolean;
   isInAllView: boolean;
@@ -158,6 +161,8 @@ interface PostFormFieldsProps {
   onPublishReply: () => void;
   onPublishPost: () => void;
   handleUpload: () => void;
+  uploadFile: ReturnType<typeof useFileUpload>['uploadFile'];
+  onOekakiClearUploadedUrl: (url: string) => void;
   disableReplyPublish: boolean;
 }
 
@@ -185,6 +190,7 @@ const PostFormFields = ({
   isUploading,
   uploadedFileName,
   showUploadControls,
+  showOekakiControls,
   showSpoilerForPost,
   showSpoilerForReply,
   isInAllView,
@@ -202,6 +208,8 @@ const PostFormFields = ({
   onPublishReply,
   onPublishPost,
   handleUpload,
+  uploadFile,
+  onOekakiClearUploadedUrl,
   disableReplyPublish,
 }: PostFormFieldsProps) => (
   <>
@@ -365,6 +373,14 @@ const PostFormFields = ({
         </td>
       </tr>
     )}
+    {showOekakiControls && (
+      <tr>
+        <td>Draw</td>
+        <td>
+          <OekakiDrawingControls disabled={isUploading} uploadFile={uploadFile} onClearUploadedUrl={onOekakiClearUploadedUrl} />
+        </td>
+      </tr>
+    )}
     {((isInPostView && showSpoilerForReply) || (!isInPostView && showSpoilerForPost)) && (
       <tr className={styles.spoilerButton}>
         <td>{capitalize(t('spoiler'))}</td>
@@ -424,6 +440,7 @@ const PostFormFields = ({
               }}
             />
           </li>
+          {showOekakiControls && isWebRuntime() ? <li>{OEKAKI_WEB_WARNING_TEXT}</li> : null}
         </ul>
       </td>
     </tr>
@@ -455,6 +472,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const nonokoRedirectPathRef = useRef<string | null>(null);
 
   const location = useLocation();
+  const isInPostView = isPostPageView(location.pathname, params);
   const isInAllView = isAllView(location.pathname);
   const isInModView = isModView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
@@ -466,6 +484,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const showSpoilerForPost = directoryEntry?.features?.noSpoilers !== true;
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
   const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
+  const showOekakiControls = postOptionsDirectoryCode === 'i' || directoryEntry?.directoryCode === 'i';
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
   const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
@@ -600,7 +619,6 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   }, [postIndex, pendingPostBoardPath, resetFields, resetPublishPostOptions, navigate]);
 
   // in post page, publish a reply to the post
-  const isInPostView = isPostPageView(location.pathname, params);
   const cid = params?.commentCid || '';
   const { isResolvingExternalQuotes, publishReply, publishReplyError, publishReplyStateMessage, resetPublishReplyOptions, replyIndex, setPublishReplyOptions } =
     usePublishReply({ cid, communityAddress, postCid });
@@ -707,7 +725,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     }
   }, [replyIndex, closeForm, navigate, resetFields]);
 
-  const { isUploading, uploadedFileName, handleUpload } = useFileUpload({
+  const { isUploading, uploadedFileName, handleUpload, uploadFile } = useFileUpload({
     onUploadComplete: (uploadedUrl: string) => {
       if (uploadedUrl) {
         setUrl(uploadedUrl);
@@ -722,6 +740,21 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       }
     },
   });
+  const handleOekakiClearUploadedUrl = useCallback(
+    (uploadedUrl: string) => {
+      if ((urlRef.current?.value || url) !== uploadedUrl) return;
+      setUrl('');
+      if (urlRef.current) {
+        urlRef.current.value = '';
+      }
+      if (isInPostView) {
+        setPublishReplyOptions({ link: '' });
+      } else {
+        setPublishPostOptions({ link: '' });
+      }
+    },
+    [isInPostView, setPublishPostOptions, setPublishReplyOptions, url],
+  );
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode, isWebRuntime());
 
@@ -765,6 +798,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             isUploading={isUploading}
             uploadedFileName={uploadedFileName}
             showUploadControls={showUploadControls}
+            showOekakiControls={showOekakiControls}
             showSpoilerForPost={showSpoilerForPost}
             showSpoilerForReply={showSpoilerForReply}
             isInAllView={isInAllView}
@@ -782,6 +816,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             onPublishReply={onPublishReply}
             onPublishPost={onPublishPost}
             handleUpload={handleUpload}
+            uploadFile={uploadFile}
+            onOekakiClearUploadedUrl={handleOekakiClearUploadedUrl}
             disableReplyPublish={isResolvingExternalQuotes}
           />
         </tbody>

@@ -2,7 +2,7 @@
   "title": "5chan directories",
   "description": "Directory assignments built from per-directory candidate lists in https://github.com/bitsocialnet/lists/tree/master/5chan-directories",
   "createdAt": 1779182014,
-  "updatedAt": 1779279785,
+  "updatedAt": 1780054375,
   "directories": [
     {
       "directoryCode": "a",
@@ -455,6 +455,32 @@
           "publicKey": "12D3KooWQ2nPGxQxuSMY92kM3zKu1rBekJsXxXb5uNkHLDfSSxTm",
           "owner": "plebeius.bso",
           "addedAt": 1779182014
+        }
+      ]
+    },
+    {
+      "directoryCode": "i",
+      "title": "/i/ - Oekaki",
+      "description": "Boards competing to host the /i/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-i-directory.json",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": false,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "createdAt": 1780054375,
+      "updatedAt": 1780054375,
+      "boards": [
+        {
+          "address": "oekaki-posting.bso",
+          "publicKey": "12D3KooWNAqMhmHi3hPSbcH27Q7cqBCuN2Mu9HNzs6fB8YX14k4o",
+          "owner": "plebeius.bso",
+          "addedAt": 1780054375
         }
       ]
     },

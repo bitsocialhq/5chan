@@ -1,0 +1,33 @@
+.controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  font-size: 10pt;
+  font-weight: normal;
+  text-transform: none;
+}
+
+.controls input.sizeInput {
+  text-align: center;
+  width: 30px !important;
+}
+
+.replayLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.replayLabel input {
+  margin: 0;
+}
+
+.controls button {
+  position: static !important;
+  margin-left: 0 !important;
+  filter: var(--filter80);
+  cursor: pointer;
+  text-transform: capitalize;
+}

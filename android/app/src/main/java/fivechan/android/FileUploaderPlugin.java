@@ -3,6 +3,7 @@ package fivechan.android;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Base64;
 import android.util.Log;
 
 import androidx.activity.result.ActivityResult;
@@ -31,6 +32,7 @@ public class FileUploaderPlugin extends Plugin {
 
     private static final String PROVIDER_CATBOX = "catbox";
     private static final long CATBOX_TIMEOUT_SEC = 30;
+    private static final int MAX_GENERATED_UPLOAD_BYTES = 20 * 1024 * 1024;
 
     @PluginMethod
     public void pickAndUploadMedia(PluginCall call) {
@@ -45,6 +47,62 @@ public class FileUploaderPlugin extends Plugin {
         String[] mimeTypes = {"image/jpeg", "image/png", "video/mp4", "video/webm"};
         intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
         startActivityForResult(call, intent, "pickFileResult");
+    }
+
+    @PluginMethod
+    public void uploadGeneratedMedia(PluginCall call) {
+        Log.d(TAG, "uploadGeneratedMedia called");
+        List<String> providerOrder = getProviderOrder(call);
+        if (providerOrder.isEmpty()) {
+            call.reject("No supported upload providers selected");
+            return;
+        }
+
+        String base64 = call.getString("base64");
+        if (base64 == null || base64.trim().isEmpty()) {
+            call.reject("Generated upload data is required");
+            return;
+        }
+        int commaIndex = base64.indexOf(',');
+        String base64Payload = commaIndex >= 0 ? base64.substring(commaIndex + 1) : base64;
+        byte[] bytes;
+        try {
+            bytes = Base64.decode(base64Payload, Base64.DEFAULT);
+        } catch (IllegalArgumentException e) {
+            call.reject("Generated upload data is invalid");
+            return;
+        }
+        if (bytes.length == 0) {
+            call.reject("Generated upload data is empty");
+            return;
+        }
+        if (bytes.length > MAX_GENERATED_UPLOAD_BYTES) {
+            call.reject("Generated upload is too large");
+            return;
+        }
+
+        String fileName = call.getString("fileName", "tegaki.png");
+        String mimeType = call.getString("mimeType", "application/octet-stream");
+        new Thread(
+                        () -> {
+                            File cachedFile = null;
+                            try {
+                                cachedFile = FileUtils.writeBytesToCacheFile(getContext(), fileName, bytes);
+                                tryProvidersSequentially(Uri.fromFile(cachedFile), providerOrder, call, fileName, bytes, mimeType);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Generated upload failed", e);
+                                try {
+                                    call.reject("Upload failed: " + e.getMessage());
+                                } catch (Exception rejectEx) {
+                                    Log.e(TAG, "Failed to reject generated upload call", rejectEx);
+                                }
+                            } finally {
+                                if (cachedFile != null && cachedFile.exists() && !cachedFile.delete()) {
+                                    Log.w(TAG, "Could not delete generated upload cache file: " + cachedFile.getAbsolutePath());
+                                }
+                            }
+                        })
+                .start();
     }
 
     private List<String> parseProviderOrder(PluginCall call) {
@@ -127,8 +185,19 @@ public class FileUploaderPlugin extends Plugin {
     }
 
     private void tryProvidersSequentially(Uri fileUri, List<String> providerOrder, PluginCall call) {
+        tryProvidersSequentially(fileUri, providerOrder, call, null, null, null);
+    }
+
+    private void tryProvidersSequentially(
+            Uri fileUri,
+            List<String> providerOrder,
+            PluginCall call,
+            String generatedFileName,
+            byte[] generatedFileBytes,
+            String generatedMimeType) {
         List<JSObject> attempts = new ArrayList<>();
         StringBuilder errorSummary = new StringBuilder();
+        String fileName = generatedFileName != null ? generatedFileName : getFileName(fileUri);
 
         for (String provider : providerOrder) {
             JSObject attempt = new JSObject();
@@ -140,18 +209,21 @@ public class FileUploaderPlugin extends Plugin {
                 if (res.success) {
                     attempt.put("url", res.url);
                     attempts.add(attempt);
-                    resolveWithSuccess(call, res.url, getFileName(fileUri), provider, attempts);
+                    resolveWithSuccess(call, res.url, fileName, provider, attempts);
                     return;
                 }
                 attempt.put("error", res.error);
                 errorSummary.append(provider).append(": ").append(res.error).append("; ");
             } else if (MediaUploadRecipes.isWebViewProvider(provider)) {
-                MediaUploadResult res = uploadViaWebViewSync(fileUri, provider);
+                MediaUploadResult res =
+                        generatedFileBytes != null
+                                ? uploadGeneratedViaWebViewSync(generatedFileBytes, fileName, generatedMimeType, provider)
+                                : uploadViaWebViewSync(fileUri, provider);
                 attempt.put("success", res.success);
                 if (res.success) {
                     attempt.put("url", res.url);
                     attempts.add(attempt);
-                    resolveWithSuccess(call, res.url, getFileName(fileUri), provider, attempts);
+                    resolveWithSuccess(call, res.url, fileName, provider, attempts);
                     return;
                 }
                 attempt.put("error", res.error);
@@ -233,6 +305,56 @@ public class FileUploaderPlugin extends Plugin {
                                     fileName,
                                     provider,
                                     callback);
+                    runner.run();
+                });
+
+        try {
+            boolean ok =
+                    latch.await(
+                            MediaUploadRecipes.getUploadTimeoutMs(provider) + 5000,
+                            TimeUnit.MILLISECONDS);
+            if (!ok) {
+                return new MediaUploadResult(false, null, "WebView upload timeout");
+            }
+            MediaUploadResult r = resultRef.get();
+            return r != null ? r : new MediaUploadResult(false, null, "No result");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return new MediaUploadResult(false, null, "Interrupted");
+        }
+    }
+
+    private MediaUploadResult uploadGeneratedViaWebViewSync(
+            byte[] fileBytes, String fileName, String mimeType, String provider) {
+        JSObject statusUpdate = new JSObject();
+        statusUpdate.put("status", "Uploading to " + provider + "...");
+        notifyListeners("uploadStatus", statusUpdate);
+
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<MediaUploadResult> resultRef = new AtomicReference<>();
+
+        AppCompatActivity activity = getActivity();
+        if (activity == null) {
+            return new MediaUploadResult(false, null, "Activity unavailable");
+        }
+
+        MediaUploadCallback callback =
+                res -> {
+                    resultRef.set(res);
+                    latch.countDown();
+                };
+
+        activity.runOnUiThread(
+                () -> {
+                    MediaUploadAutomationRunner runner =
+                            new MediaUploadAutomationRunner(
+                                    getContext(),
+                                    fileBytes,
+                                    fileName,
+                                    mimeType,
+                                    provider,
+                                    callback,
+                                    null);
                     runner.run();
                 });
 
