@@ -7,9 +7,14 @@ describe('direct-url', () => {
       expect(isDirectMediaUrl('https://example.com/photo.jpg')).toBe(true);
       expect(isDirectMediaUrl('https://i.ibb.co/example/photo.jpg')).toBe(true);
       expect(isDirectMediaUrl('https://example.com/photo.jpeg')).toBe(true);
+      expect(isDirectMediaUrl('https://example.com/photo.jpe')).toBe(true);
+      expect(isDirectMediaUrl('https://example.com/photo.jfif')).toBe(true);
+      expect(isDirectMediaUrl('https://example.com/photo.jif')).toBe(true);
       expect(isDirectMediaUrl('https://example.com/photo.png')).toBe(true);
+      expect(isDirectMediaUrl('https://example.com/photo.apng')).toBe(true);
       expect(isDirectMediaUrl('https://example.com/photo.gif')).toBe(true);
       expect(isDirectMediaUrl('https://example.com/photo.webp')).toBe(true);
+      expect(isDirectMediaUrl('https://example.com/photo.avif')).toBe(true);
     });
 
     it('returns true for video extensions', () => {
