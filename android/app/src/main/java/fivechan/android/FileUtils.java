@@ -80,7 +80,7 @@ public class FileUtils {
         String safeName = sanitizeFileName(fileName);
         int dot = safeName.lastIndexOf('.');
         String base = dot > 0 ? safeName.substring(0, dot) : safeName;
-        String ext = dot > 0 ? safeName.substring(dot) : "";
+        String ext = dot > 0 ? safeName.substring(dot) : null;
         if (base.length() < 3) {
             base = (base + "___").substring(0, 3);
         }

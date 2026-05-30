@@ -259,6 +259,28 @@ describe('OekakiDrawingControls', () => {
     expect(getButton('Edit').disabled).toBe(false);
   });
 
+  it('keeps Tegaki open when exporting the finished drawing fails', async () => {
+    const canvas = document.createElement('canvas');
+    Object.defineProperty(canvas, 'toBlob', {
+      configurable: true,
+      value: (callback: BlobCallback) => callback(null),
+    });
+    testState.flattenMock.mockReturnValue(canvas);
+
+    await renderControls();
+    await clickButton('Draw');
+    const openOptions = testState.openMock.mock.calls.at(-1)?.[0] as MockTegakiOpenOptions;
+    await act(async () => {
+      openOptions.onDone();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(globalThis.alert).toHaveBeenCalledWith('Could not export drawing');
+    expect(testState.destroyMock).not.toHaveBeenCalled();
+    expect(getButton('Draw').disabled).toBe(true);
+  });
+
   it('does not download the web drawing when confirmation is cancelled', async () => {
     Object.defineProperty(globalThis, 'confirm', {
       configurable: true,
