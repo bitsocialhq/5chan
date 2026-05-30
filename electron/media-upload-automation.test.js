@@ -105,6 +105,11 @@ describe('media-upload-automation', () => {
       expect(isDirectMediaUrl('https://example.com/video.mp4')).toBe(true);
     });
 
+    it('returns true for Flash movie extensions', () => {
+      expect(isDirectMediaUrl('https://example.com/movie.swf')).toBe(true);
+      expect(isDirectMediaUrl('https://example.com/movie.SWF?download=1')).toBe(true);
+    });
+
     it('strips query strings and fragments before checking', () => {
       expect(isDirectMediaUrl('https://i.imgur.com/abc.png?size=large')).toBe(true);
       expect(isDirectMediaUrl('https://imgur.com/page.html?img=photo.jpg')).toBe(false);

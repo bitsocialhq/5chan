@@ -28,7 +28,9 @@ import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getNonokoPendingAccountCommentIndex } from '../../lib/utils/post-options-utils';
 import { getSearchWithTimeFilter, getTimeFilterSuggestion, type TimeFilterSuggestion } from '../../lib/utils/time-filter-utils';
 import { getPretextItemSizeFromElement, resolveFeedVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
+import { isFlashDirectory, isFlashDirectoryCode } from '../../lib/flash-tags';
 import ErrorDisplay from '../../components/error-display/error-display';
+import FlashBoardTable from '../../components/flash-board-table/flash-board-table';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import BoardPagination from '../../components/board-pagination';
 import { CatalogButton } from '../../components/board-buttons/board-buttons';
@@ -194,12 +196,14 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const communities = useCommunityIdentifiers(communityAddresses);
   const communityIdentifier = useCommunityIdentifier(communityAddress);
 
+  const communityDirectory = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
+  const requestedBoardIdentifier = boardIdentifierProp || params.boardIdentifier;
+  const shouldUseFlashTable = !isMultiboardView && (isFlashDirectoryCode(requestedBoardIdentifier) || isFlashDirectory(communityDirectory));
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
   const setEnableInfiniteScroll = useFeedViewSettingsStore((state) => state.setEnableInfiniteScroll);
   const isMobile = useIsMobile();
   const isForcedInfiniteScroll = isInAllView || isInSubscriptionsView || isInModView;
-  const effectiveInfiniteScroll = enableInfiniteScroll || isForcedInfiniteScroll;
-  const communityDirectory = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
+  const effectiveInfiniteScroll = !shouldUseFlashTable && (enableInfiniteScroll || isForcedInfiniteScroll);
   const { guiPostsPerPage, maxGuiPages, paginationFeedPostsPerPage, infiniteFeedPostsPerPage } = useBoardFeedPageSize(communityDirectory);
 
   const excludeArchivedFilter = useMemo(
@@ -490,16 +494,16 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
             <div>
               {!isForcedInfiniteScroll && (
                 <div className={mobileFooterStyles.mobileFooterButtons}>
-                  <button className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
+                  <button type='button' className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
                     {t('start_new_thread')}
                   </button>
                 </div>
               )}
               <div className={mobileFooterStyles.mobileFooterButtons}>
-                <button className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
+                <button type='button' className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
                   {t('top')}
                 </button>
-                <button className='button' onClick={() => reset && reset()}>
+                <button type='button' className='button' onClick={() => reset && reset()}>
                   {t('refresh')}
                 </button>
               </div>
@@ -525,9 +529,9 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
                   </div>
                 </>
               )}
-              {hasMore && !effectiveInfiniteScroll && (
+              {hasMore && !effectiveInfiniteScroll && !shouldUseFlashTable && (
                 <div className={mobileFooterStyles.mobileFooterButtons}>
-                  <button className='button' onClick={() => setEnableInfiniteScroll(true)}>
+                  <button type='button' className='button' onClick={() => setEnableInfiniteScroll(true)}>
                     {t('load_more')}
                   </button>
                 </div>
@@ -541,6 +545,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       communityAddresses,
       hasMore,
       combinedFeed.length,
+      isInAllView,
       isInSubscriptionsView,
       isInModView,
       currentTimeFilterName,
@@ -553,6 +558,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       subscriptions?.length,
       accountCommunityAddresses?.length,
       effectiveInfiniteScroll,
+      shouldUseFlashTable,
       isForcedInfiniteScroll,
       paginationBasePath,
       currentPage,
@@ -650,7 +656,12 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
             {t('board_address_unverified_warning')}
           </div>
         )}
-        {effectiveInfiniteScroll ? (
+        {shouldUseFlashTable ? (
+          <>
+            <FlashBoardTable boardBasePath={paginationBasePath} posts={displayFeed} />
+            <footerComponents.Footer />
+          </>
+        ) : effectiveInfiniteScroll ? (
           <Virtuoso
             defaultItemHeight={defaultBoardItemHeight}
             {...boardSizingProps}

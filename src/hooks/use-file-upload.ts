@@ -92,7 +92,7 @@ function selectFileViaInput(): Promise<File | null> {
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'image/jpeg,image/png,video/mp4,video/webm';
+    input.accept = 'image/jpeg,image/png,video/mp4,video/webm,.swf,application/x-shockwave-flash,application/vnd.adobe.flash.movie';
     input.style.display = 'none';
     let resolved = false;
     let focusTimeoutId: number | null = null;

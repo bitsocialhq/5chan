@@ -393,5 +393,7 @@
   "go_to_settings_to_import_mod_account": "अपना मॉड खाता इम्पोर्ट करने के लिए <1>सेटिंग्स</1> पर जाएं",
   "post_form_rules_faq_prompt": "पोस्ट करने से पहले कृपया <rules>नियम</rules> और <faq>अक्सर पूछे जाने वाले सवाल</faq> पढ़ें।",
   "pending_mod_approval_reason": "AI मॉडरेशन ने इस पोस्ट को मॉड कतार में भेजा। कारण: \"{{reason}}\".",
-  "flag": "ध्वज"
+  "flag": "ध्वज",
+  "tag": "tag",
+  "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled."
 }

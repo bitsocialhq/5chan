@@ -18,6 +18,7 @@
     "@floating-ui/react": "0.26.1",
     "@pkcprotocol/pkc-js": "0.0.37",
     "@react-spring/web": "10.0.3",
+    "@ruffle-rs/ruffle": "0.2.0",
     "@types/node": "20.19.37",
     "@types/react": "18.2.25",
     "@types/react-dom": "18.2.10",

@@ -21,6 +21,11 @@ describe('direct-url', () => {
       expect(isDirectMediaUrl('https://example.com/video.gifv')).toBe(true);
     });
 
+    it('returns true for Flash movie extensions', () => {
+      expect(isDirectMediaUrl('https://example.com/movie.swf')).toBe(true);
+      expect(isDirectMediaUrl('https://example.com/movie.SWF?download=1')).toBe(true);
+    });
+
     it('strips query strings and fragments before checking', () => {
       expect(isDirectMediaUrl('https://example.com/photo.jpg?size=large')).toBe(true);
       expect(isDirectMediaUrl('https://example.com/page.html?img=photo.jpg')).toBe(false);

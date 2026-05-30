@@ -103,9 +103,61 @@
   cursor: pointer;
 }
 
+.swfPlaceholder {
+  display: inline-block;
+  width: 100%;
+  color: var(--post-link-text-color);
+  font-size: 9pt;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: var(--post-link-text-decoration);
+  cursor: pointer;
+}
+
+.swfPlaceholder:hover {
+  color: var(--post-link-text-color-hover);
+  text-decoration: var(--post-link-text-decoration-hover);
+}
+
 .content iframe {
   border: none;
   color-scheme: light;
+}
+
+.rufflePlayer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: min(640px, 100%);
+  height: 480px;
+  max-width: 100%;
+  border: var(--reply-desktop-border);
+  background: var(--media-thumbnail-background-color);
+  box-sizing: border-box;
+  line-height: 1.2;
+}
+
+.rufflePlayerElement {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ruffleLoading,
+.ruffleFallback {
+  padding: 4px;
+  color: var(--post-mobile-file-info-text-color);
+  font-size: 9pt;
+}
+
+.ruffleFallback a {
+  color: var(--post-link-text-color);
+  text-decoration: var(--post-link-text-decoration);
+}
+
+.ruffleFallback a:hover {
+  color: var(--post-link-text-color-hover);
+  text-decoration: var(--post-link-text-decoration-hover);
 }
 
 .fileInfo {

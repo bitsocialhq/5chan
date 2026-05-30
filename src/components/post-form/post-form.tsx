@@ -25,6 +25,7 @@ import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
+import { FLASH_TAG_OPTIONS, getFlashTagPublishOptionsForDirectoryCode, isFlashDirectoryCode, type FlashTagOption } from '../../lib/flash-tags';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useCommunityField } from '../../hooks/use-stable-community';
@@ -48,6 +49,11 @@ import debounce from 'lodash/debounce';
 
 const FILE_LINK_PLACEHOLDER = 'https://website.com/image.jpg';
 const POST_FORM_FILE_DISPLAY_MAX_LENGTH = 28;
+
+const mergeFlairs = (...flairGroups: Array<Comment['flairs'] | undefined>): Comment['flairs'] | undefined => {
+  const flairs = flairGroups.flatMap((group) => (Array.isArray(group) ? group : []));
+  return flairs.length > 0 ? flairs : undefined;
+};
 
 const getPostFormFileDisplayLabel = (url: string, uploadedFileName: string | null | undefined, noFileLabel: string): string => {
   const raw = getPublishURLFilename(url) || uploadedFileName;
@@ -128,6 +134,7 @@ interface PostFormFieldsProps {
   subjectRef: React.Ref<HTMLInputElement>;
   optionsRef: React.RefObject<HTMLInputElement>;
   flagRef: React.RefObject<HTMLSelectElement>;
+  flashTagRef: React.RefObject<HTMLSelectElement>;
   textRef: React.RefObject<HTMLTextAreaElement>;
   urlRef: React.Ref<HTMLInputElement>;
   url: string;
@@ -153,6 +160,9 @@ interface PostFormFieldsProps {
   rulesPath: string;
   requirePostLinkIsMedia: boolean;
   flagOptions: CommentFlagSelectOption[];
+  flashTagOptions: FlashTagOption[];
+  showFlashTagSelector: boolean;
+  showFlashUploadPrompt: boolean;
   showBbcodeToolbar: boolean;
   onBbcodePreviewToggle: () => void;
   onPublishReply: () => void;
@@ -172,6 +182,7 @@ const PostFormFields = ({
   subjectRef,
   optionsRef,
   flagRef,
+  flashTagRef,
   textRef,
   urlRef,
   url,
@@ -197,6 +208,9 @@ const PostFormFields = ({
   rulesPath,
   requirePostLinkIsMedia,
   flagOptions,
+  flashTagOptions,
+  showFlashTagSelector,
+  showFlashUploadPrompt,
   showBbcodeToolbar,
   onBbcodePreviewToggle,
   onPublishReply,
@@ -365,6 +379,21 @@ const PostFormFields = ({
         </td>
       </tr>
     )}
+    {showFlashTagSelector && (
+      <tr>
+        <td>{t('tag')}</td>
+        <td>
+          <select name='flashTag' aria-label={t('tag')} ref={flashTagRef} defaultValue=''>
+            <option value=''>{t('choose_one')}</option>
+            {flashTagOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </td>
+      </tr>
+    )}
     {((isInPostView && showSpoilerForReply) || (!isInPostView && showSpoilerForPost)) && (
       <tr className={styles.spoilerButton}>
         <td>{capitalize(t('spoiler'))}</td>
@@ -423,6 +452,16 @@ const PostFormFields = ({
               }}
             />
           </li>
+          {showFlashUploadPrompt && (
+            <li>
+              <Trans
+                i18nKey='post_form_flash_upload_prompt'
+                components={{
+                  catbox: <a href='https://catbox.moe/' target='_blank' rel='noopener noreferrer' aria-label='Catbox' />,
+                }}
+              />
+            </li>
+          )}
         </ul>
       </td>
     </tr>
@@ -449,6 +488,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const subjectRef = useRef<HTMLInputElement>(null);
   const optionsRef = useRef<HTMLInputElement>(null);
   const flagRef = useRef<HTMLSelectElement>(null);
+  const flashTagRef = useRef<HTMLSelectElement>(null);
   const fortuneEntryRef = useRef<FortuneEntry | null>(null);
   const diceRollRef = useRef<DiceRoll | null>(null);
   const nonokoRedirectPathRef = useRef<string | null>(null);
@@ -468,6 +508,9 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
   const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
+  const isInPostView = isPostPageView(location.pathname, params);
+  const showFlashUploadPrompt = isFlashDirectoryCode(postOptionsDirectoryCode);
+  const showFlashTagSelector = showFlashUploadPrompt && !isInPostView;
 
   const accountCommunityAddresses = useAccountCommunityAddresses();
   const accountAddress = account?.author?.address;
@@ -515,6 +558,9 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     }
     if (flagRef.current) {
       flagRef.current.value = flagRef.current.options[0]?.value ?? '';
+    }
+    if (flashTagRef.current) {
+      flashTagRef.current.value = '';
     }
     checkContentLength.cancel();
     checkPostOptions.cancel();
@@ -577,9 +623,15 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     }
 
     const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
+    const flashTagPublishOptions = getFlashTagPublishOptionsForDirectoryCode(postOptionsDirectoryCode, flashTagRef.current?.value);
+    const flairs = mergeFlairs(flagPublishOptions.flairs, flashTagPublishOptions.flairs);
+    const publishOptions = {
+      ...flagPublishOptions,
+      ...(flairs ? { flairs } : {}),
+    };
 
     nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-    publishPost({ content: publishContent, ...flagPublishOptions });
+    publishPost({ content: publishContent, ...publishOptions });
   };
 
   // redirect to pending page when pending comment is created
@@ -599,7 +651,6 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   }, [postIndex, pendingPostBoardPath, resetPublishPostOptions, navigate]);
 
   // in post page, publish a reply to the post
-  const isInPostView = isPostPageView(location.pathname, params);
   const cid = params?.commentCid || '';
   const { isResolvingExternalQuotes, publishReply, publishReplyError, publishReplyStateMessage, resetPublishReplyOptions, replyIndex, setPublishReplyOptions } =
     usePublishReply({ cid, communityAddress, postCid });
@@ -751,6 +802,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             subjectRef={subjectRef}
             optionsRef={optionsRef}
             flagRef={flagRef}
+            flashTagRef={flashTagRef}
             textRef={textRef}
             urlRef={urlRef}
             url={url}
@@ -776,6 +828,9 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             rulesPath={rulesPath}
             requirePostLinkIsMedia={requirePostLinkIsMedia}
             flagOptions={flagOptions}
+            flashTagOptions={FLASH_TAG_OPTIONS}
+            showFlashTagSelector={showFlashTagSelector}
+            showFlashUploadPrompt={showFlashUploadPrompt}
             showBbcodeToolbar={showBbcodeToolbar}
             onBbcodePreviewToggle={handleBbcodePreviewToggle}
             onPublishReply={onPublishReply}

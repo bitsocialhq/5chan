@@ -393,5 +393,7 @@
   "go_to_settings_to_import_mod_account": "Siirry <1>asetuksiin</1> tuodaksesi moderaattoritilisi",
   "post_form_rules_faq_prompt": "Lue <rules>Säännöt</rules> ja <faq>UKK</faq> ennen julkaisemista.",
   "pending_mod_approval_reason": "Tekoälymoderointi lähetti tämän viestin moderointijonoon. Syy: \"{{reason}}\".",
-  "flag": "Lippu"
+  "flag": "Lippu",
+  "tag": "tag",
+  "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled."
 }

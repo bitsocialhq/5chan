@@ -16,6 +16,7 @@ const testState = vi.hoisted(() => ({
   hostname: 'example.com',
   isMobile: false,
   unmuteExpandedVideoSound: false,
+  ruffleLoadMock: vi.fn(),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -69,6 +70,8 @@ vi.mock('../../embed', () => ({
   default: ({ url }: { url: string }) => createElement('div', { 'data-testid': 'embed' }, url),
 }));
 
+vi.mock('@ruffle-rs/ruffle', () => ({}));
+
 let container: HTMLDivElement;
 let root: Root;
 let setShowThumbnailMock: ReturnType<typeof vi.fn>;
@@ -90,6 +93,16 @@ describe('CommentMedia', () => {
     testState.hostname = 'example.com';
     testState.isMobile = false;
     testState.unmuteExpandedVideoSound = false;
+    testState.ruffleLoadMock = vi.fn();
+    const player = document.createElement('ruffle-player') as HTMLElement & {
+      ruffle: () => { load: (source: string | Record<string, unknown>) => void };
+    };
+    player.ruffle = () => ({ load: testState.ruffleLoadMock });
+    window.RufflePlayer = {
+      newest: () => ({
+        createPlayer: () => player,
+      }),
+    };
     setShowThumbnailMock = vi.fn();
 
     container = document.createElement('div');
@@ -100,6 +113,7 @@ describe('CommentMedia', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    delete window.RufflePlayer;
   });
 
   it('toggles image expansion on mobile and renders the media metadata', async () => {
@@ -369,5 +383,53 @@ describe('CommentMedia', () => {
     const video = container.querySelector<HTMLVideoElement>('video[src="https://cdn.example.com/video.mp4"]');
     expect(video).toBeTruthy();
     expect(video?.muted).toBe(true);
+  });
+
+  it('renders collapsed SWF media as a compact placeholder and expands through Ruffle', async () => {
+    await renderMedia({
+      commentMediaInfo: {
+        type: 'swf',
+        url: 'https://cdn.example.com/movie.swf',
+      },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: true,
+    });
+
+    const placeholder = Array.from(container.querySelectorAll('span')).find((node) => node.textContent === '[SWF]' && node.getAttribute('role') === 'button');
+    expect(placeholder).toBeTruthy();
+    expect(container.querySelector('object')).toBeNull();
+    expect(container.querySelector('embed')).toBeNull();
+
+    await act(async () => {
+      placeholder?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(setShowThumbnailMock).toHaveBeenCalledWith(false);
+
+    await renderMedia({
+      commentMediaInfo: {
+        type: 'swf',
+        url: 'https://cdn.example.com/movie.swf',
+      },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: false,
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[data-testid="ruffle-player"]')).toBeTruthy();
+    expect(testState.ruffleLoadMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        allowNetworking: 'internal',
+        allowScriptAccess: false,
+        autoplay: 'off',
+        openUrlMode: 'confirm',
+        url: 'https://cdn.example.com/movie.swf',
+      }),
+    );
+    expect(container.querySelector('object')).toBeNull();
+    expect(container.querySelector('embed')).toBeNull();
   });
 });

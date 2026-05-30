@@ -393,5 +393,7 @@
   "go_to_settings_to_import_mod_account": "Gehe zu <1>Einstellungen</1>, um dein Moderatorkonto zu importieren",
   "post_form_rules_faq_prompt": "Bitte lesen Sie die <rules>Regeln</rules> und die <faq>FAQ</faq>, bevor Sie posten.",
   "pending_mod_approval_reason": "Die KI-Moderation hat diesen Beitrag in die Moderationswarteschlange verschoben. Grund: \"{{reason}}\".",
-  "flag": "Flagge"
+  "flag": "Flagge",
+  "tag": "tag",
+  "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled."
 }

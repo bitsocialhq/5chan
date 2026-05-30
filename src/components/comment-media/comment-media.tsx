@@ -7,6 +7,7 @@ import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useIsMobile from '../../hooks/use-is-mobile';
 import styles from './comment-media.module.css';
 import Embed, { canEmbed } from '../embed';
+import RufflePlayer from './ruffle-player';
 
 interface MediaProps {
   commentMediaInfo?: CommentMediaInfo;
@@ -195,6 +196,23 @@ const Thumbnail = ({
     ) : null;
   } else if (type === 'audio') {
     thumbnailComponent = <audio src={url} controls />;
+  } else if (type === 'swf') {
+    thumbnailComponent = (
+      <span
+        className={styles.swfPlaceholder}
+        role='button'
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setShowThumbnail(false);
+          }
+        }}
+        onClick={() => setShowThumbnail(false)}
+      >
+        [SWF]
+      </span>
+    );
   }
 
   const thumbnailSmallPadding = isMobile ? styles.thumbnailMobile : styles.thumbnailReplyDesktop;
@@ -291,6 +309,8 @@ const Media = ({ commentMediaInfo, disableToggle, isReply, setShowThumbnail }: M
         />
       ) : type === 'video' ? (
         <video src={url} controls autoPlay loop muted={!unmuteExpandedVideoSound} />
+      ) : type === 'swf' && url ? (
+        <RufflePlayer url={url} />
       ) : type === 'webpage' ? (
         <img
           src={thumbnail}
@@ -319,7 +339,7 @@ const Media = ({ commentMediaInfo, disableToggle, isReply, setShowThumbnail }: M
           {mediaDimensions && `, ${mediaDimensions}`})
         </div>
       )}
-      {isMobile && (type === 'iframe' || type === 'video' || type === 'audio') && (
+      {isMobile && (type === 'iframe' || type === 'video' || type === 'audio' || type === 'swf') && (
         <div className={styles.closeButton}>
           <span
             className='button'

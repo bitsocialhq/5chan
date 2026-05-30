@@ -70,11 +70,23 @@ vi.mock('react-i18next', async () => {
           ' before posting.',
         );
       }
+      if (i18nKey === 'post_form_flash_upload_prompt') {
+        return React.createElement(
+          React.Fragment,
+          {},
+          'Recommended SWF host: ',
+          components?.catbox ? React.cloneElement(components.catbox, {}, 'Catbox') : 'Catbox',
+          '. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link.',
+        );
+      }
 
       return i18nKey;
     },
     useTranslation: () => ({
-      t: (key: string, options?: Record<string, unknown>) => (options?.domain ? `${key}:${options.domain}` : key),
+      t: (key: string, options?: Record<string, unknown>) => {
+        if (key === 'choose_one') return 'Choose one:';
+        return options?.domain ? `${key}:${options.domain}` : key;
+      },
     }),
   };
 });
@@ -428,6 +440,12 @@ describe('PostForm', () => {
       { address: 'music-posting.eth', features: {}, title: '/mu/ - Music' },
       { address: 'politically-incorrect.bso', directoryCode: 'pol', features: { hasFlags: true }, title: '/pol/ - Politically Incorrect' },
       { address: 'random-nsfw.bso', features: {}, title: '/b/ - Random' },
+      {
+        address: 'flash-posting.bso',
+        directoryCode: 'f',
+        features: { postFlairs: true, requirePostFlairs: true, requirePostLink: true, requirePostLinkIsMedia: false },
+        title: '/f/ - Flash',
+      },
       { address: 'silly-stuff.bso', features: {}, title: '/s5s/ - Silly Stuff' },
       { address: 'traditional-games.bso', features: {}, title: '/tg/ - Traditional Games' },
       { address: 'mod.eth', features: {}, title: '/mod/ - Moderation' },
@@ -657,6 +675,63 @@ describe('PostForm', () => {
         challengeAnswers: ['bitsocial-flags:5chan:flag:pol:AC'],
       },
       flairs: [{ type: 'pol', code: 'AC', text: 'flag:pol:AC' }],
+    });
+  });
+
+  it('shows /f/ upload guidance and publishes the selected flash tag as a post flair', async () => {
+    testState.resolvedCommunityAddress = 'flash-posting.bso';
+
+    await renderPostForm('/f');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const flashTagSelect = table?.querySelector<HTMLSelectElement>('select[name="flashTag"]');
+    const linkInput = Array.from(table?.querySelectorAll<HTMLInputElement>('input[type="text"]') || []).find((input) => input.getAttribute('aria-label') === 'link');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+    const catboxLink = table?.querySelector<HTMLAnchorElement>('a[href="https://catbox.moe/"]');
+
+    expect(flashTagSelect).toBeTruthy();
+    expect(flashTagSelect?.value).toBe('');
+    expect(Array.from(flashTagSelect?.options || []).map((option) => option.textContent)).toEqual([
+      'Choose one:',
+      'Hentai',
+      'Porn',
+      'Japanese',
+      'Anime',
+      'Game',
+      'Loop',
+      'Other',
+    ]);
+    expect(catboxLink?.textContent).toBe('Catbox');
+    expect(container.textContent).toContain('Recommended SWF host: Catbox');
+
+    await dispatchChange(flashTagSelect as HTMLSelectElement, 'loop');
+    await dispatchInput(linkInput as HTMLInputElement, 'https://files.catbox.moe/movie.swf');
+    await dispatchInput(textarea as HTMLTextAreaElement, 'flash thread');
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith({
+      content: 'flash thread',
+      flairs: [{ text: 'flash:loop' }],
+    });
+  });
+
+  it('does not publish a flash flair until a tag is selected', async () => {
+    testState.resolvedCommunityAddress = 'flash-posting.bso';
+
+    await renderPostForm('/f');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const linkInput = Array.from(table?.querySelectorAll<HTMLInputElement>('input[type="text"]') || []).find((input) => input.getAttribute('aria-label') === 'link');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+
+    await dispatchInput(linkInput as HTMLInputElement, 'https://files.catbox.moe/movie.swf');
+    await dispatchInput(textarea as HTMLTextAreaElement, 'flash thread');
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith({
+      content: 'flash thread',
     });
   });
 

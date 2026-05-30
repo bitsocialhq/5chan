@@ -32,6 +32,7 @@ import FailedPublishNotice from '../failed-publish-notice';
 import { canEmbed } from '../embed';
 import LoadingEllipsis from '../loading-ellipsis';
 import PostAuthorFlags from '../post-author-flags';
+import PostFlashTag from '../post-flash-tag';
 import PostMenuDesktop from './post-menu-desktop';
 import ReplyQuotePreview from '../reply-quote-preview';
 import Tooltip from '../tooltip';
@@ -420,6 +421,7 @@ const PostInfo = ({
           )}
         </span>
         <PostAuthorFlags author={author} comment={post} enabled={showAuthorFlags} />
+        <PostFlashTag comment={post} directory={directoryEntry} />
         <span className={styles.dateTime}>
           {isInModQueueView && isOverThreshold ? (
             <>
