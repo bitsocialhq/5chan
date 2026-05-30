@@ -177,7 +177,7 @@ describe('BoardHeader', () => {
     expect(container.textContent).toContain('/subs/ - Subscriptions');
     expect(container.textContent).toContain('subscriptions_subtitle:{"count":2}');
 
-    const clickableSubtitle = container.querySelector('[role="button"]');
+    const clickableSubtitle = Array.from(container.querySelectorAll('button')).find((button) => button.textContent?.includes('subscriptions_subtitle'));
     await act(async () => {
       clickableSubtitle?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });

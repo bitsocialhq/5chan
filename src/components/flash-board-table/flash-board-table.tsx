@@ -7,6 +7,7 @@ import { removeMarkdown } from '../../lib/utils/post-utils';
 import { getFormattedDate } from '../../lib/utils/time-utils';
 import { getPublishURLFilename } from '../../lib/utils/url-utils';
 import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
+import LoadingEllipsis from '../loading-ellipsis';
 import styles from './flash-board-table.module.css';
 
 type FlashBoardComment = Comment & {
@@ -15,6 +16,7 @@ type FlashBoardComment = Comment & {
 
 interface FlashBoardTableProps {
   boardBasePath: string;
+  isLoading?: boolean;
   posts: FlashBoardComment[];
 }
 
@@ -47,7 +49,7 @@ const getSubjectLabel = (comment: FlashBoardComment) => {
 
 const getReplyCount = (comment: FlashBoardComment) => (typeof comment.replyCount === 'number' ? comment.replyCount : 0);
 
-const FlashBoardTable = ({ boardBasePath, posts }: FlashBoardTableProps) => {
+const FlashBoardTable = ({ boardBasePath, isLoading = false, posts }: FlashBoardTableProps) => {
   const { t } = useTranslation();
   const anonymousLabel = capitalize(t('anonymous'));
 
@@ -84,7 +86,13 @@ const FlashBoardTable = ({ boardBasePath, posts }: FlashBoardTableProps) => {
           </tr>
         </thead>
         <tbody>
-          {posts.length === 0 ? (
+          {posts.length === 0 && isLoading ? (
+            <tr className={styles.row}>
+              <td colSpan={CELL_COUNT} className={styles.emptyCell}>
+                <LoadingEllipsis string={t('downloading_board')} />
+              </td>
+            </tr>
+          ) : posts.length === 0 ? (
             <tr className={styles.row}>
               <td colSpan={CELL_COUNT} className={styles.emptyCell}>
                 no posts

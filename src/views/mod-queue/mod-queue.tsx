@@ -49,8 +49,6 @@ import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '..
 import footerStyles from '../../components/footer/footer.module.css';
 import { useModeratedCommunityAddresses } from '../../hooks/use-moderated-community-addresses';
 
-const { addChallenge } = useChallengesStore.getState();
-
 /** Path for display: directory code, or full address if has TLD, or shortened for long IPNS keys (no dot) */
 const getBoardDisplayPath = (address: string, path: string): string => {
   if (path !== address) return path;
@@ -179,7 +177,7 @@ const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleAppr
     variant === 'row' ? (
       <span className={styles.buttonWrapper}>
         [
-        <button className={styles.button} onClick={handleRemove} disabled={isPublishing}>
+        <button type='button' className={styles.button} onClick={handleRemove} disabled={isPublishing}>
           {t('modQueue.dismiss')}
         </button>
         ]
@@ -187,7 +185,7 @@ const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleAppr
     ) : (
       <span className={styles.cardRemoveButtonWrapper}>
         [
-        <button className={styles.cardRemoveButton} onClick={handleRemove} disabled={isPublishing}>
+        <button type='button' className={styles.cardRemoveButton} onClick={handleRemove} disabled={isPublishing}>
           {t('modQueue.dismiss')}
         </button>
         ]
@@ -239,14 +237,14 @@ const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleAppr
       <div className={styles.actionButtons}>
         <span className={styles.buttonWrapper}>
           [
-          <button className={styles.button} onClick={handleApprove} disabled={isPublishing}>
+          <button type='button' className={styles.button} onClick={handleApprove} disabled={isPublishing}>
             {t('approve')}
           </button>
           ]
         </span>
         <span className={styles.buttonWrapper}>
           [
-          <button className={styles.button} onClick={handleReject} disabled={isPublishing}>
+          <button type='button' className={styles.button} onClick={handleReject} disabled={isPublishing}>
             {t('reject')}
           </button>
           ]
@@ -254,10 +252,10 @@ const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleAppr
       </div>
     ) : (
       <div className={styles.cardActions}>
-        <button className={`button ${styles.cardApproveButton}`} onClick={handleApprove} disabled={isPublishing}>
+        <button type='button' className={`button ${styles.cardApproveButton}`} onClick={handleApprove} disabled={isPublishing}>
           {t('approve')}
         </button>
-        <button className={`button ${styles.cardRejectButton}`} onClick={handleReject} disabled={isPublishing}>
+        <button type='button' className={`button ${styles.cardRejectButton}`} onClick={handleReject} disabled={isPublishing}>
           {t('reject')}
         </button>
       </div>
@@ -286,7 +284,7 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
     communityAddress,
     commentModeration: approvePendingCommentModeration,
     onChallenge: async (...args: any) => {
-      addChallenge([...args, comment]);
+      useChallengesStore.getState().addChallenge([...args, comment]);
     },
     onChallengeVerification: async (challengeVerification, comment) => {
       alertChallengeVerificationFailed(challengeVerification, comment);
@@ -305,7 +303,7 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
     communityAddress,
     commentModeration: rejectPendingCommentModeration,
     onChallenge: async (...args: any) => {
-      addChallenge([...args, comment]);
+      useChallengesStore.getState().addChallenge([...args, comment]);
     },
     onChallengeVerification: async (challengeVerification, comment) => {
       alertChallengeVerificationFailed(challengeVerification, comment);

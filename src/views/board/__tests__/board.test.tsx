@@ -631,6 +631,37 @@ describe('Board', () => {
     expect(table?.textContent).toContain('no posts');
   });
 
+  it('keeps the flash table in loading state until the empty board feed finishes syncing', async () => {
+    testState.directories = [{ address: 'flash-posting.bso', directoryCode: 'f', title: '/f/ - Flash' }];
+    testState.directoryByAddress = {
+      'flash-posting.bso': {
+        address: 'flash-posting.bso',
+        directoryCode: 'f',
+        features: { postsPerPage: 50 },
+        title: '/f/ - Flash',
+      },
+    };
+    testState.resolvedCommunityAddress = 'flash-posting.bso';
+    testState.community = {
+      error: undefined,
+      shortAddress: 'flash-posting.bso',
+      state: 'ready',
+      title: '/f/ - Flash',
+    };
+    testState.communitySnapshot = {
+      shortAddress: 'flash-posting.bso',
+      title: '/f/ - Flash',
+    };
+    testState.hasMore = true;
+
+    await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
+
+    const table = container.querySelector('#flash-list');
+    expect(table).toBeTruthy();
+    expect(table?.textContent).not.toContain('no posts');
+    expect(table?.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
+  });
+
   it('inserts a nonoko pending account comment after pinned posts on the redirected board index', async () => {
     const currentTimestamp = Math.floor(Date.now() / 1000);
     testState.feed = [
@@ -738,7 +769,7 @@ describe('Board', () => {
 
     expect(latestLocation).toBe('/subs');
     expect(container.textContent).toContain('not_subscribed_to_any_board');
-    expect(container.querySelector('[role="status"]')?.className).toContain('searchNothingFound');
+    expect(container.querySelector('output')?.className).toContain('searchNothingFound');
   });
 
   it('links empty mod feeds to account import settings', async () => {
@@ -752,7 +783,7 @@ describe('Board', () => {
 
     expect(container.textContent).toContain('not_mod_of_any_board');
     expect(container.textContent).toContain('go_to_settings_to_import_mod_account');
-    expect(container.querySelector('[role="status"]')?.className).toContain('modEmptyState');
+    expect(container.querySelector('output')?.className).toContain('modEmptyState');
     expect(container.querySelector('a')?.getAttribute('href')).toBe('/mod/settings#account-settings');
   });
 

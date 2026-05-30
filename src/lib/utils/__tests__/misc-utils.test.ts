@@ -12,7 +12,7 @@ import {
 } from '../replies-preview-utils';
 import { getQuotedCidsFromContent, mergeQuotedCids } from '../reply-quote-utils';
 import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../string-utils';
-import { getFormattedDate, getFormattedTimeAgo, isChristmas } from '../time-utils';
+import { getActiveSpecialTheme, getFormattedDate, getFormattedTimeAgo, getSpecialThemeClass, isChristmas, isHalloween } from '../time-utils';
 
 const testState = vi.hoisted(() => ({
   language: 'en',
@@ -276,8 +276,17 @@ describe('misc utils', () => {
 
     vi.setSystemTime(new Date('2024-12-24T00:00:00Z'));
     expect(isChristmas()).toBe(true);
+    expect(getActiveSpecialTheme()).toBe('christmas');
+    expect(getSpecialThemeClass('christmas')).toBe('tomorrow');
+
+    vi.setSystemTime(new Date('2024-10-31T00:00:00Z'));
+    expect(isHalloween()).toBe(true);
+    expect(getActiveSpecialTheme()).toBe('halloween');
+    expect(getSpecialThemeClass('halloween')).toBe('spooky');
 
     vi.setSystemTime(new Date('2024-07-04T00:00:00Z'));
     expect(isChristmas()).toBe(false);
+    expect(isHalloween()).toBe(false);
+    expect(getActiveSpecialTheme()).toBeNull();
   });
 });

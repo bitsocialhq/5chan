@@ -288,6 +288,6 @@ describe('Directory', () => {
 
     const cells = Array.from(getDirectoryRow('board-6.bso')?.querySelectorAll('td') ?? []).map((cell) => cell.textContent?.replace(/\s+/g, ' ').trim());
     expect(cells[3]).toBe('—?');
-    expect(getDirectoryRow('board-6.bso')?.querySelector('sup')?.closest('span')?.getAttribute('title')).toBe('directory_status_unavailable_reason');
+    expect(getDirectoryRow('board-6.bso')?.querySelector('button[aria-label="directory_status_unavailable_reason"]')).not.toBeNull();
   });
 });

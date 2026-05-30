@@ -34,8 +34,21 @@
 }
 
 .embedButton {
+  appearance: none;
+  background: transparent;
+  border: 0;
   color: var(--button-desktop-text-color);
+  display: inline;
+  font: inherit;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
   text-transform: capitalize;
+}
+
+.embedButton:focus-visible {
+  outline: 1px dotted currentcolor;
+  outline-offset: 1px;
 }
 
 .embedButton:hover {

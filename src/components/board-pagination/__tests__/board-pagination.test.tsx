@@ -90,7 +90,7 @@ describe('BoardPagination', () => {
     expect(container.textContent).toContain('catalog');
     expect(container.textContent).toContain('archive');
 
-    const allLink = Array.from(container.querySelectorAll<HTMLElement>('[role="button"]')).find((element) => element.textContent === 'all');
+    const allLink = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((element) => element.textContent === 'all');
     expect(allLink).toBeTruthy();
 
     await act(async () => {

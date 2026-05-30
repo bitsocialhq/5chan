@@ -120,6 +120,32 @@
   width: 130px;
 }
 
+.oekakiRow {
+  display: flex;
+  align-items: flex-start;
+  width: 302px;
+  margin-bottom: 1px;
+  font-size: 10pt;
+}
+
+.oekakiLabel {
+  display: inline-block;
+  width: 38px;
+  padding-top: 3px;
+  font-weight: bold;
+}
+
+.oekakiControls {
+  width: 264px;
+}
+
+.oekakiWarning {
+  width: 294px;
+  margin-bottom: 1px;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
 .offlineBoard {
   width: 292px;
   font-family: monospace;

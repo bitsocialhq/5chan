@@ -145,8 +145,16 @@
   word-break: break-all;
 }
 
-.ownerCell {
+.ownerCell,
+.statusCell {
   text-align: center;
+  vertical-align: middle;
+}
+
+.statusLoading {
+  display: block;
+  width: fit-content;
+  margin-inline: auto;
 }
 
 .ownerName {
@@ -196,9 +204,18 @@
 }
 
 .statusUnavailableHelp {
+  all: unset;
   margin-left: 2px;
   font-weight: 700;
+  font-size: 0.75em;
+  vertical-align: super;
+  line-height: 0;
   cursor: help;
+}
+
+.statusUnavailableHelp:focus-visible {
+  outline: 1px dotted currentcolor;
+  outline-offset: 1px;
 }
 
 .directoryFootnote {
@@ -298,8 +315,19 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+:global(body.spooky) .rowOdd td {
+  background: #1b1024;
+}
+
 :global(body.tomorrow) .flashListing thead th,
 :global(body.tomorrow) .flashListing thead td {
+  background: var(--post-form-field-title-background-color);
+  color: var(--post-form-field-title-color);
+  border: none;
+}
+
+:global(body.spooky) .flashListing thead th,
+:global(body.spooky) .flashListing thead td {
   background: var(--post-form-field-title-background-color);
   color: var(--post-form-field-title-color);
   border: none;

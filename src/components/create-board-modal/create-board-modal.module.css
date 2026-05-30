@@ -8,6 +8,14 @@
   z-index: 999;
 }
 
+.backdropButton {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  cursor: default;
+  z-index: 0;
+}
+
 .createBoardDialog {
   position: absolute;
   width: 500px;
@@ -22,7 +30,9 @@
   box-shadow: rgba(0, 0, 0, 0.1) 2px 2px 0px 1px;
   font-size: var(--body-font-size);
   line-height: 16.003px;
-  z-index: 1000;
+  z-index: 1;
+  color: inherit;
+  padding: 0;
 }
 
 @media (max-width: 600px) {
@@ -122,4 +132,3 @@
   justify-content: center;
   gap: 10px;
 }
-

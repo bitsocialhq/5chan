@@ -318,10 +318,10 @@ describe('ChallengeModal', () => {
       'https://mintpass.org',
     );
 
-    const doneButton = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'Done');
+    const doneButton = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'Finish Challenge');
     expect(doneButton?.getAttribute('aria-label')).toBe('Finish challenge');
 
-    await clickButton('Done');
+    await clickButton('Finish Challenge');
     expect(publication.publishChallengeAnswers).toHaveBeenCalledWith(['']);
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });

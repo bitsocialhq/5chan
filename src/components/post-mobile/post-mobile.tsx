@@ -62,8 +62,6 @@ import { getFeedPostHeightEstimate, getReplyHeightEstimates, reportReplyHeightAu
 import { getAuthorBadge } from '../../lib/utils/author-display-utils';
 import { hasCommentFlagsForDirectory } from '../../lib/comment-flag-selection';
 
-const { addChallenge } = useChallengesStore.getState();
-
 const RepliesFooter = ({ hasMore, loadingString }: { hasMore: boolean; loadingString: string }) =>
   hasMore ? (
     <div className={styles.stateString}>
@@ -136,7 +134,7 @@ const PostInfoAndMedia = ({
     communityAddress: shouldShowPendingApprovalButtons ? communityAddress : undefined,
     commentModeration: approvePendingCommentModeration,
     onChallenge: async (...args: any) => {
-      addChallenge([...args, resolvedPost]);
+      useChallengesStore.getState().addChallenge([...args, resolvedPost]);
     },
     onChallengeVerification: async (challengeVerification, comment) => {
       alertChallengeVerificationFailed(challengeVerification, comment);
@@ -155,7 +153,7 @@ const PostInfoAndMedia = ({
     communityAddress: shouldShowPendingApprovalButtons ? communityAddress : undefined,
     commentModeration: rejectPendingCommentModeration,
     onChallenge: async (...args: any) => {
-      addChallenge([...args, resolvedPost]);
+      useChallengesStore.getState().addChallenge([...args, resolvedPost]);
     },
     onChallengeVerification: async (challengeVerification, comment) => {
       alertChallengeVerificationFailed(challengeVerification, comment);
@@ -332,10 +330,10 @@ const PostInfoAndMedia = ({
                     content={`${numberOfPostsByAuthor === 1 ? t('1_post_by_this_id') : t('x_posts_by_this_id', { number: numberOfPostsByAuthor })}`}
                     showTooltip={isInPostPageView || postReplyCount < 6}
                   >
-                    <span
+                    <button
+                      type='button'
                       title={t('highlight_posts')}
                       className={styles.userAddress}
-                      role='button'
                       tabIndex={0}
                       onClick={() => handleUserAddressClick(userID, postCid)}
                       onKeyDown={(e) => {
@@ -347,7 +345,7 @@ const PostInfoAndMedia = ({
                       style={{ backgroundColor: userIDBackgroundColor, color: userIDTextColor }}
                     >
                       {formatUserIDForDisplay(userID)}
-                    </span>
+                    </button>
                   </Tooltip>
                 )}
                 ){' '}
@@ -408,10 +406,10 @@ const PostInfoAndMedia = ({
                 <Link to={threadRoute || '#'} state={threadTopNavigationState} className={styles.linkToPost} title={t('link_to_post')} onClick={onLinkToPostClick}>
                   No.
                 </Link>
-                <span
+                <button
+                  type='button'
                   className={styles.replyToPost}
                   title={t('reply_to_post')}
-                  role='button'
                   tabIndex={0}
                   onMouseDown={onReplyModalClick}
                   onKeyDown={(e) => {
@@ -422,7 +420,7 @@ const PostInfoAndMedia = ({
                   }}
                 >
                   {resolvedPost?.number || '?'}
-                </span>
+                </button>
               </span>
             ) : (
               <>
@@ -445,10 +443,10 @@ const PostInfoAndMedia = ({
                   <LoadingEllipsis string={t('publishing')} />
                 ) : (
                   <>
-                    <button className={`button ${styles.approveButton}`} onClick={handlePendingApprove} disabled={isPublishingPending}>
+                    <button type='button' className={`button ${styles.approveButton}`} onClick={handlePendingApprove} disabled={isPublishingPending}>
                       {t('approve')}
                     </button>
-                    <button className={`button ${styles.rejectButton}`} onClick={handlePendingReject} disabled={isPublishingPending}>
+                    <button type='button' className={`button ${styles.rejectButton}`} onClick={handlePendingReject} disabled={isPublishingPending}>
                       {t('reject')}
                     </button>
                   </>
@@ -627,7 +625,7 @@ const PostMobile = ({
   const modQueueThreadRouteState = getQueuedCommentRouteState(resolvedPost);
   const modQueueErrorMessage = formatErrorForDisplay(modQueueError);
   const modQueueRemoveButton = onRemoveFromModQueue ? (
-    <button className='button' onClick={onRemoveFromModQueue} disabled={isPublishing}>
+    <button type='button' className='button' onClick={onRemoveFromModQueue} disabled={isPublishing}>
       {capitalize(t('modQueue.dismiss'))}
     </button>
   ) : null;
@@ -842,9 +840,9 @@ const PostMobile = ({
         <>
           <hr className={styles.unhideButtonHr} />
           <span className={styles.mobileUnhideButton}>
-            <span
+            <button
+              type='button'
               className='button'
-              role='button'
               tabIndex={0}
               onClick={unhide}
               onKeyDown={(e) => {
@@ -855,7 +853,7 @@ const PostMobile = ({
               }}
             >
               Show Hidden Thread
-            </span>
+            </button>
           </span>
         </>
       ) : (
@@ -923,10 +921,10 @@ const PostMobile = ({
                               {t('view_thread')}
                             </Link>
                           )}
-                          <button className={`button ${styles.approveButton}`} onClick={onApprove} disabled={isPublishing}>
+                          <button type='button' className={`button ${styles.approveButton}`} onClick={onApprove} disabled={isPublishing}>
                             {t('approve')}
                           </button>
-                          <button className={`button ${styles.rejectButton}`} onClick={onReject} disabled={isPublishing}>
+                          <button type='button' className={`button ${styles.rejectButton}`} onClick={onReject} disabled={isPublishing}>
                             {t('reject')}
                           </button>
                         </>

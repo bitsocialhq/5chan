@@ -105,6 +105,15 @@ interface IframeChallengeProps {
 }
 
 type IframeOpenMode = 'trusted' | 'manual';
+type IframeFrameState = { url: string; origin: string };
+
+const getIframeSandbox = (iframeOrigin: string) => {
+  const permissions = ['allow-scripts', 'allow-forms', 'allow-popups', 'allow-top-navigation-by-user-activation'];
+  if (iframeOrigin !== window.location.origin) {
+    permissions.splice(3, 0, 'allow-same-origin');
+  }
+  return permissions.join(' ');
+};
 
 const IframeChallenge = ({
   challenge,
@@ -121,8 +130,7 @@ const IframeChallenge = ({
   const account = useAccount();
   const [theme] = useTheme();
   const trustOrigin = useTrustedBoardUrlPermissionsStore((state) => state.trustOrigin);
-  const [iframeUrlState, setIframeUrl] = useState('');
-  const [iframeOrigin, setIframeOrigin] = useState('');
+  const [iframeFrame, setIframeFrame] = useState<IframeFrameState | null>(null);
   const [inlineErrorMessage, setInlineErrorMessage] = useState('');
   const [rememberPermission, setRememberPermission] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -144,8 +152,7 @@ const IframeChallenge = ({
     (validatedUrl: { finalUrl: string; origin: string }) => {
       queueMicrotask(() => {
         if (!mountedRef.current) return;
-        setIframeUrl(validatedUrl.finalUrl);
-        setIframeOrigin(validatedUrl.origin);
+        setIframeFrame({ url: validatedUrl.finalUrl, origin: validatedUrl.origin });
         onReady();
       });
     },
@@ -211,20 +218,21 @@ const IframeChallenge = ({
   }, [onCancel]);
 
   const sendThemeToIframe = useCallback(() => {
-    postThemeToIframe(iframeRef.current, iframeOrigin, theme);
-  }, [iframeOrigin, theme]);
+    postThemeToIframe(iframeRef.current, iframeFrame?.origin ?? '', theme);
+  }, [iframeFrame?.origin, theme]);
 
   const handleIframeLoad = () => {
     sendThemeToIframe();
   };
 
   useEffect(() => {
-    if (iframeRef.current && iframeUrlState && iframeOrigin) {
+    if (iframeRef.current && iframeFrame) {
       sendThemeToIframe();
     }
-  }, [iframeOrigin, iframeUrlState, sendThemeToIframe]);
+  }, [iframeFrame, sendThemeToIframe]);
 
   useEffect(() => {
+    const iframeOrigin = iframeFrame?.origin ?? '';
     if (!iframeOrigin || !expectedSessionId) {
       handledAutoCompleteRef.current = false;
       return;
@@ -246,9 +254,9 @@ const IframeChallenge = ({
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [expectedSessionId, iframeOrigin]);
+  }, [expectedSessionId, iframeFrame?.origin]);
 
-  if (!iframeUrlState) {
+  if (!iframeFrame) {
     return (
       <>
         {publicationDetails}
@@ -256,7 +264,12 @@ const IframeChallenge = ({
           <div className={styles.iframeConsentMessage}>{inlineErrorMessage || confirmMessage}</div>
           {!inlineErrorMessage && (
             <label className={styles.iframeTrustCheckbox}>
-              <input type='checkbox' checked={rememberPermission} onChange={(event) => setRememberPermission(event.target.checked)} />
+              <input
+                type='checkbox'
+                aria-label={rememberPermissionLabel}
+                checked={rememberPermission}
+                onChange={(event) => setRememberPermission(event.target.checked)}
+              />
               {rememberPermissionLabel}
             </label>
           )}
@@ -282,8 +295,8 @@ const IframeChallenge = ({
       <div className={`${styles.challengeMediaWrapper} ${styles.iframeWrapper}`}>
         <iframe
           ref={iframeRef}
-          src={iframeUrlState}
-          sandbox='allow-scripts allow-forms allow-popups allow-same-origin allow-top-navigation-by-user-activation'
+          src={iframeFrame.url}
+          sandbox={getIframeSandbox(iframeFrame.origin)}
           onLoad={handleIframeLoad}
           className={styles.iframe}
           title='Challenge authentication'
@@ -291,8 +304,8 @@ const IframeChallenge = ({
       </div>
       <div className={`${styles.challengeFooter} ${styles.iframeFooter}`}>
         <div className={styles.iframeCloseButton}>
-          <button aria-label='Finish challenge' onClick={onDone}>
-            Done
+          <button type='button' aria-label='Finish challenge' onClick={onDone}>
+            Finish Challenge
           </button>
         </div>
       </div>
@@ -473,21 +486,21 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const publicationDetails = (
     <>
       <div className={styles.name}>
-        <input type='text' value={displayName || capitalize(t('anonymous'))} disabled readOnly />
+        <input type='text' aria-label={capitalize(t('name'))} value={displayName || capitalize(t('anonymous'))} disabled readOnly />
       </div>
       {title && (
         <div className={styles.subject}>
-          <input type='text' value={title} disabled readOnly />
+          <input type='text' aria-label={capitalize(t('subject'))} value={title} disabled readOnly />
         </div>
       )}
       {content && (
         <div className={styles.content}>
-          <textarea value={content} disabled readOnly cols={48} rows={4} wrap='soft' />
+          <textarea aria-label={capitalize(t('comment'))} value={content} disabled readOnly cols={48} rows={4} wrap='soft' />
         </div>
       )}
       {link && (
         <div className={styles.link}>
-          <input type='text' value={link} disabled readOnly />
+          <input type='text' aria-label={capitalize(t('link'))} value={link} disabled readOnly />
         </div>
       )}
     </>
@@ -533,6 +546,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
                 ref={inputRef}
                 className={styles.challengeAnswer}
                 type='text'
+                aria-label={t('challenge_answer')}
                 autoComplete='off'
                 autoCorrect='off'
                 spellCheck='false'
@@ -550,17 +564,23 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
               <div className={styles.counter}>{t('challenge_counter', { index: currentChallengeIndex + 1, total: challenges?.length })}</div>
               <span className={styles.buttons}>
                 {!challenges?.[currentChallengeIndex + 1] && (
-                  <button onClick={onSubmit} disabled={!isValidAnswer(currentChallengeIndex)}>
+                  <button type='button' onClick={onSubmit} disabled={!isValidAnswer(currentChallengeIndex)}>
                     {t('submit')}
                   </button>
                 )}
-                <button onClick={abandonModal}>Cancel</button>
+                <button type='button' onClick={abandonModal}>
+                  Cancel
+                </button>
                 {challenges?.length > 1 && (
-                  <button disabled={!challenges?.[currentChallengeIndex - 1]} onClick={() => setCurrentChallengeIndex((prev) => prev - 1)}>
+                  <button type='button' disabled={!challenges?.[currentChallengeIndex - 1]} onClick={() => setCurrentChallengeIndex((prev) => prev - 1)}>
                     {t('previous')}
                   </button>
                 )}
-                {challenges?.[currentChallengeIndex + 1] && <button onClick={() => setCurrentChallengeIndex((prev) => prev + 1)}>{t('next')}</button>}
+                {challenges?.[currentChallengeIndex + 1] && (
+                  <button type='button' onClick={() => setCurrentChallengeIndex((prev) => prev + 1)}>
+                    {t('next')}
+                  </button>
+                )}
               </span>
             </div>
           </>

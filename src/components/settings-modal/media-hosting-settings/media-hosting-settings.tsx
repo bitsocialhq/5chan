@@ -32,13 +32,29 @@ const MediaHostingSettings = () => {
         )}
         <div className={styles.setting}>
           <label>
-            <input type='radio' name={RADIO_NAME} value='random' checked={uploadMode === 'random'} onChange={() => setUploadMode('random')} disabled={isWeb} />
+            <input
+              type='radio'
+              aria-label={t('media_hosting_random')}
+              name={RADIO_NAME}
+              value='random'
+              checked={uploadMode === 'random'}
+              onChange={() => setUploadMode('random')}
+              disabled={isWeb}
+            />
             {t('media_hosting_random')}
           </label>
         </div>
         <div className={styles.setting}>
           <label>
-            <input type='radio' name={RADIO_NAME} value='preferred' checked={uploadMode === 'preferred'} onChange={() => setUploadMode('preferred')} disabled={isWeb} />
+            <input
+              type='radio'
+              aria-label={t('media_hosting_preferred')}
+              name={RADIO_NAME}
+              value='preferred'
+              checked={uploadMode === 'preferred'}
+              onChange={() => setUploadMode('preferred')}
+              disabled={isWeb}
+            />
             {t('media_hosting_preferred')}
           </label>
           {uploadMode === 'preferred' && (
@@ -51,6 +67,7 @@ const MediaHostingSettings = () => {
                     <label title={providerUnavailable ? t('media_hosting_provider_unavailable') : undefined}>
                       <input
                         type='radio'
+                        aria-label={provider.label}
                         name={`${RADIO_NAME}-provider`}
                         value={provider.id}
                         checked={preferredProvider === provider.id}
@@ -72,7 +89,15 @@ const MediaHostingSettings = () => {
         </div>
         <div className={styles.setting}>
           <label>
-            <input type='radio' name={RADIO_NAME} value='none' checked={uploadMode === 'none'} onChange={() => setUploadMode('none')} disabled={isWeb} />
+            <input
+              type='radio'
+              aria-label={t('media_hosting_none')}
+              name={RADIO_NAME}
+              value='none'
+              checked={uploadMode === 'none'}
+              onChange={() => setUploadMode('none')}
+              disabled={isWeb}
+            />
             {t('media_hosting_none')}
           </label>
           <div className={styles.settingTip}>{t('media_hosting_none_tip')}</div>

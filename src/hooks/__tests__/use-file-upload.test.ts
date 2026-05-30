@@ -20,7 +20,7 @@ vi.mock('@capacitor/core', () => ({
 }));
 
 vi.mock('../../plugins/file-uploader', () => ({
-  default: { pickAndUploadMedia: vi.fn() },
+  default: { pickAndUploadMedia: vi.fn(), uploadGeneratedMedia: vi.fn() },
 }));
 
 vi.mock('../../lib/utils/catbox-utils', () => ({
@@ -210,6 +210,77 @@ describe('useFileUpload', () => {
     expect(FileUploader.pickAndUploadMedia).not.toHaveBeenCalled();
     expect(onUploadComplete).not.toHaveBeenCalled();
     expect(hook().isUploading).toBe(false);
+  });
+
+  it('uploads a generated file via Electron orchestrator', async () => {
+    uploadModeRef.value = 'preferred';
+    preferredProviderRef.value = 'catbox';
+    vi.mocked(Capacitor.getPlatform).mockReturnValue('web');
+    window.electronApi = { isElectron: true } as any;
+    vi.mocked(orchestrateElectronUpload).mockResolvedValue('https://files.catbox.moe/tegaki.png');
+
+    const file = new File(['abc'], 'tegaki.png', { type: 'image/png' });
+    const { onUploadComplete, hook } = mountHook();
+
+    let result: Awaited<ReturnType<HookSnapshot['uploadFile']>> | null = null;
+    await act(async () => {
+      result = await hook().uploadFile(file);
+    });
+
+    expect(orchestrateElectronUpload).toHaveBeenCalledWith(file, ['catbox']);
+    expect(result).toEqual({ url: 'https://files.catbox.moe/tegaki.png', fileName: 'tegaki.png' });
+    expect(onUploadComplete).toHaveBeenCalledWith('https://files.catbox.moe/tegaki.png', 'tegaki.png');
+    expect(hook().uploadedFileName).toBe('tegaki.png');
+    expect(hook().isUploading).toBe(false);
+  });
+
+  it('uploads a generated file via Android plugin', async () => {
+    uploadModeRef.value = 'preferred';
+    preferredProviderRef.value = 'catbox';
+    vi.mocked(Capacitor.getPlatform).mockReturnValue('android');
+    vi.mocked(FileUploader.uploadGeneratedMedia).mockResolvedValue({
+      url: 'https://files.catbox.moe/android-tegaki.png',
+      fileName: 'tegaki.png',
+      provider: 'catbox',
+    });
+
+    const file = new File(['abc'], 'tegaki.png', { type: 'image/png' });
+    const { onUploadComplete, hook } = mountHook();
+
+    let result: Awaited<ReturnType<HookSnapshot['uploadFile']>> | null = null;
+    await act(async () => {
+      result = await hook().uploadFile(file);
+    });
+
+    expect(FileUploader.uploadGeneratedMedia).toHaveBeenCalledWith({
+      providerOrder: ['catbox'],
+      fileName: 'tegaki.png',
+      mimeType: 'image/png',
+      base64: 'YWJj',
+    });
+    expect(result).toEqual({ url: 'https://files.catbox.moe/android-tegaki.png', fileName: 'tegaki.png' });
+    expect(onUploadComplete).toHaveBeenCalledWith('https://files.catbox.moe/android-tegaki.png', 'tegaki.png');
+    expect(hook().uploadedFileName).toBe('tegaki.png');
+  });
+
+  it('does not upload generated files from web runtime', async () => {
+    uploadModeRef.value = 'preferred';
+    preferredProviderRef.value = 'catbox';
+    vi.mocked(Capacitor.getPlatform).mockReturnValue('web');
+    window.electronApi = undefined;
+    const file = new File(['abc'], 'tegaki.png', { type: 'image/png' });
+    const { onUploadComplete, hook } = mountHook();
+
+    let result: Awaited<ReturnType<HookSnapshot['uploadFile']>> | null = null;
+    await act(async () => {
+      result = await hook().uploadFile(file);
+    });
+
+    expect(result).toBeNull();
+    expect(window.alert).toHaveBeenCalledWith('upload_not_supported_web');
+    expect(FileUploader.uploadGeneratedMedia).not.toHaveBeenCalled();
+    expect(orchestrateElectronUpload).not.toHaveBeenCalled();
+    expect(onUploadComplete).not.toHaveBeenCalled();
   });
 
   it('silently ignores file selection cancellation', async () => {

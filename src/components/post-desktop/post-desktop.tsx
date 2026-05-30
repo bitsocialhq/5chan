@@ -73,8 +73,6 @@ import { getFeedPostHeightEstimate, getReplyHeightEstimates, reportReplyHeightAu
 import { getAuthorBadge } from '../../lib/utils/author-display-utils';
 import { hasCommentFlagsForDirectory } from '../../lib/comment-flag-selection';
 
-const { addChallenge } = useChallengesStore.getState();
-
 const RepliesFooter = ({ hasMore, loadingString }: { hasMore: boolean; loadingString: string }) =>
   hasMore ? (
     <div className={styles.stateString}>
@@ -113,7 +111,7 @@ const PendingModerationActions = ({ cid, communityAddress, post }: { cid: string
     communityAddress,
     commentModeration: approvePendingCommentModeration,
     onChallenge: async (...args: any) => {
-      addChallenge([...args, post]);
+      useChallengesStore.getState().addChallenge([...args, post]);
     },
     onChallengeVerification: async (challengeVerification, comment) => {
       alertChallengeVerificationFailed(challengeVerification, comment);
@@ -132,7 +130,7 @@ const PendingModerationActions = ({ cid, communityAddress, post }: { cid: string
     communityAddress,
     commentModeration: rejectPendingCommentModeration,
     onChallenge: async (...args: any) => {
-      addChallenge([...args, post]);
+      useChallengesStore.getState().addChallenge([...args, post]);
     },
     onChallengeVerification: async (challengeVerification, comment) => {
       alertChallengeVerificationFailed(challengeVerification, comment);
@@ -195,14 +193,14 @@ const PendingModerationActions = ({ cid, communityAddress, post }: { cid: string
         <>
           <span className={styles.modQueueButtonWrapper}>
             [
-            <button className={styles.modQueueActionButton} onClick={handlePendingApprove} disabled={isPublishingPending}>
+            <button type='button' className={styles.modQueueActionButton} onClick={handlePendingApprove} disabled={isPublishingPending}>
               {t('approve')}
             </button>
             ]
           </span>
           <span className={styles.modQueueButtonWrapper}>
             [
-            <button className={styles.modQueueActionButton} onClick={handlePendingReject} disabled={isPublishingPending}>
+            <button type='button' className={styles.modQueueActionButton} onClick={handlePendingReject} disabled={isPublishingPending}>
               {t('reject')}
             </button>
             ]
@@ -319,7 +317,7 @@ const PostInfo = ({
   const modQueueRemoveButton = onRemoveFromModQueue ? (
     <span className={styles.modQueueButtonWrapper}>
       [
-      <button className={styles.modQueueActionButton} onClick={onRemoveFromModQueue} disabled={isPublishing}>
+      <button type='button' className={styles.modQueueActionButton} onClick={onRemoveFromModQueue} disabled={isPublishing}>
         {t('modQueue.dismiss')}
       </button>
       ]
@@ -398,10 +396,10 @@ const PostInfo = ({
                   content={`${numberOfPostsByAuthor === 1 ? t('1_post_by_this_id') : t('x_posts_by_this_id', { number: numberOfPostsByAuthor })}`}
                   showTooltip={isInPostPageView || showOmittedReplies[postCid] || (postReplyCount < 6 && !pinned)}
                 >
-                  <span
+                  <button
+                    type='button'
                     title={t('highlight_posts')}
                     className={styles.userAddress}
-                    role='button'
                     tabIndex={0}
                     onClick={() => handleUserAddressClick(userID, postCid)}
                     onKeyDown={(e) => {
@@ -413,7 +411,7 @@ const PostInfo = ({
                     style={{ backgroundColor: userIDBackgroundColor, color: userIDTextColor }}
                   >
                     {formatUserIDForDisplay(userID)}
-                  </span>
+                  </button>
                 </Tooltip>
               )}
               ){' '}
@@ -442,10 +440,10 @@ const PostInfo = ({
               <Link to={threadRoute || '#'} state={threadTopNavigationState} className={styles.linkToPost} title={t('link_to_post')} onClick={onLinkToPostClick}>
                 No.
               </Link>
-              <span
+              <button
+                type='button'
                 className={styles.replyToPost}
                 title={t('reply_to_post')}
-                role='button'
                 tabIndex={0}
                 onMouseDown={onReplyModalClick}
                 onKeyDown={(e) => {
@@ -456,7 +454,7 @@ const PostInfo = ({
                 }}
               >
                 {post?.number || '?'}
-              </span>
+              </button>
             </span>
           ) : (
             <>
@@ -525,14 +523,14 @@ const PostInfo = ({
                   )}
                   <span className={styles.modQueueButtonWrapper}>
                     [
-                    <button className={styles.modQueueActionButton} onClick={onApprove} disabled={isPublishing}>
+                    <button type='button' className={styles.modQueueActionButton} onClick={onApprove} disabled={isPublishing}>
                       {t('approve')}
                     </button>
                     ]
                   </span>
                   <span className={styles.modQueueButtonWrapper}>
                     [
-                    <button className={styles.modQueueActionButton} onClick={onReject} disabled={isPublishing}>
+                    <button type='button' className={styles.modQueueActionButton} onClick={onReject} disabled={isPublishing}>
                       {t('reject')}
                     </button>
                     ]
@@ -687,9 +685,9 @@ const PostMedia = ({
         {!showThumbnail && (type === 'iframe' || type === 'video' || type === 'audio') && (
           <span>
             -[
-            <span
+            <button
+              type='button'
               className={styles.closeMedia}
-              role='button'
               tabIndex={0}
               onClick={() => setShowThumbnail(true)}
               onKeyDown={(e) => {
@@ -700,16 +698,16 @@ const PostMedia = ({
               }}
             >
               {t('close')}
-            </span>
+            </button>
             ]
           </span>
         )}
         {showThumbnail && !hasThumbnail && embedUrl && canEmbed(embedUrl) && (
           <span>
             -[
-            <span
+            <button
+              type='button'
               className={styles.closeMedia}
-              role='button'
               tabIndex={0}
               onClick={() => setShowThumbnail(false)}
               onKeyDown={(e) => {
@@ -720,7 +718,7 @@ const PostMedia = ({
               }}
             >
               {t('open')}
-            </span>
+            </button>
             ]
           </span>
         )}
@@ -1141,9 +1139,10 @@ const PostDesktop = ({
       <div className={isHidden ? styles.postDesktopHidden : ''}>
         {!isInPostPageView && showReplies && (
           <span className={`${styles.hideButtonWrapper} ${!hasThumbnail ? styles.hideButtonWrapperNoImage : ''}`}>
-            <span
+            <button
+              type='button'
+              aria-label={hidden ? t('unhide') : t('hide')}
               className={`${styles.hideButton} ${hidden ? styles.unhideThread : styles.hideThread}`}
-              role='button'
               tabIndex={0}
               onClick={hidden ? unhide : hide}
               onKeyDown={(e) => {
@@ -1209,9 +1208,10 @@ const PostDesktop = ({
         </div>
         {!isHidden && !isInPendingPostView && showReplies && repliesCount > 0 && !isInPostPageView && (
           <span className={styles.summary}>
-            <span
+            <button
+              type='button'
+              aria-label={showOmittedReplies[cid] ? t('hide_replies') : t('show_replies')}
               className={`${showOmittedReplies[cid] ? styles.hideOmittedReplies : styles.showOmittedReplies} ${styles.omittedRepliesButtonWrapper}`}
-              role='button'
               tabIndex={0}
               onClick={() => setShowOmittedReplies(cid, !showOmittedReplies[cid])}
               onKeyDown={(e) => {

@@ -1,4 +1,5 @@
 .overlay {
+  all: unset;
   position: fixed;
   top: 0;
   left: 0;
@@ -88,6 +89,11 @@
 }
 
 .closeButton {
+  appearance: none;
+  background-color: transparent;
+  border: 0;
+  margin: 0;
+  padding: 0;
   right: 5px;
   width: 18px;
   height: 18px;
@@ -101,6 +107,11 @@
 }
 
 .openHelpButton {
+  appearance: none;
+  background-color: transparent;
+  border: 0;
+  margin: 0;
+  padding: 0;
   right: 23px;
   width: 18px;
   height: 18px;
@@ -111,6 +122,11 @@
   image-rendering: pixelated;
   background-image: var(--open-help-button-background-image);
   cursor: pointer;
+}
+
+.closeButton:focus-visible, .openHelpButton:focus-visible {
+  outline: 1px dotted currentcolor;
+  outline-offset: 1px;
 }
 
 .filters {
@@ -188,6 +204,16 @@
 
 .filtersTable span {
   cursor: pointer;
+}
+
+.filtersTable button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  margin: 0;
+  padding: 0;
 }
 
 .filtersTable tfoot td {

@@ -204,6 +204,16 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+:global(body.spooky) .rowOdd .number,
+:global(body.spooky) .rowOdd .board,
+:global(body.spooky) .rowOdd .excerpt,
+:global(body.spooky) .rowOdd .time,
+:global(body.spooky) .rowOdd .type,
+:global(body.spooky) .rowOdd .image,
+:global(body.spooky) .rowOdd .actions {
+  background-color: #1b1024;
+}
+
 :global(body.photon) .rowOdd .number,
 :global(body.photon) .rowOdd .board,
 :global(body.photon) .rowOdd .excerpt,
@@ -609,6 +619,13 @@ span.reject:hover {
   :global(body.tomorrow) .rowOdd .type,
   :global(body.tomorrow) .rowOdd .image,
   :global(body.tomorrow) .rowOdd .actions,
+  :global(body.spooky) .rowOdd .number,
+  :global(body.spooky) .rowOdd .board,
+  :global(body.spooky) .rowOdd .excerpt,
+  :global(body.spooky) .rowOdd .time,
+  :global(body.spooky) .rowOdd .type,
+  :global(body.spooky) .rowOdd .image,
+  :global(body.spooky) .rowOdd .actions,
   :global(body.photon) .rowOdd .number,
   :global(body.photon) .rowOdd .board,
   :global(body.photon) .rowOdd .excerpt,

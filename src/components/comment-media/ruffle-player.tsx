@@ -41,22 +41,28 @@ interface RufflePlayerProps {
   url: string;
 }
 
+type RufflePlayerStatus = 'loading' | 'ready' | 'failed';
+
 const RufflePlayer = ({ url }: RufflePlayerProps) => {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLSpanElement>(null);
-  const [failed, setFailed] = useState(false);
+  const [status, setStatus] = useState<RufflePlayerStatus>('loading');
 
   useEffect(() => {
     let cancelled = false;
     let player: RufflePlayerElement | undefined;
+    const mountNode = containerRef.current;
 
     const mountPlayer = async () => {
-      setFailed(false);
+      setStatus('loading');
+      if (mountNode) {
+        mountNode.textContent = '';
+      }
 
       try {
         await loadRuffle();
 
-        if (cancelled || !containerRef.current) {
+        if (cancelled || !mountNode) {
           return;
         }
 
@@ -68,8 +74,7 @@ const RufflePlayer = ({ url }: RufflePlayerProps) => {
 
         player.className = styles.rufflePlayerElement;
         player.setAttribute('data-testid', 'ruffle-player');
-        containerRef.current.textContent = '';
-        containerRef.current.appendChild(player);
+        mountNode.appendChild(player);
 
         const playerApi = player.ruffle?.();
         if (!playerApi) {
@@ -80,10 +85,13 @@ const RufflePlayer = ({ url }: RufflePlayerProps) => {
           ...getRuffleConfig(),
           url,
         });
+        if (!cancelled) {
+          setStatus('ready');
+        }
       } catch (error) {
         console.error('Error loading SWF with Ruffle:', error);
         if (!cancelled) {
-          setFailed(true);
+          setStatus('failed');
         }
       }
     };
@@ -93,21 +101,25 @@ const RufflePlayer = ({ url }: RufflePlayerProps) => {
     return () => {
       cancelled = true;
       player?.remove();
+      if (mountNode) {
+        mountNode.textContent = '';
+      }
     };
   }, [url]);
 
   return (
-    <span className={styles.rufflePlayer} ref={containerRef}>
-      {failed ? (
+    <span className={styles.rufflePlayer}>
+      <span className={status === 'ready' ? styles.rufflePlayerMount : styles.rufflePlayerMountHidden} ref={containerRef} />
+      {status === 'failed' ? (
         <span className={styles.ruffleFallback}>
           {t('media_failed_to_load')}.{' '}
           <a href={url} target='_blank' rel='noopener noreferrer'>
             {t('media_failed_to_load_open_source')}
           </a>
         </span>
-      ) : (
+      ) : status === 'loading' ? (
         <span className={styles.ruffleLoading}>{t('loading')} SWF</span>
-      )}
+      ) : null}
     </span>
   );
 };

@@ -129,13 +129,15 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
           <span className={styles.statusUnavailable}>
             {DIRECTORY_STATUS_UNAVAILABLE_MARKER}
             <Tooltip content={statusUnavailableReason}>
-              <sup className={styles.statusUnavailableHelp} aria-label={statusUnavailableReason} tabIndex={0}>
+              <button type='button' className={styles.statusUnavailableHelp} aria-label={statusUnavailableReason} tabIndex={0}>
                 ?
-              </sup>
+              </button>
             </Tooltip>
           </span>
         ) : status === 'loading' ? (
-          <LoadingEllipsis string={t('loading')} />
+          <span className={styles.statusLoading}>
+            <LoadingEllipsis string={t('loading')} />
+          </span>
         ) : status === 'unknown' ? (
           <span className={styles.statusUnavailable}>{DIRECTORY_STATUS_UNAVAILABLE_MARKER}</span>
         ) : (
@@ -252,7 +254,7 @@ const Directory = () => {
               values={{ boardIdentifier }}
               components={{
                 passLink: <Link to={PASS_LINK} />,
-                repoLink: <a href={repoEditUrl} target='_blank' rel='noreferrer noopener' />,
+                repoLink: <a href={repoEditUrl} target='_blank' rel='noreferrer noopener' aria-label={t('directory_submit_repo_link_label', 'directory repository')} />,
               }}
             />
           </div>

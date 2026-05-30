@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { Link, MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostForm, { LinkTypePreviewer } from '../post-form';
+import { OEKAKI_WEB_WARNING_TEXT } from '../../../lib/oekaki/oekaki-copy';
 import { POST_OPTIONS_VALIDATION_DELAY_MS } from '../../../lib/utils/post-options-utils';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -24,10 +25,12 @@ const testState = vi.hoisted(() => ({
   editedComment: undefined as { commentModeration?: { archived?: boolean }; deleted?: boolean; locked?: boolean; postCid?: string; removed?: boolean } | undefined,
   gifFrameStatus: 'idle' as 'idle' | 'ready',
   handleUploadMock: vi.fn(),
+  uploadFileMock: vi.fn(),
   isOffline: false,
   isOnlineStatusLoading: false,
   isUploading: false,
   isResolvingExternalQuotes: false,
+  mediaHostingRuntime: 'web' as 'web' | 'android' | 'electron',
   navigateMock: vi.fn(),
   offlineTitle: 'offline board',
   postIndex: undefined as number | undefined,
@@ -271,6 +274,7 @@ vi.mock('../../../hooks/use-file-upload', () => ({
     testState.uploadComplete = onUploadComplete;
     return {
       handleUpload: testState.handleUploadMock,
+      uploadFile: testState.uploadFileMock,
       isUploading: testState.isUploading,
       uploadedFileName: testState.uploadedFileName,
     };
@@ -298,8 +302,9 @@ vi.mock('../../../lib/utils/media-utils', () => ({
 }));
 
 vi.mock('../../../lib/media-hosting/show-upload-controls', () => ({
+  getMediaHostingRuntime: () => testState.mediaHostingRuntime,
   getShowUploadControls: () => testState.showUploadControls,
-  isWebRuntime: () => true,
+  isWebRuntime: () => testState.mediaHostingRuntime === 'web',
 }));
 
 vi.mock('../../../stores/use-media-hosting-store', () => ({
@@ -456,6 +461,7 @@ describe('PostForm', () => {
     testState.isOnlineStatusLoading = false;
     testState.isUploading = false;
     testState.isResolvingExternalQuotes = false;
+    testState.mediaHostingRuntime = 'web';
     testState.offlineTitle = 'offline board';
     testState.postIndex = undefined;
     testState.publishedPostOptions = undefined;
@@ -474,6 +480,7 @@ describe('PostForm', () => {
       'traditional-games.bso': { address: 'traditional-games.bso' },
     };
     testState.handleUploadMock.mockReset();
+    testState.uploadFileMock.mockReset();
     testState.navigateMock.mockReset();
     testState.publishPostMock.mockReset();
     testState.publishReplyMock.mockReset();
@@ -589,6 +596,43 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ communityAddress: 'music-posting.eth' });
+  });
+
+  it('shows Oekaki draw controls only on the /i/ board form', async () => {
+    testState.directories.push({
+      address: 'oekaki-posting.bso',
+      directoryCode: 'i',
+      features: { requirePostLink: true, requirePostLinkIsMedia: true },
+      title: '/i/ - Oekaki',
+    });
+    testState.communities['oekaki-posting.bso'] = { address: 'oekaki-posting.bso' };
+    testState.resolvedCommunityAddress = 'oekaki-posting.bso';
+
+    await renderPostForm('/i');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const drawRow = Array.from(table.querySelectorAll('tr')).find((row) => row.textContent?.includes('Size') && row.textContent?.includes('Replay'));
+    expect(table.textContent).toContain('Size');
+    expect(table.textContent).toContain('Replay');
+    expect(Array.from(table.querySelectorAll('span')).some((span) => span.textContent === '×')).toBe(true);
+    expect(drawRow?.textContent).not.toContain(OEKAKI_WEB_WARNING_TEXT);
+    expect(Array.from(table.querySelectorAll('button')).some((button) => button.textContent === 'Draw')).toBe(true);
+    expect((Array.from(table.querySelectorAll('button')).find((button) => button.textContent === 'Clear') as HTMLButtonElement | undefined)?.disabled).toBe(true);
+    const rulesItems = Array.from(table.querySelectorAll('tr.rules li')).map((item) => item.textContent);
+    expect(rulesItems).toEqual(['Please read the Rules and FAQ before posting.', OEKAKI_WEB_WARNING_TEXT]);
+
+    testState.mediaHostingRuntime = 'electron';
+    await renderPostForm('/i');
+    await clickByText(container, 'start_new_thread');
+
+    expect(container.textContent).not.toContain(OEKAKI_WEB_WARNING_TEXT);
+
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent === 'Draw')).toBe(false);
   });
 
   it('drops stale thread content when board navigation remounts the form before a link-only post', async () => {

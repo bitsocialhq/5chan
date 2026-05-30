@@ -16,6 +16,13 @@ public class FileUtils {
     private static final Pattern UNSAFE_CHARS = Pattern.compile("[^a-zA-Z0-9._-]");
 
     public static File getFileFromUri(Context context, Uri uri) throws Exception {
+        if ("file".equals(uri.getScheme()) && uri.getPath() != null) {
+            File source = new File(uri.getPath());
+            if (source.isFile()) {
+                return source;
+            }
+        }
+
         String fileName = getFileName(context, uri);
         String sanitizedName = sanitizeFileName(fileName);
         File file = new File(context.getCacheDir(), sanitizedName);
@@ -69,6 +76,25 @@ public class FileUtils {
      * Takes only the last path segment, removes/replaces unsafe chars, enforces max length,
      * and falls back to a UUID if the result is empty.
      */
+    public static File writeBytesToCacheFile(Context context, String fileName, byte[] bytes) throws Exception {
+        String safeName = sanitizeFileName(fileName);
+        int dot = safeName.lastIndexOf('.');
+        String base = dot > 0 ? safeName.substring(0, dot) : safeName;
+        String ext = dot > 0 ? safeName.substring(dot) : null;
+        if (base.length() < 3) {
+            base = (base + "___").substring(0, 3);
+        }
+        if (base.length() > 64) {
+            base = base.substring(0, 64);
+        }
+        File file = File.createTempFile(base + "-", ext, context.getCacheDir());
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
+            outputStream.write(bytes);
+            outputStream.flush();
+        }
+        return file;
+    }
+
     private static String sanitizeFileName(String fileName) {
         if (fileName == null || fileName.isEmpty()) {
             return UUID.randomUUID().toString();
@@ -82,4 +108,4 @@ public class FileUtils {
         }
         return basename;
     }
-} 
+}

@@ -5,13 +5,30 @@
   position: relative;
 }
 
+.boardNavDesktop button, .boardNavMobile button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  display: inline;
+  font: inherit;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+.boardNavDesktop button:focus-visible, .boardNavMobile button:focus-visible {
+  outline: 1px dotted currentcolor;
+  outline-offset: 1px;
+}
+
 .checkingSubscriptions {
   font-size: var(--boardsbar-font-size);
   color: var(--boardsbar-desktop-link-text-color);
   text-transform: lowercase;
 }
 
-.boardNavDesktop a, .navTopRight span {
+.boardNavDesktop a, .navTopRight span, .navTopRight button {
   color: var(--boardsbar-desktop-link-text-color);
   text-decoration: var(--boardsbar-desktop-link-text-decoration);
 }
@@ -20,13 +37,13 @@
   padding: 0 1px;
 }
 
-.boardNavDesktop a:hover, .navTopRight span:hover {
+.boardNavDesktop a:hover, .navTopRight span:hover, .navTopRight button:hover {
   color: var(--boardsbar-desktop-link-text-color-hover);
   text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
   cursor: pointer;
 }
 
-.placeholder {
+.boardNavDesktop .placeholder {
   color: var(--boardsbar-separator-color);
 }
 
@@ -45,13 +62,17 @@
   margin-right: -7px;
 }
 
-.temporaryButton {
+.boardNavDesktop .temporaryButton {
   color: var(--boardsbar-desktop-link-text-color);
   text-decoration: var(--boardsbar-desktop-link-text-decoration);
   text-transform: capitalize;
 }
 
-.temporaryButton:hover {
+.navTopRight button {
+  text-transform: capitalize;
+}
+
+.boardNavDesktop .temporaryButton:hover {
   color: var(--boardsbar-desktop-link-text-color-hover);
   text-decoration: var(--boardsbar-desktop-link-text-decoration-hover);
   cursor: pointer;
@@ -80,7 +101,7 @@
   justify-content: space-around;
 }
 
-.boardNavMobile .pageJump a, .boardNavMobile .pageJump span {
+.boardNavMobile .pageJump a, .boardNavMobile .pageJump span, .boardNavMobile .pageJump button {
   color: var(--boardsbar-mobile-button-text-color);
   text-decoration: var(--button-text-decoration-mobile);
 }
@@ -108,7 +129,7 @@
   padding: 3px 5px 0 0;
 }
 
-.pageJump a, .pageJump span {
+.pageJump a, .pageJump span, .pageJump button {
   padding-right: 5px;
   text-decoration: var(--homepage-box-link-text-decoration);
   cursor: pointer;

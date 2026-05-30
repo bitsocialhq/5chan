@@ -252,7 +252,7 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, is
     <PageFooterMobile>
       <div className={styles.threadMobileFooterContent}>
         <div className={styles.mobileFooterButtons}>
-          <button className='button' onClick={handlePostReplyClick} disabled={isThreadClosed}>
+          <button type='button' className='button' onClick={handlePostReplyClick} disabled={isThreadClosed}>
             {t('post_a_reply')}
           </button>
         </div>

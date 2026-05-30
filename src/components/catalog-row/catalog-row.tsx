@@ -92,14 +92,14 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight,
       <img src={thumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />
     ) : (
       // show first frame of the video, as a workaround for Safari not loading thumbnails
-      <video src={`${url}#t=0.001`} onError={handleError} />
+      <video src={`${url}#t=0.001`} aria-label='Video thumbnail' onError={handleError} />
     );
   } else if (type === 'webpage' && !hasError) {
     thumbnailComponent = <img src={thumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
   } else if (type === 'iframe' && iframeThumbnail && !hasError) {
     thumbnailComponent = <img src={iframeThumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
   } else if (type === 'audio') {
-    thumbnailComponent = <audio src={url} controls />;
+    thumbnailComponent = <audio src={url} aria-label='Audio preview' controls />;
   }
 
   return (
@@ -238,7 +238,7 @@ const CatalogPost = memo(
     return (
       <>
         <div className={`${styles.post} ${imageSize === 'Large' ? styles.large : ''}`} style={CSSProperties}>
-          <div onMouseOver={() => setHoveredCid(cid)} onMouseLeave={() => setHoveredCid(null)}>
+          <div onMouseOver={() => setHoveredCid(cid)} onFocus={() => setHoveredCid(cid)} onMouseLeave={() => setHoveredCid(null)} onBlur={() => setHoveredCid(null)}>
             {shouldMaskPost ? (
               <Link to={postLink}>
                 <span className={styles.hiddenThumbnail} />
@@ -246,19 +246,26 @@ const CatalogPost = memo(
             ) : hasThumbnail ? (
               <>
                 {shouldShowSnow() && hasThumbnail && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
-                <Link to={postLink}>
-                  <div
-                    className={`${styles.mediaPaddingWrapper} ${shouldMaskPost && styles.hidden}`}
-                    ref={refs.setReference}
-                    onMouseOver={() => (timeoutRef.current = setTimeout(() => setShowPortal(true), 250))}
-                    onMouseLeave={() => {
-                      setShowPortal(false);
-                      if (timeoutRef.current) {
-                        clearTimeout(timeoutRef.current);
-                        timeoutRef.current = null;
-                      }
-                    }}
-                  >
+                <Link
+                  to={postLink}
+                  onMouseOver={() => (timeoutRef.current = setTimeout(() => setShowPortal(true), 250))}
+                  onFocus={() => (timeoutRef.current = setTimeout(() => setShowPortal(true), 250))}
+                  onMouseLeave={() => {
+                    setShowPortal(false);
+                    if (timeoutRef.current) {
+                      clearTimeout(timeoutRef.current);
+                      timeoutRef.current = null;
+                    }
+                  }}
+                  onBlur={() => {
+                    setShowPortal(false);
+                    if (timeoutRef.current) {
+                      clearTimeout(timeoutRef.current);
+                      timeoutRef.current = null;
+                    }
+                  }}
+                >
+                  <div className={`${styles.mediaPaddingWrapper} ${shouldMaskPost && styles.hidden}`} ref={refs.setReference}>
                     {threadIcons}
                     {spoiler ? (
                       <img src='assets/spoiler.png' alt='' />

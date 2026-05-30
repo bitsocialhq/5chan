@@ -72,8 +72,8 @@ const clickElement = async (element: Element | null) => {
   });
 };
 
-const querySearchButton = () => Array.from(container.querySelectorAll('span')).find((node) => node.textContent === 'search') ?? null;
-const queryCloseButton = () => Array.from(container.querySelectorAll('span')).find((node) => node.textContent === '✖') ?? null;
+const querySearchButton = () => Array.from(container.querySelectorAll('button')).find((node) => node.textContent === 'search') ?? null;
+const queryCloseButton = () => Array.from(container.querySelectorAll('button')).find((node) => node.textContent === '✖') ?? null;
 const queryInput = () => container.querySelector('input');
 
 const dispatchInput = async (element: HTMLInputElement, value: string) => {

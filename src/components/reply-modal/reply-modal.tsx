@@ -28,9 +28,11 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import { useCommunityField } from '../../hooks/use-stable-community';
+import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
 import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import LoadingEllipsis from '../loading-ellipsis';
+import OekakiDrawingControls from '../oekaki-drawing-controls';
 import PostOptionsErrorMessage from '../post-options-error-message/post-options-error-message';
 import styles from './reply-modal.module.css';
 import capitalize from 'lodash/capitalize';
@@ -63,6 +65,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const directoryEntry = findDirectoryByAddress(directories, communityAddress);
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
   const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
+  const showOekakiControls = postOptionsDirectoryCode === 'i' || directoryEntry?.directoryCode === 'i';
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
   const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
@@ -97,6 +100,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const nonokoRedirectPathRef = useRef<string | null>(null);
   const lastSelectionStartRef = useRef(0);
   const lastSelectionEndRef = useRef(0);
+  const initializedReplyContentKeyRef = useRef('');
   const lastProcessedQuoteInsertRequestIdRef = useRef(0);
   const { selectedText } = useSelectedTextStore();
   const openEmpty = useReplyModalStore((state) => state.openEmpty);
@@ -243,9 +247,12 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   );
 
   useEffect(() => {
+    const checkContentLength = checkContentLengthRef.current;
+    const checkPostOptions = checkPostOptionsRef.current;
+
     return () => {
-      checkContentLengthRef.current.cancel();
-      checkPostOptionsRef.current.cancel();
+      checkContentLength.cancel();
+      checkPostOptions.cancel();
       restoreBodyTextSelection();
     };
   }, []);
@@ -293,28 +300,37 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
   // Enable spellcheck after initial content is injected into the textarea.
   useEffect(() => {
-    if (showReplyModal && textRef.current) {
-      textRef.current.spellcheck = false;
-      textRef.current.value = openEmpty ? selectedText || '' : `${defaultParentQuote}${selectedText || ''}`;
-      const len = textRef.current.value.length;
-      lastSelectionStartRef.current = len;
-      lastSelectionEndRef.current = len;
-      const content = textRef.current.value;
-      const publishContent = getContentWithOptions(content, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
-      setPublishReplyOptions({ content: publishContent });
-      checkContentLengthRef.current(publishContent, t);
-
-      const spellcheckTimeout = window.setTimeout(() => {
-        if (textRef.current) {
-          textRef.current.spellcheck = true;
-        }
-      }, 100);
-
-      return () => {
-        window.clearTimeout(spellcheckTimeout);
-      };
+    if (!showReplyModal || !textRef.current) {
+      initializedReplyContentKeyRef.current = '';
+      return;
     }
-  }, [showReplyModal, openEmpty, defaultParentQuote, selectedText]);
+
+    const initialContent = openEmpty ? selectedText || '' : `${defaultParentQuote}${selectedText || ''}`;
+    const initialContentKey = `${parentCid}:${openEmpty ? 'empty' : 'quoted'}:${initialContent}`;
+    if (initializedReplyContentKeyRef.current === initialContentKey) {
+      return;
+    }
+    initializedReplyContentKeyRef.current = initialContentKey;
+
+    textRef.current.spellcheck = false;
+    textRef.current.value = initialContent;
+    const len = textRef.current.value.length;
+    lastSelectionStartRef.current = len;
+    lastSelectionEndRef.current = len;
+    const publishContent = getContentWithOptions(initialContent, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+    setPublishReplyOptions({ content: publishContent });
+    checkContentLengthRef.current(publishContent, t);
+
+    const spellcheckTimeout = window.setTimeout(() => {
+      if (textRef.current) {
+        textRef.current.spellcheck = true;
+      }
+    }, 100);
+
+    return () => {
+      window.clearTimeout(spellcheckTimeout);
+    };
+  }, [showReplyModal, parentCid, openEmpty, defaultParentQuote, selectedText, postOptionsDirectoryCode, setPublishReplyOptions, t]);
 
   useEffect(() => {
     if (!showReplyModal) {
@@ -414,9 +430,9 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     const publishContent = getContentWithOptions(nextValue, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
     setPublishReplyOptions({ content: publishContent });
     checkContentLengthRef.current(publishContent, t);
-  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, setPublishReplyOptions, t]);
+  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, postOptionsDirectoryCode, setPublishReplyOptions, t]);
 
-  const { isUploading, uploadedFileName, handleUpload } = useFileUpload({
+  const { isUploading, uploadedFileName, handleUpload, uploadFile } = useFileUpload({
     onUploadComplete: (uploadedUrl: string) => {
       if (uploadedUrl) {
         setUrl(uploadedUrl);
@@ -427,6 +443,14 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       }
     },
   });
+  const handleOekakiClearUploadedUrl = (uploadedUrl: string) => {
+    if ((urlRef.current?.value || url) !== uploadedUrl) return;
+    setUrl('');
+    if (urlRef.current) {
+      urlRef.current.value = '';
+    }
+    setPublishReplyOptions({ link: '' });
+  };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode, isWebRuntime());
   const displayedFileName = getPublishURLFilename(url) || uploadedFileName;
@@ -533,6 +557,13 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             }}
           />
         </div>
+        {showOekakiControls && (
+          <div className={styles.oekakiRow}>
+            <span className={styles.oekakiLabel}>Draw</span>
+            <OekakiDrawingControls className={styles.oekakiControls} disabled={isUploading} uploadFile={uploadFile} onClearUploadedUrl={handleOekakiClearUploadedUrl} />
+          </div>
+        )}
+        {showOekakiControls && isWebRuntime() ? <div className={styles.oekakiWarning}>{OEKAKI_WEB_WARNING_TEXT}</div> : null}
         {flagOptions.length > 0 && (
           <div>
             <select
@@ -568,7 +599,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             <span className={styles.spoilerButton}>
               [
               <label>
-                <input type='checkbox' onChange={(e) => setPublishReplyOptions({ spoiler: e.target.checked })} />
+                <input type='checkbox' aria-label={capitalize(t('spoiler'))} onChange={(e) => setPublishReplyOptions({ spoiler: e.target.checked })} />
                 {capitalize(t('spoiler'))}?
               </label>
               ]

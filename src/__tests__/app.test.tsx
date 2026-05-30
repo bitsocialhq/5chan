@@ -29,6 +29,7 @@ const testState = vi.hoisted(() => ({
   initSnowMock: vi.fn(),
   isMobile: false,
   isSpecialEnabled: false,
+  shouldShowSnow: true,
   removeSnowMock: vi.fn(),
   replyModalState: {
     activeCid: null,
@@ -104,6 +105,7 @@ vi.mock('../stores/use-special-theme-store', () => ({
 vi.mock('../lib/snow', () => ({
   initSnow: (options: unknown) => testState.initSnowMock(options),
   removeSnow: () => testState.removeSnowMock(),
+  shouldShowSnow: () => testState.shouldShowSnow,
 }));
 
 vi.mock('../lib/utils/preload-utils', () => ({
@@ -339,6 +341,7 @@ describe('App', () => {
     ];
     testState.isMobile = false;
     testState.isSpecialEnabled = false;
+    testState.shouldShowSnow = true;
     testState.replyModalState = {
       activeCid: null,
       closeModal: vi.fn(),
@@ -535,6 +538,21 @@ describe('App', () => {
     await renderApp('/mu');
 
     expect(testState.initSnowMock).toHaveBeenCalledWith({ flakeCount: 150 });
+    expect(testState.closeCreateBoardModalMock).toHaveBeenCalledTimes(1);
+
+    act(() => root.unmount());
+    expect(testState.removeSnowMock).toHaveBeenCalled();
+
+    root = createRoot(container);
+  });
+
+  it('does not start snow for non-christmas special themes', async () => {
+    testState.isSpecialEnabled = true;
+    testState.shouldShowSnow = false;
+
+    await renderApp('/mu');
+
+    expect(testState.initSnowMock).not.toHaveBeenCalled();
     expect(testState.closeCreateBoardModalMock).toHaveBeenCalledTimes(1);
 
     act(() => root.unmount());

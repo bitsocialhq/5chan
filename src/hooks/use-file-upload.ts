@@ -27,6 +27,7 @@ const ANDROID_STAGE_MAP: Record<string, UploadAttemptStage> = {
 };
 
 const FILE_SELECTION_CANCELLED_ERROR = 'File selection cancelled';
+const WEB_UPLOAD_NOT_SUPPORTED_ERROR = 'Web upload is not supported';
 
 const VALID_PROVIDERS: ProviderId[] = ['catbox', 'imgur', 'imgbb'];
 
@@ -86,6 +87,24 @@ function normalizeAndroidRejection(error: unknown): Error & { attempts?: Provide
 
 interface UseFileUploadOptions {
   onUploadComplete: (url: string, fileName: string) => void;
+}
+
+export interface UploadedFileResult {
+  url: string;
+  fileName: string;
+}
+
+function readFileAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error ?? new Error('Could not read file'));
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      const marker = result.indexOf(',');
+      resolve(marker >= 0 ? result.slice(marker + 1) : result);
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function selectFileViaInput(): Promise<File | null> {
@@ -151,32 +170,97 @@ export function useFileUpload(options: UseFileUploadOptions) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
+  const getAvailableProviderOrder = useCallback(async () => {
+    const runtime = getMediaHostingRuntime();
+    const supportedOrder = getProviderOrder({ mode: uploadMode, preferredProvider, runtime });
+    const availability = await ensureProviderAvailability(runtime);
+    const order = getProviderOrder({ mode: uploadMode, preferredProvider, runtime, availability });
+
+    if (order.length === 0) {
+      if (runtime === 'web') {
+        throw new Error(WEB_UPLOAD_NOT_SUPPORTED_ERROR);
+      }
+      if (supportedOrder.length > 0) {
+        const message =
+          uploadMode === 'preferred' && availability[preferredProvider] === 'unavailable'
+            ? `${preferredProvider} is unavailable from this network`
+            : 'No reachable upload providers are available from this network';
+        throw new Error(message);
+      }
+      throw new Error(`${preferredProvider} is not supported on ${runtime}`);
+    }
+
+    return { runtime, order };
+  }, [uploadMode, preferredProvider]);
+
+  const handleUploadError = useCallback(
+    (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage === FILE_SELECTION_CANCELLED_ERROR) return;
+      if (errorMessage === WEB_UPLOAD_NOT_SUPPORTED_ERROR) {
+        window.alert(t('upload_not_supported_web'));
+        return;
+      }
+
+      const err = normalizeAndroidRejection(error) as Error & { attempts?: ProviderAttempt[] };
+      if (err.attempts && err.attempts.length > 0) {
+        window.alert(formatAggregatedError(err.attempts, t));
+      } else if (uploadMode === 'preferred') {
+        window.alert(formatPreferredModeError(errorMessage, t));
+      } else {
+        window.alert(`${t('upload_failed')}: ${errorMessage}`);
+      }
+    },
+    [t, uploadMode],
+  );
+
+  const uploadFile = useCallback(
+    async (file: File): Promise<UploadedFileResult | null> => {
+      if (uploadMode === 'none') return null;
+
+      try {
+        setIsUploading(true);
+        setUploadedFileName(null);
+        const { runtime, order } = await getAvailableProviderOrder();
+        let result: UploadedFileResult | null = null;
+
+        if (runtime === 'android') {
+          const pluginResult = await FileUploader.uploadGeneratedMedia({
+            providerOrder: order,
+            fileName: file.name,
+            mimeType: file.type || 'application/octet-stream',
+            base64: await readFileAsBase64(file),
+          });
+          result = pluginResult.url ? { url: pluginResult.url, fileName: pluginResult.fileName || file.name } : null;
+        } else if (runtime === 'electron') {
+          const url = await orchestrateElectronUpload(file, order);
+          result = { url, fileName: file.name };
+        } else {
+          throw new Error(WEB_UPLOAD_NOT_SUPPORTED_ERROR);
+        }
+
+        if (result?.url) {
+          setUploadedFileName(result.fileName);
+          onUploadComplete(result.url, result.fileName);
+        }
+        return result;
+      } catch (error) {
+        handleUploadError(error);
+        return null;
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [getAvailableProviderOrder, handleUploadError, onUploadComplete, uploadMode],
+  );
+
   const handleUpload = useCallback(async () => {
     if (uploadMode === 'none') return;
 
-    const runtime = getMediaHostingRuntime();
     try {
       setIsUploading(true);
       setUploadedFileName(null);
-      const supportedOrder = getProviderOrder({ mode: uploadMode, preferredProvider, runtime });
-      const availability = await ensureProviderAvailability(runtime);
-      const order = getProviderOrder({ mode: uploadMode, preferredProvider, runtime, availability });
-
-      if (order.length === 0) {
-        if (runtime === 'web') {
-          window.alert(t('upload_not_supported_web'));
-          return;
-        }
-        if (supportedOrder.length > 0) {
-          const message =
-            uploadMode === 'preferred' && availability[preferredProvider] === 'unavailable'
-              ? `${preferredProvider} is unavailable from this network`
-              : 'No reachable upload providers are available from this network';
-          throw new Error(message);
-        }
-        throw new Error(`${preferredProvider} is not supported on ${runtime}`);
-      }
-
+      const { runtime, order } = await getAvailableProviderOrder();
       if (runtime === 'android') {
         const result = await FileUploader.pickAndUploadMedia({ providerOrder: order });
         if (result.url) {
@@ -186,7 +270,7 @@ export function useFileUpload(options: UseFileUploadOptions) {
         return;
       }
 
-      if (isElectronRuntime()) {
+      if (runtime === 'electron' || isElectronRuntime()) {
         const file = await selectFileViaInput();
         if (!file) {
           throw new Error(FILE_SELECTION_CANCELLED_ERROR);
@@ -198,27 +282,18 @@ export function useFileUpload(options: UseFileUploadOptions) {
         return;
       }
 
-      window.alert(t('upload_not_supported_web'));
+      throw new Error(WEB_UPLOAD_NOT_SUPPORTED_ERROR);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage === FILE_SELECTION_CANCELLED_ERROR) return;
-
-      const err = normalizeAndroidRejection(error) as Error & { attempts?: ProviderAttempt[] };
-      if (err.attempts && err.attempts.length > 0) {
-        window.alert(formatAggregatedError(err.attempts, t));
-      } else if (uploadMode === 'preferred') {
-        window.alert(formatPreferredModeError(errorMessage, t));
-      } else {
-        window.alert(`${t('upload_failed')}: ${errorMessage}`);
-      }
+      handleUploadError(error);
     } finally {
       setIsUploading(false);
     }
-  }, [onUploadComplete, t, uploadMode, preferredProvider]);
+  }, [getAvailableProviderOrder, handleUploadError, onUploadComplete, uploadMode]);
 
   return {
     isUploading,
     uploadedFileName,
     handleUpload,
+    uploadFile,
   };
 }

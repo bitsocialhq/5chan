@@ -256,7 +256,7 @@ describe('PostMenuMobile', () => {
     expect(hrefs).toEqual(
       expect.arrayContaining([
         'https://lens.google.com/uploadbyurl?url=https%3A%2F%2Fcdn.example%2Fimage.png',
-        'https://www.yandex.com/images/search?img_url=https%3A%2F%2Fcdn.example%2Fimage.png&rpt=imageview',
+        'https://www.yandex.com/images/search?url=https%3A%2F%2Fcdn.example%2Fimage.png&rpt=imageview',
         'https://saucenao.com/search.php?url=https%3A%2F%2Fcdn.example%2Fimage.png',
       ]),
     );

@@ -71,7 +71,13 @@ const BoardsBarEditModalForm = ({
       {subscriptions.length > 0 && (
         <div className={styles.section}>
           <div className={styles.checkboxItem}>
-            <input type='checkbox' id='show-subscriptions' checked={showSubscriptions} onChange={(e) => setShowSubscriptions(e.target.checked)} />
+            <input
+              type='checkbox'
+              id='show-subscriptions'
+              aria-label='show subscriptions'
+              checked={showSubscriptions}
+              onChange={(e) => setShowSubscriptions(e.target.checked)}
+            />
             <label htmlFor='show-subscriptions'>show subscriptions</label>
             <span className={styles.editSubscriptionsWrapper}>
               (
@@ -91,7 +97,9 @@ const BoardsBarEditModalForm = ({
         </div>
       )}
       <div className={styles.boardsbarEditFooter}>
-        <button onClick={handleSave}>Save</button>
+        <button type='button' onClick={handleSave}>
+          Save
+        </button>
       </div>
     </>
   );
@@ -108,28 +116,23 @@ const BoardsBarEditModal = () => {
     return null;
   }
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      closeBoardsBarEditModal();
-    }
-  };
-
   const formKey = `${directoriesToString(visibleDirectories)}-${showSubscriptionsInBoardsBar}`;
 
   return (
-    <div
-      className={styles.backdrop}
-      role='button'
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-          e.preventDefault();
-          closeBoardsBarEditModal();
-        }
-      }}
-      onClick={handleBackdropClick}
-    >
-      <div className={styles.boardsbarEditDialog} role='dialog' aria-modal='true' aria-labelledby='boards-bar-edit-modal-title'>
+    <div className={styles.backdrop}>
+      <button
+        type='button'
+        className={styles.backdropButton}
+        aria-label='Close board list modal'
+        onClick={closeBoardsBarEditModal}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            closeBoardsBarEditModal();
+          }
+        }}
+      />
+      <dialog open className={styles.boardsbarEditDialog} aria-modal='true' aria-labelledby='boards-bar-edit-modal-title'>
         <div className={styles.hd}>
           <h2 id='boards-bar-edit-modal-title'>Custom Board List</h2>
           <button type='button' className={styles.closeButton} onClick={closeBoardsBarEditModal} title='Close' aria-label='Close' />
@@ -146,7 +149,7 @@ const BoardsBarEditModal = () => {
             location={location}
           />
         </div>
-      </div>
+      </dialog>
     </div>
   );
 };

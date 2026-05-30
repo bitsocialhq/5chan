@@ -19,8 +19,8 @@ const BoardBlotter = () => {
     <div className={`${styles.content} ${styles.show}`}>
       <table className={styles.blotter}>
         <thead>
-          <tr>
-            <td>
+          <tr aria-label='Blotter separator'>
+            <td aria-label='Blotter divider'>
               <hr />
             </td>
           </tr>
@@ -40,9 +40,9 @@ const BoardBlotter = () => {
           <tr>
             <td>
               [
-              <span
+              <button
+                type='button'
                 className={styles.hideButton}
-                role='button'
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -53,7 +53,7 @@ const BoardBlotter = () => {
                 onClick={() => toggleVisibility()}
               >
                 {isHidden ? t('show_blotter') : t('hide')}
-              </span>
+              </button>
               ]
               {!isHidden && (
                 <>

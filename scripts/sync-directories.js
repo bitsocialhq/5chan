@@ -45,6 +45,7 @@ const DIRECTORY_CODE_ORDER = [
   'wsg',
   'diy',
   'out',
+  'i',
   'ic',
   'mu',
   'int',
@@ -220,7 +221,8 @@ const addBootstrapDirectoryLists = (directories) => {
 };
 
 const toDirectoryListsData = (directories, fallbackMetadata = DEFAULT_METADATA) => {
-  const timestamps = [fallbackMetadata.createdAt, fallbackMetadata.updatedAt, ...directories.flatMap((list) => [list.createdAt, list.updatedAt])].filter(
+  const directoryLists = addBootstrapDirectoryLists(directories);
+  const timestamps = [fallbackMetadata.createdAt, fallbackMetadata.updatedAt, ...directoryLists.flatMap((list) => [list.createdAt, list.updatedAt])].filter(
     (value) => typeof value === 'number',
   );
   return {
@@ -228,7 +230,7 @@ const toDirectoryListsData = (directories, fallbackMetadata = DEFAULT_METADATA) 
     description: fallbackMetadata.description || DEFAULT_METADATA.description,
     createdAt: timestamps.length > 0 ? Math.min(...timestamps) : fallbackMetadata.createdAt,
     updatedAt: timestamps.length > 0 ? Math.max(...timestamps) : fallbackMetadata.updatedAt,
-    directories: sortDirectoryLists(directories),
+    directories: sortDirectoryLists(directoryLists),
   };
 };
 
@@ -326,7 +328,7 @@ const loadDirectoriesSource = async () => {
     }),
   );
 
-  return toDirectoryListsData(addBootstrapDirectoryLists(directories.filter(Boolean)), {
+  return toDirectoryListsData(directories.filter(Boolean), {
     title: DEFAULT_METADATA.title,
     description: DEFAULT_METADATA.description,
     createdAt: defaults.createdAt ?? DEFAULT_METADATA.createdAt,

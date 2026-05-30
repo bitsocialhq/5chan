@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { useAccount, useCommunity } from '@bitsocial/bitsocial-react-hooks';
-import { initSnow, removeSnow } from './lib/snow';
+import { initSnow, removeSnow, shouldShowSnow } from './lib/snow';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
 import { preloadReplyModal, preloadThemeAssets } from './lib/utils/preload-utils';
 import { hasModQueueAccessRole } from './lib/utils/mod-access';
@@ -33,7 +33,7 @@ import {
 import styles from './app.module.css';
 import { DesktopBoardButtons, MobileAllFeedFilter, MobileBoardButtons } from './components/board-buttons';
 import Blotter from './views/blotter';
-import FAQ from './views/faq';
+import Faq from './views/faq';
 import Home from './views/home';
 import Archive from './views/archive/archive';
 import Directory from './views/directory/directory';
@@ -89,10 +89,10 @@ const BoardLayout = () => {
   const shouldRenderOutlet = isOnPostRoute || isOnPendingPostRoute || isOnModQueueRoute || isOnArchiveRoute || isOnDirectoryRoute;
   const shouldRenderBoardBlotter = !isOnArchiveRoute && !isOnDirectoryRoute && !isOnModQueueRoute;
   const isInCatalogView = isCatalogView(pathname, params);
-  // Christmas theme
+  // Christmas snow
   const { isEnabled: isSpecialEnabled } = useSpecialThemeStore();
   useEffect(() => {
-    if (isSpecialEnabled && !isMobile) {
+    if (isSpecialEnabled && shouldShowSnow() && !isMobile) {
       initSnow({ flakeCount: 150 });
     }
     return () => {
@@ -282,7 +282,7 @@ const App = () => {
       <Routes>
         <Route element={<GlobalLayout />}>
           <Route path='/' element={<Home />} />
-          <Route path='/faq' element={<FAQ />} />
+          <Route path='/faq' element={<Faq />} />
           <Route path='/pass' element={<Pass />} />
           <Route path='/rules/:boardIdentifier?' element={<Rules />} />
           <Route path='/blotter' element={<Blotter />} />

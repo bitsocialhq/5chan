@@ -105,6 +105,7 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
           <span className={styles.walletFieldTitle}>{capitalize(t('chain_ticker'))}: </span>
           <input
             type='text'
+            aria-label={capitalize(t('chain_ticker'))}
             onChange={(e) => setWalletsArrayProperty(selectedWallet, 'chainTicker', e.target.value)}
             value={walletsArray[selectedWallet].chainTicker}
             placeholder='eth/sol/matic'
@@ -114,6 +115,7 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
           <span className={styles.walletFieldTitle}>{capitalize(t('wallet_address'))}: </span>
           <input
             type='text'
+            aria-label={capitalize(t('wallet_address'))}
             onChange={(e) => setWalletsArrayProperty(selectedWallet, 'address', e.target.value)}
             value={walletsArray[selectedWallet].address}
             placeholder='0x...'
@@ -124,7 +126,14 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
             <Trans
               i18nKey='copy_message_etherscan'
               components={{
-                1: <button key='copy-message-button' onClick={() => copyMessageToSign(walletsArray[selectedWallet], selectedWallet)} />,
+                1: (
+                  <button
+                    type='button'
+                    key='copy-message-button'
+                    aria-label={hasCopied ? t('copied') : t('copy')}
+                    onClick={() => copyMessageToSign(walletsArray[selectedWallet], selectedWallet)}
+                  />
+                ),
                 // eslint-disable-next-line
                 2: <a key='etherscan-link' href='https://etherscan.io/verifiedSignatures' target='_blank' rel='noopener noreferrer' />,
               }}
@@ -136,6 +145,7 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
           <span className={`${styles.walletFieldTitle} ${styles.timestampfield}`}>{capitalize(t('timestamp'))}: </span>
           <input
             type='text'
+            aria-label={capitalize(t('timestamp'))}
             onChange={(e) => setWalletsArrayProperty(selectedWallet, 'timestamp', Number(e.target.value))}
             value={walletsArray[selectedWallet].timestamp || ''}
             placeholder='1234567890'
@@ -145,18 +155,19 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
           <span className={styles.walletFieldTitle}>{capitalize(t('paste_signature'))}: </span>
           <input
             type='text'
+            aria-label={capitalize(t('paste_signature'))}
             onChange={(e) => setWalletsArrayProperty(selectedWallet, 'signature', e.target.value)}
             value={walletsArray[selectedWallet].signature}
             placeholder='0x...'
           />
           <div className={styles.buttons}>
-            <button className={styles.save} onClick={save}>
+            <button type='button' className={styles.save} onClick={save}>
               {t('save_changes')}
             </button>
           </div>
         </div>
         <div className={styles.deleteWalletContainer}>
-          <button className={styles.removeWallet} onClick={() => _removeWallet(selectedWallet)}>
+          <button type='button' className={styles.removeWallet} onClick={() => _removeWallet(selectedWallet)}>
             {t('delete_wallet')}
           </button>
         </div>
@@ -175,6 +186,7 @@ const CryptoWalletsForm = ({ account }: { account: Account | undefined }) => {
           ))}
         </select>
         <button
+          type='button'
           onClick={() => {
             const newIndex = walletsArray.length;
             setWalletsArray((currentWallets) => [...currentWallets, defaultWalletObject]);

@@ -241,7 +241,7 @@ const Archive = () => {
             <tr>
               <td className={styles.postblock}>No.</td>
               <td className={styles.postblock}>Excerpt</td>
-              <td className={styles.postblock}></td>
+              <td className={styles.postblock} aria-label='Actions'></td>
             </tr>
           </thead>
           <tbody>

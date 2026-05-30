@@ -56,14 +56,14 @@ describe('BoardsBarEditModal', () => {
       input?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
     });
 
-    expect(container.querySelector('[role="dialog"]')).toBeTruthy();
+    expect(container.querySelector('dialog')).toBeTruthy();
     expect(useBoardsBarEditModalStore.getState().showModal).toBe(true);
   });
 
   it('still closes when the backdrop itself handles keyboard activation', async () => {
     await renderModal();
 
-    const backdrop = container.querySelector<HTMLElement>('[role="button"]');
+    const backdrop = container.querySelector<HTMLElement>('button[aria-label="Close board list modal"]');
     expect(backdrop).toBeTruthy();
 
     await act(async () => {

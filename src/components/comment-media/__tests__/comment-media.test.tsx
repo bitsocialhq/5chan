@@ -188,7 +188,7 @@ describe('CommentMedia', () => {
 
     expect(container.querySelector('img[src="assets/filedeleted-res.gif"]')).toBeTruthy();
     expect(onMediaLoadFailureChange).toHaveBeenCalledWith('https://files.catbox.moe/missing.jpg');
-    const status = container.querySelector('[role="status"]');
+    const status = container.querySelector('output');
     expect(status?.textContent).toContain('media_failed_to_load_inline:files.catbox.moe');
     expect(status?.textContent).toContain('media_failed_to_load_open_source');
     expect(status?.textContent).not.toContain('media_failed_to_load_hint');
@@ -223,7 +223,7 @@ describe('CommentMedia', () => {
       image?.dispatchEvent(new Event('error', { bubbles: true }));
     });
 
-    const status = container.querySelector('[role="status"]');
+    const status = container.querySelector('output');
     expect(status?.textContent).toBe('');
     expect(status?.getAttribute('aria-label')).toBe(
       'media_failed_to_load. media_failed_to_load_source:files.catbox.moe. media_failed_to_load_hint. media_failed_to_load_open_source.',
@@ -287,7 +287,7 @@ describe('CommentMedia', () => {
 
     expect(container.textContent).toContain('example.com');
 
-    const fallbackButton = Array.from(container.querySelectorAll('span')).find((node) => node.textContent === 'example.com' && node.getAttribute('role') === 'button');
+    const fallbackButton = Array.from(container.querySelectorAll('button')).find((node) => node.textContent === 'example.com');
     await act(async () => {
       fallbackButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
@@ -310,7 +310,7 @@ describe('CommentMedia', () => {
 
     expect(container.querySelector('[data-testid="embed"]')?.textContent).toContain('https://youtu.be/test');
 
-    const closeButton = Array.from(container.querySelectorAll('span')).find((node) => node.textContent === 'close');
+    const closeButton = Array.from(container.querySelectorAll('button')).find((node) => node.textContent === 'close');
     expect(closeButton).toBeTruthy();
 
     await act(async () => {
@@ -395,7 +395,7 @@ describe('CommentMedia', () => {
       showThumbnail: true,
     });
 
-    const placeholder = Array.from(container.querySelectorAll('span')).find((node) => node.textContent === '[SWF]' && node.getAttribute('role') === 'button');
+    const placeholder = Array.from(container.querySelectorAll('button')).find((node) => node.textContent === '[SWF]');
     expect(placeholder).toBeTruthy();
     expect(container.querySelector('object')).toBeNull();
     expect(container.querySelector('embed')).toBeNull();

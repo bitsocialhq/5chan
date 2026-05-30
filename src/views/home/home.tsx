@@ -9,6 +9,7 @@ import PopularThreadsBox from './popular-threads-box';
 import BoardsList from './boards-list';
 import SiteLegalMeta from '../../components/site-legal-meta';
 import LoadingEllipsis from '../../components/loading-ellipsis';
+import { useFeedStateString } from '../../hooks/use-state-string';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import DisclaimerModal from '../../components/disclaimer-modal';
 import DirectoryModal from '../../components/directory-modal';
@@ -44,10 +45,13 @@ const SearchBar = () => {
           spellCheck='false'
           autoCapitalize='off'
           type='text'
+          aria-label={lowerCase(t('enter_board_address'))}
           placeholder={lowerCase(t('enter_board_address'))}
           ref={searchInputRef}
         />
-        <button className={styles.searchButton}>{t('go')}</button>
+        <button type='submit' className={styles.searchButton}>
+          {t('go')}
+        </button>
       </form>
     </div>
   );
@@ -77,7 +81,15 @@ const InfoBox = () => {
             i18nKey='no_global_rules_info'
             shouldUnescape={true}
             components={{
-              1: <a key='releases-link' href='https://github.com/bitsocialnet/5chan/releases/latest' target='_blank' rel='noopener noreferrer' />,
+              1: (
+                <a
+                  key='releases-link'
+                  href='https://github.com/bitsocialnet/5chan/releases/latest'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  aria-label='5chan releases'
+                />
+              ),
             }}
           />
         ) : (
@@ -88,19 +100,18 @@ const InfoBox = () => {
   );
 };
 
-interface StatValueProps {
-  isLoaded: boolean;
-  loadingLabel: string;
-  value: number;
-}
-
 type HomepageStats = {
   allPostCount?: number;
   weekActiveUserCount?: number;
   state?: string;
 };
 
-const StatValue = ({ isLoaded, loadingLabel, value }: StatValueProps) => (isLoaded ? <>{value}</> : <LoadingEllipsis string={loadingLabel} />);
+const StatsLoading = ({ communityAddresses }: { communityAddresses: string[] }) => {
+  const { t } = useTranslation();
+  const loadingStateString = useFeedStateString(communityAddresses) || t('loading');
+
+  return <LoadingEllipsis string={loadingStateString} />;
+};
 
 const STATS_DIRECTORY_FALLBACK_DELAY_SECONDS = 30;
 
@@ -193,8 +204,6 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
     };
   }, [communitiesStats, defaultDirectoryAddresses, directories, listsByCode]);
 
-  const loadingLabel = t('loading');
-
   return (
     <>
       {/* Render collectors to fetch stats for each community */}
@@ -206,15 +215,21 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
           <h2 className='capitalize'>{t('stats')}</h2>
         </div>
         <div className={`${styles.boxContent} ${styles.stats}`}>
-          <div className={styles.stat}>
-            <b>{t('total_posts')}</b> <StatValue isLoaded={allDirectoryStatsLoaded} loadingLabel={loadingLabel} value={totalPosts} />
-          </div>
-          <div className={styles.stat}>
-            <b>{t('current_users')}</b> <StatValue isLoaded={allDirectoryStatsLoaded} loadingLabel={loadingLabel} value={currentUsers} />
-          </div>
-          <div className={styles.stat}>
-            <b>{t('boards_tracked')}</b> <StatValue isLoaded={allDirectoryStatsLoaded} loadingLabel={loadingLabel} value={boardsTracked} />
-          </div>
+          {allDirectoryStatsLoaded ? (
+            <>
+              <div className={styles.stat}>
+                <b>{t('total_posts')}</b> {totalPosts}
+              </div>
+              <div className={styles.stat}>
+                <b>{t('current_users')}</b> {currentUsers}
+              </div>
+              <div className={styles.stat}>
+                <b>{t('boards_tracked')}</b> {boardsTracked}
+              </div>
+            </>
+          ) : (
+            <StatsLoading communityAddresses={collectorAddresses} />
+          )}
         </div>
       </div>
     </>

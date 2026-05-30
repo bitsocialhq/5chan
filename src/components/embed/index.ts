@@ -1,1 +1,2 @@
-export { default, canEmbed } from './embed';
+export { default } from './embed';
+export { canEmbed } from './embed-utils';

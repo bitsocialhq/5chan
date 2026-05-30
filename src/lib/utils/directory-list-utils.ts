@@ -85,6 +85,7 @@ const DIRECTORY_CODE_ORDER = [
   'wsg',
   'diy',
   'out',
+  'i',
   'ic',
   'mu',
   'int',

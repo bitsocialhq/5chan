@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld('electronApi', {
   copyToClipboard: (text) => ipcRenderer.invoke('copy-to-clipboard', text),
   getPlatform: () => ipcRenderer.invoke('get-platform'),
   automateUploadMedia: (options) => ipcRenderer.invoke('automate-upload-media', options),
+  automateUploadGeneratedMedia: (options) => ipcRenderer.invoke('automate-upload-generated-media', options),
   downloadAndInstallUpdate: (options) => ipcRenderer.invoke('download-and-install-update', options),
   getPathForFile: (file) => {
     try {

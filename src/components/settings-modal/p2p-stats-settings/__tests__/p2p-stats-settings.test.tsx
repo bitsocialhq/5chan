@@ -155,7 +155,7 @@ describe('P2PStatsSettings', () => {
     // from libp2p observed/WebRTC addresses.
     expect(fetch).toHaveBeenCalledWith('https://api.ipify.org?format=json', expect.objectContaining({ signal: expect.any(AbortSignal) }));
     const yourIpRow = Array.from(container.querySelectorAll('tr')).find((row) => row.textContent?.includes('Your IP'));
-    expect(yourIpRow?.querySelector('[role="img"]')).not.toBeNull();
+    expect(yourIpRow?.querySelector('img[aria-label]')).not.toBeNull();
     expect(container.textContent).not.toContain('browser Helia');
     expect(container.textContent).not.toContain('seed mode');
     expect(container.textContent).not.toContain('status');
@@ -325,7 +325,7 @@ describe('P2PStatsSettings', () => {
     const marker = getMarkerByTitle('Your node - Da Nang, Da Nang City, VN');
     expect(container.textContent).toContain('Leeching');
     expect(rows.get('Your IP')).toContain('117.2.120.113');
-    expect(yourIpRow?.querySelector('[role="img"]')?.getAttribute('aria-label')).toBe('Vietnam');
+    expect(yourIpRow?.querySelector('img[aria-label]')?.getAttribute('aria-label')).toBe('Vietnam');
     expect(marker?.getAttribute('data-peer-role')).toBe('leecher');
     expect(Number(marker?.getAttribute('x'))).toBeCloseTo(286.72, 1);
     expect(Number(marker?.getAttribute('y'))).toBeCloseTo(72.43, 1);
@@ -417,7 +417,7 @@ describe('P2PStatsSettings', () => {
     const marker = getMarkerByTitle('Your node - VN');
     expect(rows.get('Your IP')).toContain('104.28.68.171');
     expect(rows.get('Your IP')).not.toContain('146.75.187.55');
-    expect(yourIpRow?.querySelector('[role="img"]')?.getAttribute('aria-label')).toBe('Vietnam');
+    expect(yourIpRow?.querySelector('img[aria-label]')?.getAttribute('aria-label')).toBe('Vietnam');
     expect(marker).not.toBeNull();
     expect(container.querySelector('svg rect title')?.textContent).not.toContain('Toronto');
     expect(fetchMock).not.toHaveBeenCalledWith('https://free.freeipapi.com/api/json/146.75.187.55', expect.anything());
@@ -562,7 +562,7 @@ describe('P2PStatsSettings', () => {
     expect(rows.get('Your IP')).toContain('104.28.68.171');
     expect(rows.get('Your IP')).not.toContain('unknown');
     const yourIpRow = Array.from(container.querySelectorAll('tr')).find((row) => row.textContent?.includes('Your IP'));
-    expect(yourIpRow?.querySelector('[role="img"]')).not.toBeNull();
+    expect(yourIpRow?.querySelector('img[aria-label]')).not.toBeNull();
     expect(fetch).toHaveBeenCalledWith('https://api.ipify.org?format=json', expect.objectContaining({ signal: expect.any(AbortSignal) }));
   });
 

@@ -104,7 +104,7 @@ describe('persisted extra stores', () => {
     expect(useModQueueStore.getState().getAlertThresholdSeconds()).toBe(900);
   });
 
-  it('blocks special theme enablement outside christmas and clears persisted enabled state on rehydrate', async () => {
+  it('blocks special theme enablement outside active special dates and clears persisted enabled state on rehydrate', async () => {
     localStorage.setItem(
       'Special-theme-storage',
       JSON.stringify({
@@ -121,12 +121,20 @@ describe('persisted extra stores', () => {
     expect(useSpecialThemeStore.getState().isEnabled).toBeNull();
   });
 
-  it('allows opting into the special theme during christmas', async () => {
+  it('allows opting into the special theme during christmas and halloween', async () => {
     const useSpecialThemeStore = await loadSpecialThemeStore('2024-12-24T00:00:00Z');
 
     expect(useSpecialThemeStore.getState().isEnabled).toBeNull();
 
     useSpecialThemeStore.getState().setIsEnabled(true);
     expect(useSpecialThemeStore.getState().isEnabled).toBe(true);
+
+    localStorage.clear();
+    const useHalloweenSpecialThemeStore = await loadSpecialThemeStore('2024-10-31T00:00:00Z');
+
+    expect(useHalloweenSpecialThemeStore.getState().isEnabled).toBeNull();
+
+    useHalloweenSpecialThemeStore.getState().setIsEnabled(true);
+    expect(useHalloweenSpecialThemeStore.getState().isEnabled).toBe(true);
   });
 });

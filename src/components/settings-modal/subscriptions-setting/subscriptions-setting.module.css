@@ -12,6 +12,12 @@
 }
 
 .button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  margin: 0;
+  padding: 0;
   text-transform: capitalize;
   color: var(--button-desktop-text-color);
   text-decoration: var(--button-text-decoration);
@@ -24,6 +30,11 @@
 .button:hover {
   color: var(--button-desktop-text-color-hover);
   cursor: pointer;
+}
+
+.button:focus-visible {
+  outline: 1px dotted currentcolor;
+  outline-offset: 1px;
 }
 
 .notSubscribed {

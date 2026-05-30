@@ -353,7 +353,9 @@ const MobileQuotePreview = ({
         className={styles.backlink}
         ref={refs.setReference}
         onMouseOver={() => handleMouseOver(normalizedBacklinkReply?.cid)}
+        onFocus={() => handleMouseOver(normalizedBacklinkReply?.cid)}
         onMouseLeave={() => handleMouseLeave(normalizedBacklinkReply?.cid)}
+        onBlur={() => handleMouseLeave(normalizedBacklinkReply?.cid)}
       >
         {`>>${normalizedBacklinkReply?.number ?? '?'}`}
       </span>
@@ -404,7 +406,9 @@ const MobileQuotePreview = ({
         ref={quotelinkUnavailable || quotelinkPendingResolution ? undefined : refs.setReference}
         className={quotelinkPendingResolution ? styles.quoteLink : quotelinkClassName}
         onMouseOver={quotelinkUnavailable || quotelinkPendingResolution ? undefined : () => handleMouseOver(resolvedQuotelinkCid)}
+        onFocus={quotelinkUnavailable || quotelinkPendingResolution ? undefined : () => handleMouseOver(resolvedQuotelinkCid)}
         onMouseLeave={quotelinkUnavailable || quotelinkPendingResolution ? undefined : () => handleMouseLeave(resolvedQuotelinkCid)}
+        onBlur={quotelinkUnavailable || quotelinkPendingResolution ? undefined : () => handleMouseLeave(resolvedQuotelinkCid)}
       >
         {formatQuoteNumber(resolvedQuotelinkNumber)}
         {isOP && ' (OP)'}

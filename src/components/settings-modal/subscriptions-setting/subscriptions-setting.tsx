@@ -22,9 +22,9 @@ const SubscriptionButton = ({ address }: { address: string }) => {
   return (
     <span className={styles.subscriptionButton}>
       [
-      <span
+      <button
+        type='button'
         className={styles.button}
-        role='button'
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -35,7 +35,7 @@ const SubscriptionButton = ({ address }: { address: string }) => {
         onClick={toggleSubscription}
       >
         {recentlyUnsubscribed || !subscribed ? t('subscribe') : t('unsubscribe')}
-      </span>
+      </button>
       ]
     </span>
   );
@@ -59,9 +59,9 @@ const SubscriptionsSetting = () => {
           {subscriptions?.length > 1 && (
             <div className={styles.unsubscribeAll}>
               [
-              <span
+              <button
+                type='button'
                 className={styles.button}
-                role='button'
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -72,7 +72,7 @@ const SubscriptionsSetting = () => {
                 onClick={unsubscribeAll}
               >
                 {t('unsubscribe_all')}
-              </span>
+              </button>
               ]
             </div>
           )}

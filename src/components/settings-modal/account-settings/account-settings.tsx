@@ -217,13 +217,19 @@ const AccountSettingsEditor = ({
         <select value={account?.name} onChange={(e) => setActiveAccount(e.target.value)}>
           {accountsOptions}
         </select>{' '}
-        <button onClick={() => navigate('/settings/account-data', { state: { returnTo: location.pathname + location.hash } })}>{t('edit')}</button>{' '}
-        <button onClick={handleExportAccount}>{t('download_backup')}</button>
+        <button type='button' onClick={() => navigate('/settings/account-data', { state: { returnTo: location.pathname + location.hash } })}>
+          {t('edit')}
+        </button>{' '}
+        <button type='button' onClick={handleExportAccount}>
+          {t('download_backup')}
+        </button>
         <div className={styles.info}>{accountStorageInfo}</div>
       </div>
       <div>
-        <button onClick={handleImportAccount}>{t('import_account_backup')}</button>
-        <button className={styles.deleteAccount} onClick={() => _deleteAccount(account?.name ?? '')}>
+        <button type='button' onClick={handleImportAccount}>
+          {t('import_account_backup')}
+        </button>
+        <button type='button' className={styles.deleteAccount} onClick={() => _deleteAccount(account?.name ?? '')}>
           {t('delete_account')}
         </button>
       </div>

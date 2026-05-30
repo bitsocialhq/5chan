@@ -57,15 +57,19 @@
   font-weight: 700;
 }
 
-.boxBar span {
+.boxBar span, .boxBar > button {
+  all: unset;
   position: absolute;
   top: 0;
   right: 0;
   padding-right: 0.25em;
   text-transform: lowercase;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
 }
 
-.boxBar span:hover {
+.boxBar span:hover, .boxBar > button:hover {
   cursor: pointer;
   color: var(--homepage-box-bar-text-color-hover);
 }
@@ -148,12 +152,26 @@
 }
 
 .filterModal .option {
+  all: unset;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
   padding: 0 10px;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: right;
 }
 
 .filterModal .option:hover {
   background-color: #fca;
   cursor: pointer;
+}
+
+.boxBar > button:focus-visible,
+.filterModal .option:focus-visible {
+  outline: 1px solid currentcolor;
+  outline-offset: -1px;
 }
 
 .filterModal .selected::before {

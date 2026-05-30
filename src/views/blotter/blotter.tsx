@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import blotterData from '../../data/5chan-blotter.json';
 import BlotterMessage from '../../components/blotter-message';
 import { formatBlotterDate, isBlotterEntry, sortBlotterEntries } from '../../lib/utils/blotter-utils';
-import { Footer } from '../home';
+import { Footer } from '../home/home';
 import styles from './blotter.module.css';
 
 const Blotter = () => {

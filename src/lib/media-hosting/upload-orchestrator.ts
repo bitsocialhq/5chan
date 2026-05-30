@@ -56,6 +56,10 @@ function resolveElectronFilePath(file: File): string | null {
   return null;
 }
 
+async function fileToByteArray(file: File): Promise<number[]> {
+  return Array.from(new Uint8Array(await file.arrayBuffer()));
+}
+
 /**
  * Uploads a file via a single provider. Catbox uses the web API;
  * imgur/imgbb use Electron automation when available.
@@ -66,8 +70,21 @@ async function uploadViaProvider(provider: ProviderId, file: File): Promise<stri
     const fn = typeof window !== 'undefined' && window.electronApi?.automateUploadMedia;
     if (fn) {
       const filePath = resolveElectronFilePath(file);
-      if (!filePath) throw new Error('File path required for Electron automation');
-      const { url } = await fn({ provider, filePath });
+      if (filePath) {
+        const { url } = await fn({ provider, filePath });
+        return url;
+      }
+
+      const generatedFn = window.electronApi?.automateUploadGeneratedMedia;
+      if (!generatedFn) {
+        throw new Error('File path unavailable and automateUploadGeneratedMedia is not available');
+      }
+      const { url } = await generatedFn({
+        provider,
+        fileName: file.name,
+        mimeType: file.type || 'application/octet-stream',
+        bytes: await fileToByteArray(file),
+      });
       return url;
     }
     throw new Error(`Provider ${provider} requires Electron (automateUploadMedia not available)`);
