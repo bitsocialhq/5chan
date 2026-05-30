@@ -325,4 +325,24 @@ describe('OekakiDrawingControls', () => {
     expect(testState.onOpenImageLoadedMock).toHaveBeenCalledTimes(1);
     expect(URL.createObjectURL).toHaveBeenCalledWith(expect.any(File));
   });
+
+  it('destroys Tegaki when an edited drawing cannot be loaded', async () => {
+    testState.runtime = 'electron';
+    const uploadFile = vi.fn<(file: File) => Promise<UploadedFileResult | null>>().mockResolvedValue({
+      url: 'https://files.example/tegaki.png',
+      fileName: 'tegaki.png',
+    });
+
+    await renderControls({ uploadFile });
+    await clickButton('Draw');
+    await triggerTegakiDone();
+    testState.onOpenImageLoadedMock.mockImplementationOnce(() => {
+      throw new Error('Could not restore drawing');
+    });
+    await clickButton('Edit');
+
+    expect(testState.destroyMock).toHaveBeenCalledTimes(2);
+    expect(globalThis.alert).toHaveBeenCalledWith('Could not restore drawing');
+    expect(getButton('Edit').disabled).toBe(false);
+  });
 });

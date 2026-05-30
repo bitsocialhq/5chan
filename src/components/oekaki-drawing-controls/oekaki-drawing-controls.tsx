@@ -175,7 +175,12 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
         },
       });
       if (existingImage && typeof tegaki.onOpenImageLoaded === 'function') {
-        tegaki.onOpenImageLoaded.call(existingImage);
+        try {
+          tegaki.onOpenImageLoaded.call(existingImage);
+        } catch (error) {
+          destroyTegaki(tegaki);
+          throw error;
+        }
       }
     } catch (error) {
       closeTegakiSession();
