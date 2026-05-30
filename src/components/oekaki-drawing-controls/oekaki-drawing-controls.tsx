@@ -157,12 +157,16 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
         onDone: () => {
           const canvas = tegaki.flatten();
           destroyTegaki(tegaki);
+          setIsUploadingDrawing(true);
           closeTegakiSession();
           void canvasToBlob(canvas)
             .then(makeDrawingFile)
             .then(handleDrawingFile)
             .catch((error) => {
               window.alert(error instanceof Error ? error.message : String(error));
+            })
+            .finally(() => {
+              setIsUploadingDrawing(false);
             });
         },
         onCancel: () => {

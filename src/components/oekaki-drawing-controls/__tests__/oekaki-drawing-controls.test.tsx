@@ -227,6 +227,38 @@ describe('OekakiDrawingControls', () => {
     expect(URL.createObjectURL).toHaveBeenCalledOnce();
   });
 
+  it('keeps Draw disabled while a finished drawing is still exporting', async () => {
+    let finishExport: BlobCallback | null = null;
+    const canvas = document.createElement('canvas');
+    Object.defineProperty(canvas, 'toBlob', {
+      configurable: true,
+      value: (callback: BlobCallback) => {
+        finishExport = callback;
+      },
+    });
+    testState.flattenMock.mockReturnValue(canvas);
+
+    await renderControls();
+    await clickButton('Draw');
+    const openOptions = testState.openMock.mock.calls.at(-1)?.[0] as MockTegakiOpenOptions;
+    await act(async () => {
+      openOptions.onDone();
+      await Promise.resolve();
+    });
+
+    expect(getButton('Draw').disabled).toBe(true);
+    expect(testState.openMock).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      finishExport?.(new Blob(['png'], { type: 'image/png' }));
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(getButton('Edit').disabled).toBe(false);
+  });
+
   it('does not download the web drawing when confirmation is cancelled', async () => {
     Object.defineProperty(globalThis, 'confirm', {
       configurable: true,
