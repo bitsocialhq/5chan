@@ -459,24 +459,26 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     () => ({
       Footer: () => (
         <>
-          <BoardFooter
-            communityAddresses={communityAddresses}
-            hasMore={hasMore}
-            feedState={feedState}
-            combinedFeedLength={combinedFeed.length}
-            isSingleCommunityBoard={!isInAllView && !isInSubscriptionsView && !isInModView}
-            isInSubscriptionsView={isInSubscriptionsView}
-            isInModView={isInModView}
-            currentTimeFilterName={currentTimeFilterName}
-            moreThreadsSuggestion={moreThreadsSuggestion}
-            moreThreadsSuggestionPathname={moreThreadsSuggestionPathname}
-            moreThreadsSuggestionSearch={routerLocation.search}
-            onExpandTimeWindow={expandSuggestionTimeWindow}
-            communityState={communityState}
-            subscriptionsLength={subscriptions?.length || 0}
-            accountCommunityAddressesLength={accountCommunityAddresses?.length || 0}
-            showLoadingEllipsis={effectiveInfiniteScroll || combinedFeed.length === 0}
-          />
+          {shouldUseFlashTable ? null : (
+            <BoardFooter
+              communityAddresses={communityAddresses}
+              hasMore={hasMore}
+              feedState={feedState}
+              combinedFeedLength={combinedFeed.length}
+              isSingleCommunityBoard={!isInAllView && !isInSubscriptionsView && !isInModView}
+              isInSubscriptionsView={isInSubscriptionsView}
+              isInModView={isInModView}
+              currentTimeFilterName={currentTimeFilterName}
+              moreThreadsSuggestion={moreThreadsSuggestion}
+              moreThreadsSuggestionPathname={moreThreadsSuggestionPathname}
+              moreThreadsSuggestionSearch={routerLocation.search}
+              onExpandTimeWindow={expandSuggestionTimeWindow}
+              communityState={communityState}
+              subscriptionsLength={subscriptions?.length || 0}
+              accountCommunityAddressesLength={accountCommunityAddresses?.length || 0}
+              showLoadingEllipsis={effectiveInfiniteScroll || combinedFeed.length === 0}
+            />
+          )}
           <PageFooterDesktop
             firstRow={
               <BoardPagination
