@@ -82,7 +82,7 @@ describe('orchestrateElectronUpload', () => {
       };
       expect(typedError.message).toBe('All providers failed');
       expect(typedError.attempts?.[0]?.provider).toBe('imgur');
-      expect(typedError.attempts?.[0]?.error).toContain('File path required for Electron automation');
+      expect(typedError.attempts?.[0]?.error).toContain('File path unavailable and automateUploadGeneratedMedia is not available');
       expect(typedError.attempts?.[0]?.elapsedMs).toBeGreaterThanOrEqual(0);
       expect(typedError.attempts?.[0]?.stage).toBeDefined();
     }

@@ -49,17 +49,41 @@ const loadTegakiScript = (): Promise<TegakiGlobal> =>
 
     const existingScript = document.querySelector<HTMLScriptElement>('script[data-tegaki-oekaki="script"]');
     if (existingScript) {
-      existingScript.addEventListener('load', () => (window.Tegaki ? resolve(window.Tegaki) : reject(new Error('Tegaki did not initialize'))), { once: true });
-      existingScript.addEventListener('error', () => reject(new Error('Failed to load Tegaki')), { once: true });
-      return;
+      if (window.Tegaki) {
+        resolve(window.Tegaki);
+        return;
+      }
+      if (existingScript.dataset.failed === 'true') {
+        existingScript.remove();
+      } else {
+        const readyState = (existingScript as HTMLScriptElement & { readyState?: string }).readyState;
+        if (existingScript.dataset.loaded === 'true' || readyState === 'complete' || readyState === 'loaded') {
+          reject(new Error('Tegaki did not initialize'));
+          return;
+        }
+        existingScript.addEventListener('load', () => (window.Tegaki ? resolve(window.Tegaki) : reject(new Error('Tegaki did not initialize'))), { once: true });
+        existingScript.addEventListener('error', () => reject(new Error('Failed to load Tegaki')), { once: true });
+        return;
+      }
     }
 
     const script = document.createElement('script');
     script.src = TEGAKI_SCRIPT_URL;
     script.async = true;
     script.dataset.tegakiOekaki = 'script';
-    script.onload = () => (window.Tegaki ? resolve(window.Tegaki) : reject(new Error('Tegaki did not initialize')));
-    script.onerror = () => reject(new Error('Failed to load Tegaki'));
+    script.onload = () => {
+      script.dataset.loaded = 'true';
+      if (window.Tegaki) {
+        resolve(window.Tegaki);
+        return;
+      }
+      reject(new Error('Tegaki did not initialize'));
+    };
+    script.onerror = () => {
+      script.dataset.failed = 'true';
+      script.remove();
+      reject(new Error('Failed to load Tegaki'));
+    };
     document.head.appendChild(script);
   });
 
@@ -71,7 +95,10 @@ export const loadTegaki = (): Promise<TegakiGlobal> => {
 
   if (!tegakiLoadPromise) {
     ensureTegakiStylesheet();
-    tegakiLoadPromise = loadTegakiScript();
+    tegakiLoadPromise = loadTegakiScript().catch((error) => {
+      tegakiLoadPromise = null;
+      throw error;
+    });
   }
 
   return tegakiLoadPromise;

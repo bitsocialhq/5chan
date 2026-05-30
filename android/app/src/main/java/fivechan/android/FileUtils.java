@@ -77,7 +77,17 @@ public class FileUtils {
      * and falls back to a UUID if the result is empty.
      */
     public static File writeBytesToCacheFile(Context context, String fileName, byte[] bytes) throws Exception {
-        File file = new File(context.getCacheDir(), sanitizeFileName(fileName));
+        String safeName = sanitizeFileName(fileName);
+        int dot = safeName.lastIndexOf('.');
+        String base = dot > 0 ? safeName.substring(0, dot) : safeName;
+        String ext = dot > 0 ? safeName.substring(dot) : "";
+        if (base.length() < 3) {
+            base = (base + "___").substring(0, 3);
+        }
+        if (base.length() > 64) {
+            base = base.substring(0, 64);
+        }
+        File file = File.createTempFile(base + "-", ext, context.getCacheDir());
         try (FileOutputStream outputStream = new FileOutputStream(file)) {
             outputStream.write(bytes);
             outputStream.flush();

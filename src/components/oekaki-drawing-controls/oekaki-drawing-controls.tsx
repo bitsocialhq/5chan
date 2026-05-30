@@ -74,11 +74,18 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
   const [saveReplay, setSaveReplay] = useState(true);
   const [drawingFile, setDrawingFile] = useState<File | null>(null);
   const [isOpening, setIsOpening] = useState(false);
+  const [isTegakiOpen, setIsTegakiOpen] = useState(false);
   const [isUploadingDrawing, setIsUploadingDrawing] = useState(false);
   const uploadedDrawingUrlRef = useRef<string | null>(null);
+  const tegakiSessionOpenRef = useRef(false);
   const runtime = getMediaHostingRuntime();
-  const isBusy = disabled || isOpening || isUploadingDrawing;
+  const isBusy = disabled || isOpening || isTegakiOpen || isUploadingDrawing;
   const hasDrawing = drawingFile !== null;
+
+  const closeTegakiSession = () => {
+    tegakiSessionOpenRef.current = false;
+    setIsTegakiOpen(false);
+  };
 
   const handleDrawingFile = async (file: File) => {
     const previousUploadedUrl = uploadedDrawingUrlRef.current;
@@ -86,6 +93,9 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
 
     if (runtime === 'web') {
       uploadedDrawingUrlRef.current = null;
+      if (previousUploadedUrl) {
+        onClearUploadedUrl(previousUploadedUrl);
+      }
       if (window.confirm(OEKAKI_WEB_DOWNLOAD_MESSAGE)) {
         downloadDrawing(file);
       }
@@ -95,14 +105,27 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
     setIsUploadingDrawing(true);
     try {
       const result = await uploadFile(file);
-      uploadedDrawingUrlRef.current = result?.url ?? previousUploadedUrl;
+      if (result?.url) {
+        uploadedDrawingUrlRef.current = result.url;
+        return;
+      }
+      uploadedDrawingUrlRef.current = null;
+      if (previousUploadedUrl) {
+        onClearUploadedUrl(previousUploadedUrl);
+      }
+    } catch (error) {
+      uploadedDrawingUrlRef.current = null;
+      if (previousUploadedUrl) {
+        onClearUploadedUrl(previousUploadedUrl);
+      }
+      throw error;
     } finally {
       setIsUploadingDrawing(false);
     }
   };
 
   const openTegaki = async () => {
-    if (isBusy) return;
+    if (isBusy || tegakiSessionOpenRef.current) return;
     if (isPhonePortraitViewport()) {
       window.alert(OEKAKI_MOBILE_PORTRAIT_MESSAGE);
       return;
@@ -111,11 +134,14 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
     setIsOpening(true);
     try {
       const tegaki = await loadTegaki();
+      tegakiSessionOpenRef.current = true;
+      setIsTegakiOpen(true);
       tegaki.open({
         width: parseDimension(width),
         height: parseDimension(height),
         saveReplay,
         onDone: () => {
+          closeTegakiSession();
           void canvasToBlob(tegaki.flatten())
             .then(makeDrawingFile)
             .then(handleDrawingFile)
@@ -123,10 +149,11 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
               window.alert(error instanceof Error ? error.message : String(error));
             });
         },
-        onCancel: () => undefined,
+        onCancel: closeTegakiSession,
       });
       loadExistingDrawing(tegaki, drawingFile);
     } catch (error) {
+      closeTegakiSession();
       window.alert(error instanceof Error ? error.message : String(error));
     } finally {
       setIsOpening(false);

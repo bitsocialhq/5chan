@@ -76,7 +76,9 @@ async function uploadViaProvider(provider: ProviderId, file: File): Promise<stri
       }
 
       const generatedFn = window.electronApi?.automateUploadGeneratedMedia;
-      if (!generatedFn) throw new Error('File path required for Electron automation');
+      if (!generatedFn) {
+        throw new Error('File path unavailable and automateUploadGeneratedMedia is not available');
+      }
       const { url } = await generatedFn({
         provider,
         fileName: file.name,
