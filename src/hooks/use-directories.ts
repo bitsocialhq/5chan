@@ -339,7 +339,6 @@ const fetchDirectoryListFromGitHub = async (code: string, defaults: DirectoryDef
 
 const fetchDirectoriesFromGitHub = async (): Promise<DirectoriesData> => {
   const defaults = await fetchDirectoryDefaultsFromGitHub();
-  cacheDefaults = defaults;
   const fallbackLists = getFallbackDirectoryLists(defaults);
   const fallbackListsByCode = new Map(fallbackLists.map((list) => [list.directoryCode, list]));
   const codes = [...new Set([...Object.keys(defaults.directories), ...fallbackLists.map((list) => list.directoryCode)])];
@@ -367,6 +366,7 @@ const fetchDirectoriesFromGitHub = async (): Promise<DirectoriesData> => {
     throw new Error('Invalid directories payload');
   }
   hydrateModuleCaches(data);
+  cacheDefaults = defaults;
   lastSuccessfulGitHubFetchAt = Date.now();
   saveToLocalStorage(data);
   return data;

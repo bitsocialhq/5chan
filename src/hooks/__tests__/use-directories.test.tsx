@@ -9,9 +9,11 @@ import {
   useDirectories,
   useDirectoriesMetadata,
   useDirectoriesState,
+  useDirectoryDefaults,
   useDirectoryAddresses,
   useDirectoryByAddress,
   type DirectoriesData,
+  type DirectoryDefaultsData,
 } from '../use-directories';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -25,6 +27,7 @@ type Snapshot = {
   state: ReturnType<typeof useDirectoriesState>;
   addresses: ReturnType<typeof useDirectoryAddresses>;
   directory: ReturnType<typeof useDirectoryByAddress>;
+  directoryDefaults: DirectoryDefaultsData;
   metadata: ReturnType<typeof useDirectoriesMetadata>;
 };
 
@@ -47,6 +50,7 @@ const HookHarness = ({ address = 'music-posting.eth' }: { address?: string }) =>
   const state = useDirectoriesState();
   const addresses = useDirectoryAddresses();
   const directory = useDirectoryByAddress(address);
+  const directoryDefaults = useDirectoryDefaults();
   const metadata = useDirectoriesMetadata();
 
   React.useLayoutEffect(() => {
@@ -55,9 +59,10 @@ const HookHarness = ({ address = 'music-posting.eth' }: { address?: string }) =>
       state,
       addresses,
       directory,
+      directoryDefaults,
       metadata,
     };
-  }, [addresses, directory, directories, metadata, state]);
+  }, [addresses, directory, directories, directoryDefaults, metadata, state]);
 
   return null;
 };
@@ -340,6 +345,38 @@ describe('use-directories', () => {
     expect(directoriesByCode.get('tv')?.address).toBe('television-and-film.bso');
     expect(snapshot.directory?.address).toBe('television-and-film.bso');
     expect(warnSpy.mock.calls.some((call: ConsoleWarnCall) => String(call[0]).includes('Failed to fetch directory list "biz"'))).toBe(true);
+  });
+
+  it('does not expose refreshed defaults before the matching directory payload commits', async () => {
+    const pendingDefaults = createDeferred<ReturnType<typeof createFetchResponse>>();
+    const pendingFetches = new Map<string, Deferred<ReturnType<typeof createFetchResponse>>>();
+    fetchMock.mockImplementation((url: unknown) => {
+      if (isDefaultsUrl(url)) {
+        return pendingDefaults.promise;
+      }
+      const code = getDirectoryCodeFromUrl(url);
+      const deferred = createDeferred<ReturnType<typeof createFetchResponse>>();
+      pendingFetches.set(code, deferred);
+      return deferred.promise;
+    });
+
+    renderHarness();
+    await flushEffects();
+
+    pendingDefaults.resolve(createFetchResponse(createRemoteDefaults()));
+    await flushEffects();
+
+    renderHarness('business-and-finance.bso');
+    await flushEffects();
+
+    expect(latestSnapshot?.directoryDefaults.description).not.toBe('remote defaults');
+
+    pendingFetches.forEach((pendingFetch, code) => {
+      pendingFetch.resolve(createFetchResponse(createRemoteDirectoryList(code)));
+    });
+    await flushEffects(8);
+
+    expect(latestSnapshot?.directoryDefaults.description).toBe('remote defaults');
   });
 
   it('clears invalid recent cache entries and falls back to vendored data when GitHub refresh fails', async () => {
