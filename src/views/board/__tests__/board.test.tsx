@@ -629,6 +629,8 @@ describe('Board', () => {
     expect(table).toBeTruthy();
     expect(container.querySelector('[data-testid="post"]')).toBeNull();
     expect(table?.textContent).toContain('no posts');
+    expect(container.textContent).not.toContain('no_threads');
+    expect(container.querySelector('[data-testid="board-pagination"]')).toBeTruthy();
   });
 
   it('keeps the flash table in loading state until the empty board feed finishes syncing', async () => {
@@ -660,6 +662,7 @@ describe('Board', () => {
     expect(table).toBeTruthy();
     expect(table?.textContent).not.toContain('no posts');
     expect(table?.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
+    expect(container.querySelectorAll('[data-testid="loading-ellipsis"]').length).toBe(1);
   });
 
   it('inserts a nonoko pending account comment after pinned posts on the redirected board index', async () => {
