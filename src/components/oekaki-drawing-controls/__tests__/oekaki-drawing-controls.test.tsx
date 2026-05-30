@@ -14,6 +14,8 @@ const testState = vi.hoisted(() => ({
   loadTegakiMock: vi.fn(),
   openMock: vi.fn(),
   flattenMock: vi.fn(),
+  destroyMock: vi.fn(),
+  onOpenImageLoadedMock: vi.fn(),
 }));
 
 vi.mock('../../../lib/media-hosting/show-upload-controls', () => ({
@@ -27,6 +29,7 @@ vi.mock('../../../lib/oekaki/tegaki-loader', () => ({
 
 let container: HTMLDivElement;
 let root: Root;
+const OriginalImage = globalThis.Image;
 
 interface MockTegakiOpenOptions {
   width: number;
@@ -62,6 +65,15 @@ const createFinishedCanvas = () => {
   });
   return canvas;
 };
+
+class MockImage {
+  onload: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+
+  set src(_value: string) {
+    queueMicrotask(() => this.onload?.());
+  }
+}
 
 const renderControls = async ({
   uploadFile = vi.fn<(file: File) => Promise<UploadedFileResult | null>>().mockResolvedValue(null),
@@ -110,10 +122,26 @@ describe('OekakiDrawingControls', () => {
     testState.runtime = 'web';
     testState.openMock.mockReset();
     testState.flattenMock.mockReset();
+    testState.destroyMock.mockReset();
+    testState.onOpenImageLoadedMock.mockReset();
     testState.flattenMock.mockReturnValue(createFinishedCanvas());
-    testState.loadTegakiMock.mockResolvedValue({
+    const tegaki = {
+      bg: null as HTMLElement | null,
       open: testState.openMock,
       flatten: testState.flattenMock,
+      destroy: testState.destroyMock,
+      onOpenImageLoaded: testState.onOpenImageLoadedMock,
+    };
+    testState.openMock.mockImplementation(() => {
+      tegaki.bg = document.createElement('div');
+    });
+    testState.destroyMock.mockImplementation(() => {
+      tegaki.bg = null;
+    });
+    testState.loadTegakiMock.mockResolvedValue(tegaki);
+    Object.defineProperty(globalThis, 'Image', {
+      configurable: true,
+      value: MockImage,
     });
     Object.defineProperty(globalThis, 'alert', {
       configurable: true,
@@ -143,6 +171,10 @@ describe('OekakiDrawingControls', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    Object.defineProperty(globalThis, 'Image', {
+      configurable: true,
+      value: OriginalImage,
+    });
     vi.restoreAllMocks();
   });
 
@@ -180,6 +212,7 @@ describe('OekakiDrawingControls', () => {
       openOptions.onCancel();
     });
 
+    expect(testState.destroyMock).toHaveBeenCalledTimes(1);
     expect(getButton('Draw').disabled).toBe(false);
   });
 
@@ -189,6 +222,7 @@ describe('OekakiDrawingControls', () => {
     await triggerTegakiDone();
 
     expect(globalThis.confirm).toHaveBeenCalledWith(OEKAKI_WEB_DOWNLOAD_MESSAGE);
+    expect(testState.destroyMock).toHaveBeenCalledTimes(1);
     expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(1);
     expect(URL.createObjectURL).toHaveBeenCalledOnce();
   });
@@ -240,5 +274,23 @@ describe('OekakiDrawingControls', () => {
 
     expect(uploadFile).toHaveBeenCalledTimes(2);
     expect(onClearUploadedUrl).toHaveBeenCalledWith('https://files.example/first.png');
+  });
+
+  it('starts edited drawings from a fresh Tegaki session with the saved image loaded', async () => {
+    testState.runtime = 'electron';
+    const uploadFile = vi.fn<(file: File) => Promise<UploadedFileResult | null>>().mockResolvedValue({
+      url: 'https://files.example/tegaki.png',
+      fileName: 'tegaki.png',
+    });
+
+    await renderControls({ uploadFile });
+    await clickButton('Draw');
+    await triggerTegakiDone();
+    await clickButton('Edit');
+
+    expect(testState.openMock).toHaveBeenCalledTimes(2);
+    expect(testState.destroyMock).toHaveBeenCalledTimes(1);
+    expect(testState.onOpenImageLoadedMock).toHaveBeenCalledTimes(1);
+    expect(URL.createObjectURL).toHaveBeenCalledWith(expect.any(File));
   });
 });

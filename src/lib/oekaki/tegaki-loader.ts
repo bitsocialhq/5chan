@@ -11,8 +11,10 @@ interface TegakiOpenOptions {
 }
 
 export interface TegakiGlobal {
+  bg?: HTMLElement | null;
   open: (options: TegakiOpenOptions) => void;
   flatten: () => HTMLCanvasElement;
+  destroy?: () => void;
   onOpenImageLoaded?: (this: HTMLImageElement) => void;
 }
 

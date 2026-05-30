@@ -55,17 +55,30 @@ const downloadDrawing = (file: File): void => {
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 };
 
-const loadExistingDrawing = (tegaki: TegakiGlobal, file: File | null): void => {
-  if (!file || typeof tegaki.onOpenImageLoaded !== 'function') return;
+const loadDrawingImage = (file: File | null): Promise<HTMLImageElement | null> =>
+  new Promise((resolve, reject) => {
+    if (!file) {
+      resolve(null);
+      return;
+    }
 
-  const url = URL.createObjectURL(file);
-  const image = new Image();
-  image.onload = () => {
-    tegaki.onOpenImageLoaded?.call(image);
-    URL.revokeObjectURL(url);
-  };
-  image.onerror = () => URL.revokeObjectURL(url);
-  image.src = url;
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Could not load drawing'));
+    };
+    image.src = url;
+  });
+
+const destroyTegaki = (tegaki: TegakiGlobal): void => {
+  if (tegaki.bg && typeof tegaki.destroy === 'function') {
+    tegaki.destroy();
+  }
 };
 
 const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClearUploadedUrl }: OekakiDrawingControlsProps) => {
@@ -133,7 +146,8 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
 
     setIsOpening(true);
     try {
-      const tegaki = await loadTegaki();
+      const [tegaki, existingImage] = await Promise.all([loadTegaki(), loadDrawingImage(drawingFile)]);
+      destroyTegaki(tegaki);
       tegakiSessionOpenRef.current = true;
       setIsTegakiOpen(true);
       tegaki.open({
@@ -141,17 +155,24 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
         height: parseDimension(height),
         saveReplay,
         onDone: () => {
+          const canvas = tegaki.flatten();
+          destroyTegaki(tegaki);
           closeTegakiSession();
-          void canvasToBlob(tegaki.flatten())
+          void canvasToBlob(canvas)
             .then(makeDrawingFile)
             .then(handleDrawingFile)
             .catch((error) => {
               window.alert(error instanceof Error ? error.message : String(error));
             });
         },
-        onCancel: closeTegakiSession,
+        onCancel: () => {
+          destroyTegaki(tegaki);
+          closeTegakiSession();
+        },
       });
-      loadExistingDrawing(tegaki, drawingFile);
+      if (existingImage && typeof tegaki.onOpenImageLoaded === 'function') {
+        tegaki.onOpenImageLoaded.call(existingImage);
+      }
     } catch (error) {
       closeTegakiSession();
       window.alert(error instanceof Error ? error.message : String(error));
