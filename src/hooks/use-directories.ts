@@ -475,28 +475,9 @@ export const useDirectories = () => {
 };
 
 export const useDirectoryDefaults = (): DirectoryDefaultsData => {
-  // Vendored defaults render directory rules instantly; GitHub refresh reuses the shared deduped fetch (no extra request).
-  const [defaults, setDefaults] = useState<DirectoryDefaultsData>(() => cacheDefaults ?? getFallbackDirectoryDefaults());
-
-  useEffect(() => {
-    let isMounted = true;
-    (async () => {
-      try {
-        await fetchDirectoriesFromGitHubDeduped();
-      } catch (e) {
-        console.warn('Failed to fetch directory defaults from GitHub:', e);
-      }
-      if (isMounted && cacheDefaults) {
-        setDefaults(cacheDefaults);
-      }
-    })();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  return cacheDefaults ?? defaults;
+  // Subscribe to the shared directory refresh so defaults update only when the matching directory payload commits.
+  useDirectories();
+  return cacheDefaults ?? getFallbackDirectoryDefaults();
 };
 
 export const useDirectoriesState = () => {
