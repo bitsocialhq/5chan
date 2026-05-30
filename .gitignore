@@ -170,6 +170,7 @@ yarn-error.log*
 
 .vscode
 .playwright-cli
+.codegraph/
 .firecrawl/
 
 # Repo-managed AI tooling
