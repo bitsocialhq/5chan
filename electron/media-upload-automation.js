@@ -14,7 +14,7 @@ import { MEDIA_UPLOAD_RECIPES } from './media-upload-recipes.js';
 const POLL_INTERVAL_MS = 500;
 
 /** File extensions that denote direct media URLs (mirrors src/lib/media-hosting/direct-url.ts) */
-const DIRECT_MEDIA_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.webm', '.mp4', '.mov', '.avi', '.mkv', '.gifv'];
+const DIRECT_MEDIA_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.webm', '.mp4', '.mov', '.avi', '.mkv', '.gifv', '.swf'];
 
 /** Returns true if the URL appears to point to a direct media file. Exported for tests. */
 export function isDirectMediaUrl(url) {

@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
-import { readFileSync } from 'fs';
+import { readdirSync, readFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { execFileSync } from 'child_process';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -56,6 +56,8 @@ const baselineAppShellUrls = new Set([
   'manifest-icon-192x192.png',
   'manifest-icon-512x512.png',
 ]);
+const ruffleRuntimeDirectory = new URL('./node_modules/@ruffle-rs/ruffle/', import.meta.url);
+const ruffleRuntimeFilePattern = /^(?:ruffle\.js|core\.ruffle\.[\da-f]+\.js|[\da-f]+\.wasm)$/;
 
 function readGitRef(args) {
   try {
@@ -192,6 +194,48 @@ function appVersionMetadataPlugin() {
   };
 }
 
+function getRuffleRuntimeFileNames() {
+  return readdirSync(ruffleRuntimeDirectory).filter((fileName) => ruffleRuntimeFilePattern.test(fileName));
+}
+
+function getRuffleRuntimeContentType(fileName) {
+  return fileName.endsWith('.wasm') ? 'application/wasm' : 'application/javascript; charset=utf-8';
+}
+
+function ruffleRuntimeAssetsPlugin() {
+  return {
+    name: 'fivechan-ruffle-runtime-assets',
+    configureServer(server) {
+      server.middlewares.use('/ruffle/', (req, res, next) => {
+        const fileName = new URL(req.url || '', 'https://example.invalid/').pathname.split('/').pop() || '';
+
+        if (!ruffleRuntimeFilePattern.test(fileName)) {
+          next();
+          return;
+        }
+
+        try {
+          const source = readFileSync(new URL(fileName, ruffleRuntimeDirectory));
+          res.setHeader('Content-Type', getRuffleRuntimeContentType(fileName));
+          res.setHeader('Cache-Control', 'no-cache');
+          res.end(source);
+        } catch {
+          next();
+        }
+      });
+    },
+    generateBundle() {
+      for (const fileName of getRuffleRuntimeFileNames()) {
+        this.emitFile({
+          type: 'asset',
+          fileName: `ruffle/${fileName}`,
+          source: readFileSync(new URL(fileName, ruffleRuntimeDirectory)),
+        });
+      }
+    },
+  };
+}
+
 function getVercelContentSecurityPolicy() {
   const vercelConfig = JSON.parse(readFileSync(new URL('./vercel.json', import.meta.url), 'utf8'));
   const cspHeader = vercelConfig.headers
@@ -228,9 +272,7 @@ function verifyVercelCspHashesPlugin() {
     closeBundle() {
       const indexHtml = readFileSync(new URL(`./${buildOutDir}/index.html`, import.meta.url), 'utf8');
       const contentSecurityPolicy = getVercelContentSecurityPolicy();
-      const missingHashes = getInlineScriptHashes(indexHtml).filter(
-        (hash) => !contentSecurityPolicy.includes(`'${hash}'`) && !contentSecurityPolicy.includes(hash),
-      );
+      const missingHashes = getInlineScriptHashes(indexHtml).filter((hash) => !contentSecurityPolicy.includes(`'${hash}'`) && !contentSecurityPolicy.includes(hash));
 
       if (missingHashes.length > 0) {
         const plural = missingHashes.length === 1 ? '' : 'es';
@@ -280,6 +322,7 @@ function adaptReactPluginForRolldown(plugin) {
 export default defineConfig({
   plugins: [
     appVersionMetadataPlugin(),
+    ruffleRuntimeAssetsPlugin(),
     ...react({
       babel: {
         plugins: [

@@ -397,5 +397,7 @@
   "ban_duration_days": "बंद मुदत दिवसांमध्ये",
   "challenge_answer": "आव्हान उत्तर",
   "ban": "प्रतिबंध",
-  "timestamp": "टाइमस्टॅम्प"
+  "timestamp": "टाइमस्टॅम्प",
+  "tag": "tag",
+  "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled."
 }

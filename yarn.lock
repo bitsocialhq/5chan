@@ -28,6 +28,7 @@ __metadata:
     "@pkcprotocol/pkc-js": "npm:0.0.37"
     "@react-spring/web": "npm:10.0.3"
     "@reforged/maker-appimage": "npm:5.1.1"
+    "@ruffle-rs/ruffle": "npm:0.2.0"
     "@types/lodash": "npm:4.17.24"
     "@types/memoizee": "npm:0.4.9"
     "@types/node": "npm:20.19.37"
@@ -6383,6 +6384,13 @@ __metadata:
     rollup:
       optional: true
   checksum: 10c0/001834bf62d7cf5bac424d2617c113f7f7d3b2bf3c1778cbcccb72cdc957b68989f8e7747c782c2b911f1dde8257f56f8ac1e779e29e74e638e3f1e2cac2bcd0
+  languageName: node
+  linkType: hard
+
+"@ruffle-rs/ruffle@npm:0.2.0":
+  version: 0.2.0
+  resolution: "@ruffle-rs/ruffle@npm:0.2.0"
+  checksum: 10c0/5fc32eebc111743f6273ca238bee18fb7dd510ca05f81a3f6d6530d8c1b91250d0fcf2a9a23225be1d5d0ffd6000fc62b9531b59719b937399fc11fc088020cb
   languageName: node
   linkType: hard
 

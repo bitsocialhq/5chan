@@ -148,6 +148,10 @@
   vertical-align: -1px;
 }
 
+.flashTag {
+  font-weight: bold;
+}
+
 .authorFlag {
   display: inline-block;
   flex: 0 0 auto;

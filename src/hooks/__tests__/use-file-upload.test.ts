@@ -157,6 +157,7 @@ describe('useFileUpload', () => {
     await act(async () => {
       uploadPromise = hook().handleUpload();
     });
+    expect((document.querySelector('input[type="file"]') as HTMLInputElement | null)?.accept).toContain('.swf');
     await selectFileFromHiddenInput(selectedFile);
     await act(async () => {
       await uploadPromise;

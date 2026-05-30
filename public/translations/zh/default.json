@@ -397,5 +397,7 @@
   "ban_duration_days": "封禁时长（天数）",
   "challenge_answer": "挑战答案",
   "ban": "封禁",
-  "timestamp": "时间戳"
+  "timestamp": "时间戳",
+  "tag": "tag",
+  "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled."
 }

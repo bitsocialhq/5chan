@@ -45,6 +45,7 @@ export interface DirectoryList {
   title?: string;
   description?: string;
   features?: DirectoryFeatures;
+  rules?: string[];
   createdAt?: number;
   updatedAt?: number;
   boards: DirectoryListBoard[];
@@ -54,6 +55,7 @@ interface DirectoryDefaultsEntry {
   directoryCode?: string;
   title?: string;
   features?: DirectoryFeatures;
+  rules?: string[];
 }
 
 export interface DirectoryDefaultsData {
@@ -66,6 +68,7 @@ export interface DirectoryDefaultsData {
 
 const DIRECTORY_CODE_ORDER = [
   'a',
+  'f',
   'co',
   'ck',
   'pol',
@@ -121,6 +124,15 @@ const normalizeFeatures = (value: unknown): DirectoryFeatures | undefined => {
   return Object.keys(normalizedFeatures).length > 0 ? normalizedFeatures : undefined;
 };
 
+const normalizeRules = (value: unknown): string[] | undefined => {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
+  const rules = value.filter((rule): rule is string => typeof rule === 'string' && rule.length > 0);
+  return rules.length > 0 ? rules : undefined;
+};
+
 const normalizeDirectoryDefaultsEntry = (code: string, raw: unknown): DirectoryDefaultsEntry => {
   if (!isRecord(raw)) {
     return { directoryCode: code };
@@ -128,10 +140,12 @@ const normalizeDirectoryDefaultsEntry = (code: string, raw: unknown): DirectoryD
 
   const directoryCode = toString(raw.directoryCode) ?? code;
   const features = normalizeFeatures(raw.features);
+  const rules = normalizeRules(raw.rules);
   return {
     directoryCode,
     ...(toString(raw.title) ? { title: toString(raw.title)! } : {}),
     ...(features ? { features } : {}),
+    ...(rules ? { rules } : {}),
   };
 };
 
@@ -218,12 +232,14 @@ export const normalizeDirectoryList = (raw: unknown, fallbackCode: string, defau
   const defaultEntry = defaults?.directories[rawCode ?? fallbackCode] ?? defaults?.directories[fallbackCode];
   const directoryCode = toString(defaultEntry?.directoryCode) ?? rawCode ?? fallbackCode;
   const features = normalizeFeatures(defaultEntry?.features) ?? normalizeFeatures(raw.features);
+  const rules = normalizeRules(raw.rules);
 
   return {
     directoryCode,
     ...(toString(defaultEntry?.title) ? { title: toString(defaultEntry?.title)! } : toString(raw.title) ? { title: toString(raw.title)! } : {}),
     ...(toString(raw.description) ? { description: toString(raw.description)! } : {}),
     ...(features ? { features } : {}),
+    ...(rules ? { rules } : {}),
     ...(toNumber(raw.createdAt) !== undefined ? { createdAt: toNumber(raw.createdAt) } : {}),
     ...(toNumber(raw.updatedAt) !== undefined ? { updatedAt: toNumber(raw.updatedAt) } : {}),
     boards,

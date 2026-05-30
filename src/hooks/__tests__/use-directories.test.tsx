@@ -201,7 +201,7 @@ describe('use-directories', () => {
       updatedAt: 2,
       communities: [
         { address: 'music-posting.bso', title: '/mu/ - Cached Music', nsfw: false },
-        { address: 'flash.bso', title: '/f/ - Flash', nsfw: true },
+        { address: 'flash-posting.bso', title: '/f/ - Flash', nsfw: true },
       ],
     };
 
@@ -225,8 +225,8 @@ describe('use-directories', () => {
 
     expect(fetchMock).toHaveBeenCalled();
     expect(latestSnapshot?.state.loading).toBe(false);
-    expect(latestSnapshot?.state.communities.map((community) => community.address)).toEqual(['music-posting.bso', 'flash.bso']);
-    expect(latestSnapshot?.addresses).toEqual(['music-posting.bso', 'flash.bso']);
+    expect(latestSnapshot?.state.communities.map((community) => community.address)).toEqual(['music-posting.bso', 'flash-posting.bso']);
+    expect(latestSnapshot?.addresses).toEqual(['music-posting.bso', 'flash-posting.bso']);
     expect(latestSnapshot?.directory?.address).toBe('music-posting.bso');
     expect(latestSnapshot?.metadata).toEqual({
       title: 'Cached directories',

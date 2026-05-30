@@ -29,6 +29,7 @@ import CommentMedia, { MediaLoadFailureInfo } from '../comment-media';
 import FailedPublishNotice from '../failed-publish-notice';
 import LoadingEllipsis from '../loading-ellipsis';
 import PostAuthorFlags from '../post-author-flags';
+import PostFlashTag from '../post-flash-tag';
 import PostMenuMobile from './post-menu-mobile';
 import ReplyQuotePreview from '../reply-quote-preview';
 import Tooltip from '../tooltip';
@@ -351,6 +352,7 @@ const PostInfoAndMedia = ({
               </>
             )}
             <PostAuthorFlags author={author} comment={resolvedPost} enabled={showAuthorFlags} />
+            <PostFlashTag comment={resolvedPost} directory={directoryEntry} />
             {pinned && (
               <span className={styles.stickyIconWrapper}>
                 <img src='assets/icons/sticky.gif' alt='' className={styles.stickyIcon} title={t('sticky')} />
