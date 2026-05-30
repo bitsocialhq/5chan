@@ -51,6 +51,32 @@ ipcMain.on('get-pkc-rpc-auth-key', (event) => event.reply('pkc-rpc-auth-key', pk
 // NOTE: eventually should probably fake sec-ch-ua header as well
 const fakeUserAgent = createFakeUserAgent();
 const realUserAgent = `5chan/${packageJson.version}`;
+const MAX_GENERATED_UPLOAD_BYTES = 20 * 1024 * 1024;
+const SAFE_GENERATED_UPLOAD_NAME_RE = /[^a-zA-Z0-9._-]/g;
+
+const sanitizeGeneratedUploadFileName = (fileName) => {
+  const basename = path.basename(typeof fileName === 'string' && fileName ? fileName : 'tegaki.png').replace(/\.\./g, '');
+  const sanitized = basename.replace(SAFE_GENERATED_UPLOAD_NAME_RE, '_').trim();
+  return sanitized && sanitized.length <= 255 ? sanitized : 'tegaki.png';
+};
+
+const writeGeneratedUploadFile = async ({ fileName, bytes }) => {
+  if (!Array.isArray(bytes) || bytes.length === 0) {
+    throw new Error('Generated upload bytes are required');
+  }
+  if (bytes.length > MAX_GENERATED_UPLOAD_BYTES) {
+    throw new Error('Generated upload is too large');
+  }
+  if (!bytes.every((byte) => Number.isInteger(byte) && byte >= 0 && byte <= 255)) {
+    throw new Error('Generated upload bytes are invalid');
+  }
+  const buffer = Buffer.from(bytes);
+  const safeFileName = sanitizeGeneratedUploadFileName(fileName);
+  const tempDir = await fs.promises.mkdtemp(path.join(app.getPath('temp'), '5chan-upload-'));
+  const filePath = path.join(tempDir, safeFileName);
+  await fs.promises.writeFile(filePath, buffer);
+  return { tempDir, filePath };
+};
 
 // add right click menu
 contextMenu({
@@ -389,6 +415,20 @@ ipcMain.handle('automate-upload-media', async (event, options) => {
     throw new Error('automate-upload-media requires { provider, filePath }');
   }
   return automateUploadMedia({ provider, filePath });
+});
+
+ipcMain.handle('automate-upload-generated-media', async (event, options) => {
+  const { provider, fileName, bytes } = options || {};
+  if (!provider) {
+    throw new Error('automate-upload-generated-media requires a provider');
+  }
+
+  const { tempDir, filePath } = await writeGeneratedUploadFile({ fileName, bytes });
+  try {
+    return await automateUploadMedia({ provider, filePath });
+  } finally {
+    await fs.promises.rm(tempDir, { force: true, recursive: true });
+  }
 });
 
 ipcMain.handle('download-and-install-update', async (event, options) => {

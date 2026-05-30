@@ -28,9 +28,11 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import { useCommunityField } from '../../hooks/use-stable-community';
+import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
 import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import LoadingEllipsis from '../loading-ellipsis';
+import OekakiDrawingControls from '../oekaki-drawing-controls';
 import PostOptionsErrorMessage from '../post-options-error-message/post-options-error-message';
 import styles from './reply-modal.module.css';
 import capitalize from 'lodash/capitalize';
@@ -63,6 +65,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const directoryEntry = findDirectoryByAddress(directories, communityAddress);
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
   const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
+  const showOekakiControls = postOptionsDirectoryCode === 'i' || directoryEntry?.directoryCode === 'i';
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
   const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
@@ -429,7 +432,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     checkContentLengthRef.current(publishContent, t);
   }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, postOptionsDirectoryCode, setPublishReplyOptions, t]);
 
-  const { isUploading, uploadedFileName, handleUpload } = useFileUpload({
+  const { isUploading, uploadedFileName, handleUpload, uploadFile } = useFileUpload({
     onUploadComplete: (uploadedUrl: string) => {
       if (uploadedUrl) {
         setUrl(uploadedUrl);
@@ -440,6 +443,14 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       }
     },
   });
+  const handleOekakiClearUploadedUrl = (uploadedUrl: string) => {
+    if ((urlRef.current?.value || url) !== uploadedUrl) return;
+    setUrl('');
+    if (urlRef.current) {
+      urlRef.current.value = '';
+    }
+    setPublishReplyOptions({ link: '' });
+  };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode, isWebRuntime());
   const displayedFileName = getPublishURLFilename(url) || uploadedFileName;
@@ -546,6 +557,13 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             }}
           />
         </div>
+        {showOekakiControls && (
+          <div className={styles.oekakiRow}>
+            <span className={styles.oekakiLabel}>Draw</span>
+            <OekakiDrawingControls className={styles.oekakiControls} disabled={isUploading} uploadFile={uploadFile} onClearUploadedUrl={handleOekakiClearUploadedUrl} />
+          </div>
+        )}
+        {showOekakiControls && isWebRuntime() ? <div className={styles.oekakiWarning}>{OEKAKI_WEB_WARNING_TEXT}</div> : null}
         {flagOptions.length > 0 && (
           <div>
             <select

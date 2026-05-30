@@ -5,6 +5,13 @@ interface PickAndUploadMediaOptions {
   providerOrder: ProviderId[];
 }
 
+interface UploadGeneratedMediaOptions {
+  providerOrder: ProviderId[];
+  fileName: string;
+  mimeType: string;
+  base64: string;
+}
+
 interface PickAndUploadMediaResult {
   url: string;
   fileName: string;
@@ -14,6 +21,7 @@ interface PickAndUploadMediaResult {
 
 interface FileUploaderPlugin {
   pickAndUploadMedia(options?: PickAndUploadMediaOptions): Promise<PickAndUploadMediaResult>;
+  uploadGeneratedMedia(options: UploadGeneratedMediaOptions): Promise<PickAndUploadMediaResult>;
 }
 
 const FileUploader = registerPlugin<FileUploaderPlugin>('FileUploader');
