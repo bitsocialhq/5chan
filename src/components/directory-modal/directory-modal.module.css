@@ -24,11 +24,11 @@
   position: fixed;
   width: 500px;
   max-width: calc(100% - 20px);
-  max-height: calc(100vh - 40px);
+  max-height: calc(100vh - 70px);
   overflow-y: auto;
-  top: 50%;
+  top: 50px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   background-color: var(--directory-modal-background-color, #f0e0d6);
   border: var(--directory-modal-border, 1px solid #d9bfb7);
   color: var(--directory-modal-text-color, #800);
@@ -46,8 +46,8 @@
     width: calc(100% - 20px);
     max-width: 500px;
     left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    top: 50px;
+    transform: translateX(-50%);
   }
 }
 
