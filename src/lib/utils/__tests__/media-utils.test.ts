@@ -98,6 +98,7 @@ describe('media-utils', () => {
     expect(getDisplayMediaInfoType('iframe', t)).toBe('translated:iframe');
     expect(getDisplayMediaInfoType('video', t)).toBe('translated:video');
     expect(getDisplayMediaInfoType('audio', t)).toBe('translated:audio');
+    expect(getDisplayMediaInfoType('swf', t)).toBe('SWF');
     expect(getDisplayMediaInfoType('unknown', t)).toBe('translated:webpage');
   });
 
@@ -107,6 +108,7 @@ describe('media-utils', () => {
     expect(getHasThumbnail({ type: 'video', url: 'https://example.com/file.mp4' }, 'https://example.com/file.mp4')).toBe(true);
     expect(getHasThumbnail({ type: 'audio', url: 'https://example.com/file.mp3' }, 'https://example.com/file.mp3')).toBe(true);
     expect(getHasThumbnail({ type: 'gif', url: 'https://example.com/file.gif' }, 'https://example.com/file.gif')).toBe(true);
+    expect(getHasThumbnail({ type: 'swf', url: 'https://example.com/file.swf' }, 'https://example.com/file.swf')).toBe(true);
     expect(getHasThumbnail({ thumbnail: 'https://example.com/thumb.png', type: 'webpage', url: 'https://example.com' }, 'https://example.com')).toBe(true);
     expect(
       getHasThumbnail(
@@ -132,6 +134,7 @@ describe('media-utils', () => {
     expect(getLinkMediaInfo('https://example.com/file.png')).toMatchObject({ type: 'image' });
     expect(getLinkMediaInfo('https://example.com/file.mp4')).toMatchObject({ type: 'video' });
     expect(getLinkMediaInfo('https://example.com/file.mp3')).toMatchObject({ type: 'audio' });
+    expect(getLinkMediaInfo('https://example.com/file.swf')).toMatchObject({ type: 'swf' });
     expect(getLinkMediaInfo('https://example.com/path')).toMatchObject({ type: 'webpage' });
     expect(getLinkMediaInfo('https://www.youtube.com/watch?v=abc123')).toEqual({
       patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/0.jpg',
@@ -201,6 +204,7 @@ describe('media-utils', () => {
     expect(getMediaDimensions({ type: 'audio', url: 'https://example.com/file.mp3' })).toBe('700x240');
     expect(getMediaDimensions({ linkHeight: 480, linkWidth: 640, type: 'image', url: 'https://example.com/file.png' })).toBe('640x480');
     expect(getMediaDimensions({ linkHeight: 720, linkWidth: 1280, type: 'video', url: 'https://example.com/file.mp4' })).toBe('1280x720');
+    expect(getMediaDimensions({ linkHeight: 480, linkWidth: 640, type: 'swf', url: 'https://example.com/file.swf' })).toBe('640x480');
     expect(getMediaDimensions({ type: 'webpage', url: 'https://example.com' })).toBe('');
   });
 

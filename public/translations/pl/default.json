@@ -397,5 +397,7 @@
   "ban_duration_days": "czas trwania banu w dniach",
   "challenge_answer": "odpowiedź na wyzwanie",
   "ban": "zbanować",
-  "timestamp": "znacznik czasu"
+  "timestamp": "znacznik czasu",
+  "tag": "tag",
+  "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled."
 }

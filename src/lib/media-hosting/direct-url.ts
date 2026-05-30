@@ -1,7 +1,7 @@
-/** File extensions that denote direct media URLs (images + videos) */
-const DIRECT_MEDIA_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.webm', '.mp4', '.mov', '.avi', '.mkv', '.gifv'] as const;
+/** File extensions that denote direct media URLs (images, videos, and Flash movies) */
+const DIRECT_MEDIA_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.webm', '.mp4', '.mov', '.avi', '.mkv', '.gifv', '.swf'] as const;
 
-/** Returns true if the URL appears to point to a direct media file (image or video) */
+/** Returns true if the URL appears to point to a direct media file */
 export function isDirectMediaUrl(url: string): boolean {
   try {
     const normalized = url.split('?')[0].split('#')[0].toLowerCase();

@@ -23,8 +23,12 @@ const DEFAULT_METADATA = {
 
 const DEFAULTS_FILE_NAME = '5chan-directories-defaults.json';
 const DIRECTORY_LIST_FILE_RE = /^5chan-.+-directory\.json$/;
+const FLASH_DIRECTORY_RULES = [
+  'The tagging of uploaded files is mandatory. Improperly tagged items may be removed without notice. Abuse of the tagging system may result in temporary ban.',
+];
 const DIRECTORY_CODE_ORDER = [
   'a',
+  'f',
   'co',
   'ck',
   'pol',
@@ -58,10 +62,52 @@ const DIRECTORY_CODE_ORDER = [
 ];
 const DIRECTORY_CODE_ORDER_INDEX = new Map(DIRECTORY_CODE_ORDER.map((code, index) => [code, index]));
 
+const BOOTSTRAP_DIRECTORY_LISTS = [
+  {
+    directoryCode: 'f',
+    title: '/f/ - Flash',
+    description:
+      'Boards competing to host the /f/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-f-directory.json',
+    features: {
+      pseudonymityMode: 'per-reply',
+      safeForWork: false,
+      hasFlags: false,
+      postFlairs: true,
+      requirePostFlairs: true,
+      requirePostLink: true,
+      requirePostLinkIsMedia: false,
+      bumpLimit: 300,
+      noSpoilers: true,
+      noSpoilerReplies: true,
+      postsPerPage: 50,
+    },
+    rules: FLASH_DIRECTORY_RULES,
+    createdAt: 1780123897,
+    updatedAt: 1780123897,
+    boards: [
+      {
+        address: 'flash-posting.bso',
+        publicKey: '12D3KooWPFckNTD8YHVJrjpa9hRYvuomvM9VsvQQkJqjWRtpLv1F',
+        owner: 'plebeius.bso',
+        addedAt: 1780123897,
+      },
+    ],
+  },
+];
+
 const isRecord = (value) => typeof value === 'object' && value !== null;
 const isDirectoryListFile = (fileName) => DIRECTORY_LIST_FILE_RE.test(fileName);
 const toNumber = (value) => (typeof value === 'number' && Number.isFinite(value) ? value : undefined);
 const toString = (value) => (typeof value === 'string' && value.length > 0 ? value : undefined);
+
+const normalizeRules = (value) => {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
+  const rules = value.filter((rule) => typeof rule === 'string' && rule.length > 0);
+  return rules.length > 0 ? rules : undefined;
+};
 
 const normalizeFeatures = (value) => {
   if (!isRecord(value)) {
@@ -112,10 +158,12 @@ const normalizeDirectoryDefaultsEntry = (code, raw) => {
   }
 
   const features = normalizeFeatures(raw.features);
+  const rules = normalizeRules(raw.rules);
   return {
     directoryCode: toString(raw.directoryCode) || code,
     ...(toString(raw.title) ? { title: toString(raw.title) } : {}),
     ...(features ? { features } : {}),
+    ...(rules ? { rules } : {}),
   };
 };
 
@@ -141,12 +189,14 @@ const normalizeDirectoryList = (raw, fallbackCode, defaults) => {
   const rawCode = toString(raw.directoryCode);
   const defaultEntry = defaults?.directories?.[rawCode || fallbackCode] || defaults?.directories?.[fallbackCode];
   const features = normalizeFeatures(defaultEntry?.features) || normalizeFeatures(raw.features);
+  const rules = normalizeRules(raw.rules);
 
   return {
     directoryCode: toString(defaultEntry?.directoryCode) || rawCode || fallbackCode,
     ...(toString(defaultEntry?.title) ? { title: toString(defaultEntry.title) } : toString(raw.title) ? { title: toString(raw.title) } : {}),
     ...(toString(raw.description) ? { description: toString(raw.description) } : {}),
     ...(features ? { features } : {}),
+    ...(rules ? { rules } : {}),
     ...(toNumber(raw.createdAt) !== undefined ? { createdAt: toNumber(raw.createdAt) } : {}),
     ...(toNumber(raw.updatedAt) !== undefined ? { updatedAt: toNumber(raw.updatedAt) } : {}),
     boards,
@@ -165,8 +215,14 @@ const sortDirectoryLists = (lists) =>
     return a.directoryCode.localeCompare(b.directoryCode);
   });
 
+const addBootstrapDirectoryLists = (directories) => {
+  const codes = new Set(directories.map((directory) => directory.directoryCode));
+  return [...directories, ...BOOTSTRAP_DIRECTORY_LISTS.filter((directory) => !codes.has(directory.directoryCode))];
+};
+
 const toDirectoryListsData = (directories, fallbackMetadata = DEFAULT_METADATA) => {
-  const timestamps = [fallbackMetadata.createdAt, fallbackMetadata.updatedAt, ...directories.flatMap((list) => [list.createdAt, list.updatedAt])].filter(
+  const directoryLists = addBootstrapDirectoryLists(directories);
+  const timestamps = [fallbackMetadata.createdAt, fallbackMetadata.updatedAt, ...directoryLists.flatMap((list) => [list.createdAt, list.updatedAt])].filter(
     (value) => typeof value === 'number',
   );
   return {
@@ -174,7 +230,7 @@ const toDirectoryListsData = (directories, fallbackMetadata = DEFAULT_METADATA) 
     description: fallbackMetadata.description || DEFAULT_METADATA.description,
     createdAt: timestamps.length > 0 ? Math.min(...timestamps) : fallbackMetadata.createdAt,
     updatedAt: timestamps.length > 0 ? Math.max(...timestamps) : fallbackMetadata.updatedAt,
-    directories: sortDirectoryLists(directories),
+    directories: sortDirectoryLists(directoryLists),
   };
 };
 

@@ -10,17 +10,26 @@ import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../.
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 type TestComment = {
+  author?: {
+    displayName?: string;
+  };
   cid?: string;
   content?: string;
+  flairs?: Array<{ text?: string }>;
   index?: number;
+  link?: string;
+  number?: number | string;
   parentCid?: string;
   pinned?: boolean;
+  postNumber?: number | string;
   communityAddress?: string;
   deleted?: boolean;
   postCid?: string;
+  replyCount?: number;
   removed?: boolean;
   state?: string;
   timestamp?: number;
+  title?: string;
 };
 
 type TestCommunity = {
@@ -42,7 +51,7 @@ const testState = vi.hoisted(() => ({
       address: 'music-posting.eth',
       features: { postsPerPage: 2 },
     },
-  } as Record<string, { address: string; features?: Record<string, unknown> }>,
+  } as Record<string, { address: string; directoryCode?: string; features?: Record<string, unknown>; title?: string }>,
   feed: [] as TestComment[],
   feedOptionsCalls: [] as Array<{ communities?: unknown[]; communitiesLength?: number; newerThan?: number; postsPerPage?: number; sortType?: string }>,
   feedState: undefined as string | undefined,
@@ -537,6 +546,120 @@ describe('Board', () => {
 
     expect(testState.resetMock).toHaveBeenCalledTimes(2);
     expect(testState.setEnableInfiniteScrollMock).toHaveBeenCalledWith(true);
+  });
+
+  it('renders flash board posts as table rows instead of the normal feed', async () => {
+    testState.directories = [{ address: 'flash-posting.bso', directoryCode: 'f', title: '/f/ - Flash' }];
+    testState.directoryByAddress = {
+      'flash-posting.bso': {
+        address: 'flash-posting.bso',
+        directoryCode: 'f',
+        features: { postsPerPage: 50 },
+        title: '/f/ - Flash',
+      },
+    };
+    testState.resolvedCommunityAddress = 'flash-posting.bso';
+    testState.community = {
+      error: undefined,
+      shortAddress: 'flash-posting.bso',
+      state: 'ready',
+      title: '/f/ - Flash',
+    };
+    testState.communitySnapshot = {
+      shortAddress: 'flash-posting.bso',
+      title: '/f/ - Flash',
+    };
+    testState.hasMore = true;
+    testState.feed = [
+      {
+        author: { displayName: 'FlashAnon' },
+        cid: 'flash-cid',
+        communityAddress: 'flash-posting.bso',
+        flairs: [{ text: 'flash:game' }],
+        link: 'https://files.catbox.moe/movie.swf',
+        number: 3524333,
+        postCid: 'flash-cid',
+        replyCount: 4,
+        timestamp: 1_704_067_200,
+        title: 'Flash game',
+      },
+    ];
+
+    await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
+
+    const table = container.querySelector('#flash-list');
+    expect(table).toBeTruthy();
+    expect(container.querySelector('[data-testid="post"]')).toBeNull();
+    expect(table?.querySelectorAll('tbody tr').length).toBe(1);
+    expect(table?.textContent).toContain('3524333');
+    expect(table?.textContent).toContain('FlashAnon');
+    expect(table?.textContent).toContain('movie.swf');
+    expect(table?.textContent).toContain('[G]');
+    expect(table?.textContent).toContain('Flash game');
+    expect(table?.textContent).toContain('4');
+    expect(table?.querySelector('a[href="/f/thread/flash-cid"]')?.textContent).toBe('3524333');
+    expect(Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'load_more')).toBeUndefined();
+  });
+
+  it('renders an empty flash table when the board has no posts', async () => {
+    testState.directories = [{ address: 'flash-posting.bso', directoryCode: 'f', title: '/f/ - Flash' }];
+    testState.directoryByAddress = {
+      'flash-posting.bso': {
+        address: 'flash-posting.bso',
+        directoryCode: 'f',
+        features: { postsPerPage: 50 },
+        title: '/f/ - Flash',
+      },
+    };
+    testState.resolvedCommunityAddress = 'flash-posting.bso';
+    testState.community = {
+      error: undefined,
+      shortAddress: 'flash-posting.bso',
+      state: 'succeeded',
+      title: '/f/ - Flash',
+    };
+    testState.communitySnapshot = {
+      shortAddress: 'flash-posting.bso',
+      title: '/f/ - Flash',
+    };
+
+    await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
+
+    const table = container.querySelector('#flash-list');
+    expect(table).toBeTruthy();
+    expect(container.querySelector('[data-testid="post"]')).toBeNull();
+    expect(table?.textContent).toContain('no posts');
+  });
+
+  it('keeps the flash table in loading state until the empty board feed finishes syncing', async () => {
+    testState.directories = [{ address: 'flash-posting.bso', directoryCode: 'f', title: '/f/ - Flash' }];
+    testState.directoryByAddress = {
+      'flash-posting.bso': {
+        address: 'flash-posting.bso',
+        directoryCode: 'f',
+        features: { postsPerPage: 50 },
+        title: '/f/ - Flash',
+      },
+    };
+    testState.resolvedCommunityAddress = 'flash-posting.bso';
+    testState.community = {
+      error: undefined,
+      shortAddress: 'flash-posting.bso',
+      state: 'ready',
+      title: '/f/ - Flash',
+    };
+    testState.communitySnapshot = {
+      shortAddress: 'flash-posting.bso',
+      title: '/f/ - Flash',
+    };
+    testState.hasMore = true;
+
+    await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
+
+    const table = container.querySelector('#flash-list');
+    expect(table).toBeTruthy();
+    expect(table?.textContent).not.toContain('no posts');
+    expect(table?.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
   });
 
   it('inserts a nonoko pending account comment after pinned posts on the redirected board index', async () => {

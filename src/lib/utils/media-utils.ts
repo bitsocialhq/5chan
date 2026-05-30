@@ -33,6 +33,8 @@ export const getDisplayMediaInfoType = (type: string, t: Translate) => {
       return t('video');
     case 'audio':
       return t('audio');
+    case 'swf':
+      return 'SWF';
     default:
       return t('webpage');
   }
@@ -44,7 +46,7 @@ export const getHasThumbnail = memoize(
 
     const { type, thumbnail, patternThumbnailUrl } = commentMediaInfo;
 
-    if (type === 'image' || type === 'video' || type === 'audio' || type === 'gif') return true;
+    if (type === 'image' || type === 'video' || type === 'audio' || type === 'gif' || type === 'swf') return true;
     if (type === 'webpage' && thumbnail) return true;
     if (type === 'iframe' && (patternThumbnailUrl || thumbnail)) return true;
 
@@ -79,7 +81,8 @@ const getPatternThumbnailUrl = (url: URL): string | undefined => {
 const KNOWN_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff'];
 const KNOWN_VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'avi', 'mkv', 'flv', 'wmv', 'm4v'];
 const KNOWN_AUDIO_EXTENSIONS = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma'];
-const KNOWN_MEDIA_EXTENSIONS = new Set([...KNOWN_IMAGE_EXTENSIONS, ...KNOWN_VIDEO_EXTENSIONS, ...KNOWN_AUDIO_EXTENSIONS]);
+const KNOWN_SWF_EXTENSIONS = ['swf'];
+const KNOWN_MEDIA_EXTENSIONS = new Set([...KNOWN_IMAGE_EXTENSIONS, ...KNOWN_VIDEO_EXTENSIONS, ...KNOWN_AUDIO_EXTENSIONS, ...KNOWN_SWF_EXTENSIONS]);
 
 // some sites don't show thumbnails, so the backend-side thumbnail fetching needs to be  disabled, or it might fetch non-thumbnails such as emojis
 const THUMBNAIL_BLACKLISTED_DOMAINS = ['twitter.com', 'x.com'];
@@ -154,6 +157,8 @@ export const getLinkMediaInfo = memoize(
         type = 'video';
       } else if (KNOWN_AUDIO_EXTENSIONS.includes(extension)) {
         type = 'audio';
+      } else if (KNOWN_SWF_EXTENSIONS.includes(extension)) {
+        type = 'swf';
       }
       // Unknown extensions remain as 'webpage'
 
@@ -297,7 +302,7 @@ export const getMediaDimensions = memoize(
       }
     } else if (type === 'audio') {
       return '700x240';
-    } else if (type === 'image' || type === 'video' || type === 'gif') {
+    } else if (type === 'image' || type === 'video' || type === 'gif' || type === 'swf') {
       if (linkWidth && linkHeight) {
         return `${linkWidth}x${linkHeight}`;
       }
