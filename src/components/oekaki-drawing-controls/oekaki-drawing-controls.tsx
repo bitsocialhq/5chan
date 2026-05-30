@@ -165,6 +165,8 @@ const OekakiDrawingControls = ({ disabled = false, className, uploadFile, onClea
               await handleDrawingFile(file);
             })
             .catch((error) => {
+              destroyTegaki(tegaki);
+              closeTegakiSession();
               window.alert(error instanceof Error ? error.message : String(error));
             })
             .finally(() => {

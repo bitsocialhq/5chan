@@ -259,7 +259,7 @@ describe('OekakiDrawingControls', () => {
     expect(getButton('Edit').disabled).toBe(false);
   });
 
-  it('keeps Tegaki open when exporting the finished drawing fails', async () => {
+  it('unlocks the controls when exporting the finished drawing fails', async () => {
     const canvas = document.createElement('canvas');
     Object.defineProperty(canvas, 'toBlob', {
       configurable: true,
@@ -277,8 +277,8 @@ describe('OekakiDrawingControls', () => {
     });
 
     expect(globalThis.alert).toHaveBeenCalledWith('Could not export drawing');
-    expect(testState.destroyMock).not.toHaveBeenCalled();
-    expect(getButton('Draw').disabled).toBe(true);
+    expect(testState.destroyMock).toHaveBeenCalledTimes(1);
+    expect(getButton('Draw').disabled).toBe(false);
   });
 
   it('does not download the web drawing when confirmation is cancelled', async () => {
