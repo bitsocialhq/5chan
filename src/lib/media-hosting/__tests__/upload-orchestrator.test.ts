@@ -13,6 +13,7 @@ function createElectronApiMock() {
     copyToClipboard: vi.fn(async () => ({ success: true })),
     getPlatform: vi.fn(async () => ({ platform: 'darwin' as NodeJS.Platform, arch: 'x64', version: 'v20.0.0' })),
     automateUploadMedia: vi.fn(async (options: { provider: ProviderId }) => ({ url: 'https://i.imgur.com/abc.png', provider: options.provider })),
+    automateUploadGeneratedMedia: vi.fn(async (options: { provider: ProviderId }) => ({ url: 'https://i.imgur.com/generated.png', provider: options.provider })),
     getPathForFile: vi.fn((): string | null => '/tmp/image.png'),
   };
 }
@@ -67,6 +68,7 @@ describe('orchestrateElectronUpload', () => {
   it('fails with provider attempt details if no file path can be resolved', async () => {
     const electronApi = createElectronApiMock();
     electronApi.getPathForFile = vi.fn((): string | null => null);
+    electronApi.automateUploadGeneratedMedia = undefined as unknown as typeof electronApi.automateUploadGeneratedMedia;
     window.electronApi = electronApi;
 
     const file = new File(['z'], 'z.png', { type: 'image/png' });
@@ -80,10 +82,28 @@ describe('orchestrateElectronUpload', () => {
       };
       expect(typedError.message).toBe('All providers failed');
       expect(typedError.attempts?.[0]?.provider).toBe('imgur');
-      expect(typedError.attempts?.[0]?.error).toContain('File path required for Electron automation');
+      expect(typedError.attempts?.[0]?.error).toContain('File path unavailable and automateUploadGeneratedMedia is not available');
       expect(typedError.attempts?.[0]?.elapsedMs).toBeGreaterThanOrEqual(0);
       expect(typedError.attempts?.[0]?.stage).toBeDefined();
     }
+  });
+
+  it('uses generated media automation when no file path can be resolved', async () => {
+    const electronApi = createElectronApiMock();
+    electronApi.getPathForFile = vi.fn((): string | null => null);
+    window.electronApi = electronApi;
+
+    const file = new File(['abc'], 'tegaki.png', { type: 'image/png' });
+    const url = await orchestrateElectronUpload(file, ['imgur']);
+
+    expect(url).toBe('https://i.imgur.com/generated.png');
+    expect(electronApi.automateUploadGeneratedMedia).toHaveBeenCalledWith({
+      provider: 'imgur',
+      fileName: 'tegaki.png',
+      mimeType: 'image/png',
+      bytes: [97, 98, 99],
+    });
+    expect(electronApi.automateUploadMedia).not.toHaveBeenCalled();
   });
 
   it('includes stage and matchedSelectors when provider throws block/file-input errors', async () => {

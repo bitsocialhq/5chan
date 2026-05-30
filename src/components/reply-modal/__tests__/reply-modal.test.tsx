@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ReplyModal from '../reply-modal';
+import { OEKAKI_WEB_WARNING_TEXT } from '../../../lib/oekaki/oekaki-copy';
 import { POST_OPTIONS_VALIDATION_DELAY_MS } from '../../../lib/utils/post-options-utils';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -20,7 +21,9 @@ const testState = vi.hoisted(() => ({
     },
   } as Record<string, { address: string; directoryCode?: string; features?: Record<string, unknown>; title?: string }>,
   handleUploadMock: vi.fn(),
+  uploadFileMock: vi.fn(),
   isMobile: false,
+  mediaHostingRuntime: 'web' as 'web' | 'android' | 'electron',
   isResolvingExternalQuotes: false,
   isUploading: false,
   navigateMock: vi.fn(),
@@ -127,8 +130,9 @@ vi.mock('../../../stores/use-reply-modal-store', () => ({
 }));
 
 vi.mock('../../../lib/media-hosting/show-upload-controls', () => ({
+  getMediaHostingRuntime: () => testState.mediaHostingRuntime,
   getShowUploadControls: () => testState.showUploadControls,
-  isWebRuntime: () => true,
+  isWebRuntime: () => testState.mediaHostingRuntime === 'web',
 }));
 
 vi.mock('../../../stores/use-media-hosting-store', () => ({
@@ -185,6 +189,7 @@ vi.mock('../../../hooks/use-file-upload', () => ({
     testState.uploadComplete = onUploadComplete;
     return {
       handleUpload: testState.handleUploadMock,
+      uploadFile: testState.uploadFileMock,
       isUploading: testState.isUploading,
       uploadedFileName: testState.uploadedFileName,
     };
@@ -352,6 +357,7 @@ describe('ReplyModal', () => {
       },
     };
     testState.handleUploadMock.mockReset();
+    testState.uploadFileMock.mockReset();
     testState.isMobile = false;
     testState.isResolvingExternalQuotes = false;
     testState.isUploading = false;
@@ -398,6 +404,7 @@ describe('ReplyModal', () => {
     testState.uploadComplete = undefined;
     testState.uploadedFileName = null;
     testState.uploadMode = 'always';
+    testState.mediaHostingRuntime = 'web';
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -435,6 +442,30 @@ describe('ReplyModal', () => {
     expect(container.textContent).toContain('posts_last_synced_info:{"time":"ago:1000"}');
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: '>>42\nselected text' });
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ displayName: 'Alice' });
+  });
+
+  it('shows Oekaki draw controls on /i/ replies', async () => {
+    testState.directoryByAddress['oekaki-posting.bso'] = {
+      address: 'oekaki-posting.bso',
+      directoryCode: 'i',
+      features: { requirePostLink: true, requirePostLinkIsMedia: true },
+      title: '/i/ - Oekaki',
+    };
+    testState.communities['oekaki-posting.bso'] = { address: 'oekaki-posting.bso' };
+
+    await renderReplyModal('/i/thread/post-1', 'oekaki-posting.bso');
+
+    expect(container.textContent).toContain('Size');
+    expect(container.textContent).toContain('Replay');
+    expect(Array.from(container.querySelectorAll('span')).some((span) => span.textContent === '×')).toBe(true);
+    expect(container.textContent).toContain(OEKAKI_WEB_WARNING_TEXT);
+    expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent === 'Draw')).toBe(true);
+    expect((Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Clear') as HTMLButtonElement | undefined)?.disabled).toBe(true);
+
+    testState.mediaHostingRuntime = 'android';
+    await renderReplyModal('/i/thread/post-1', 'oekaki-posting.bso');
+
+    expect(container.textContent).not.toContain(OEKAKI_WEB_WARNING_TEXT);
   });
 
   it('shows a flag selector on flag boards and publishes the default geographic request', async () => {
