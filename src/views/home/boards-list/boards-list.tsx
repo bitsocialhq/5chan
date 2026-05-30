@@ -498,9 +498,9 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
                 <ul>
                   <BoardLink key={boardAddressesByName['Random'] ?? 'Random'} boardName='Random' address={boardAddressesByName['Random'] ?? null} {...boardLinkProps} />
                   <BoardLink
-                    key={boardAddressesByName['ROBOT9001'] ?? 'ROBOT9001'}
-                    boardName='ROBOT9001'
-                    address={boardAddressesByName['ROBOT9001'] ?? null}
+                    key={boardAddressesByName['ROBOT9002'] ?? 'ROBOT9002'}
+                    boardName='ROBOT9002'
+                    address={boardAddressesByName['ROBOT9002'] ?? null}
                     {...boardLinkProps}
                   />
                   <BoardLink
