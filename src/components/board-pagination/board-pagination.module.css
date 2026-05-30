@@ -42,7 +42,7 @@
   flex-wrap: wrap;
   gap: 0 0.25em;
   margin: 0;
-  padding: 3px 7px !important;
+  padding: 4px 8px !important;
   overflow: hidden;
   list-style: none;
   background-color: var(--pagelist-background-color);
