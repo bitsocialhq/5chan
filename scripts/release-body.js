@@ -105,7 +105,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version adds 5chan developer badges, clearer media and update feedback, better catalog and moderation behavior, improved desktop and P2P reliability, and app icons.';
+  'This version adds directory rules and board directory pages, Flash SWF posting, /i/ drawing, comment flags, a Halloween theme, pure browser P2P by default, and clearer P2P, posting, moderation, and loading feedback.';
 
 const releaseBody = `${oneLinerDescription}
 

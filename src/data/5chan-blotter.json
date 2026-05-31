@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.0",
+      "kind": "release",
+      "timestamp": 1780228800,
+      "message": "v0.9.0: Directory rules page, Flash SWF posts, /i/ drawing, comment flags",
+      "version": "0.9.0"
+    },
+    {
       "id": "release-0.8.5",
       "kind": "release",
       "timestamp": 1778846400,
