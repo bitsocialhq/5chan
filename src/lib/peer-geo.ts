@@ -284,7 +284,17 @@ export const extractIpv4FromAddress = (address: string): string | null => {
 
 export const extractIpv6FromAddress = (address: string): string | null => {
   const direct = /\/ip6\/([^/]+)/.exec(address);
-  return direct ? direct[1] : null;
+  if (direct) return direct[1];
+  const dns = /\/dns6\/([^/]+)/i.exec(address);
+  const firstLabel = dns?.[1]?.split('.')[0];
+  if (!firstLabel || !firstLabel.includes('-') || !/^[0-9a-f-]+$/i.test(firstLabel)) return null;
+  const candidate = firstLabel.replaceAll('-', ':').toLowerCase();
+  try {
+    new URL(`http://[${candidate}]/`);
+    return candidate;
+  } catch {
+    return null;
+  }
 };
 
 const parseOctets = (ip: string): number[] | null => {
