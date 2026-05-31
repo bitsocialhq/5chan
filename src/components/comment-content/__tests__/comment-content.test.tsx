@@ -408,11 +408,11 @@ describe('CommentContent', () => {
       cid: 'post-2',
       content: 'ignored',
       postCid: 'post-2',
-      reason: 'spam',
+      reason: 'duplicate of >>96',
       removed: true,
     });
     expect(container.textContent).toContain('this_post_was_removed');
-    expect(container.textContent).toContain('Reason: "spam"');
+    expect(queryMarkdownText()).toEqual(['Reason: duplicate of >>96']);
 
     await renderContent({
       cid: 'post-3',
@@ -422,7 +422,7 @@ describe('CommentContent', () => {
       reason: 'self-delete',
     });
     expect(container.textContent).toContain('user_deleted_this_post');
-    expect(container.textContent).toContain('Reason: "self-delete"');
+    expect(queryMarkdownText()).toEqual(['Reason: self-delete']);
   });
 
   it('renders pending approval, ban details, and loading or failed states', async () => {
@@ -442,6 +442,7 @@ describe('CommentContent', () => {
 
     expect(container.textContent).toContain('pending_mod_approval');
     expect(container.textContent).toContain('pending-reason:rules violation');
+    expect(queryMarkdownText()).toEqual(['queued body', 'pending-reason:rules violation']);
     const tooltip = container.querySelector('[data-testid="tooltip"]');
     expect(tooltip?.getAttribute('title')).toContain('ban:short:music-posting.eth:2024-01-01 12:00:00');
 
