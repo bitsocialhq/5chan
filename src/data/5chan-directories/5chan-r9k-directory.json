@@ -1,0 +1,13 @@
+{
+  "description": "Boards competing to host the /r9k/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-r9k-directory.json",
+  "createdAt": 1779523735,
+  "updatedAt": 1779525738,
+  "boards": [
+    {
+      "address": "robot9002.bso",
+      "publicKey": "12D3KooWPXkEw8GSZcM8N97fkWJjZGV7hLccZSrf2PqHUKrp4xJQ",
+      "addedAt": 1779525738,
+      "owner": "plebeius.bso"
+    }
+  ]
+}

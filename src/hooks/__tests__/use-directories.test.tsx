@@ -9,15 +9,18 @@ import {
   useDirectories,
   useDirectoriesMetadata,
   useDirectoriesState,
+  useDirectoryDefaults,
   useDirectoryAddresses,
   useDirectoryByAddress,
   type DirectoriesData,
+  type DirectoryDefaultsData,
 } from '../use-directories';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const LOCALSTORAGE_KEY = '5chan-directories-cache';
+const LOCALSTORAGE_DEFAULTS_KEY = '5chan-directory-defaults-cache';
 const LOCALSTORAGE_TIMESTAMP_KEY = '5chan-directories-cache-timestamp';
 
 type Snapshot = {
@@ -25,6 +28,7 @@ type Snapshot = {
   state: ReturnType<typeof useDirectoriesState>;
   addresses: ReturnType<typeof useDirectoryAddresses>;
   directory: ReturnType<typeof useDirectoryByAddress>;
+  directoryDefaults: DirectoryDefaultsData;
   metadata: ReturnType<typeof useDirectoriesMetadata>;
 };
 
@@ -47,6 +51,7 @@ const HookHarness = ({ address = 'music-posting.eth' }: { address?: string }) =>
   const state = useDirectoriesState();
   const addresses = useDirectoryAddresses();
   const directory = useDirectoryByAddress(address);
+  const directoryDefaults = useDirectoryDefaults();
   const metadata = useDirectoriesMetadata();
 
   React.useLayoutEffect(() => {
@@ -55,9 +60,10 @@ const HookHarness = ({ address = 'music-posting.eth' }: { address?: string }) =>
       state,
       addresses,
       directory,
+      directoryDefaults,
       metadata,
     };
-  }, [addresses, directory, directories, metadata, state]);
+  }, [addresses, directory, directories, directoryDefaults, metadata, state]);
 
   return null;
 };
@@ -273,6 +279,9 @@ describe('use-directories', () => {
     const persisted = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY) ?? '{}');
     expect(persisted.title).toBe('5chan directories');
     expect(persisted.communities.length).toBeGreaterThan(1);
+
+    const persistedDefaults = JSON.parse(localStorage.getItem(LOCALSTORAGE_DEFAULTS_KEY) ?? '{}');
+    expect(persistedDefaults.description).toBe('remote defaults');
   });
 
   it('does not refetch GitHub directories for each later hook mount after a successful refresh', async () => {
@@ -340,6 +349,64 @@ describe('use-directories', () => {
     expect(directoriesByCode.get('tv')?.address).toBe('television-and-film.bso');
     expect(snapshot.directory?.address).toBe('television-and-film.bso');
     expect(warnSpy.mock.calls.some((call: ConsoleWarnCall) => String(call[0]).includes('Failed to fetch directory list "biz"'))).toBe(true);
+  });
+
+  it('does not expose refreshed defaults before the matching directory payload commits', async () => {
+    const pendingDefaults = createDeferred<ReturnType<typeof createFetchResponse>>();
+    const pendingFetches = new Map<string, Deferred<ReturnType<typeof createFetchResponse>>>();
+    fetchMock.mockImplementation((url: unknown) => {
+      if (isDefaultsUrl(url)) {
+        return pendingDefaults.promise;
+      }
+      const code = getDirectoryCodeFromUrl(url);
+      const deferred = createDeferred<ReturnType<typeof createFetchResponse>>();
+      pendingFetches.set(code, deferred);
+      return deferred.promise;
+    });
+
+    renderHarness();
+    await flushEffects();
+
+    pendingDefaults.resolve(createFetchResponse(createRemoteDefaults()));
+    await flushEffects();
+
+    renderHarness('business-and-finance.bso');
+    await flushEffects();
+
+    expect(latestSnapshot?.directoryDefaults.description).not.toBe('remote defaults');
+
+    pendingFetches.forEach((pendingFetch, code) => {
+      pendingFetch.resolve(createFetchResponse(createRemoteDirectoryList(code)));
+    });
+    await flushEffects(8);
+
+    expect(latestSnapshot?.directoryDefaults.description).toBe('remote defaults');
+  });
+
+  it('hydrates cached directory defaults with cached communities when GitHub refresh fails', async () => {
+    const cachedDefaults = createRemoteDefaults(REMOTE_DIRECTORY_CODES, {
+      mu: { title: '/mu/ - Cached Remote Music' },
+    });
+    const cachedData: DirectoriesData = {
+      title: 'Cached directories',
+      description: 'cached description',
+      createdAt: 1,
+      updatedAt: 2,
+      communities: [{ address: 'music-posting.bso', title: '/mu/ - Cached Music', directoryCode: 'mu', nsfw: false }],
+    };
+
+    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(cachedData));
+    localStorage.setItem(LOCALSTORAGE_DEFAULTS_KEY, JSON.stringify(cachedDefaults));
+    localStorage.setItem(LOCALSTORAGE_TIMESTAMP_KEY, String(Date.now()));
+    fetchMock.mockRejectedValueOnce(new Error('network down'));
+
+    renderHarness('music-posting.bso');
+    await flushEffects(8);
+
+    expect(latestSnapshot?.directories.map((community) => community.address)).toEqual(['music-posting.bso']);
+    expect(latestSnapshot?.directoryDefaults.description).toBe('remote defaults');
+    expect(latestSnapshot?.directoryDefaults.directories.mu.title).toBe('/mu/ - Cached Remote Music');
+    expect(warnSpy.mock.calls.some((call: ConsoleWarnCall) => String(call[0]).includes('Failed to fetch directories'))).toBe(true);
   });
 
   it('clears invalid recent cache entries and falls back to vendored data when GitHub refresh fails', async () => {

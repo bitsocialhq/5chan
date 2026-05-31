@@ -1,0 +1,13 @@
+{
+  "description": "Boards competing to host the /fit/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-fit-directory.json",
+  "createdAt": 1779182014,
+  "updatedAt": 1779182014,
+  "boards": [
+    {
+      "address": "fitness-posting.bso",
+      "publicKey": "12D3KooWHcqcJJmjAiBJA3uyhSW6ep4HFadUfteDrzU1Pn9ALkkw",
+      "addedAt": 1779182014,
+      "owner": "plebeius.bso"
+    }
+  ]
+}

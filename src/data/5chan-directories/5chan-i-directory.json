@@ -1,0 +1,13 @@
+{
+  "description": "Boards competing to host the /i/ directory on 5chan. The highest-scoring board resolves the directory code; if it goes offline, 5chan rotates to the next-highest. Anyone can open a PR on this file to add their board.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-i-directory.json",
+  "createdAt": 1780054375,
+  "updatedAt": 1780054375,
+  "boards": [
+    {
+      "address": "oekaki-posting.bso",
+      "publicKey": "12D3KooWNAqMhmHi3hPSbcH27Q7cqBCuN2Mu9HNzs6fB8YX14k4o",
+      "addedAt": 1780054375,
+      "owner": "plebeius.bso"
+    }
+  ]
+}

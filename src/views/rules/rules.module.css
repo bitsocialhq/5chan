@@ -66,22 +66,6 @@
   box-sizing: border-box;
 }
 
-.boardSelect {
-  padding: 5px 10px;
-  font-size: 14px;
-  border: 1px solid #aaa;
-  border-radius: 0;
-  background: #fff;
-  cursor: pointer;
-  min-width: 200px;
-  box-sizing: border-box;
-}
-
-.orSeparator {
-  color: #666;
-  font-style: italic;
-}
-
 .customAddressForm {
   display: flex;
   align-items: center;
@@ -103,11 +87,101 @@
   outline: none;
 }
 
+/* Match homepage search "Go" button (home.module.css .searchButton). */
 .goButton {
-  padding: 5px 10px;
+  padding: 3px 5px;
   font-size: 14px;
+  display: inline-block;
+  text-transform: capitalize;
+  white-space: nowrap;
+  flex-shrink: 0;
   cursor: pointer;
   box-sizing: border-box;
+}
+
+.columns {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+}
+
+.leftColumn {
+  flex: 0 0 29.9%;
+  width: 29.9%;
+  min-width: 0;
+}
+
+.rightColumn {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/*
+ * Green sidebar (4chan .left-box) — rules.2.css + global .boxcontent.
+ * Same 93% font, 1.5em line-height, and .5em padding as other boxes (.boxContent).
+ */
+.selectorBox .boxContent > .directoryNav > ul {
+  color: #060;
+}
+
+.selectorBox .directoryNav ul {
+  margin: 1em;
+  padding-left: 0;
+  list-style: disc outside;
+}
+
+/* 4chan: div ul { margin-left: 2em } — top list under boxcontent */
+.selectorBox .directoryNav > ul {
+  margin-left: 2em;
+}
+
+/* 4chan: li ul { margin-left: 1em; margin-top: 0 } */
+.selectorBox .directoryNav li ul {
+  margin-left: 1em;
+  margin-top: 0;
+}
+
+/* 4chan: li li ul { margin-bottom: .5em } */
+.selectorBox .directoryNav li li ul {
+  margin-bottom: 0.5em;
+}
+
+.selectorBox .directoryNav li {
+  margin: 0;
+  line-height: inherit;
+}
+
+.selectorBox .directoryNav a {
+  color: #00e;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
+.selectorBox .directoryNavHeader {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: #00e;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.directoryTitle {
+  font-size: 100%;
+  font-weight: 700;
+  color: #006;
+  margin: 0 0 5px;
+}
+
+.directoryDivider {
+  border: 0;
+  height: 1px;
+  /* Match the rules box border color (#006, the rulesBox currentColor), like 4chan's <hr>. */
+  background: #006;
+  margin: 0 0 1em;
 }
 
 .rulesBox {
@@ -120,14 +194,15 @@
   color: #fff;
 }
 
+/* 4chan's .right-box ol overrides only top + left of the base 1em margin (bottom/right stay 1em). */
 .box ol {
-  margin: 1em;
-  margin-left: 2em;
+  margin: 0.5em 1em 1em 2.5em;
 }
 
+/* No per-item spacing: line height drives the gap. 1.5 matches 4chan's rule list exactly. */
 .box ol li {
   list-style: decimal outside;
-  margin-bottom: 0.5em;
+  line-height: 1.5;
 }
 
 @media (max-width: 640px) {
@@ -142,28 +217,56 @@
     align-items: stretch;
   }
 
-  .boardSelect,
   .addressInput {
-    width: 100%;
+    flex: 1 1 auto;
+    width: auto;
     min-width: 0;
     box-sizing: border-box;
   }
 
-  .orSeparator {
-    text-align: center;
-  }
-
+  /* Keep the input and button on one row on mobile instead of stacking them. */
   .customAddressForm {
-    flex-direction: column;
     width: 100%;
     box-sizing: border-box;
   }
 
   .goButton {
-    box-sizing: border-box;
-    margin-top: 5px;
-    padding: 5px 10px;
-    cursor: pointer;
+    flex: 0 0 auto;
+  }
+
+  .columns {
+    flex-direction: column;
+  }
+
+  .leftColumn {
+    flex: none;
+    width: 100%;
+  }
+
+  /* Mobile: tighter list margins + left inset (font size stays same as desktop .boxContent) */
+  .leftColumn .selectorBox .boxContent {
+    line-height: 130%;
+    padding: 0.25em 0.5em 0 10px;
+  }
+
+  .leftColumn .selectorBox .directoryNav ul {
+    margin: 0;
+    padding-left: 1.2em;
+    list-style: disc outside;
+  }
+
+  .leftColumn .selectorBox .directoryNav > ul {
+    margin-left: 0;
+  }
+
+  .leftColumn .selectorBox .directoryNav li ul {
+    margin-left: 0;
+    margin-top: 0;
+    padding-left: 1em;
+  }
+
+  .leftColumn .selectorBox .directoryNav li {
+    padding: 5px 10px 5px 0;
   }
 }
 

@@ -133,7 +133,7 @@ const runScenario = async (browser, scenario) => {
     await page.waitForURL((url) => url.hash === '#/rules', { timeout: PAGE_TIMEOUT_MS });
     await waitForTitle(page, 'Rules - 5chan');
     await waitForVisibleText(page, /^Rules$/i);
-    await waitForVisibleText(page, /Load rules from a board/i);
+    await waitForVisibleText(page, /Load rules P2P from any board/i);
     assertNoPageErrors(pageErrors, scenario.name, 'Rules route');
 
     await page.goto(buildRouteUrl('/all/settings'), { waitUntil: 'domcontentloaded', timeout: PAGE_TIMEOUT_MS });

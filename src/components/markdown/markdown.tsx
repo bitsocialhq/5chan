@@ -171,6 +171,11 @@ const COMBINED_REGEX = new RegExp(
   'g',
 );
 
+const COMBINED_REGEX_WITHOUT_SPOILER = new RegExp(
+  `(${CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX.source})|(${CROSSBOARD_REGEX.source})|(${QUOTE_LINK_REGEX.source})|(${URL_REGEX.source})`,
+  'g',
+);
+
 const makeTokenKey = (prefix: string, type: Token['type'], start: number, end: number): string => `${prefix}${type}:${start}:${end}`;
 
 const isGreentextLine = (line: string): boolean => {
@@ -236,11 +241,11 @@ function getCrossboardRoute(fullPattern: string): string | null {
   return `/${pathPart}`;
 }
 
-function tokenize(text: string, keyPrefix = ''): Token[] {
+function tokenize(text: string, keyPrefix = '', parseSpoilers = true): Token[] {
   const tokens: Token[] = [];
   let lastIndex = 0;
 
-  const regex = new RegExp(COMBINED_REGEX.source, 'g');
+  const regex = new RegExp((parseSpoilers ? COMBINED_REGEX : COMBINED_REGEX_WITHOUT_SPOILER).source, 'g');
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(text)) !== null) {
@@ -256,13 +261,13 @@ function tokenize(text: string, keyPrefix = ''): Token[] {
       });
     }
 
-    if (match[1] !== undefined) {
+    if (parseSpoilers && match[1] !== undefined) {
       const innerContent = match[2];
       const key = makeTokenKey(keyPrefix, 'spoiler', matchStart, matchEnd);
-      tokens.push({ key, type: 'spoiler', tokens: tokenize(innerContent, `${key}/`) });
-    } else if (match[3] !== undefined) {
-      const boardIdentifier = match[4];
-      const number = parseInt(match[5], 10);
+      tokens.push({ key, type: 'spoiler', tokens: tokenize(innerContent, `${key}/`, parseSpoilers) });
+    } else if (match[parseSpoilers ? 3 : 1] !== undefined) {
+      const boardIdentifier = match[parseSpoilers ? 4 : 2];
+      const number = parseInt(match[parseSpoilers ? 5 : 3], 10);
       if (boardIdentifier && !Number.isNaN(number)) {
         tokens.push({
           key: makeTokenKey(keyPrefix, 'crossBoardNumberQuoteLink', matchStart, matchEnd),
@@ -277,8 +282,8 @@ function tokenize(text: string, keyPrefix = ''): Token[] {
       } else {
         tokens.push({ key: makeTokenKey(keyPrefix, 'text', matchStart, matchEnd), type: 'text', value: fullMatch });
       }
-    } else if (match[6] !== undefined) {
-      const pathPart = match[7];
+    } else if (match[parseSpoilers ? 6 : 4] !== undefined) {
+      const pathPart = match[parseSpoilers ? 7 : 5];
       const fullPattern = `>>>/${pathPart}`;
       const route = getCrossboardRoute(fullPattern);
       if (route) {
@@ -291,10 +296,10 @@ function tokenize(text: string, keyPrefix = ''): Token[] {
       } else {
         tokens.push({ key: makeTokenKey(keyPrefix, 'text', matchStart, matchEnd), type: 'text', value: fullMatch });
       }
-    } else if (match[8] !== undefined) {
-      const number = parseInt(match[9], 10);
+    } else if (match[parseSpoilers ? 8 : 6] !== undefined) {
+      const number = parseInt(match[parseSpoilers ? 9 : 7], 10);
       tokens.push({ key: makeTokenKey(keyPrefix, 'quoteLink', matchStart, matchEnd), type: 'quoteLink', number });
-    } else if (match[10] !== undefined) {
+    } else if (match[parseSpoilers ? 10 : 8] !== undefined) {
       const { href, trailingText } = splitUrlTrailingText(fullMatch);
       const linkEnd = trailingText ? matchEnd - trailingText.length : matchEnd;
       tokens.push({ key: makeTokenKey(keyPrefix, 'url', matchStart, linkEnd), type: 'url', href });
@@ -322,6 +327,7 @@ interface RenderContext {
   postCid?: string;
   communityAddress?: string;
   enableQstBbcode: boolean;
+  parseSpoilers: boolean;
 }
 
 interface MarkdownProps {
@@ -329,6 +335,8 @@ interface MarkdownProps {
   title?: string;
   postCid?: string;
   communityAddress?: string;
+  /** When false, [spoiler] tags stay visible (e.g. rules text teaching the syntax). Default true. */
+  parseSpoilers?: boolean;
 }
 
 const NumberQuoteLink = ({ number, threadPostCid, communityAddress }: { number: number; threadPostCid?: string; communityAddress?: string }) => {
@@ -575,7 +583,13 @@ const renderLineContent = (line: string, context: RenderContext): React.ReactNod
     const matchEnd = matchStart + fullMatch.length;
 
     if (matchStart > lastIndex) {
-      elements.push(<TokenList key={`text-${lastIndex}-${matchStart}`} tokens={tokenize(line.slice(lastIndex, matchStart), `${lastIndex}:`)} context={context} />);
+      elements.push(
+        <TokenList
+          key={`text-${lastIndex}-${matchStart}`}
+          tokens={tokenize(line.slice(lastIndex, matchStart), `${lastIndex}:`, context.parseSpoilers)}
+          context={context}
+        />,
+      );
     }
 
     if (nextMatch.type === 'dice') {
@@ -586,7 +600,7 @@ const renderLineContent = (line: string, context: RenderContext): React.ReactNod
       if (fortune) {
         elements.push(<Fortune key={`fortune-${matchStart}`} color={fortune.color} text={fortune.text} />);
       } else {
-        elements.push(<TokenList key={`text-${matchStart}-${matchEnd}`} tokens={tokenize(fullMatch, `${matchStart}:`)} context={context} />);
+        elements.push(<TokenList key={`text-${matchStart}-${matchEnd}`} tokens={tokenize(fullMatch, `${matchStart}:`, context.parseSpoilers)} context={context} />);
       }
     }
 
@@ -594,13 +608,15 @@ const renderLineContent = (line: string, context: RenderContext): React.ReactNod
   }
 
   if (lastIndex < line.length) {
-    elements.push(<TokenList key={`text-${lastIndex}-${line.length}`} tokens={tokenize(line.slice(lastIndex), `${lastIndex}:`)} context={context} />);
+    elements.push(
+      <TokenList key={`text-${lastIndex}-${line.length}`} tokens={tokenize(line.slice(lastIndex), `${lastIndex}:`, context.parseSpoilers)} context={context} />,
+    );
   }
 
   return elements;
 };
 
-const Markdown = ({ content, title, postCid, communityAddress }: MarkdownProps) => {
+const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = true }: MarkdownProps) => {
   const location = useLocation();
   const params = useParams();
   const isInCatalogView = isCatalogView(location.pathname, params);
@@ -612,7 +628,7 @@ const Markdown = ({ content, title, postCid, communityAddress }: MarkdownProps) 
     const elements: React.ReactNode[] = [];
     let lineOffset = 0;
 
-    const context = { isInCatalogView, postCid, communityAddress, enableQstBbcode };
+    const context = { isInCatalogView, postCid, communityAddress, enableQstBbcode, parseSpoilers };
 
     lines.forEach((line, lineIndex) => {
       const lineKey = `line-${lineOffset}`;
@@ -640,7 +656,7 @@ const Markdown = ({ content, title, postCid, communityAddress }: MarkdownProps) 
     });
 
     return elements;
-  }, [content, isInCatalogView, postCid, communityAddress, enableQstBbcode]);
+  }, [content, isInCatalogView, postCid, communityAddress, enableQstBbcode, parseSpoilers]);
 
   return (
     <span className={styles.markdown}>

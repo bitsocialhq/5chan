@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import directoryListsData from '../data/5chan-directory-lists.json';
+import { vendoredDirectoryLists as directoryListsData, vendoredDirectoryDefaults as directoryDefaultsData } from '../data/vendored-directory-lists';
 import {
   directoryListToCommunity,
   isRecord,
@@ -15,7 +15,7 @@ import {
 } from '../lib/utils/directory-list-utils';
 import { normalizeBoardAddress } from '../lib/utils/directory-list-lookup-utils';
 
-export type { DirectoriesData, DirectoryCommunity } from '../lib/utils/directory-list-utils';
+export type { DirectoriesData, DirectoryCommunity, DirectoryDefaultsData } from '../lib/utils/directory-list-utils';
 export { normalizeBoardAddress };
 
 interface DirectoriesMetadata {
@@ -34,6 +34,7 @@ interface DirectoriesState {
 const GITHUB_URL_TEMPLATE = 'https://raw.githubusercontent.com/bitsocialnet/lists/master/5chan-directories/5chan-{code}-directory.json';
 const GITHUB_DEFAULTS_URL = 'https://raw.githubusercontent.com/bitsocialnet/lists/master/5chan-directories/5chan-directories-defaults.json';
 const LOCALSTORAGE_KEY = '5chan-directories-cache';
+const LOCALSTORAGE_DEFAULTS_KEY = '5chan-directory-defaults-cache';
 const LOCALSTORAGE_TIMESTAMP_KEY = '5chan-directories-cache-timestamp';
 const CACHE_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour
 const FETCH_RETRY_DELAY_MS = 60 * 1000; // 1 minute
@@ -44,6 +45,7 @@ let cacheMetadata: DirectoriesMetadata | null = null;
 let inFlightGitHubFetch: Promise<DirectoriesData> | null = null;
 let lastSuccessfulGitHubFetchAt: number | null = null;
 let lastGitHubFetchAttemptAt: number | null = null;
+let cacheDefaults: DirectoryDefaultsData | null = null;
 // Exposed for deterministic unit tests around module-level cache state.
 export const __resetDirectoriesModuleStateForTests = () => {
   cacheCommunities = null;
@@ -51,7 +53,9 @@ export const __resetDirectoriesModuleStateForTests = () => {
   inFlightGitHubFetch = null;
   lastSuccessfulGitHubFetchAt = null;
   lastGitHubFetchAttemptAt = null;
+  cacheDefaults = null;
   fallbackDirectoriesData = null;
+  fallbackDirectoryDefaults = null;
 };
 
 const getDirectoryIdentifiers = (community: DirectoryCommunity): string[] => [
@@ -212,6 +216,13 @@ const normalizeDirectoriesData = (value: unknown): DirectoriesData | null => {
 };
 
 let fallbackDirectoriesData: DirectoriesData | null = null;
+let fallbackDirectoryDefaults: DirectoryDefaultsData | null = null;
+
+export const getFallbackDirectoryDefaults = (): DirectoryDefaultsData => {
+  if (fallbackDirectoryDefaults) return fallbackDirectoryDefaults;
+  fallbackDirectoryDefaults = normalizeDirectoryDefaultsData(directoryDefaultsData as unknown);
+  return fallbackDirectoryDefaults;
+};
 
 export const getFallbackDirectoriesData = (): DirectoriesData => {
   if (fallbackDirectoriesData) return fallbackDirectoriesData;
@@ -224,6 +235,26 @@ export const getFallbackDirectoriesData = (): DirectoriesData => {
   return fallbackDirectoriesData;
 };
 
+const getDirectoryDefaultsFromLocalStorage = (): DirectoryDefaultsData | null => {
+  try {
+    const cached = localStorage.getItem(LOCALSTORAGE_DEFAULTS_KEY);
+    if (!cached) {
+      return null;
+    }
+
+    const normalized = normalizeDirectoryDefaultsData(JSON.parse(cached));
+    if (Object.keys(normalized.directories).length > 0) {
+      return normalized;
+    }
+    console.warn('Invalid directory defaults cache format, clearing stale cache');
+    localStorage.removeItem(LOCALSTORAGE_DEFAULTS_KEY);
+  } catch (e) {
+    console.warn('Failed to read directory defaults from localStorage:', e);
+    localStorage.removeItem(LOCALSTORAGE_DEFAULTS_KEY);
+  }
+  return null;
+};
+
 const getFromLocalStorage = (): DirectoriesData | null => {
   try {
     const cached = localStorage.getItem(LOCALSTORAGE_KEY);
@@ -234,10 +265,12 @@ const getFromLocalStorage = (): DirectoriesData | null => {
         const parsed = JSON.parse(cached);
         const normalized = normalizeDirectoriesData(parsed);
         if (normalized) {
+          cacheDefaults ??= getDirectoryDefaultsFromLocalStorage();
           return normalized;
         }
         console.warn('Invalid directories cache format, clearing stale cache');
         localStorage.removeItem(LOCALSTORAGE_KEY);
+        localStorage.removeItem(LOCALSTORAGE_DEFAULTS_KEY);
         localStorage.removeItem(LOCALSTORAGE_TIMESTAMP_KEY);
       }
     }
@@ -247,9 +280,12 @@ const getFromLocalStorage = (): DirectoriesData | null => {
   return null;
 };
 
-const saveToLocalStorage = (data: DirectoriesData) => {
+const saveToLocalStorage = (data: DirectoriesData, defaults?: DirectoryDefaultsData) => {
   try {
     localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(data));
+    if (defaults) {
+      localStorage.setItem(LOCALSTORAGE_DEFAULTS_KEY, JSON.stringify(defaults));
+    }
     localStorage.setItem(LOCALSTORAGE_TIMESTAMP_KEY, Date.now().toString());
   } catch (e) {
     console.warn('Failed to save to localStorage:', e);
@@ -356,8 +392,9 @@ const fetchDirectoriesFromGitHub = async (): Promise<DirectoriesData> => {
     throw new Error('Invalid directories payload');
   }
   hydrateModuleCaches(data);
+  cacheDefaults = defaults;
   lastSuccessfulGitHubFetchAt = Date.now();
-  saveToLocalStorage(data);
+  saveToLocalStorage(data, defaults);
   return data;
 };
 
@@ -461,6 +498,12 @@ export const useDirectories = () => {
   // Only use state.communities during initial load before cache is populated
   // This ensures a stable reference for memoization in consuming hooks
   return cacheCommunities || state.communities || getFallbackDirectoriesData().communities;
+};
+
+export const useDirectoryDefaults = (): DirectoryDefaultsData => {
+  // Subscribe to the shared directory refresh so defaults update only when the matching directory payload commits.
+  useDirectories();
+  return cacheDefaults ?? getFallbackDirectoryDefaults();
 };
 
 export const useDirectoriesState = () => {

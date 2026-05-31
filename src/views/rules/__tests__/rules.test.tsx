@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Rules from '../rules';
 
@@ -13,8 +14,15 @@ const testState = vi.hoisted(() => ({
   directories: [
     { address: 'anime-posting.eth', title: '/a/ - Anime & Manga' },
     { address: 'random-posting.eth', title: '/b/ - Random' },
-  ] as Array<{ address: string; title?: string }>,
-  navigateMock: vi.fn(),
+    { address: 'flash-posting.eth', title: '/f/ - Flash' },
+  ] as Array<{ address: string; title?: string; directoryCode?: string }>,
+  directoryDefaults: {
+    directories: {
+      a: { directoryCode: 'a', title: '/a/ - Anime & Manga', rules: ['All anime discussion welcome.'] },
+      b: { directoryCode: 'b', title: '/b/ - Random', rules: ['Be excellent to each other.'] },
+      f: { directoryCode: 'f', title: '/f/ - Flash', features: { postFlairs: true }, rules: ['Tag your uploads.'] },
+    },
+  } as { directories: Record<string, { directoryCode?: string; title?: string; rules?: string[]; features?: Record<string, unknown> }> },
 }));
 
 vi.mock('react-i18next', () => ({
@@ -27,7 +35,6 @@ vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
     ...actual,
-    useNavigate: () => testState.navigateMock,
     useParams: () => ({
       boardIdentifier: testState.boardIdentifier,
     }),
@@ -49,6 +56,7 @@ vi.mock('../../../hooks/use-directories', async () => {
   return {
     ...actual,
     useDirectories: () => testState.directories,
+    useDirectoryDefaults: () => testState.directoryDefaults,
   };
 });
 
@@ -71,10 +79,31 @@ vi.mock('lodash/debounce', () => ({
 
 let container: HTMLDivElement;
 let root: Root;
+let scrollIntoViewMock: ReturnType<typeof vi.fn>;
 
 const renderRules = async () => {
   await act(async () => {
-    root.render(createElement(Rules));
+    root.render(createElement(MemoryRouter, null, createElement(Rules)));
+  });
+};
+
+// Set a controlled input's value via the native setter so React's value tracker still fires onChange.
+const setInputValue = (input: HTMLInputElement, value: string) => {
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+  setter?.call(input, value);
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+};
+
+const submitBoardAddress = async (address: string) => {
+  const input = container.querySelector('input[type="text"]') as HTMLInputElement;
+  expect(input).toBeTruthy();
+  const form = input.closest('form') as HTMLFormElement;
+
+  await act(async () => {
+    setInputValue(input, address);
+  });
+  await act(async () => {
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
   });
 };
 
@@ -86,8 +115,18 @@ describe('Rules', () => {
     testState.directories = [
       { address: 'anime-posting.eth', title: '/a/ - Anime & Manga' },
       { address: 'random-posting.eth', title: '/b/ - Random' },
+      { address: 'flash-posting.eth', title: '/f/ - Flash' },
     ];
+    testState.directoryDefaults = {
+      directories: {
+        a: { directoryCode: 'a', title: '/a/ - Anime & Manga', rules: ['All anime discussion welcome.'] },
+        b: { directoryCode: 'b', title: '/b/ - Random', rules: ['Be excellent to each other.'] },
+        f: { directoryCode: 'f', title: '/f/ - Flash', features: { postFlairs: true }, rules: ['Tag your uploads.'] },
+      },
+    };
     window.scrollTo = vi.fn();
+    scrollIntoViewMock = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoViewMock as unknown as typeof Element.prototype.scrollIntoView;
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -99,54 +138,140 @@ describe('Rules', () => {
     container.remove();
   });
 
-  it('keeps custom-address routes out of the default board select', async () => {
-    testState.boardIdentifier = 'custom-board.eth';
+  it('renders a quick-jump nav link and a rules section for every directory', async () => {
+    await renderRules();
+
+    // Quick-jump nav links use the directory name (like 4chan's board list) and point at the per-directory route.
+    expect(container.querySelector('a[href="/rules/a"]')?.textContent).toBe('Anime & Manga');
+    expect(container.querySelector('a[href="/rules/b"]')?.textContent).toBe('Random');
+
+    // One anchored rules section per directory.
+    expect(container.querySelector('#a')).toBeTruthy();
+    expect(container.querySelector('#b')).toBeTruthy();
+    expect(container.textContent).toContain('/a/ - Anime & Manga');
+    expect(container.textContent).toContain('/b/ - Random');
+  });
+
+  it('renders directory rules from the directories JSON without loading any board over P2P', async () => {
+    // communities (the P2P source) is empty, yet the rules still render because they come from the defaults JSON.
+    await renderRules();
+
+    expect(container.textContent).toContain('All anime discussion welcome.');
+    expect(container.textContent).toContain('Be excellent to each other.');
+    // The directory rules are not framed as a P2P "Rules for:" board fetch.
+    expect(container.textContent).not.toContain('Rules for:');
+  });
+
+  it('insta-scrolls to a directory section when deep-linked via /rules/:code', async () => {
+    testState.boardIdentifier = 'a';
+
+    await renderRules();
+
+    expect(scrollIntoViewMock).toHaveBeenCalled();
+  });
+
+  it('loads a board over P2P when an address is submitted in the loader', async () => {
     testState.communities = {
       'custom-board.eth': {
-        rules: ['No custom options in the select.'],
+        rules: ['No spamming.'],
         shortAddress: 'custom-board.eth',
         state: 'succeeded',
       },
     };
 
     await renderRules();
+    await submitBoardAddress('custom-board.eth');
 
-    const select = container.querySelector('select');
-    expect(select).toBeTruthy();
-    expect(select?.value).toBe('');
-    expect(Array.from(select?.options ?? []).map((option) => option.value)).toEqual(['', 'anime-posting.eth', 'random-posting.eth']);
     expect(container.textContent).toContain('Rules for: custom-board.eth');
+    expect(container.textContent).toContain('No spamming.');
   });
 
-  it('keeps the canonical default board selected for known directories', async () => {
-    testState.boardIdentifier = 'a';
+  it('clears a loaded P2P rules box when navigating to a directory route', async () => {
     testState.communities = {
-      'anime-posting.eth': {
-        rules: ['Stay on topic.'],
+      'custom-board.eth': {
+        rules: ['No spamming.'],
+        shortAddress: 'custom-board.eth',
         state: 'succeeded',
       },
     };
 
     await renderRules();
+    await submitBoardAddress('custom-board.eth');
+    expect(container.textContent).toContain('Rules for: custom-board.eth');
 
-    const select = container.querySelector('select');
-    expect(select).toBeTruthy();
-    expect(select?.value).toBe('anime-posting.eth');
-    expect(Array.from(select?.options ?? []).map((option) => option.value)).toEqual(['', 'anime-posting.eth', 'random-posting.eth']);
-    expect(container.textContent).toContain('Rules for: /a/ - Anime & Manga');
+    testState.boardIdentifier = 'a';
+    await renderRules();
+
+    expect(container.textContent).not.toContain('Rules for: custom-board.eth');
+    expect(scrollIntoViewMock).toHaveBeenCalled();
   });
 
-  it('shows a friendly loading state string while board rules are downloading', async () => {
-    testState.boardIdentifier = 'a';
+  it('shows a friendly loading state string while a board over P2P is downloading', async () => {
     testState.communities = {
-      'anime-posting.eth': {
+      'custom-board.eth': {
         state: 'fetching-ipns',
       },
     };
 
     await renderRules();
+    await submitBoardAddress('custom-board.eth');
 
     expect(container.textContent).toContain('Downloading board from peers');
     expect(container.textContent).not.toContain('loading...');
+  });
+
+  it('groups directories into Image Boards and Upload Boards with an h3 per directory', async () => {
+    await renderRules();
+
+    expect(container.textContent).toContain('Image Boards');
+    expect(container.textContent).toContain('Upload Boards');
+
+    const h3Titles = Array.from(container.querySelectorAll('h3')).map((h3) => h3.textContent);
+    expect(h3Titles).toContain('/a/ - Anime & Manga');
+    expect(h3Titles).toContain('/b/ - Random');
+    expect(h3Titles).toContain('/f/ - Flash');
+    expect(container.textContent).toContain('Tag your uploads.');
+  });
+
+  it('does not scroll bare /rules back to the top when directories refresh', async () => {
+    await renderRules();
+    expect(window.scrollTo).toHaveBeenCalled();
+
+    vi.mocked(window.scrollTo).mockClear();
+    testState.directories = [...testState.directories, { address: 'travel-posting.eth', title: '/trv/ - Travel', directoryCode: 'trv' }];
+    testState.directoryDefaults = {
+      directories: {
+        ...testState.directoryDefaults.directories,
+        trv: { directoryCode: 'trv', title: '/trv/ - Travel', rules: ['Stay on topic.'] },
+      },
+    };
+
+    await renderRules();
+
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
+  it('toggles the loader action to Clear, which removes the loaded rules and empties the input', async () => {
+    testState.communities = {
+      'custom-board.eth': {
+        rules: ['No spamming.'],
+        shortAddress: 'custom-board.eth',
+        state: 'succeeded',
+      },
+    };
+
+    await renderRules();
+    await submitBoardAddress('custom-board.eth');
+    expect(container.textContent).toContain('Rules for: custom-board.eth');
+
+    const clearButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'Clear');
+    expect(clearButton).toBeTruthy();
+
+    await act(async () => {
+      clearButton?.click();
+    });
+
+    expect(container.textContent).not.toContain('Rules for: custom-board.eth');
+    expect((container.querySelector('input[type="text"]') as HTMLInputElement).value).toBe('');
   });
 });

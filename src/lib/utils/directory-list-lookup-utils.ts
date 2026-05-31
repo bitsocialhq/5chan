@@ -1,4 +1,4 @@
-import directoryListsData from '../../data/5chan-directory-lists.json';
+import { vendoredDirectoryLists as directoryListsData } from '../../data/vendored-directory-lists';
 import { normalizeDirectoryList, type DirectoryList, type DirectoryListBoard } from './directory-list-utils';
 
 const DIRECTORY_ALIAS_SUFFIXES = ['.bso', '.eth'] as const;
