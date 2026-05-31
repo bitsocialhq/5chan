@@ -20,6 +20,13 @@ const TIMEOUT_MS = 5000;
 const isJsonFile = (fileName) => typeof fileName === 'string' && fileName.endsWith('.json');
 const isRecord = (value) => typeof value === 'object' && value !== null;
 const getErrorMessage = (error) => (error instanceof Error ? error.message : String(error));
+const getSourceLabel = () => {
+  if (!DIRECTORIES_SOURCE_PATH) {
+    return `GitHub folder: ${GITHUB_CONTENTS_URL}`;
+  }
+  const resolvedSourcePath = isAbsolute(DIRECTORIES_SOURCE_PATH) ? DIRECTORIES_SOURCE_PATH : resolve(process.cwd(), DIRECTORIES_SOURCE_PATH);
+  return `local directory: ${resolvedSourcePath}`;
+};
 
 const fetchWithTimeout = async (url, asJson) => {
   const controller = new AbortController();
@@ -125,7 +132,7 @@ const sync = async () => {
     }
     console.log(`✅ Mirrored directories (${fileNames.length} files, ${written} updated, ${removed} removed)`);
   } catch (e) {
-    console.warn(`⚠️  Could not mirror directories from GitHub (keeping existing files): ${getErrorMessage(e)}`);
+    console.warn(`⚠️  Could not mirror directories from ${getSourceLabel()} (keeping existing files): ${getErrorMessage(e)}`);
   }
 };
 

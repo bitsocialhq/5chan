@@ -20,6 +20,7 @@ import {
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const LOCALSTORAGE_KEY = '5chan-directories-cache';
+const LOCALSTORAGE_DEFAULTS_KEY = '5chan-directory-defaults-cache';
 const LOCALSTORAGE_TIMESTAMP_KEY = '5chan-directories-cache-timestamp';
 
 type Snapshot = {
@@ -278,6 +279,9 @@ describe('use-directories', () => {
     const persisted = JSON.parse(localStorage.getItem(LOCALSTORAGE_KEY) ?? '{}');
     expect(persisted.title).toBe('5chan directories');
     expect(persisted.communities.length).toBeGreaterThan(1);
+
+    const persistedDefaults = JSON.parse(localStorage.getItem(LOCALSTORAGE_DEFAULTS_KEY) ?? '{}');
+    expect(persistedDefaults.description).toBe('remote defaults');
   });
 
   it('does not refetch GitHub directories for each later hook mount after a successful refresh', async () => {
@@ -377,6 +381,32 @@ describe('use-directories', () => {
     await flushEffects(8);
 
     expect(latestSnapshot?.directoryDefaults.description).toBe('remote defaults');
+  });
+
+  it('hydrates cached directory defaults with cached communities when GitHub refresh fails', async () => {
+    const cachedDefaults = createRemoteDefaults(REMOTE_DIRECTORY_CODES, {
+      mu: { title: '/mu/ - Cached Remote Music' },
+    });
+    const cachedData: DirectoriesData = {
+      title: 'Cached directories',
+      description: 'cached description',
+      createdAt: 1,
+      updatedAt: 2,
+      communities: [{ address: 'music-posting.bso', title: '/mu/ - Cached Music', directoryCode: 'mu', nsfw: false }],
+    };
+
+    localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(cachedData));
+    localStorage.setItem(LOCALSTORAGE_DEFAULTS_KEY, JSON.stringify(cachedDefaults));
+    localStorage.setItem(LOCALSTORAGE_TIMESTAMP_KEY, String(Date.now()));
+    fetchMock.mockRejectedValueOnce(new Error('network down'));
+
+    renderHarness('music-posting.bso');
+    await flushEffects(8);
+
+    expect(latestSnapshot?.directories.map((community) => community.address)).toEqual(['music-posting.bso']);
+    expect(latestSnapshot?.directoryDefaults.description).toBe('remote defaults');
+    expect(latestSnapshot?.directoryDefaults.directories.mu.title).toBe('/mu/ - Cached Remote Music');
+    expect(warnSpy.mock.calls.some((call: ConsoleWarnCall) => String(call[0]).includes('Failed to fetch directories'))).toBe(true);
   });
 
   it('clears invalid recent cache entries and falls back to vendored data when GitHub refresh fails', async () => {

@@ -251,14 +251,17 @@ const Rules = () => {
     document.title = 'Rules - 5chan';
   }, []);
 
-  // Deep-link: /rules/:code insta-scrolls to that directory's rules (once per identifier); bare /rules starts at top.
   useEffect(() => {
+    setLoadedAddress('');
     if (!boardIdentifier) {
       scrolledForRef.current = null;
       window.scrollTo(0, 0);
-      return;
     }
-    if (scrolledForRef.current === boardIdentifier) {
+  }, [boardIdentifier]);
+
+  // Deep-link: /rules/:code insta-scrolls to that directory's rules once the matching section is rendered.
+  useEffect(() => {
+    if (!boardIdentifier || scrolledForRef.current === boardIdentifier) {
       return;
     }
     const code = resolveDirectoryCode(boardIdentifier, directories);

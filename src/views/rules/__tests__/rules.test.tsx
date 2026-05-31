@@ -186,6 +186,26 @@ describe('Rules', () => {
     expect(container.textContent).toContain('No spamming.');
   });
 
+  it('clears a loaded P2P rules box when navigating to a directory route', async () => {
+    testState.communities = {
+      'custom-board.eth': {
+        rules: ['No spamming.'],
+        shortAddress: 'custom-board.eth',
+        state: 'succeeded',
+      },
+    };
+
+    await renderRules();
+    await submitBoardAddress('custom-board.eth');
+    expect(container.textContent).toContain('Rules for: custom-board.eth');
+
+    testState.boardIdentifier = 'a';
+    await renderRules();
+
+    expect(container.textContent).not.toContain('Rules for: custom-board.eth');
+    expect(scrollIntoViewMock).toHaveBeenCalled();
+  });
+
   it('shows a friendly loading state string while a board over P2P is downloading', async () => {
     testState.communities = {
       'custom-board.eth': {
@@ -211,6 +231,24 @@ describe('Rules', () => {
     expect(h3Titles).toContain('/b/ - Random');
     expect(h3Titles).toContain('/f/ - Flash');
     expect(container.textContent).toContain('Tag your uploads.');
+  });
+
+  it('does not scroll bare /rules back to the top when directories refresh', async () => {
+    await renderRules();
+    expect(window.scrollTo).toHaveBeenCalled();
+
+    vi.mocked(window.scrollTo).mockClear();
+    testState.directories = [...testState.directories, { address: 'travel-posting.eth', title: '/trv/ - Travel', directoryCode: 'trv' }];
+    testState.directoryDefaults = {
+      directories: {
+        ...testState.directoryDefaults.directories,
+        trv: { directoryCode: 'trv', title: '/trv/ - Travel', rules: ['Stay on topic.'] },
+      },
+    };
+
+    await renderRules();
+
+    expect(window.scrollTo).not.toHaveBeenCalled();
   });
 
   it('toggles the loader action to Clear, which removes the loaded rules and empties the input', async () => {
