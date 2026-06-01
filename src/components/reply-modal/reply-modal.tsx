@@ -18,6 +18,7 @@ import {
 } from '../../lib/utils/post-options-utils';
 import { getPublishURLFilename, isValidPublishURL } from '../../lib/utils/url-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
+import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
 import { isAllView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import useSelectedTextStore from '../../stores/use-selected-text-store';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
@@ -81,6 +82,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const roles = useCommunityField(communityAddress, (community) => community?.roles);
   const accountRole = accountAddress ? roles?.[accountAddress]?.role : undefined;
   const showBbcodeToolbar = hasModQueueAccessRole(accountRole);
+  const moderationPostingRoleLabel = getModerationPostingRoleLabel({ address: accountAddress, role: accountRole });
+  const moderationPostingWarning = showBbcodeToolbar && moderationPostingRoleLabel ? `warning: posting as ${moderationPostingRoleLabel}` : undefined;
   const textRef = useRef<HTMLTextAreaElement | null>(null);
   const setTextRef = useRef((element: HTMLTextAreaElement | null) => {
     textRef.current = element;
@@ -609,7 +612,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             {t('post')}
           </button>
         </div>
-        {showBbcodeToolbar ? <div className={styles.error}>warning: posting as moderator</div> : null}
+        {moderationPostingWarning ? <div className={styles.error}>{moderationPostingWarning}</div> : null}
         {lengthError ? (
           <div className={styles.error}>{lengthError}</div>
         ) : error ? (

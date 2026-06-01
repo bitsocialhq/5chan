@@ -21,6 +21,7 @@ import {
 } from '../../lib/utils/post-options-utils';
 import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import { getPublishURLFilename, isValidPublishURL, isValidURL } from '../../lib/utils/url-utils';
+import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
@@ -536,6 +537,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const roles = useCommunityField(effectiveBoardAddress, (community) => community?.roles);
   const accountRole = accountAddress ? roles?.[accountAddress]?.role : undefined;
   const showBbcodeToolbar = hasModQueueAccessRole(accountRole) || (!effectiveBoardAddress && isInModView && accountCommunityAddresses.length > 0);
+  const moderationPostingRoleLabel = getModerationPostingRoleLabel({ address: accountAddress, role: accountRole });
+  const moderationPostingWarning = showBbcodeToolbar && moderationPostingRoleLabel ? `warning: posting as ${moderationPostingRoleLabel}` : undefined;
 
   const [lengthError, setLengthError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | PostOptionsValidationError | null>(null);
@@ -877,7 +880,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
           />
         </tbody>
       </table>
-      {showBbcodeToolbar ? <div className={`${styles.error} ${styles.formError}`}>warning: posting as moderator</div> : null}
+      {moderationPostingWarning ? <div className={`${styles.error} ${styles.formError}`}>{moderationPostingWarning}</div> : null}
       {formError ? (
         <div className={`${styles.error} ${styles.formError}`}>
           {isPostOptionsValidationError(formError) ? <PostOptionsErrorMessage error={formError} directories={directories} /> : formError}

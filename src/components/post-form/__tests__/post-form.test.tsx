@@ -1027,6 +1027,24 @@ describe('PostForm', () => {
     expect(container.textContent).not.toContain('warning: posting as moderator');
   });
 
+  it('uses the 5chan dev label for known developer moderator posts', async () => {
+    testState.account = {
+      author: { address: 'plebeius.bso', displayName: 'Tom' },
+      subscriptions: ['music-posting.eth'],
+    };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.rolesByCommunity = {
+      'music-posting.eth': {
+        'plebeius.bso': { role: 'owner' },
+      },
+    };
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    expect(container.textContent).toContain('warning: posting as 5chan dev');
+  });
+
   it('shows the pasted file-link filename next to the upload button', async () => {
     testState.uploadedFileName = null;
 
