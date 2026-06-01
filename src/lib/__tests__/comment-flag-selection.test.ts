@@ -17,30 +17,34 @@ describe('comment-flag-selection', () => {
     expect(hasCommentFlagsForDirectory({ features: { hasFlags: true }, title: '/pol/ - Politically Incorrect' })).toBe(true);
   });
 
-  it('uses geographic location as the default for country flag boards', () => {
+  it('uses geographic location as the default for other flag boards', () => {
     expect(
       getCommentFlagOptionsForDirectory({
-        directoryCode: 'int',
+        directoryCode: 'fit',
         features: { hasFlags: true },
-        title: '/int/ - International',
+        title: '/fit/ - Fitness',
       }),
     ).toEqual([{ label: 'Geographic Location', value: 'country:auto' }]);
   });
 
-  it('does not expose a flag selector on /bant/ but still publishes geographic location', () => {
+  it.each([
+    { directoryCode: 'bant', title: '/bant/ - International/Random' },
+    { directoryCode: 'int', title: '/int/ - International' },
+    { directoryCode: 'sp', title: '/sp/ - Sports' },
+  ])('does not expose a flag selector on /$directoryCode/ but still publishes geographic location', ({ directoryCode, title }) => {
     expect(
       getCommentFlagOptionsForDirectory({
-        directoryCode: 'bant',
+        directoryCode,
         features: { hasFlags: true },
-        title: '/bant/ - International/Random',
+        title,
       }),
     ).toEqual([]);
 
     expect(
       getCommentFlagPublishOptionsForDirectory({
-        directoryCode: 'bant',
+        directoryCode,
         features: { hasFlags: true },
-        title: '/bant/ - International/Random',
+        title,
       }),
     ).toEqual({
       challengeRequest: {
