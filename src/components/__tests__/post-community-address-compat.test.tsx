@@ -151,6 +151,8 @@ vi.mock('../../lib/utils/media-utils', () => ({
   getDisplayMediaInfoType: (type?: string) => type ?? 'unknown',
   getHasThumbnail: () => true,
   getMediaDimensions: () => '100x100',
+  getPostMediaTypeLabel: (_commentMediaInfo: unknown, resolvedType?: string) => resolvedType ?? '',
+  getYouTubeEmbedPostMediaFileLink: () => undefined,
 }));
 
 vi.mock('../../lib/utils/post-utils', () => ({
@@ -171,6 +173,7 @@ vi.mock('../../lib/utils/pending-approval-moderation', () => ({
 
 vi.mock('../../lib/utils/url-utils', () => ({
   isValidURL: () => true,
+  parseHttpUrl: (value: string) => new URL(value),
 }));
 
 vi.mock('../../lib/utils/view-utils', () => ({

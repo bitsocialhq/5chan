@@ -20,9 +20,13 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/lib/localforage-lru/index.js', ()
   },
 }));
 
-vi.mock('../../../components/embed', () => ({
-  canEmbed: (url: URL) => testState.canEmbedHosts.has(url.hostname),
-}));
+vi.mock('../../../components/embed/embed-utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../components/embed/embed-utils')>();
+  return {
+    ...actual,
+    canEmbed: (url: URL) => testState.canEmbedHosts.has(url.hostname),
+  };
+});
 
 vi.mock('@capacitor/core', () => ({
   Capacitor: {
@@ -33,7 +37,16 @@ vi.mock('@capacitor/core', () => ({
   },
 }));
 
-import { fetchWebpageThumbnailIfNeeded, getCommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getLinkMediaInfo, getMediaDimensions } from '../media-utils';
+import {
+  fetchWebpageThumbnailIfNeeded,
+  getCommentMediaInfo,
+  getDisplayMediaInfoType,
+  getHasThumbnail,
+  getLinkMediaInfo,
+  getMediaDimensions,
+  getPostMediaTypeLabel,
+  getYouTubeEmbedPostMediaFileLink,
+} from '../media-utils';
 
 const clearMemoizedCache = (fn: unknown) => {
   const memoized = fn as { clear?: () => void };
@@ -102,6 +115,18 @@ describe('media-utils', () => {
     expect(getDisplayMediaInfoType('unknown', t)).toBe('translated:webpage');
   });
 
+  it('uses the youtube thumbnail url for post media file links and labels', () => {
+    const mediaInfo = {
+      patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/0.jpg',
+      type: 'iframe',
+      url: 'https://www.youtube.com/watch?v=abc123',
+    };
+
+    expect(getYouTubeEmbedPostMediaFileLink(mediaInfo)).toBe('https://img.youtube.com/vi/abc123/0.jpg');
+    expect(getPostMediaTypeLabel(mediaInfo, 'iframe', (key) => key)).toBe('youtube_video');
+    expect(getYouTubeEmbedPostMediaFileLink({ type: 'iframe', url: 'https://streamable.com/clip123' })).toBeUndefined();
+  });
+
   it('recognizes which media types expose thumbnails', () => {
     expect(getHasThumbnail(undefined, 'https://example.com/file.png')).toBe(false);
     expect(getHasThumbnail({ type: 'image', url: 'https://example.com/file.png' }, 'https://example.com/file.png')).toBe(true);
@@ -155,6 +180,12 @@ describe('media-utils', () => {
       patternThumbnailUrl: 'https://img.youtube.com/vi/yt123/0.jpg',
       type: 'iframe',
       url: 'https://yt.example/watch?v=yt123',
+    });
+    testState.canEmbedHosts = new Set(['yewtu.be']);
+    expect(getLinkMediaInfo('https://yewtu.be/invidious123')).toEqual({
+      patternThumbnailUrl: 'https://img.youtube.com/vi/invidious123/0.jpg',
+      type: 'iframe',
+      url: 'https://yewtu.be/invidious123',
     });
   });
 

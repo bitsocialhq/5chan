@@ -1,3 +1,5 @@
+const STANDARD_YOUTUBE_HOSTS = new Set<string>(['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com', 'youtu.be', 'www.youtu.be']);
+
 export const youtubeHosts = new Set<string>([
   'youtube.com',
   'www.youtube.com',
@@ -45,6 +47,35 @@ const canEmbedHosts = new Set<string>([
   ...streamableHosts,
   ...spotifyHosts,
 ]);
+
+export const getYouTubeVideoId = (parsedUrl: URL): string | null => {
+  if (parsedUrl.searchParams.has('list') && !parsedUrl.searchParams.get('v') && !parsedUrl.host.includes('youtu.be') && !parsedUrl.pathname.includes('/shorts/')) {
+    return null;
+  }
+
+  const videoIdFromQuery = parsedUrl.searchParams.get('v');
+  if (videoIdFromQuery) {
+    return videoIdFromQuery;
+  }
+
+  if (parsedUrl.host.includes('youtu.be')) {
+    return parsedUrl.pathname.slice(1).split('/')[0] || null;
+  }
+
+  if (parsedUrl.pathname.includes('/shorts/')) {
+    return parsedUrl.pathname.split('/shorts/')[1]?.split('/')[0] || null;
+  }
+
+  const isInvidious = !STANDARD_YOUTUBE_HOSTS.has(parsedUrl.host) && (youtubeHosts.has(parsedUrl.host) || parsedUrl.host.startsWith('yt.'));
+  if (isInvidious) {
+    if (parsedUrl.pathname.startsWith('/watch')) {
+      return parsedUrl.searchParams.get('v');
+    }
+    return parsedUrl.pathname.split('/').filter(Boolean).pop() || null;
+  }
+
+  return null;
+};
 
 export const canEmbed = (parsedUrl: URL): boolean => {
   if (xHosts.has(parsedUrl.host)) {

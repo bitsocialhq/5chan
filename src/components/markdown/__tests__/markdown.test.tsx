@@ -24,7 +24,9 @@ const testState = vi.hoisted(() => ({
   cidToNumber: {} as Record<string, number>,
   internalPathByHref: {} as Record<string, string | null>,
   isMobile: false,
-  mediaInfoByHref: {} as Record<string, { thumbnail?: string; type: string; url: string }>,
+  mediaInfoByHref: {} as Record<string, { patternThumbnailUrl?: string; thumbnail?: string; type: string; url: string }>,
+  floatingMediaProps: null as { showThumbnail?: boolean } | null,
+  floatingOnOpenChange: null as ((open: boolean) => void) | null,
   numberToCid: {} as Record<string, Record<number, string>>,
   unavailableCids: new Set<string>(),
 }));
@@ -42,20 +44,32 @@ vi.mock('@floating-ui/react', () => ({
   shift: () => ({}),
   size: () => ({}),
   useDismiss: () => ({}),
-  useFloating: () => ({
-    context: {},
-    floatingStyles: {},
-    refs: {
-      setFloating: () => undefined,
-      setReference: () => undefined,
-    },
-    update: () => undefined,
-  }),
+  useFloating: ({ onOpenChange, open }: { onOpenChange?: (open: boolean) => void; open?: boolean }) => {
+    testState.floatingOnOpenChange = onOpenChange ?? null;
+    return {
+      context: {},
+      floatingStyles: {},
+      open,
+      onOpenChange,
+      refs: {
+        setFloating: () => undefined,
+        setReference: () => undefined,
+      },
+      update: () => undefined,
+    };
+  },
   useFocus: () => ({}),
-  useHover: () => ({}),
-  useInteractions: () => ({
+  useHover: () => ({
+    getReferenceProps: (props?: Record<string, unknown>) => ({
+      ...props,
+      onMouseEnter: () => testState.floatingOnOpenChange?.(true),
+      onMouseLeave: () => testState.floatingOnOpenChange?.(false),
+    }),
+  }),
+  useInteractions: (interactions: Array<{ getReferenceProps?: (props?: Record<string, unknown>) => Record<string, unknown> }>) => ({
     getFloatingProps: (props?: Record<string, unknown>) => props || {},
-    getReferenceProps: (props?: Record<string, unknown>) => props || {},
+    getReferenceProps: (props?: Record<string, unknown>) =>
+      interactions.reduce((mergedProps, interaction) => interaction.getReferenceProps?.(mergedProps) || mergedProps, props || {}),
   }),
 }));
 
@@ -75,8 +89,13 @@ vi.mock('../../../hooks/use-is-mobile', () => ({
 }));
 
 vi.mock('../../../lib/utils/media-utils', () => ({
-  getHasThumbnail: (linkMediaInfo?: { thumbnail?: string; type?: string }, href?: string) =>
-    Boolean(linkMediaInfo?.thumbnail || linkMediaInfo?.type === 'image' || (href && testState.mediaInfoByHref[href]?.thumbnail)),
+  getHasThumbnail: (linkMediaInfo?: { patternThumbnailUrl?: string; thumbnail?: string; type?: string }, href?: string) =>
+    Boolean(
+      linkMediaInfo?.thumbnail ||
+      linkMediaInfo?.patternThumbnailUrl ||
+      linkMediaInfo?.type === 'image' ||
+      (href && (testState.mediaInfoByHref[href]?.thumbnail || testState.mediaInfoByHref[href]?.patternThumbnailUrl)),
+    ),
   getLinkMediaInfo: (href: string) => testState.mediaInfoByHref[href],
 }));
 
@@ -139,8 +158,28 @@ vi.mock('../../../stores/use-post-number-store', () => ({
 }));
 
 vi.mock('../../comment-media', () => ({
-  default: ({ commentMediaInfo }: { commentMediaInfo?: { type?: string; url?: string } }) =>
-    createElement('div', { 'data-testid': 'comment-media' }, `${commentMediaInfo?.type}:${commentMediaInfo?.url}`),
+  default: ({
+    commentMediaInfo,
+    isFloatingEmbed,
+    showThumbnail,
+  }: {
+    commentMediaInfo?: { type?: string; url?: string };
+    isFloatingEmbed?: boolean;
+    showThumbnail?: boolean;
+  }) => {
+    if (isFloatingEmbed) {
+      testState.floatingMediaProps = { showThumbnail };
+    }
+    return createElement(
+      'div',
+      {
+        'data-floating': String(Boolean(isFloatingEmbed)),
+        'data-show-thumbnail': String(showThumbnail),
+        'data-testid': 'comment-media',
+      },
+      `${commentMediaInfo?.type}:${commentMediaInfo?.url}`,
+    );
+  },
 }));
 
 vi.mock('../../embed', () => ({
@@ -198,6 +237,8 @@ describe('Markdown', () => {
     testState.internalPathByHref = {};
     testState.isMobile = false;
     testState.mediaInfoByHref = {};
+    testState.floatingMediaProps = null;
+    testState.floatingOnOpenChange = null;
     testState.numberToCid = {};
     testState.unavailableCids = new Set<string>();
 
@@ -458,6 +499,33 @@ describe('Markdown', () => {
 
     const lazyLinks = Array.from(container.querySelectorAll('[data-testid="external-number-quote-link"]'));
     expect(lazyLinks.map((node) => node.textContent)).toEqual(['>>42', '>>>/fit/77']);
+  });
+
+  it('shows youtube thumbnails in the floating hover preview instead of loading the iframe', async () => {
+    testState.embeddableHosts = new Set(['www.youtube.com']);
+    testState.mediaInfoByHref = {
+      'https://www.youtube.com/watch?v=abc123': {
+        patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/0.jpg',
+        type: 'iframe',
+        url: 'https://www.youtube.com/watch?v=abc123',
+      },
+    };
+
+    await renderMarkdown({
+      content: 'https://www.youtube.com/watch?v=abc123',
+    });
+
+    const embedButton = Array.from(container.querySelectorAll('button')).find((node) => node.textContent === 'embed');
+    expect(embedButton).toBeTruthy();
+
+    await act(async () => {
+      testState.floatingOnOpenChange?.(true);
+    });
+
+    const floatingMedia = container.querySelector('[data-floating="true"]');
+    expect(floatingMedia).toBeTruthy();
+    expect(floatingMedia?.getAttribute('data-show-thumbnail')).toBe('true');
+    expect(testState.floatingMediaProps?.showThumbnail).toBe(true);
   });
 
   it('toggles inline media embeds for embeddable links outside catalog view', async () => {

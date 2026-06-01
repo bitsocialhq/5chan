@@ -1,5 +1,5 @@
 import localForageLru from '@bitsocial/bitsocial-react-hooks/dist/lib/localforage-lru/index.js';
-import { canEmbed } from '../../components/embed';
+import { canEmbed, getYouTubeVideoId } from '../../components/embed/embed-utils';
 import memoize from 'memoizee';
 import { isPrivateNetworkHostname, isValidURL, parseHttpUrl } from './url-utils';
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
@@ -40,6 +40,31 @@ export const getDisplayMediaInfoType = (type: string, t: Translate) => {
   }
 };
 
+export const getYouTubeEmbedPostMediaFileLink = (commentMediaInfo: CommentMediaInfo | undefined): string | undefined => {
+  if (!commentMediaInfo || commentMediaInfo.type !== 'iframe' || !commentMediaInfo.url) {
+    return undefined;
+  }
+
+  const parsedUrl = parseHttpUrl(commentMediaInfo.url);
+  if (!parsedUrl || !getYouTubeVideoId(parsedUrl)) {
+    return undefined;
+  }
+
+  return commentMediaInfo.patternThumbnailUrl || getPatternThumbnailUrl(parsedUrl);
+};
+
+export const getPostMediaTypeLabel = (commentMediaInfo: CommentMediaInfo | undefined, resolvedType: string | undefined, t: Translate): string => {
+  if (getYouTubeEmbedPostMediaFileLink(commentMediaInfo)) {
+    return t('youtube_video');
+  }
+
+  if (!resolvedType) {
+    return '';
+  }
+
+  return getDisplayMediaInfoType(resolvedType, t);
+};
+
 export const getHasThumbnail = memoize(
   (commentMediaInfo: CommentMediaInfo | undefined, link: string | undefined): boolean => {
     if (!link || !commentMediaInfo) return false;
@@ -54,17 +79,6 @@ export const getHasThumbnail = memoize(
   },
   { max: 1000 },
 );
-
-const getYouTubeVideoId = (url: URL): string | null => {
-  if (url.host.includes('youtu.be')) {
-    return url.pathname.slice(1);
-  } else if (url.pathname.includes('/shorts/')) {
-    return url.pathname.split('/shorts/')[1].split('/')[0];
-  } else if (url.searchParams.has('v')) {
-    return url.searchParams.get('v');
-  }
-  return null;
-};
 
 const getPatternThumbnailUrl = (url: URL): string | undefined => {
   const videoId = getYouTubeVideoId(url);
