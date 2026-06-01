@@ -340,6 +340,18 @@ describe('ReplyModal', () => {
         features: { hasFlags: true },
         title: '/bant/ - International/Random',
       },
+      'international-sfw.bso': {
+        address: 'international-sfw.bso',
+        directoryCode: 'int',
+        features: { hasFlags: true },
+        title: '/int/ - International',
+      },
+      'sports-posting.bso': {
+        address: 'sports-posting.bso',
+        directoryCode: 'sp',
+        features: { hasFlags: true },
+        title: '/sp/ - Sports',
+      },
       'random-nsfw.bso': {
         address: 'random-nsfw.bso',
         features: {},
@@ -494,8 +506,12 @@ describe('ReplyModal', () => {
     });
   });
 
-  it('publishes geographic location on /bant/ without showing a flag selector', async () => {
-    await renderReplyModal('/bant/thread/post-1', 'international-nsfw.bso');
+  it.each([
+    { boardPath: '/bant/thread/post-1', communityAddress: 'international-nsfw.bso' },
+    { boardPath: '/int/thread/post-1', communityAddress: 'international-sfw.bso' },
+    { boardPath: '/sp/thread/post-1', communityAddress: 'sports-posting.bso' },
+  ])('publishes geographic location on country-only boards without showing a flag selector', async ({ boardPath, communityAddress }) => {
+    await renderReplyModal(boardPath, communityAddress);
 
     expect(container.querySelector<HTMLSelectElement>('select[aria-label="flag"]')).toBeNull();
 

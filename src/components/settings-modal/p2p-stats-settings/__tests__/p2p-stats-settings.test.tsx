@@ -256,6 +256,73 @@ describe('P2PStatsSettings', () => {
     expect(fetchMock).toHaveBeenCalledWith('https://free.freeipapi.com/api/json/91.234.199.189', expect.objectContaining({ signal: expect.any(AbortSignal) }));
   });
 
+  it('shows peer country flags for DNS6 relay hostnames with embedded IPv6 addresses', async () => {
+    const fetchMock = vi.fn(async (url: string | URL | Request) => {
+      const requestUrl = String(url);
+      if (requestUrl === 'https://free.freeipapi.com/api/json/2a11%3A6100%3A0%3A5e9f%3A%3A0') {
+        return {
+          ok: true,
+          json: async () => ({
+            cityName: 'Reykjavik',
+            countryCode: 'IS',
+            ipAddress: '2a11:6100:0:5e9f::0',
+            latitude: 64.1466,
+            longitude: -21.9426,
+          }),
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({ country: 'US', ip: '147.75.84.175' }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    testState.account = {
+      ...testState.account,
+      pkcOptions: {
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      },
+      pkc: {
+        clients: {
+          libp2pJsClients: {
+            libp2pjs: {
+              key: 'libp2pjs',
+              _helia: {
+                libp2p: {
+                  getConnections: () => [
+                    {
+                      remoteAddr: {
+                        toString: () => '/dns6/2a11-6100-0-5e9f--0.k51qzi5uqu5djg5pdoi9a98.example/tcp/443/ws/p2p/relay-peer/p2p-circuit/p2p/12D3KooWIPv6Peer',
+                      },
+                      remotePeer: { toString: () => '12D3KooWIPv6Peer' },
+                    },
+                  ],
+                  getMultiaddrs: () => ['/ip4/147.75.84.175/tcp/4001/ws'],
+                  getPeers: () => ['12D3KooWIPv6Peer'],
+                  peerId: { toString: () => 'self-peer' },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    await renderSettings(false);
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const connectedPeers = container.querySelector('[data-testid="connected-peers"]');
+    expect(connectedPeers?.textContent).toContain('WebSocket through relay');
+    expect(connectedPeers?.querySelector('img[aria-label="Iceland"]')).not.toBeNull();
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://free.freeipapi.com/api/json/2a11%3A6100%3A0%3A5e9f%3A%3A0',
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
+
   it('shows the own IP flag and a red precise map marker when leeching', async () => {
     const fetchMock = vi.fn(async (url: string | URL | Request) => {
       const requestUrl = String(url);

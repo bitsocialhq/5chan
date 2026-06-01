@@ -123,8 +123,8 @@ const ContentLinkEmbed = ({ children, href, linkMediaInfo }: ContentLinkEmbedPro
                 disableToggle={true}
                 isFloatingEmbed={true}
                 isReply={false}
-                setShowThumbnail={setShowMedia}
-                showThumbnail={false}
+                setShowThumbnail={() => {}}
+                showThumbnail={true}
               />
             </div>
           )}

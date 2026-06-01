@@ -295,6 +295,21 @@ describe('CommentMedia', () => {
     expect(setShowThumbnailMock).toHaveBeenCalledWith(false);
   });
 
+  it('renders a youtube thumbnail before the embed is opened', async () => {
+    await renderMedia({
+      commentMediaInfo: {
+        patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/0.jpg',
+        type: 'iframe',
+        url: 'https://www.youtube.com/watch?v=abc123',
+      },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: true,
+    });
+
+    expect(container.querySelector('img[src="https://img.youtube.com/vi/abc123/0.jpg"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="embed"]')).toBeNull();
+  });
+
   it('renders the expanded embed view with a close button on mobile', async () => {
     testState.isMobile = true;
 

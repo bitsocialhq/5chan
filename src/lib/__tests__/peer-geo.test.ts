@@ -37,6 +37,13 @@ describe('extractIpv6FromAddress', () => {
     expect(extractIpv6FromAddress('/ip6/2001:4860:4860::8888/tcp/4001/ws')).toBe('2001:4860:4860::8888');
     expect(extractIpFromAddress('/ip6/2001:4860:4860::8888/tcp/4001/ws')).toBe('2001:4860:4860::8888');
   });
+
+  it('extracts an IPv6 embedded with dashes in a DNS hostname', () => {
+    const address = '/dns6/2a11-6100-0-5e9f--0.k51qzi5uqu5djg5pdoi9a98.example/tcp/443/wss/p2p/12D3KooWExample';
+
+    expect(extractIpv6FromAddress(address)).toBe('2a11:6100:0:5e9f::0');
+    expect(extractIpFromAddress(address)).toBe('2a11:6100:0:5e9f::0');
+  });
 });
 
 describe('isPrivateOrReservedIpv4', () => {
@@ -258,6 +265,31 @@ describe('fetchPeerMapLocation', () => {
 
     await expect(fetchPeerMapLocation('/ip4/10.0.0.1/tcp/4001')).resolves.toBeUndefined();
     expect(fetchMock).not.toHaveBeenCalled();
+
+    vi.unstubAllGlobals();
+  });
+
+  it('resolves a peer location from a DNS6 hostname with an embedded IPv6', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        cityName: 'Reykjavik',
+        countryCode: 'IS',
+        ipAddress: '2a11:6100:0:5e9f::0',
+        latitude: 64.1466,
+        longitude: -21.9426,
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(fetchPeerMapLocation('/dns6/2a11-6100-0-5e9f--0.k51qzi5uqu5djg5pdoi9a98.example/tcp/443/wss')).resolves.toMatchObject({
+      countryCode: 'is',
+      label: 'Reykjavik, IS',
+      lat: 64.1466,
+      lon: -21.9426,
+      source: 'geoip',
+    });
+    expect(fetchMock.mock.calls[0][0]).toBe('https://free.freeipapi.com/api/json/2a11%3A6100%3A0%3A5e9f%3A%3A0');
 
     vi.unstubAllGlobals();
   });

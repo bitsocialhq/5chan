@@ -10,6 +10,7 @@ import {
   streamableHosts,
   tiktokHosts,
   twitchHosts,
+  getYouTubeVideoId,
   xHosts,
   youtubeHosts,
 } from './embed-utils';
@@ -66,28 +67,11 @@ const remoteEmbedSandbox = `${srcDocSandbox} allow-forms allow-presentation allo
 const YoutubeEmbed = ({ parsedUrl }: EmbedComponentProps) => {
   let embedSrc = '';
 
-  const isInvidious = parsedUrl.host !== 'youtube.com' && parsedUrl.host !== 'www.youtube.com' && parsedUrl.host !== 'youtu.be' && parsedUrl.host !== 'www.youtu.be';
-
-  if (parsedUrl.searchParams.has('list')) {
+  if (parsedUrl.searchParams.has('list') && !getYouTubeVideoId(parsedUrl)) {
     const playlistId = parsedUrl.searchParams.get('list');
     embedSrc = `https://www.youtube.com/embed/videoseries?list=${playlistId}`;
   } else {
-    let videoId = parsedUrl.searchParams.get('v');
-
-    if (!videoId) {
-      if (parsedUrl.host.includes('youtu.be')) {
-        videoId = parsedUrl.pathname.substring(1);
-      } else if (parsedUrl.pathname.includes('/shorts/')) {
-        videoId = parsedUrl.pathname.split('/shorts/')[1];
-      } else if (isInvidious) {
-        if (parsedUrl.pathname.startsWith('/watch')) {
-          videoId = parsedUrl.searchParams.get('v');
-        } else {
-          videoId = parsedUrl.pathname.split('/').pop() || null;
-        }
-      }
-    }
-
+    const videoId = getYouTubeVideoId(parsedUrl);
     if (videoId) {
       embedSrc = `https://www.youtube.com/embed/${videoId}`;
     }

@@ -391,7 +391,7 @@ const PostFormFields = ({
       <tr>
         <td>{t('tag')}</td>
         <td>
-          <select name='flashTag' aria-label={t('tag')} ref={flashTagRef} defaultValue=''>
+          <select name='flashTag' aria-label={t('tag')} className={styles.flagSelector} ref={flashTagRef} defaultValue=''>
             <option value=''>{t('choose_one')}</option>
             {flashTagOptions.map((option) => (
               <option key={option.value} value={option.value}>

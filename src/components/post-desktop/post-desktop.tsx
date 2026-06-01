@@ -5,11 +5,11 @@ import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Comment, useEditedComment, useReplies, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
-import { CommentMediaInfo, getDisplayMediaInfoType, getHasThumbnail, getMediaDimensions } from '../../lib/utils/media-utils';
+import { CommentMediaInfo, getHasThumbnail, getMediaDimensions, getPostMediaTypeLabel, getYouTubeEmbedPostMediaFileLink } from '../../lib/utils/media-utils';
 import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { approvePendingCommentModeration, isPendingApprovalRejected, rejectPendingCommentModeration } from '../../lib/utils/pending-approval-moderation';
-import { isValidURL } from '../../lib/utils/url-utils';
+import { isValidURL, parseHttpUrl } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
@@ -642,12 +642,16 @@ const PostMedia = ({
     type = 'static gif';
   }
 
-  const embedUrl = url && new URL(url);
+  const youtubeFileLink = getYouTubeEmbedPostMediaFileLink(commentMediaInfo);
+  const fileLinkUrl = youtubeFileLink ?? url;
+  const embedUrl = url ? parseHttpUrl(url) : null;
   const [showThumbnail, setShowThumbnail] = useState(true);
 
   const mediaDimensions = getMediaDimensions(commentMediaInfo);
   const directoryEntry = findDirectoryByAddress(directories, communityAddress);
   const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
+  const fileLabel = youtubeFileLink || requirePostLinkIsMedia ? t('file') : t('link');
+  const mediaTypeLabel = type ? lowerCase(getPostMediaTypeLabel(commentMediaInfo, type, t)) : '';
   const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
   const displayBoardPath =
     boardPath && communityAddress && boardPath !== communityAddress
@@ -666,10 +670,11 @@ const PostMedia = ({
             {t('board')}: <Link to={`/${boardPath}`}>{displayBoardPath}</Link>{' '}
           </>
         )}
-        {requirePostLinkIsMedia ? t('file') : t('link')}:{' '}
-        <a href={url} target='_blank' rel='noopener noreferrer'>
+        {fileLabel}:{' '}
+        <a href={fileLinkUrl} target='_blank' rel='noopener noreferrer'>
           {(() => {
             if (spoiler) return capitalize(t('spoiler'));
+            if (youtubeFileLink) return truncateWithEllipsisInMiddle(youtubeFileLink);
             if (requirePostLinkIsMedia && url) {
               try {
                 const pathParts = new URL(url).pathname.split('/');
@@ -677,10 +682,10 @@ const PostMedia = ({
                 if (filename && /\.\w+$/.test(filename)) return truncateWithEllipsisInMiddle(filename);
               } catch {}
             }
-            return truncateWithEllipsisInMiddle(url ?? '');
+            return truncateWithEllipsisInMiddle(fileLinkUrl ?? '');
           })()}
         </a>{' '}
-        ({type && lowerCase(getDisplayMediaInfoType(type, t))}
+        ({mediaTypeLabel}
         {mediaDimensions && `, ${mediaDimensions}`})
         {!showThumbnail && (type === 'iframe' || type === 'video' || type === 'audio') && (
           <span>

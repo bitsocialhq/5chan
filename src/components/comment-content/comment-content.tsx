@@ -156,7 +156,14 @@ const CommentContent = ({
   const failedError = getFailedCommentError(resolvedPost);
   const failedErrorMessage = formatErrorMessageForDisplay(failedError);
   const shouldShowUnpublishedStateDetails = !cid && (!hasFailedState || Boolean(failedError));
+  const reasonMessage = reason ? `${capitalize(t('reason'))}: ${reason}` : undefined;
   const pendingApprovalReason = pendingApproval ? reason?.trim() : undefined;
+  const pendingApprovalReasonMessage = pendingApprovalReason
+    ? t('pending_mod_approval_reason', {
+        reason: pendingApprovalReason,
+        interpolation: { escapeValue: false },
+      })
+    : undefined;
 
   const loadingString = (
     <div className={styles.stateString}>
@@ -193,21 +200,21 @@ const CommentContent = ({
       {purged ? (
         <span className={styles.grayEditMessage}>{capitalize(t('this_post_was_purged'))}</span>
       ) : removed ? (
-        reason ? (
+        reasonMessage ? (
           <>
             <span className={styles.redEditMessage}>({t('this_post_was_removed')})</span>
             <br />
             <br />
-            <span className={styles.grayEditMessage}>{`${capitalize(t('reason'))}: "${reason}"`}</span>
+            {renderContent(reasonMessage)}
           </>
         ) : (
           <span className={styles.grayEditMessage}>{capitalize(t('this_post_was_removed'))}.</span>
         )
       ) : deleted ? (
-        reason ? (
+        reasonMessage ? (
           <>
             <span className={styles.grayEditMessage}>{t('user_deleted_this_post')}</span>{' '}
-            <span className={styles.grayEditMessage}>{`${capitalize(t('reason'))}: "${reason}"`}</span>
+            {renderContent(reasonMessage)}
           </>
         ) : (
           <span className={styles.grayEditMessage}>{t('user_deleted_this_post')}</span>
@@ -220,18 +227,13 @@ const CommentContent = ({
               <br />
               <br />
               <span className={styles.pendingApproval}>({t('pending_mod_approval')})</span>
-              {pendingApprovalReason && (
+              {pendingApprovalReasonMessage ? (
                 <>
                   <br />
                   <br />
-                  <span className={styles.grayEditMessage}>
-                    {t('pending_mod_approval_reason', {
-                      reason: pendingApprovalReason,
-                      interpolation: { escapeValue: false },
-                    })}
-                  </span>
+                  {renderContent(pendingApprovalReasonMessage)}
                 </>
-              )}
+              ) : null}
             </>
           )}
           {((!isInPostView && content?.length > 1000 && !showFullComment) || (isInPostView && content?.length > 2000 && !showFullComment)) && !isPrivilegedAuthor && (

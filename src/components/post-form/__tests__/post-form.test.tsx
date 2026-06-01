@@ -444,6 +444,7 @@ describe('PostForm', () => {
     testState.directories = [
       { address: 'music-posting.eth', features: {}, title: '/mu/ - Music' },
       { address: 'politically-incorrect.bso', directoryCode: 'pol', features: { hasFlags: true }, title: '/pol/ - Politically Incorrect' },
+      { address: 'sports-posting.bso', directoryCode: 'sp', features: { hasFlags: true }, title: '/sp/ - Sports' },
       { address: 'random-nsfw.bso', features: {}, title: '/b/ - Random' },
       {
         address: 'flash-posting.bso',
@@ -692,6 +693,30 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
       content: 'flagged post',
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+      },
+      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+    });
+  });
+
+  it('publishes geographic location on /sp/ without showing a flag field', async () => {
+    testState.resolvedCommunityAddress = 'sports-posting.bso';
+
+    await renderPostForm('/sp');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const flagSelect = table?.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+
+    expect(flagSelect).toBeNull();
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'sports post');
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith({
+      content: 'sports post',
       challengeRequest: {
         challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },

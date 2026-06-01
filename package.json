@@ -71,7 +71,7 @@
     "build:fdroid": "cross-env PUBLIC_URL=./ GENERATE_SOURCEMAP=false VITE_APP_DISTRIBUTION=fdroid vite build",
     "build:preload": "vite build --config electron/vite.preload.config.js",
     "build-vercel": "cross-env NODE_OPTIONS=\"--max_old_space_size=4096\" PUBLIC_URL=./ GENERATE_SOURCEMAP=true VITE_COMMIT_REF=$COMMIT_REF CI='' vite build",
-    "test": "vitest",
+    "test": "vitest --maxWorkers=4",
     "test:leaks": "vitest run --detectAsyncLeaks",
     "preview": "vite preview",
     "analyze-bundle": "cross-env PUBLIC_URL=./ GENERATE_SOURCEMAP=true vite build && npx source-map-explorer 'dist/assets/*.js'",
