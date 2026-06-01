@@ -3,7 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import Embed from '../embed';
-import { canEmbed } from '../embed-utils';
+import { canEmbed, getYouTubeVideoId } from '../embed-utils';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -54,6 +54,14 @@ describe('Embed', () => {
     await renderEmbed('https://example.com/plain-link');
 
     expect(container.innerHTML).toBe('');
+  });
+
+  it('extracts youtube video ids for standard, short, and invidious urls', () => {
+    expect(getYouTubeVideoId(new URL('https://www.youtube.com/watch?v=abc123'))).toBe('abc123');
+    expect(getYouTubeVideoId(new URL('https://youtu.be/short123'))).toBe('short123');
+    expect(getYouTubeVideoId(new URL('https://www.youtube.com/shorts/short456'))).toBe('short456');
+    expect(getYouTubeVideoId(new URL('https://yewtu.be/invidious789'))).toBe('invidious789');
+    expect(getYouTubeVideoId(new URL('https://www.youtube.com/playlist?list=PL123'))).toBeNull();
   });
 
   it('reports embeddable hosts through canEmbed and rejects unsupported reddit pages', () => {
