@@ -38,7 +38,7 @@ const NO_FLAG_OPTION: CommentFlagSelectOption = {
 };
 
 /** Boards that always publish geographic location without showing a flag selector. */
-const AUTO_GEOGRAPHIC_FLAG_DIRECTORY_CODES = new Set(['bant']);
+const AUTO_GEOGRAPHIC_FLAG_DIRECTORY_CODES = new Set(['bant', 'int', 'sp']);
 
 const getDirectoryCode = (directory: Pick<DirectoryCommunity, 'directoryCode' | 'title'> | undefined): string | undefined => {
   const directoryCode = directory?.directoryCode?.trim().toLowerCase();
