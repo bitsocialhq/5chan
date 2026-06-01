@@ -1,4 +1,5 @@
 import { DirectoryCommunity, findDirectoryByAddress, normalizeBoardAddress } from '../../hooks/use-directories';
+import { isFlashDirectory, isFlashDirectoryCode } from '../flash-tags';
 import { getEffectiveTimeFilterName, getSearchWithTimeFilter } from './time-filter-utils';
 
 /**
@@ -120,6 +121,17 @@ export const areSameBoardAddress = (a: string | undefined, b: string | undefined
 export const isDirectoryRoute = (boardIdentifier: string, communities: DirectoryCommunity[]): boolean => {
   const directoryToAddress = getDirectoryToAddressMap(communities);
   return directoryToAddress.has(boardIdentifier);
+};
+
+/** True when the board route segment refers to a flash (/f/) upload directory board. */
+export const isFlashBoardRoute = (boardIdentifier: string | undefined, communities: DirectoryCommunity[]): boolean => {
+  if (isFlashDirectoryCode(boardIdentifier)) {
+    return true;
+  }
+  if (!boardIdentifier) {
+    return false;
+  }
+  return isFlashDirectory(findDirectoryByAddress(communities, boardIdentifier));
 };
 
 /** @deprecated Use {@link isDirectoryRoute} */

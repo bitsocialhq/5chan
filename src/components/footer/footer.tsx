@@ -8,6 +8,7 @@ import {
   CatalogSearchResultsLabel,
   ReturnButton,
   CatalogButton,
+  shouldShowCatalogButton,
   TopButton,
   UpdateButton,
   AutoButton,
@@ -19,7 +20,7 @@ import useReplyModalStore from '../../stores/use-reply-modal-store';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import { usePostPageNumber } from '../../hooks/use-post-page-number';
-import { useDirectoryByAddress } from '../../hooks/use-directories';
+import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import capitalize from 'lodash/capitalize';
 import styles from './footer.module.css';
@@ -82,15 +83,21 @@ interface CatalogFooterFirstRowProps {
 }
 
 export const CatalogFooterFirstRow = ({ communityAddress, isInAllView = false, isInSubscriptionsView = false, isInModView = false }: CatalogFooterFirstRowProps) => {
+  const params = useParams();
+  const directories = useDirectories();
+  const showCatalogButton = shouldShowCatalogButton(params.boardIdentifier, directories, { isInAllView, isInSubscriptionsView, isInModView });
+
   return (
     <div className={styles.footerRow}>
       <div className={styles.footerLeft}>
         <span>
           [<ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
         </span>
-        <span>
-          [<CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
-        </span>
+        {showCatalogButton && (
+          <span>
+            [<CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+          </span>
+        )}
         <span>
           [<TopButton />]
         </span>
@@ -155,6 +162,8 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, communityAddress, 
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInModView = isModView(location.pathname);
+  const directories = useDirectories();
+  const showCatalogButton = shouldShowCatalogButton(params.boardIdentifier, directories, { isInAllView, isInSubscriptionsView, isInModView });
 
   const handlePostReplyClick = () => {
     if (isThreadClosed) return;
@@ -167,9 +176,11 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, communityAddress, 
         <span>
           [<ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
         </span>
-        <span>
-          [<CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
-        </span>
+        {showCatalogButton && (
+          <span>
+            [<CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+          </span>
+        )}
         <span>
           [<TopButton />]
         </span>
@@ -234,6 +245,8 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, is
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInModView = isModView(location.pathname);
+  const directories = useDirectories();
+  const showCatalogButton = shouldShowCatalogButton(params.boardIdentifier, directories, { isInAllView, isInSubscriptionsView, isInModView });
   const communityIdentifier = useCommunityIdentifier(communityAddress);
 
   const post = useComment({ commentCid: postCid, autoUpdate: autoUpdateEnabled, community: communityIdentifier });
@@ -258,7 +271,9 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, is
         </div>
         <div className={styles.mobileFooterButtons}>
           <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
-          <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          {showCatalogButton && (
+            <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          )}
           <TopButton />
         </div>
         <div className={styles.mobileFooterButtons}>

@@ -9,6 +9,7 @@ import BoardPagination from '../board-pagination';
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
+  directories: [] as Array<{ address: string; directoryCode?: string; title?: string }>,
   enableInfiniteScroll: false,
   navigateMock: vi.fn(),
   setEnableInfiniteScrollMock: vi.fn(),
@@ -36,6 +37,12 @@ vi.mock('../../../stores/use-feed-view-settings-store', () => ({
     }),
 }));
 
+vi.mock('../../../hooks/use-directories', () => ({
+  findDirectoryByAddress: (directories: Array<{ address: string; directoryCode?: string; title?: string }>, address?: string) =>
+    directories.find((entry) => address && (entry.address === address || entry.directoryCode === address || (entry.title && entry.title.includes(`/${address}/`)))),
+  useDirectories: () => testState.directories,
+}));
+
 vi.mock('../../style-selector/style-selector', () => ({
   default: () => createElement('div', { 'data-testid': 'style-selector' }, 'style-selector'),
 }));
@@ -53,6 +60,7 @@ describe('BoardPagination', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.enableInfiniteScroll = false;
+    testState.directories = [{ address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' }];
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -114,6 +122,14 @@ describe('BoardPagination', () => {
     expect(container.querySelector('[data-testid="style-selector"]')).toBeTruthy();
     expect(container.textContent).not.toContain('catalog');
     expect(container.textContent).not.toContain('archive');
+  });
+
+  it('hides the catalog link on flash upload boards', () => {
+    testState.directories = [{ address: 'flash-posting.bso', directoryCode: 'f', title: '/f/ - Flash' }];
+    renderPagination(createElement(BoardPagination, { basePath: '/f', currentPage: 1, footerStyle: true, totalPages: 3 }));
+
+    expect(container.textContent).not.toContain('catalog');
+    expect(container.textContent).toContain('archive');
   });
 
   it('returns nothing for single-page non-footer pagination', () => {

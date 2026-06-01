@@ -416,6 +416,18 @@ describe('App', () => {
     expect(container.querySelector('[data-testid="not-found-view"]')).toBeTruthy();
   });
 
+  it('redirects flash board catalog routes to not-found', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', title: '/mu/ - Music', nsfw: false },
+      { address: 'flash-posting.bso', directoryCode: 'f', title: '/f/ - Flash', nsfw: true },
+    ];
+
+    await renderApp('/f/catalog');
+
+    expect(latestLocation).toBe('/not-found');
+    expect(container.querySelector('[data-testid="not-found-view"]')).toBeTruthy();
+  });
+
   it('renders the pass route as a global static page', async () => {
     await renderApp('/pass');
 

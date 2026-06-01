@@ -13,6 +13,7 @@ import {
   isDirectoryListRoute,
   isDirectoryRoute,
   isFeedRoute,
+  isFlashBoardRoute,
   isLegacyBoardModQueueRoute,
   isModQueueRoute,
   isPendingPostRoute,
@@ -33,6 +34,7 @@ const communities = [
     title: '/mu/ - Music',
   },
   { address: 'random.eth', directoryCode: 'b', title: 'Random' },
+  { address: 'flash-posting.bso', directoryCode: 'f', title: '/f/ - Flash' },
 ];
 
 beforeEach(() => {
@@ -66,6 +68,11 @@ describe('directory mapping helpers', () => {
     expect(isDirectoryRoute('business.eth', communities)).toBe(false);
     expect(isDirectoryBoard('biz', communities)).toBe(true);
     expect(isDirectoryBoard('business.eth', communities)).toBe(false);
+
+    expect(isFlashBoardRoute('f', communities)).toBe(true);
+    expect(isFlashBoardRoute('flash-posting.bso', communities)).toBe(true);
+    expect(isFlashBoardRoute('mu', communities)).toBe(false);
+    expect(isFlashBoardRoute('music-posting.bso', communities)).toBe(false);
   });
 });
 

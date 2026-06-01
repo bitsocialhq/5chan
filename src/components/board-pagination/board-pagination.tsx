@@ -1,6 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
+import { useDirectories } from '../../hooks/use-directories';
+import { isFlashBoardRoute } from '../../lib/utils/route-utils';
 import StyleSelector from '../style-selector/style-selector';
 import footerStyles from '../footer/footer.module.css';
 import styles from './board-pagination.module.css';
@@ -19,10 +21,13 @@ interface BoardPaginationProps {
 const BoardPagination = ({ basePath, currentPage, search = '', totalPages, footerStyle = false, isMultiboard = false }: BoardPaginationProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const directories = useDirectories();
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
   const setEnableInfiniteScroll = useFeedViewSettingsStore((state) => state.setEnableInfiniteScroll);
 
   const pageHref = (page: number) => ({ pathname: page === 1 ? basePath : `${basePath}/${page}`, search });
+  const boardIdentifier = basePath.replace(/^\//, '').split('/')[0];
+  const showCatalogLink = !isFlashBoardRoute(boardIdentifier, directories);
   const catalogHref = { pathname: `${basePath}/catalog`, search };
 
   if (totalPages <= 1 && !footerStyle) {
@@ -78,9 +83,11 @@ const BoardPagination = ({ basePath, currentPage, search = '', totalPages, foote
             ) : (
               <span className={styles.footerNavPlainDisabled}>{t('next')}</span>
             )}
-            <Link to={catalogHref} className={styles.pagelistSeparatorLink}>
-              {t('catalog')}
-            </Link>
+            {showCatalogLink && (
+              <Link to={catalogHref} className={styles.pagelistSeparatorLink}>
+                {t('catalog')}
+              </Link>
+            )}
             <Link to={archiveHref} className={styles.pagelistSeparatorLink}>
               {t('archive')}
             </Link>

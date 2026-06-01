@@ -3,7 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DesktopBoardButtons, MobileBoardButtons } from '../board-buttons';
+import { DesktopBoardButtons, BracketedCatalogButton, MobileBoardButtons } from '../board-buttons';
 import useThreadLiveUpdatesStore from '../../../stores/use-thread-live-updates-store';
 import useHiddenCatalogThreadsStore from '../../../stores/use-hidden-catalog-threads-store';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
@@ -13,6 +13,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 type DirectoryEntry = {
   address: string;
+  directoryCode?: string;
   features?: { requirePostLinkIsMedia?: boolean };
   name?: string;
   publicKey?: string;
@@ -120,7 +121,7 @@ vi.mock('../../../hooks/use-post-page-number', () => ({
 
 vi.mock('../../../hooks/use-directories', () => ({
   findDirectoryByAddress: (directories: DirectoryEntry[], address?: string) =>
-    directories.find((entry) => address && [entry.address, entry.name, entry.publicKey].includes(address)),
+    directories.find((entry) => address && [entry.address, entry.name, entry.publicKey, entry.directoryCode].includes(address)),
   useDirectories: () => testState.directories,
   useDirectoryByAddress: (address: string | undefined) => testState.directories.find((entry) => entry.address === address),
 }));
@@ -358,6 +359,28 @@ describe('BoardButtons', () => {
     await renderWithRoute(createElement(DesktopBoardButtons), '/music-posting.eth');
 
     expect(container.textContent).not.toContain('directory');
+  });
+
+  it('does not render catalog or OP search controls on flash upload boards', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', features: {}, name: 'music-posting.eth', publicKey: 'music-public-key', title: '/mu/ - Music' },
+      { address: 'flash-posting.bso', directoryCode: 'f', title: '/f/ - Flash' },
+    ];
+    testState.resolvedCommunityAddress = 'flash-posting.bso';
+
+    await renderWithRoute(createElement(DesktopBoardButtons), '/f');
+
+    expect(findButtonLink('catalog')).toBeUndefined();
+    expect(container.querySelector('input[type="text"]')).toBeNull();
+    expect(container.textContent).not.toMatch(/\[\s*\]/);
+  });
+
+  it('does not render bracketed catalog controls on flash upload boards', async () => {
+    testState.directories = [{ address: 'flash-posting.bso', directoryCode: 'f', title: '/f/ - Flash' }];
+
+    await renderWithRoute(createElement(BracketedCatalogButton, { address: 'flash-posting.bso' }), '/f');
+
+    expect(container.textContent?.trim()).toBe('');
   });
 
   it('renders desktop catalog controls and wires sort, style, filter, and refresh updates', async () => {

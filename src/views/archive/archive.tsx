@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useFeed, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
 import { shouldShowSnow } from '../../lib/snow';
-import { BottomButton, CatalogButton, ReturnButton, TopButton } from '../../components/board-buttons/board-buttons';
+import { BottomButton, BracketedCatalogButton, CatalogButton, ReturnButton, TopButton } from '../../components/board-buttons/board-buttons';
 import ErrorDisplay from '../../components/error-display/error-display';
 import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer';
 import LoadingEllipsis from '../../components/loading-ellipsis';
@@ -106,9 +106,7 @@ const ArchiveDesktopTopControls = ({ communityAddress }: { communityAddress: str
     <span>
       [<ReturnButton address={communityAddress} />]
     </span>
-    <span>
-      [<CatalogButton address={communityAddress} />]
-    </span>
+    <BracketedCatalogButton address={communityAddress} />
     <span>
       [<BottomButton />]
     </span>
@@ -120,9 +118,7 @@ const ArchiveDesktopFooterControls = ({ communityAddress }: { communityAddress: 
     <span>
       [<ReturnButton address={communityAddress} />]
     </span>
-    <span>
-      [<CatalogButton address={communityAddress} />]
-    </span>
+    <BracketedCatalogButton address={communityAddress} />
     <span>
       [<TopButton />]
     </span>

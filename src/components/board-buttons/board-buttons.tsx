@@ -7,7 +7,7 @@ import { usePostPageNumber } from '../../hooks/use-post-page-number';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
-import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
+import { getBoardPath, isDirectoryRoute, isFlashBoardRoute } from '../../lib/utils/route-utils';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import useSafeAccountComment from '../../hooks/use-safe-account-comment';
@@ -45,6 +45,17 @@ interface BoardButtonsProps {
 
 const EMPTY_COMMUNITY_ADDRESSES: string[] = [];
 
+export const shouldShowCatalogButton = (
+  boardIdentifier: string | undefined,
+  directories: ReturnType<typeof useDirectories>,
+  { isInAllView, isInSubscriptionsView, isInModView }: Pick<BoardButtonsProps, 'isInAllView' | 'isInSubscriptionsView' | 'isInModView'>,
+): boolean => {
+  if (isInAllView || isInSubscriptionsView || isInModView) {
+    return true;
+  }
+  return !isFlashBoardRoute(boardIdentifier, directories);
+};
+
 const getMultiboardPath = ({
   isInAllView,
   isInCatalogView,
@@ -67,8 +78,13 @@ const getMultiboardPath = ({
 export const CatalogButton = ({ address, isInAllView, isInSubscriptionsView, isInModView }: BoardButtonsProps) => {
   const { t } = useTranslation();
   const location = useLocation();
+  const params = useParams();
   const directories = useDirectories();
   const { timeFilterValue } = useTimeFilter();
+
+  if (!shouldShowCatalogButton(params.boardIdentifier, directories, { isInAllView, isInSubscriptionsView, isInModView })) {
+    return null;
+  }
 
   const createCatalogLink = () => {
     const multiboardPath = getMultiboardPath({ isInAllView, isInCatalogView: true, isInSubscriptionsView, isInModView });
@@ -91,6 +107,20 @@ export const CatalogButton = ({ address, isInAllView, isInSubscriptionsView, isI
     <Link className='button' to={createCatalogLink()}>
       {t('catalog')}
     </Link>
+  );
+};
+
+export const BracketedCatalogButton = ({ address, isInAllView, isInSubscriptionsView, isInModView }: BoardButtonsProps) => {
+  const params = useParams();
+  const directories = useDirectories();
+  if (!shouldShowCatalogButton(params.boardIdentifier, directories, { isInAllView, isInSubscriptionsView, isInModView })) {
+    return null;
+  }
+
+  return (
+    <span>
+      [<CatalogButton address={address} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+    </span>
   );
 };
 
@@ -526,13 +556,16 @@ export const MobileBoardButtons = () => {
   const directories = useDirectories();
   const boardIdentifier = params.boardIdentifier;
   const showDirectoryButton = boardIdentifier && isDirectoryRoute(boardIdentifier, directories);
+  const showCatalogButton = shouldShowCatalogButton(boardIdentifier, directories, { isInAllView, isInSubscriptionsView, isInModView });
 
   return (
     <div className={`${styles.mobileBoardButtons} ${!isInCatalogView ? styles.addMargin : ''}`}>
       {isInPostView || isInPendingPostPage ? (
         <>
           <ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
-          <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          {showCatalogButton && (
+            <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          )}
           {showBottomButton && <BottomButton />}
           <div className={styles.secondRow}>
             <UpdateButton />
@@ -592,7 +625,9 @@ export const MobileBoardButtons = () => {
       ) : (
         <>
           {showBottomButton && <BottomButton />}
-          <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          {showCatalogButton && (
+            <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />
+          )}
           <RefreshButton />
           <div className={styles.secondRow}>
             {showDirectoryButton && <DirectoryButton />}
@@ -711,6 +746,7 @@ export const DesktopBoardButtons = () => {
   const directories = useDirectories();
   const boardIdentifier = params.boardIdentifier;
   const showDirectoryButton = boardIdentifier && isDirectoryRoute(boardIdentifier, directories);
+  const showCatalogButton = shouldShowCatalogButton(boardIdentifier, directories, { isInAllView, isInSubscriptionsView, isInModView });
 
   return (
     <>
@@ -718,8 +754,13 @@ export const DesktopBoardButtons = () => {
       <div className={styles.desktopBoardButtons}>
         {isInPostView || isInPendingPostPage ? (
           <>
-            [<ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />] [
-            <CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+            [<ReturnButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+            {showCatalogButton && (
+              <>
+                {' '}
+                [<CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+              </>
+            )}
             {showBottomButton && (
               <>
                 {' '}
@@ -762,7 +803,12 @@ export const DesktopBoardButtons = () => {
             ) : (
               <>
                 <SearchOPsBar />
-                [<CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+                {showCatalogButton && (
+                  <>
+                    {' '}
+                    [<CatalogButton address={communityAddress} isInAllView={isInAllView} isInSubscriptionsView={isInSubscriptionsView} isInModView={isInModView} />]
+                  </>
+                )}
                 {!(isInAllView || isInSubscriptionsView || isInModView) && (
                   <>
                     {' '}
@@ -844,6 +890,10 @@ const SearchOPsBar = () => {
   const directories = useDirectories();
   const resolvedAddress = useResolvedCommunityAddress();
   const boardPath = resolvedAddress ? getBoardPath(resolvedAddress, directories) : params?.boardIdentifier || params?.communityAddress;
+
+  if (!shouldShowCatalogButton(params.boardIdentifier, directories, { isInAllView, isInSubscriptionsView, isInModView })) {
+    return null;
+  }
 
   const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {

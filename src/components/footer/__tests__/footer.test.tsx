@@ -18,6 +18,11 @@ import {
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
+  directories: [{ address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' }] as Array<{
+    address: string;
+    directoryCode?: string;
+    title?: string;
+  }>,
   directoryEntry: { features: {} } as { features?: Record<string, unknown> } | undefined,
   linkCount: 2,
   openReplyModalEmptyMock: vi.fn(),
@@ -65,6 +70,7 @@ vi.mock('../../board-buttons/board-buttons', () => ({
     isInModView?: boolean;
     isInSubscriptionsView?: boolean;
   }) => createElement('button', { 'data-testid': 'catalog-button', type: 'button' }, `${address}|${isInAllView}|${isInSubscriptionsView}|${isInModView}`),
+  shouldShowCatalogButton: () => true,
   PostPageStats: () => createElement('div', { 'data-testid': 'post-page-stats' }, 'post-page-stats'),
   RefreshButton: () => createElement('button', { type: 'button' }, 'refresh-button'),
   ReturnButton: ({
@@ -97,6 +103,7 @@ vi.mock('../../../hooks/use-post-page-number', () => ({
 }));
 
 vi.mock('../../../hooks/use-directories', () => ({
+  useDirectories: () => testState.directories,
   useDirectoryByAddress: () => testState.directoryEntry,
 }));
 

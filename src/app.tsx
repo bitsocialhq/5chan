@@ -29,6 +29,7 @@ import {
   isModQueueRoute,
   isValidBoardModRoute,
   isValidModRoute,
+  isFlashBoardRoute,
 } from './lib/utils/route-utils';
 import styles from './app.module.css';
 import { DesktopBoardButtons, MobileAllFeedFilter, MobileBoardButtons } from './components/board-buttons';
@@ -109,6 +110,10 @@ const BoardLayout = () => {
   const key = `${communityAddress}-${getPostFormRouteKeyPath(pathname)}`;
 
   if (pageNumber === '1') {
+    return <Navigate to='/not-found' replace />;
+  }
+
+  if (isCatalogView(pathname, params) && isFlashBoardRoute(boardIdentifier, directories)) {
     return <Navigate to='/not-found' replace />;
   }
 
@@ -335,12 +340,12 @@ const App = () => {
             <Route path='/subs/*' element={<Navigate to='/not-found' replace />} />
             <Route path='/mod/*' element={<Navigate to='/not-found' replace />} />
 
+            <Route path='/:boardIdentifier/catalog' element={catalogFeedElement} />
+            <Route path='/:boardIdentifier/catalog/settings' element={catalogFeedElement} />
             <Route path='/:boardIdentifier/:pageNumber' element={boardFeedElement} />
             <Route path='/:boardIdentifier/:pageNumber/settings' element={boardFeedElement} />
             <Route path='/:boardIdentifier' element={boardFeedElement} />
             <Route path='/:boardIdentifier/settings' element={boardFeedElement} />
-            <Route path='/:boardIdentifier/catalog' element={catalogFeedElement} />
-            <Route path='/:boardIdentifier/catalog/settings' element={catalogFeedElement} />
             <Route path='/:boardIdentifier/archive' element={<Archive />} />
             <Route path='/:boardIdentifier/archive/settings' element={<Archive />} />
             <Route path='/:boardIdentifier/directory' element={<Directory />} />

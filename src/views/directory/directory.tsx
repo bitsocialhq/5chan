@@ -3,7 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { shouldShowSnow } from '../../lib/snow';
-import { BottomButton, CatalogButton, ReturnButton, TopButton } from '../../components/board-buttons/board-buttons';
+import { BottomButton, BracketedCatalogButton, CatalogButton, ReturnButton, TopButton } from '../../components/board-buttons/board-buttons';
 import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import Tooltip from '../../components/tooltip';
@@ -49,9 +49,7 @@ const DirectoryDesktopTopControls = ({ communityAddress }: { communityAddress: s
     <span>
       [<ReturnButton address={communityAddress} />]
     </span>
-    <span>
-      [<CatalogButton address={communityAddress} />]
-    </span>
+    <BracketedCatalogButton address={communityAddress} />
     <span>
       [<BottomButton />]
     </span>
@@ -63,9 +61,7 @@ const DirectoryDesktopFooterControls = ({ communityAddress }: { communityAddress
     <span>
       [<ReturnButton address={communityAddress} />]
     </span>
-    <span>
-      [<CatalogButton address={communityAddress} />]
-    </span>
+    <BracketedCatalogButton address={communityAddress} />
     <span>
       [<TopButton />]
     </span>
