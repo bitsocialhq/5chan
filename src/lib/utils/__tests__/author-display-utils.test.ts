@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { KNOWN_5CHAN_DEVELOPER_ENTRIES, get5chanDeveloperBadge, getAuthorBadge, isKnown5chanDeveloper } from '../author-display-utils';
+import { KNOWN_5CHAN_DEVELOPER_ENTRIES, get5chanDeveloperBadge, getAuthorBadge, getModerationPostingRoleLabel, isKnown5chanDeveloper } from '../author-display-utils';
 
 describe('author display utils', () => {
   it('recognizes the hardcoded 5chan developer addresses', () => {
@@ -60,5 +60,13 @@ describe('author display utils', () => {
       label: 'Board owner',
       title: 'administrator_of_this_board',
     });
+  });
+
+  it('returns the posting warning label for the effective moderator role', () => {
+    expect(getModerationPostingRoleLabel({ address: 'plebeius.bso', role: 'owner' })).toBe('5chan dev');
+    expect(getModerationPostingRoleLabel({ address: 'other.bso', role: 'owner' })).toBe('owner');
+    expect(getModerationPostingRoleLabel({ address: 'other.bso', role: 'admin' })).toBe('admin');
+    expect(getModerationPostingRoleLabel({ address: 'other.bso', role: 'moderator' })).toBe('moderator');
+    expect(getModerationPostingRoleLabel({ address: 'other.bso', role: 'viewer' })).toBeUndefined();
   });
 });

@@ -51,3 +51,12 @@ export const getAuthorBadge = ({ address, role }: { address?: string; role?: str
     title: isMod ? 'moderator_of_this_board' : 'administrator_of_this_board',
   };
 };
+
+export const getModerationPostingRoleLabel = ({ address, role }: { address?: string; role?: string }): string | undefined => {
+  if (isKnown5chanDeveloper(address)) return '5chan dev';
+
+  const normalizedRole = role?.trim().toLowerCase();
+  if (normalizedRole === 'owner' || normalizedRole === 'admin' || normalizedRole === 'moderator') return normalizedRole;
+
+  return undefined;
+};
