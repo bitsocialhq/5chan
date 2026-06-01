@@ -1,4 +1,4 @@
-const STANDARD_YOUTUBE_HOSTS = new Set<string>(['youtube.com', 'www.youtube.com', 'youtu.be', 'www.youtu.be']);
+const STANDARD_YOUTUBE_HOSTS = new Set<string>(['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com', 'youtu.be', 'www.youtu.be']);
 
 export const youtubeHosts = new Set<string>([
   'youtube.com',

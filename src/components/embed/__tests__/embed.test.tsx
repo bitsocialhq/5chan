@@ -58,9 +58,13 @@ describe('Embed', () => {
 
   it('extracts youtube video ids for standard, short, and invidious urls', () => {
     expect(getYouTubeVideoId(new URL('https://www.youtube.com/watch?v=abc123'))).toBe('abc123');
+    expect(getYouTubeVideoId(new URL('https://m.youtube.com/watch?v=mobile123'))).toBe('mobile123');
+    expect(getYouTubeVideoId(new URL('https://music.youtube.com/watch?v=music123'))).toBe('music123');
     expect(getYouTubeVideoId(new URL('https://youtu.be/short123'))).toBe('short123');
     expect(getYouTubeVideoId(new URL('https://www.youtube.com/shorts/short456'))).toBe('short456');
     expect(getYouTubeVideoId(new URL('https://yewtu.be/invidious789'))).toBe('invidious789');
+    expect(getYouTubeVideoId(new URL('https://m.youtube.com/@channel'))).toBeNull();
+    expect(getYouTubeVideoId(new URL('https://music.youtube.com/channel/UC123'))).toBeNull();
     expect(getYouTubeVideoId(new URL('https://www.youtube.com/playlist?list=PL123'))).toBeNull();
   });
 

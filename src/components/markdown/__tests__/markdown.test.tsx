@@ -61,7 +61,7 @@ vi.mock('@floating-ui/react', () => ({
   useFocus: () => ({}),
   useHover: () => ({
     getReferenceProps: (props?: Record<string, unknown>) => ({
-      ...(props || {}),
+      ...props,
       onMouseEnter: () => testState.floatingOnOpenChange?.(true),
       onMouseLeave: () => testState.floatingOnOpenChange?.(false),
     }),
