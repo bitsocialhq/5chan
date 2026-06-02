@@ -28,7 +28,8 @@ import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, is
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
 import { FLASH_TAG_OPTIONS, getFlashTagPublishOptionsForDirectoryCode, isFlashDirectoryCode, type FlashTagOption } from '../../lib/flash-tags';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
-import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
+import { useDirectories } from '../../hooks/use-directories';
+import { useDirectoryEntry } from '../../hooks/use-directory-entry';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
@@ -519,7 +520,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, useParams());
   const subscriptions = account?.subscriptions || [];
   const directories = useDirectories();
-  const directoryEntry = useDirectoryByAddress(effectiveBoardAddress);
+  const directoryEntry = useDirectoryEntry(effectiveBoardAddress, params?.boardIdentifier);
   const pendingPostBoardPath = effectiveBoardAddress ? getBoardPath(effectiveBoardAddress, directories) : undefined;
   const rulesPath = effectiveBoardAddress ? `/rules/${getBoardPath(effectiveBoardAddress, directories)}` : '/rules';
   const showSpoilerForPost = directoryEntry?.features?.noSpoilers !== true;

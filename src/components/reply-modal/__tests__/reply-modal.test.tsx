@@ -20,6 +20,15 @@ const testState = vi.hoisted(() => ({
       title: '/mu/ - Music',
     },
   } as Record<string, { address: string; directoryCode?: string; features?: Record<string, unknown>; title?: string }>,
+  directoryListsByCode: {} as Record<
+    string,
+    {
+      boards: Array<{ address: string; features?: Record<string, unknown>; publicKey?: string }>;
+      directoryCode: string;
+      features?: Record<string, unknown>;
+      title?: string;
+    }
+  >,
   handleUploadMock: vi.fn(),
   uploadFileMock: vi.fn(),
   isMobile: false,
@@ -149,6 +158,24 @@ vi.mock('../../../hooks/use-directories', () => ({
   useDirectoryByAddress: (address: string) => testState.directoryByAddress[address],
   normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
 }));
+
+vi.mock('../../../hooks/use-directory-entry', async () => {
+  const actual = await vi.importActual<typeof import('../../../hooks/use-directory-entry')>('../../../hooks/use-directory-entry');
+  return {
+    ...actual,
+    useDirectoryEntry: (address: string | undefined, directoryCodeHint?: string) => {
+      const list =
+        testState.directoryListsByCode[directoryCodeHint ?? ''] ??
+        Object.values(testState.directoryListsByCode).find((candidate) => candidate.boards.some((board) => board.address === address));
+      return actual.getDirectoryEntryForAddress({
+        address,
+        directories: Object.values(testState.directoryByAddress),
+        directoryCodeHint,
+        list,
+      });
+    },
+  };
+});
 
 vi.mock('../../../hooks/use-community-identifiers', () => ({
   useCommunityIdentifier: (address?: string) => (address ? { name: address } : undefined),
@@ -368,6 +395,7 @@ describe('ReplyModal', () => {
         title: '/tg/ - Traditional Games',
       },
     };
+    testState.directoryListsByCode = {};
     testState.handleUploadMock.mockReset();
     testState.uploadFileMock.mockReset();
     testState.isMobile = false;
@@ -494,6 +522,32 @@ describe('ReplyModal', () => {
     ).toEqual(['Geographic Location', 'Anarcho-Capitalist', 'Anarchist']);
     const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
     expect(Boolean(linkInput!.compareDocumentPosition(flagSelect!) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: '>>42\nselected text',
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+      },
+      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+    });
+  });
+
+  it('shows the /pol/ flag selector for replies on a non-primary directory candidate board', async () => {
+    testState.directoryListsByCode.pol = {
+      directoryCode: 'pol',
+      features: { hasFlags: true },
+      title: '/pol/ - Politically Incorrect',
+      boards: [{ address: 'politically-incorrect.bso' }, { address: 'nothing-is-beyond-our-reach.bso' }],
+    };
+
+    await renderReplyModal('/pol/thread/post-1', 'nothing-is-beyond-our-reach.bso');
+
+    const flagSelect = container.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
+
+    expect(flagSelect).toBeTruthy();
+    expect(flagSelect?.value).toBe('country:auto');
 
     await clickButtonByText('post');
 

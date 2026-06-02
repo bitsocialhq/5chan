@@ -22,6 +22,15 @@ const testState = vi.hoisted(() => ({
     { address: 'music-posting.eth', features: {}, title: '/mu/ - Music' },
     { address: 'mod.eth', features: {}, title: '/mod/ - Moderation' },
   ] as Array<{ address: string; directoryCode?: string; features?: Record<string, unknown>; title?: string }>,
+  directoryListsByCode: {} as Record<
+    string,
+    {
+      boards: Array<{ address: string; features?: Record<string, unknown>; publicKey?: string }>;
+      directoryCode: string;
+      features?: Record<string, unknown>;
+      title?: string;
+    }
+  >,
   editedComment: undefined as { commentModeration?: { archived?: boolean }; deleted?: boolean; locked?: boolean; postCid?: string; removed?: boolean } | undefined,
   gifFrameStatus: 'idle' as 'idle' | 'ready',
   handleUploadMock: vi.fn(),
@@ -131,6 +140,24 @@ vi.mock('../../../hooks/use-directories', () => ({
   useDirectoryByAddress: (address: string | undefined) => testState.directories.find((entry) => entry.address === address),
   normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
 }));
+
+vi.mock('../../../hooks/use-directory-entry', async () => {
+  const actual = await vi.importActual<typeof import('../../../hooks/use-directory-entry')>('../../../hooks/use-directory-entry');
+  return {
+    ...actual,
+    useDirectoryEntry: (address: string | undefined, directoryCodeHint?: string) => {
+      const list =
+        testState.directoryListsByCode[directoryCodeHint ?? ''] ??
+        Object.values(testState.directoryListsByCode).find((candidate) => candidate.boards.some((board) => board.address === address));
+      return actual.getDirectoryEntryForAddress({
+        address,
+        directories: testState.directories,
+        directoryCodeHint,
+        list,
+      });
+    },
+  };
+});
 
 vi.mock('../../../hooks/use-community-identifiers', () => ({
   useCommunityIdentifier: (address?: string) => (address ? { name: address } : undefined),
@@ -456,6 +483,7 @@ describe('PostForm', () => {
       { address: 'traditional-games.bso', features: {}, title: '/tg/ - Traditional Games' },
       { address: 'mod.eth', features: {}, title: '/mod/ - Moderation' },
     ];
+    testState.directoryListsByCode = {};
     testState.editedComment = undefined;
     testState.gifFrameStatus = 'idle';
     testState.isOffline = false;
@@ -693,6 +721,37 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
       content: 'flagged post',
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+      },
+      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+    });
+  });
+
+  it('shows the /pol/ flag field when a non-primary directory candidate is hosting /pol/', async () => {
+    testState.resolvedCommunityAddress = 'nothing-is-beyond-our-reach.bso';
+    testState.directoryListsByCode.pol = {
+      directoryCode: 'pol',
+      features: { hasFlags: true },
+      title: '/pol/ - Politically Incorrect',
+      boards: [{ address: 'politically-incorrect.bso' }, { address: 'nothing-is-beyond-our-reach.bso' }],
+    };
+
+    await renderPostForm('/pol');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const flagSelect = table?.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+
+    expect(flagSelect).toBeTruthy();
+    expect(flagSelect?.value).toBe('country:auto');
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'candidate board flag post');
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith({
+      content: 'candidate board flag post',
       challengeRequest: {
         challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },

@@ -24,7 +24,8 @@ import useSelectedTextStore from '../../stores/use-selected-text-store';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
-import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
+import { useDirectories } from '../../hooks/use-directories';
+import { useDirectoryEntry } from '../../hooks/use-directory-entry';
 import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
@@ -63,7 +64,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const isInModView = isModView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const directories = useDirectories();
-  const directoryEntry = findDirectoryByAddress(directories, communityAddress);
+  const directoryEntry = useDirectoryEntry(communityAddress, params?.boardIdentifier);
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
   const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
   const showOekakiControls = postOptionsDirectoryCode === 'i' || directoryEntry?.directoryCode === 'i';
