@@ -432,7 +432,12 @@ const PostFormFields = ({
       <tr>
         <td>{t('board')}</td>
         <td>
-          <select aria-label={t('board')} onChange={(e) => setPublishPostOptions({ communityAddress: e.target.value })} value={communityAddress}>
+          <select
+            aria-label={t('board')}
+            className={styles.boardSelector}
+            onChange={(e) => setPublishPostOptions({ communityAddress: e.target.value })}
+            value={communityAddress}
+          >
             <option value=''>{t('choose_one')}</option>
             {isInAllView &&
               directories.map((community) =>

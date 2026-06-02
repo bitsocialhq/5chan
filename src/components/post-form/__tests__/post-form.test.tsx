@@ -565,6 +565,7 @@ describe('PostForm', () => {
     expect(linkInput?.getAttribute('placeholder')).toBe('https://website.com/image.jpg');
     expect(textarea).toBeTruthy();
     expect(select).toBeTruthy();
+    expect(select?.className).toContain('boardSelector');
 
     await dispatchInput(linkInput as HTMLInputElement, 'not-a-url');
     await clickByText(table as HTMLTableElement, 'post');
