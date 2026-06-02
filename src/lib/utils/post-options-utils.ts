@@ -96,7 +96,7 @@ const isSupportedPostOption = (option: string, directoryCode: string | undefined
   }
 
   if (option === 'fortune') {
-    return !!directoryCode && FORTUNE_DIRECTORY_CODES.has(directoryCode);
+    return isFortuneDirectoryCode(directoryCode);
   }
 
   return !!parseDiceOption(option) && !!directoryCode && DICE_DIRECTORY_CODES.has(directoryCode);
@@ -161,6 +161,8 @@ export const getUnsupportedPostOptionsMessage = (value: string, directoryCode: s
 
 export const hasNonokoOption = (value: string): boolean => parsePostOptions(value).includes('nonoko');
 
+export const isFortuneDirectoryCode = (directoryCode: string | undefined): boolean => !!directoryCode && FORTUNE_DIRECTORY_CODES.has(directoryCode);
+
 const NONOKO_PENDING_ACCOUNT_COMMENT_INDEX_STATE_KEY = 'nonokoPendingAccountCommentIndex';
 
 type NonokoPendingRouteState = {
@@ -189,7 +191,7 @@ export const getNonokoPendingAccountCommentIndex = (state: unknown): number | un
 };
 
 const hasFortuneOption = (value: string, directoryCode: string | undefined): boolean =>
-  !!directoryCode && FORTUNE_DIRECTORY_CODES.has(directoryCode) && parsePostOptions(value).includes('fortune');
+  isFortuneDirectoryCode(directoryCode) && parsePostOptions(value).includes('fortune');
 
 const getDiceOption = (value: string, directoryCode: string | undefined): ReturnType<typeof parseDiceOption> => {
   if (!directoryCode || !DICE_DIRECTORY_CODES.has(directoryCode)) {

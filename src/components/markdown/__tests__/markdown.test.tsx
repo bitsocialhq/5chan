@@ -17,6 +17,7 @@ const testState = vi.hoisted(() => ({
   comments: {} as Record<string, TestComment>,
   directories: [{ address: 'music-posting.eth', name: 'music-posting.bso', title: '/mu/ - Music' }] as Array<{
     address: string;
+    directoryCode?: string;
     name?: string;
     title?: string;
   }>,
@@ -333,16 +334,45 @@ describe('Markdown', () => {
     expect(container.textContent).toBe('https://en.wikipedia.org/wiki/Function_(mathematics) https://example.com/path),');
   });
 
-  it('renders whitelisted 4chan fortune markup with its specific color', async () => {
-    await renderMarkdown({
-      content: 'body<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
-    });
+  it('renders generated fortune markup on fortune boards without parsing surrounding user BBCode', async () => {
+    await renderMarkdown(
+      {
+        content: '[b]not bold[/b]<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
+      },
+      '/s5s/thread/post-1',
+    );
 
     const fortune = container.querySelector<HTMLElement>('.fortune');
     expect(fortune?.textContent).toBe('Your fortune: Excellent Luck');
     expect(fortune?.style.color).toBe('rgb(253, 77, 50)');
     expect(fortune?.querySelectorAll('br')).toHaveLength(2);
-    expect(container.textContent).toBe('bodyYour fortune: Excellent Luck');
+    expect(container.querySelectorAll('strong')).toHaveLength(1);
+    expect(container.textContent).toBe('[b]not bold[/b]Your fortune: Excellent Luck');
+  });
+
+  it('leaves generated fortune markup raw outside fortune boards', async () => {
+    await renderMarkdown({
+      content: 'body<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
+    });
+
+    expect(container.querySelector('.fortune')).toBeNull();
+    expect(container.querySelector('strong')).toBeNull();
+    expect(container.textContent).toBe('body<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>');
+  });
+
+  it('renders generated fortune markup for s5s comments in multiboard views', async () => {
+    testState.directories = [...testState.directories, { address: 'silly-stuff.bso', directoryCode: 's5s', title: '/s5s/ - Shit 5chan Says' }];
+
+    await renderMarkdown(
+      {
+        content: 'silly<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
+        communityAddress: 'silly-stuff.eth',
+      },
+      '/all',
+    );
+
+    expect(container.querySelector<HTMLElement>('.fortune')?.textContent).toBe('Your fortune: Excellent Luck');
+    expect(container.textContent).toBe('sillyYour fortune: Excellent Luck');
   });
 
   it('renders whitelisted 4chan dice roll markup as bold post content', async () => {

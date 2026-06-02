@@ -80,6 +80,7 @@ vi.mock('../../../hooks/use-is-mobile', () => ({
 
 vi.mock('../../../components/board-buttons/board-buttons', () => ({
   BottomButton: () => createElement('button', { type: 'button' }, 'bottom'),
+  BracketedCatalogButton: () => createElement('button', { type: 'button' }, 'catalog'),
   CatalogButton: () => createElement('button', { type: 'button' }, 'catalog'),
   ReturnButton: () => createElement('button', { type: 'button' }, 'return'),
   TopButton: () => createElement('button', { type: 'button' }, 'top'),
