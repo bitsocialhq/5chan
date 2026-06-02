@@ -1149,6 +1149,92 @@ Avoid GitHub MCP and browser MCP servers for this project because they add signi
 Source: https://github.com/bitsocialnet/5chan/blob/master/CHANGELOG.md
 
 ```markdown
+# [0.9.0](https://github.com/bitsocialnet/5chan/compare/v0.8.5...v0.9.0) (2026-05-31)
+
+
+### Bug Fixes
+
+* **advanced settings:** hide gateway fields in pure p2p mode and align inputs ([b849f7c](https://github.com/bitsocialnet/5chan/commit/b849f7c3765c0ec31e182d4b4842c25ae708114a))
+* **app:** preserve post form drafts in settings ([f39ad09](https://github.com/bitsocialnet/5chan/commit/f39ad096b7506a18ff0d42e05a689a43251ab775))
+* **archive:** fix layout ([3e4737f](https://github.com/bitsocialnet/5chan/commit/3e4737fe9762aa4acdde4f7967f34507e1fea454))
+* **board header:** replace loading icon with spinner ([0df81b5](https://github.com/bitsocialnet/5chan/commit/0df81b598eb89e155fff24e73e13da39441c7402))
+* **board-pagination:** increase footer pagelist padding ([55bb873](https://github.com/bitsocialnet/5chan/commit/55bb873ab1901a9fb68122ab59caab2936b0963b))
+* **board:** clarify loading fallback ([e426bf2](https://github.com/bitsocialnet/5chan/commit/e426bf2ccc57824c0f762ca40335e0bc9b0d3ed6))
+* **board:** hide feed footer on flash table ([08ebdce](https://github.com/bitsocialnet/5chan/commit/08ebdce29cb1f047efbaa3ad75cd101173e6a85c))
+* **board:** match subscriptions empty state to catalog search styling ([77e4650](https://github.com/bitsocialnet/5chan/commit/77e46500e215e91d2861851a31ffdb42334816a7))
+* **boards:** use ROBOT9002 board name in directory list ([d9c040d](https://github.com/bitsocialnet/5chan/commit/d9c040d5f7567b18eda81983eeaff60e58e0c276))
+* **board:** warn on unverified addresses ([a31c3b4](https://github.com/bitsocialnet/5chan/commit/a31c3b44d3c17c778d6b01addc67e392b7d74a18))
+* **catalog:** improve empty search state and footer layout ([62cff4e](https://github.com/bitsocialnet/5chan/commit/62cff4e2070249d6f50a329fce8f8701c5d2a4ec))
+* **challenge modal:** rename iframe completion button ([5cfcd8b](https://github.com/bitsocialnet/5chan/commit/5cfcd8ba04dfd3c8cc1e894fcda478c40690482d))
+* **deps:** bump resolutions for Dependabot security alerts ([7fcea5d](https://github.com/bitsocialnet/5chan/commit/7fcea5d370c3ffdbc524a75ae9b39812340e9b33))
+* **directory:** load direct board routes ([35ffbd2](https://github.com/bitsocialnet/5chan/commit/35ffbd257bb06ff2eaa9930a3c4ae4d3e1304e58))
+* **directory:** load per-directory list files ([#1134](https://github.com/bitsocialnet/5chan/issues/1134)) ([536d9ac](https://github.com/bitsocialnet/5chan/commit/536d9ac0b8886f952d06dd83e7ee83f1fae629a8))
+* **directory:** restore table header styling ([d21f91a](https://github.com/bitsocialnet/5chan/commit/d21f91a1714cfd1b485ef641bedfd632cad4351a))
+* **directory:** use resolved board for directory feeds ([616fea3](https://github.com/bitsocialnet/5chan/commit/616fea39fbc0de79973489ce66fe8bdac46c2648))
+* **edit menu:** restore moderation reason field ([99eb49c](https://github.com/bitsocialnet/5chan/commit/99eb49cdc5c711aaef2d5b79a47fd2d4da797a06))
+* **feed:** clarify loading states ([a6a1320](https://github.com/bitsocialnet/5chan/commit/a6a1320381724353655475a1258414dbd949d5f2))
+* **flags:** align board flag rendering ([#1142](https://github.com/bitsocialnet/5chan/issues/1142)) ([0299390](https://github.com/bitsocialnet/5chan/commit/029939089f59ef5a20f4f89cb6ec44af1f7fb138))
+* **flags:** move reply flag below link and auto-geo on /bant/ ([633542a](https://github.com/bitsocialnet/5chan/commit/633542a1f77f126b0ff692b038766d0fa48a5509))
+* **home:** keep stats loading until directories resolve ([c3d5320](https://github.com/bitsocialnet/5chan/commit/c3d53202a35f9d4ab07391f7c8c81c1992ad5e80))
+* **home:** route support link to pass page ([e58a101](https://github.com/bitsocialnet/5chan/commit/e58a10149f2c6b250cb57bb8aa43a73b104d96ae))
+* **home:** unify stats loading state with feed status string ([a435d93](https://github.com/bitsocialnet/5chan/commit/a435d93c8ae964daab01416f9961a4f57b84ddce))
+* **home:** use directory fallbacks for stats ([#1133](https://github.com/bitsocialnet/5chan/issues/1133)) ([6a7df90](https://github.com/bitsocialnet/5chan/commit/6a7df90129040a53644d5a273b5ca474324074d3))
+* **i18n:** disable i18next Locize support notice ([c220c62](https://github.com/bitsocialnet/5chan/commit/c220c62b82883228e3683e71cda7f7eeb5d927fb))
+* **media:** embed additional direct image formats ([#1146](https://github.com/bitsocialnet/5chan/issues/1146)) ([e4638ac](https://github.com/bitsocialnet/5chan/commit/e4638ac8c7b9e8b9c64a54d6811b65750d33093a))
+* **mod multiboard:** show account import empty state ([56c4fdf](https://github.com/bitsocialnet/5chan/commit/56c4fdf3c1943828449324f9bded5ffaead39de2))
+* **mod queue:** dedupe board filters ([d13f224](https://github.com/bitsocialnet/5chan/commit/d13f2240e3edd3532fdc90f2e5a4f92ab9f17dd9))
+* **mod queue:** keep empty state inside loaded table ([ff732af](https://github.com/bitsocialnet/5chan/commit/ff732af9de182fd88829bd97b41413d12c1b28e1))
+* **mod queue:** rename queue dismissal action ([ca6e843](https://github.com/bitsocialnet/5chan/commit/ca6e843a89dc4da8579a5413940c6c9327e0b22f))
+* **moderation:** clarify moderator composer state ([275d8b0](https://github.com/bitsocialnet/5chan/commit/275d8b0e69d78b5980fc25a0af3268da651f446e))
+* **p2p stats:** improve own-IP geolocation and world map accuracy ([#1138](https://github.com/bitsocialnet/5chan/issues/1138)) ([f503928](https://github.com/bitsocialnet/5chan/commit/f5039285a731903cf72fc561fa820db099131a37))
+* **p2p stats:** prefer browser IPv4 for own endpoint ([639c627](https://github.com/bitsocialnet/5chan/commit/639c627a04059f7df5d4c827bcda4a31aa7f1750))
+* **p2p stats:** show peer transfer counters ([a40b446](https://github.com/bitsocialnet/5chan/commit/a40b446f141c213d9b8aa45e64a7c007f0573dc6))
+* **p2p-stats:** center loading state and add animated ellipsis ([680dd71](https://github.com/bitsocialnet/5chan/commit/680dd712856fdc3ef2427d175228eb04be1545ea))
+* **pending-post:** preserve sparse retry routes ([e0a42e7](https://github.com/bitsocialnet/5chan/commit/e0a42e7899a20143f9d25429cd7c034bd9c3d3e4))
+* **pending-post:** return to board after abandoned challenge ([e95dcb8](https://github.com/bitsocialnet/5chan/commit/e95dcb8af572e5af0d2a9fdcf96d9841479f3c4a))
+* **post form:** align desktop post form to blotter left edge ([b347205](https://github.com/bitsocialnet/5chan/commit/b3472051365462cd305c3da0f6964cd268bb4df3))
+* **post form:** align rules prompt test with bottom placement ([#1136](https://github.com/bitsocialnet/5chan/issues/1136)) ([4c011b3](https://github.com/bitsocialnet/5chan/commit/4c011b3fdd81707629254637096a7ccb82b8e971))
+* **post form:** block temporary media links ([a86c523](https://github.com/bitsocialnet/5chan/commit/a86c523d178c337db379907fff0c6fc573fb0275))
+* **post form:** center the collapsed start-new-thread toggle ([8cd3b65](https://github.com/bitsocialnet/5chan/commit/8cd3b65b19cd2dbefee0698581d82da7609ffca6))
+* **post form:** move rules and FAQ prompt to bottom of form ([4efa668](https://github.com/bitsocialnet/5chan/commit/4efa668fec4866b84b4af052a186f4363008614a))
+* **post form:** show validation errors inline ([4acd444](https://github.com/bitsocialnet/5chan/commit/4acd4449ea3d725651cf5ca890561205d2bc7ebc))
+* **post-form:** clear stale draft state on form remount ([#1131](https://github.com/bitsocialnet/5chan/issues/1131)) ([95f3faf](https://github.com/bitsocialnet/5chan/commit/95f3faf31ab58d7f0dfb149ebd93f1d2d4a2a08f))
+* **post-form:** shorten long uploaded file labels in the form ([75d90c8](https://github.com/bitsocialnet/5chan/commit/75d90c826415aa85f7348b6bb2b28621e4cd29a3))
+* **post:** link board-specific option errors to supported boards ([5fad3c7](https://github.com/bitsocialnet/5chan/commit/5fad3c73ba3346730680de6f2696ec4288a0a7cc))
+* **react:** address Doctor findings ([#1143](https://github.com/bitsocialnet/5chan/issues/1143)) ([e082c7b](https://github.com/bitsocialnet/5chan/commit/e082c7b4286ba2c073520ec2b56c53903a2643ce))
+* **reply modal:** wrap search status text ([30f395c](https://github.com/bitsocialnet/5chan/commit/30f395c1c826710b9323d3c07d41bf97469cf720))
+* **rules:** show friendly loading state string for board rules ([30dde09](https://github.com/bitsocialnet/5chan/commit/30dde0944df571650cd2b294108b1d4fed7c9b74))
+* **settings:** clarify pure p2p gateway copy ([c8edc92](https://github.com/bitsocialnet/5chan/commit/c8edc92983756667332b7d8429a411a53080b55e))
+* **settings:** show crypto address validation inline instead of alert ([1a57ec4](https://github.com/bitsocialnet/5chan/commit/1a57ec44b15686f2b01c29106d3ed663de36663e))
+* **theme:** match tomorrow directory/archive table headers to 4chan ([693c8ad](https://github.com/bitsocialnet/5chan/commit/693c8ad360c9d6288cc28f1e10fb29416e46c008))
+* **thread:** pass board identity to comments ([70cf337](https://github.com/bitsocialnet/5chan/commit/70cf337895a4cd00aa4c4aeda7f1bde05cf70639))
+* **ui:** hardcode /all/ and /mod/ multiboard titles ([df0936a](https://github.com/bitsocialnet/5chan/commit/df0936a4f9115aa6e0a55e32b2f136dbed13769e))
+* **ui:** position disclaimer and directory modals 50px from top ([b983cfd](https://github.com/bitsocialnet/5chan/commit/b983cfdce4c1e4589ce8472cf1fee28ce70d12b0))
+* **ui:** use native browser styling for flag select ([2030b8c](https://github.com/bitsocialnet/5chan/commit/2030b8c5bb5814645cbb8b6a8407aa443c6eb427))
+
+
+### Features
+
+* **flags:** add comment flags ([#1140](https://github.com/bitsocialnet/5chan/issues/1140)) ([f74b33f](https://github.com/bitsocialnet/5chan/commit/f74b33f43b138de8d88d113900579ae0327ff138))
+* **flash board:** add SWF posting support ([#1145](https://github.com/bitsocialnet/5chan/issues/1145)) ([9b3a95d](https://github.com/bitsocialnet/5chan/commit/9b3a95dd95b5b85e4ee40ad0826162ca4b87d31d))
+* **oekaki:** add drawing flow for /i/ ([#1144](https://github.com/bitsocialnet/5chan/issues/1144)) ([5689470](https://github.com/bitsocialnet/5chan/commit/56894700c1321ed6c34cb693fcd785b3c6fbfdfe))
+* **p2p stats:** redesign connected peers with world map and country flags ([782a1f4](https://github.com/bitsocialnet/5chan/commit/782a1f466f03842f76e773f8f6ded64528d42827))
+* **p2p:** enable pure browser p2p by default ([ca13e97](https://github.com/bitsocialnet/5chan/commit/ca13e97dd490fe5b2c56ad3c5de76848308ab4a6))
+* **post form:** add rules and FAQ prompt ([7305e40](https://github.com/bitsocialnet/5chan/commit/7305e4087013f5d94251b71d54c00b69fa131037))
+* **post options:** support nonoko board redirects ([#1137](https://github.com/bitsocialnet/5chan/issues/1137)) ([22c1b4f](https://github.com/bitsocialnet/5chan/commit/22c1b4f1233a3b3f0219e1154136a8a961782d50))
+* **posting:** add scoped options and qst formatting ([#1135](https://github.com/bitsocialnet/5chan/issues/1135)) ([ff6b4cd](https://github.com/bitsocialnet/5chan/commit/ff6b4cd201adc0fd90c04ee891d5272458b227ed))
+* **posts:** add mod bbcode editor ([d2d047e](https://github.com/bitsocialnet/5chan/commit/d2d047e5de779142c0a714a42768860fad8462e4))
+* **post:** show pending approval reason ([348e339](https://github.com/bitsocialnet/5chan/commit/348e3393c72b50c8420bc73a5dd8bab5052e88e0))
+* **rules page:** rebuild directory rules page with vendored lists ([#1147](https://github.com/bitsocialnet/5chan/issues/1147)) ([b442e05](https://github.com/bitsocialnet/5chan/commit/b442e05191780f80b52f7da80e02719ccf43fe0d))
+* **theme:** add halloween special theme ([0469f61](https://github.com/bitsocialnet/5chan/commit/0469f61a45d891e124dac6c44828b29f3faf3fff))
+
+
+### Performance Improvements
+
+* **dev startup:** skip remote release tag lookup ([7ba8985](https://github.com/bitsocialnet/5chan/commit/7ba8985a02d4ebc06d544e2da70218ccde174bf7))
+
+
+
 ## [0.8.5](https://github.com/bitsocialnet/5chan/compare/v0.8.4...v0.8.5) (2026-05-15)
 
 

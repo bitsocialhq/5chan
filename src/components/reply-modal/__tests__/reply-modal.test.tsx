@@ -657,6 +657,21 @@ describe('ReplyModal', () => {
     randomSpy.mockRestore();
   });
 
+  it('links the unsupported sage option to its FAQ entry in reply modal', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = '';
+
+    await renderReplyModal('/b/thread/post-1', 'random-nsfw.bso');
+
+    const optionsInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+
+    await dispatchInput(optionsInput, 'sage');
+    await waitForOptionsValidation();
+
+    expect(container.textContent).toContain('Unsupported options: sage [learn why].');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/faq#sage"]')?.textContent).toBe('learn why');
+  });
+
   it('supports fortune on the /s5s/ route when directory metadata is not loaded', async () => {
     const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
     testState.openEmpty = true;

@@ -8,13 +8,13 @@ import {
   CatalogSearchResultsLabel,
   ReturnButton,
   CatalogButton,
-  shouldShowCatalogButton,
   TopButton,
   UpdateButton,
   AutoButton,
   PostPageStats,
   RefreshButton,
 } from '../board-buttons/board-buttons';
+import { shouldShowCatalogButton } from '../board-buttons/catalog-button-utils';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';

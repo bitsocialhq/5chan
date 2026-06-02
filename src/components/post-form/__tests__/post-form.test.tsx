@@ -930,7 +930,8 @@ describe('PostForm', () => {
     await dispatchInput(optionsInput as HTMLInputElement, 'sage fortune');
     await waitForOptionsValidation();
 
-    expect(container.textContent).toContain('Unsupported options: sage, fortune. Option "fortune" is supported on: /b/, /s5s/.');
+    expect(container.textContent).toContain('Unsupported options: sage [learn why], fortune. Option "fortune" is supported on: /b/, /s5s/.');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/faq#sage"]')?.textContent).toBe('learn why');
     expect(container.querySelector<HTMLAnchorElement>('a[href="/b"]')?.textContent).toBe('/b/');
     expect(container.querySelector<HTMLAnchorElement>('a[href="/s5s"]')?.textContent).toBe('/s5s/');
   });

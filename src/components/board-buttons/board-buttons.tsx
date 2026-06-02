@@ -7,7 +7,7 @@ import { usePostPageNumber } from '../../hooks/use-post-page-number';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-directory-addresses';
-import { getBoardPath, isDirectoryRoute, isFlashBoardRoute } from '../../lib/utils/route-utils';
+import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import useSafeAccountComment from '../../hooks/use-safe-account-comment';
@@ -30,6 +30,7 @@ import Tooltip from '../tooltip';
 import { ModQueueButton } from '../../views/mod-queue/mod-queue';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { getSearchWithTimeFilter, getTimeFilterOptionLabel } from '../../lib/utils/time-filter-utils';
+import { shouldShowCatalogButton } from './catalog-button-utils';
 import styles from './board-buttons.module.css';
 import capitalize from 'lodash/capitalize';
 
@@ -44,17 +45,6 @@ interface BoardButtonsProps {
 }
 
 const EMPTY_COMMUNITY_ADDRESSES: string[] = [];
-
-export const shouldShowCatalogButton = (
-  boardIdentifier: string | undefined,
-  directories: ReturnType<typeof useDirectories>,
-  { isInAllView, isInSubscriptionsView, isInModView }: Pick<BoardButtonsProps, 'isInAllView' | 'isInSubscriptionsView' | 'isInModView'>,
-): boolean => {
-  if (isInAllView || isInSubscriptionsView || isInModView) {
-    return true;
-  }
-  return !isFlashBoardRoute(boardIdentifier, directories);
-};
 
 const getMultiboardPath = ({
   isInAllView,

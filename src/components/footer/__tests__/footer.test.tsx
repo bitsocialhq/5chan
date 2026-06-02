@@ -70,7 +70,6 @@ vi.mock('../../board-buttons/board-buttons', () => ({
     isInModView?: boolean;
     isInSubscriptionsView?: boolean;
   }) => createElement('button', { 'data-testid': 'catalog-button', type: 'button' }, `${address}|${isInAllView}|${isInSubscriptionsView}|${isInModView}`),
-  shouldShowCatalogButton: () => true,
   PostPageStats: () => createElement('div', { 'data-testid': 'post-page-stats' }, 'post-page-stats'),
   RefreshButton: () => createElement('button', { type: 'button' }, 'refresh-button'),
   ReturnButton: ({
@@ -86,6 +85,10 @@ vi.mock('../../board-buttons/board-buttons', () => ({
   }) => createElement('button', { 'data-testid': 'return-button', type: 'button' }, `${address}|${isInAllView}|${isInSubscriptionsView}|${isInModView}`),
   TopButton: () => createElement('button', { type: 'button' }, 'top-button'),
   UpdateButton: () => createElement('button', { type: 'button' }, 'update-button'),
+}));
+
+vi.mock('../../board-buttons/catalog-button-utils', () => ({
+  shouldShowCatalogButton: () => true,
 }));
 
 vi.mock('../../../stores/use-reply-modal-store', () => ({

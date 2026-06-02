@@ -14,7 +14,7 @@ describe('post-options-utils', () => {
 
   it('supports nonoko while keeping sage unsupported', () => {
     expect(getUnsupportedPostOptionsMessage('nonoko', undefined)).toBeNull();
-    expect(getUnsupportedPostOptionsMessage('sage', 'b')).toBe('Unsupported options: sage.');
+    expect(getUnsupportedPostOptionsMessage('sage', 'b')).toBe('Unsupported options: sage [learn why].');
     expect(hasNonokoOption('fortune nonoko')).toBe(true);
     expect(hasNonokoOption('nonokosage')).toBe(false);
   });
@@ -25,7 +25,7 @@ describe('post-options-utils', () => {
       supportedDirectoryCodesByOption: [{ option: 'fortune', directoryCodes: ['b', 's5s'] }],
     });
     expect(getUnsupportedPostOptionsMessage('fortune', 'mu')).toBe('Unsupported options: fortune. Option "fortune" is supported on: /b/, /s5s/.');
-    expect(getUnsupportedPostOptionsMessage('sage fortune', 'pol')).toBe('Unsupported options: sage, fortune. Option "fortune" is supported on: /b/, /s5s/.');
+    expect(getUnsupportedPostOptionsMessage('sage fortune', 'pol')).toBe('Unsupported options: sage [learn why], fortune. Option "fortune" is supported on: /b/, /s5s/.');
     expect(getPostOptionsValidationError('fortune dice+1d6', 'mu')).toEqual({
       unsupportedOptions: ['fortune', 'dice+1d6'],
       supportedDirectoryCodesByOption: [
