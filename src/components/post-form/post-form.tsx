@@ -35,6 +35,7 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
+import { useYouTubeThumbnailLinkConversion } from '../../hooks/use-youtube-thumbnail-link-conversion';
 import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
@@ -145,10 +146,10 @@ interface PostFormFieldsProps {
   lengthError: string | null;
   handleContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleContentValueChange: (content: string, options?: string) => void;
+  handleLinkChange: (link: string) => void;
   handleOptionsChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   setPublishPostOptions: (opts: Record<string, unknown>) => void;
   setPublishReplyOptions: (opts: Record<string, unknown>) => void;
-  setUrl: (url: string) => void;
   isUploading: boolean;
   uploadedFileName: string | null | undefined;
   showUploadControls: boolean;
@@ -196,10 +197,10 @@ const PostFormFields = ({
   lengthError,
   handleContentChange,
   handleContentValueChange,
+  handleLinkChange,
   handleOptionsChange,
   setPublishPostOptions,
   setPublishReplyOptions,
-  setUrl,
   isUploading,
   uploadedFileName,
   showUploadControls,
@@ -357,12 +358,7 @@ const PostFormFields = ({
           ref={urlRef}
           disabled={isUploading}
           onChange={(e) => {
-            setUrl(e.target.value);
-            if (isInPostView) {
-              setPublishReplyOptions({ link: e.target.value });
-            } else {
-              setPublishPostOptions({ link: e.target.value });
-            }
+            handleLinkChange(e.target.value);
           }}
         />
         <span className={styles.linkType}> {url && <LinkTypePreviewer link={url} />}</span>
@@ -433,7 +429,12 @@ const PostFormFields = ({
       <tr>
         <td>{t('board')}</td>
         <td>
-          <select aria-label={t('board')} onChange={(e) => setPublishPostOptions({ communityAddress: e.target.value })} value={communityAddress}>
+          <select
+            aria-label={t('board')}
+            className={styles.boardSelector}
+            onChange={(e) => setPublishPostOptions({ communityAddress: e.target.value })}
+            value={communityAddress}
+          >
             <option value=''>{t('choose_one')}</option>
             {isInAllView &&
               directories.map((community) =>
@@ -603,6 +604,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   };
 
   const onPublishPost = () => {
+    const appliedYouTubeConversion = applyPendingConversion();
+
     const currentTitle = subjectRef.current?.value.trim() || '';
     const currentContent = textRef.current?.value || '';
     const currentUrl = urlRef.current?.value.trim() || '';
@@ -654,7 +657,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     };
 
     nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-    publishPost({ content: publishContent, ...publishOptions });
+    publishPost({ content: publishContent, ...(appliedYouTubeConversion ? { link: currentUrl } : {}), ...publishOptions });
   };
 
   // redirect to pending page when pending comment is created
@@ -726,6 +729,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   };
 
   const onPublishReply = () => {
+    const appliedYouTubeConversion = applyPendingConversion();
+
     const currentUrl = urlRef.current?.value.trim() || '';
     const currentOptions = optionsRef.current?.value || '';
     const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
@@ -765,7 +770,36 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
 
     nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-    publishReply({ content: publishContent, ...flagPublishOptions });
+    publishReply({ content: publishContent, ...(appliedYouTubeConversion ? { link: currentUrl } : {}), ...flagPublishOptions });
+  };
+
+  const setLinkValue = (nextUrl: string) => {
+    setUrl(nextUrl);
+    if (isInPostView) {
+      setPublishReplyOptions({ link: nextUrl });
+    } else {
+      setPublishPostOptions({ link: nextUrl });
+    }
+  };
+
+  const {
+    applyPendingConversion,
+    cancelPendingConversion,
+    noticeCountdown: youtubeThumbnailConversionCountdown,
+    queueLinkConversion,
+  } = useYouTubeThumbnailLinkConversion({
+    enabled: requirePostLinkIsMedia,
+    onContentChange: handleContentValueChange,
+    onLinkChange: setLinkValue,
+    textRef,
+    urlRef,
+  });
+
+  const handleLinkChange = (nextUrl: string) => {
+    setLinkValue(nextUrl);
+    if (queueLinkConversion(nextUrl)) {
+      setFormError(null);
+    }
   };
 
   useEffect(() => {
@@ -783,33 +817,22 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const { isUploading, uploadedFileName, handleUpload, uploadFile } = useFileUpload({
     onUploadComplete: (uploadedUrl: string) => {
       if (uploadedUrl) {
-        setUrl(uploadedUrl);
+        cancelPendingConversion();
+        setLinkValue(uploadedUrl);
         if (urlRef.current) {
           urlRef.current.value = uploadedUrl;
-        }
-        if (isInPostView) {
-          setPublishReplyOptions({ link: uploadedUrl });
-        } else {
-          setPublishPostOptions({ link: uploadedUrl });
         }
       }
     },
   });
-  const handleOekakiClearUploadedUrl = useCallback(
-    (uploadedUrl: string) => {
-      if ((urlRef.current?.value || url) !== uploadedUrl) return;
-      setUrl('');
-      if (urlRef.current) {
-        urlRef.current.value = '';
-      }
-      if (isInPostView) {
-        setPublishReplyOptions({ link: '' });
-      } else {
-        setPublishPostOptions({ link: '' });
-      }
-    },
-    [isInPostView, setPublishPostOptions, setPublishReplyOptions, url],
-  );
+  const handleOekakiClearUploadedUrl = (uploadedUrl: string) => {
+    if ((urlRef.current?.value || url) !== uploadedUrl) return;
+    cancelPendingConversion();
+    setLinkValue('');
+    if (urlRef.current) {
+      urlRef.current.value = '';
+    }
+  };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode, isWebRuntime());
 
@@ -847,10 +870,10 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             lengthError={lengthError}
             handleContentChange={handleContentChange}
             handleContentValueChange={handleContentValueChange}
+            handleLinkChange={handleLinkChange}
             handleOptionsChange={handleOptionsChange}
             setPublishPostOptions={setPublishPostOptions}
             setPublishReplyOptions={setPublishReplyOptions}
-            setUrl={setUrl}
             isUploading={isUploading}
             uploadedFileName={uploadedFileName}
             showUploadControls={showUploadControls}
@@ -882,7 +905,11 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
         </tbody>
       </table>
       {moderationPostingWarning ? <div className={`${styles.error} ${styles.formError}`}>{moderationPostingWarning}</div> : null}
-      {formError ? (
+      {youtubeThumbnailConversionCountdown !== null ? (
+        <div className={`${styles.error} ${styles.formError}`} aria-live='polite'>
+          {t('youtube_thumbnail_link_conversion_notice', { count: youtubeThumbnailConversionCountdown })}
+        </div>
+      ) : formError ? (
         <div className={`${styles.error} ${styles.formError}`}>
           {isPostOptionsValidationError(formError) ? <PostOptionsErrorMessage error={formError} directories={directories} /> : formError}
         </div>

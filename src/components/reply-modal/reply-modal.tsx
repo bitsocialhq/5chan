@@ -29,6 +29,7 @@ import { useDirectoryEntry } from '../../hooks/use-directory-entry';
 import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
+import { useYouTubeThumbnailLinkConversion } from '../../hooks/use-youtube-thumbnail-link-conversion';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
@@ -141,6 +142,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   );
 
   const onPublishReply = () => {
+    const appliedYouTubeConversion = applyPendingConversion();
+
     const currentContent = textRef.current?.value || '';
     const currentUrl = urlRef.current?.value.trim() || '';
     const currentOptions = optionsRef.current?.value || '';
@@ -181,7 +184,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
     setError(null);
     nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
-    publishReply({ content: publishContent, ...flagPublishOptions });
+    publishReply({ content: publishContent, ...(appliedYouTubeConversion ? { link: currentUrl } : {}), ...flagPublishOptions });
   };
 
   useEffect(() => {
@@ -392,6 +395,39 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     setIsBbcodePreviewing(true);
   };
 
+  const setLinkValue = (nextUrl: string) => {
+    setUrl(nextUrl);
+    setPublishReplyOptions({ link: nextUrl });
+  };
+
+  const handleConvertedContentChange = (content: string) => {
+    const nextSelection = content.length;
+    if (textRef.current) {
+      textRef.current.setSelectionRange(nextSelection, nextSelection);
+    }
+    handleContentValueChange(content, nextSelection, nextSelection);
+  };
+
+  const {
+    applyPendingConversion,
+    cancelPendingConversion,
+    noticeCountdown: youtubeThumbnailConversionCountdown,
+    queueLinkConversion,
+  } = useYouTubeThumbnailLinkConversion({
+    enabled: requirePostLinkIsMedia,
+    onContentChange: handleConvertedContentChange,
+    onLinkChange: setLinkValue,
+    textRef,
+    urlRef,
+  });
+
+  const handleLinkChange = (nextUrl: string) => {
+    setLinkValue(nextUrl);
+    if (queueLinkConversion(nextUrl)) {
+      setError(null);
+    }
+  };
+
   useEffect(() => {
     const canInsertQuote = showReplyModal && quoteInsertRequestId !== 0 && !!textRef.current;
 
@@ -439,25 +475,27 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const { isUploading, uploadedFileName, handleUpload, uploadFile } = useFileUpload({
     onUploadComplete: (uploadedUrl: string) => {
       if (uploadedUrl) {
-        setUrl(uploadedUrl);
+        cancelPendingConversion();
+        setLinkValue(uploadedUrl);
         if (urlRef.current) {
           urlRef.current.value = uploadedUrl;
         }
-        setPublishReplyOptions({ link: uploadedUrl });
       }
     },
   });
   const handleOekakiClearUploadedUrl = (uploadedUrl: string) => {
     if ((urlRef.current?.value || url) !== uploadedUrl) return;
-    setUrl('');
+    cancelPendingConversion();
+    setLinkValue('');
     if (urlRef.current) {
       urlRef.current.value = '';
     }
-    setPublishReplyOptions({ link: '' });
   };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode, isWebRuntime());
   const displayedFileName = getPublishURLFilename(url) || uploadedFileName;
+  const youtubeThumbnailConversionNotice =
+    youtubeThumbnailConversionCountdown !== null ? t('youtube_thumbnail_link_conversion_notice', { count: youtubeThumbnailConversionCountdown }) : null;
 
   const hasInitializedDisplayName = useRef(false);
   useEffect(() => {
@@ -556,8 +594,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             placeholder={requirePostLinkIsMedia ? FILE_LINK_PLACEHOLDER : capitalize(t('link'))}
             disabled={isUploading}
             onChange={(e) => {
-              setUrl(e.target.value);
-              setPublishReplyOptions({ link: e.target.value });
+              handleLinkChange(e.target.value);
             }}
           />
         </div>
@@ -614,7 +651,11 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           </button>
         </div>
         {moderationPostingWarning ? <div className={styles.error}>{moderationPostingWarning}</div> : null}
-        {lengthError ? (
+        {youtubeThumbnailConversionNotice ? (
+          <div className={styles.error} aria-live='polite'>
+            {youtubeThumbnailConversionNotice}
+          </div>
+        ) : lengthError ? (
           <div className={styles.error}>{lengthError}</div>
         ) : error ? (
           <div className={styles.error}>{isPostOptionsValidationError(error) ? <PostOptionsErrorMessage error={error} directories={directories} /> : error}</div>

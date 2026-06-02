@@ -400,5 +400,6 @@
   "timestamp": "时间戳",
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
-  "youtube_video": "YouTube 视频"
+  "youtube_video": "YouTube 视频",
+  "youtube_thumbnail_link_conversion_notice": "检测到 YouTube 链接。将在 {{count}} 后粘贴缩略图..."
 }

@@ -400,5 +400,6 @@
   "timestamp": "временная метка",
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
-  "youtube_video": "видео YouTube"
+  "youtube_video": "видео YouTube",
+  "youtube_thumbnail_link_conversion_notice": "Обнаружена ссылка YouTube. Вставка миниатюры через {{count}}..."
 }

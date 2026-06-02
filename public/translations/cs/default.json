@@ -400,5 +400,6 @@
   "timestamp": "časové razítko",
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
-  "youtube_video": "video YouTube"
+  "youtube_video": "video YouTube",
+  "youtube_thumbnail_link_conversion_notice": "Byl zjištěn odkaz na YouTube. Vkládám náhledový obrázek za {{count}}..."
 }

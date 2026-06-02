@@ -675,6 +675,44 @@ describe('ReplyModal', () => {
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
   });
 
+  it('moves YouTube links into reply content and publishes the thumbnail link on media-only boards', async () => {
+    const youtubeLink = 'https://youtu.be/reply123';
+    const thumbnailLink = 'https://img.youtube.com/vi/reply123/0.jpg';
+    testState.openEmpty = true;
+    testState.selectedText = 'reply body';
+    testState.directoryByAddress['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { requirePostLinkIsMedia: true },
+      title: '/mu/ - Music',
+    };
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement;
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+    const linkContainer = linkInput.parentElement as HTMLElement;
+    const getConversionNotice = () =>
+      Array.from(container.querySelectorAll<HTMLDivElement>('div'))
+        .reverse()
+        .find((element) => element.textContent?.includes('youtube_thumbnail_link_conversion_notice'));
+
+    await dispatchInput(linkInput, youtubeLink);
+
+    expect(linkInput.value).toBe(youtubeLink);
+    expect(container.textContent).toContain('youtube_thumbnail_link_conversion_notice:{"count":3}');
+    expect(linkContainer.textContent).not.toContain('youtube_thumbnail_link_conversion_notice');
+    expect(getConversionNotice()?.className).toContain('error');
+
+    await clickButtonByText('post');
+
+    expect(linkInput.value).toBe(thumbnailLink);
+    expect(textarea.value).toBe(`${youtubeLink}\nreply body`);
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: `${youtubeLink}\nreply body`,
+      link: thumbnailLink,
+    });
+  });
+
   it('validates unsupported options and stores fortune output in reply content', async () => {
     const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
     testState.openEmpty = true;
