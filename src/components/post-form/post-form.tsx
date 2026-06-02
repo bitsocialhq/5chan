@@ -690,7 +690,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   }, [checkContentLength, checkPostOptions, isInPostView, resetPublishPostOptions, resetPublishReplyOptions]);
 
   const handleContentValueChange = (content: string, options = optionsRef.current?.value || '') => {
-    const publishContent = getContentWithOptions(content, options, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+    const publishContent = getContentWithOptions(content, options, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode, { includeFortune: false });
     if (isBbcodePreviewing) {
       setBbcodePreviewContent(content);
     }

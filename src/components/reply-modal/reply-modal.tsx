@@ -320,7 +320,9 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     const len = textRef.current.value.length;
     lastSelectionStartRef.current = len;
     lastSelectionEndRef.current = len;
-    const publishContent = getContentWithOptions(initialContent, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+    const publishContent = getContentWithOptions(initialContent, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode, {
+      includeFortune: false,
+    });
     setPublishReplyOptions({ content: publishContent });
     checkContentLengthRef.current(publishContent, t);
 
@@ -364,7 +366,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       lastSelectionStartRef.current = selectionStart;
       lastSelectionEndRef.current = selectionEnd ?? selectionStart;
     }
-    const publishContent = getContentWithOptions(content, options, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+    const publishContent = getContentWithOptions(content, options, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode, { includeFortune: false });
     setPublishReplyOptions({ content: publishContent });
     checkContentLengthRef.current(publishContent, t);
   };
@@ -430,7 +432,9 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     lastSelectionStartRef.current = nextCursor;
     lastSelectionEndRef.current = nextCursor;
 
-    const publishContent = getContentWithOptions(nextValue, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+    const publishContent = getContentWithOptions(nextValue, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode, {
+      includeFortune: false,
+    });
     setPublishReplyOptions({ content: publishContent });
     checkContentLengthRef.current(publishContent, t);
   }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, postOptionsDirectoryCode, setPublishReplyOptions, t]);

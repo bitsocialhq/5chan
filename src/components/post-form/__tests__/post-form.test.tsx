@@ -804,7 +804,7 @@ describe('PostForm', () => {
     });
   });
 
-  it('validates unsupported options and stores fortune output in post content', async () => {
+  it('validates unsupported options and keeps fortune output out of preview state until post publish', async () => {
     const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
     testState.resolvedCommunityAddress = 'random-nsfw.bso';
 
@@ -835,11 +835,14 @@ describe('PostForm', () => {
     await dispatchInput(optionsInput as HTMLInputElement, 'fortune');
 
     expect(container.textContent).not.toContain('Unsupported options');
-    expect(testState.publishPostOptions.content).toBe('fortune body<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>');
+    expect(testState.publishPostOptions.content).toBe('fortune body');
 
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishPostMock).toHaveBeenCalledWith({
+      content: 'fortune body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+    });
     randomSpy.mockRestore();
   });
 
@@ -864,7 +867,8 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishedPostOptions?.content).toBe('silly fortune<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>');
+    expect(testState.publishedPostOptions?.content).toBe('silly fortune[fortune color=#fd4d32]Excellent Luck[/fortune]');
+    expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ content: 'silly fortune' });
     randomSpy.mockRestore();
   });
 

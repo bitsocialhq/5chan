@@ -621,7 +621,7 @@ describe('ReplyModal', () => {
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
   });
 
-  it('validates unsupported options and stores fortune output in reply content', async () => {
+  it('validates unsupported options and keeps fortune output out of preview state until reply publish', async () => {
     const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
     testState.openEmpty = true;
     testState.selectedText = '';
@@ -648,12 +648,15 @@ describe('ReplyModal', () => {
 
     expect(container.textContent).not.toContain('Unsupported options');
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
-      content: 'reply body<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
+      content: 'reply body',
     });
 
     await clickButtonByText('post');
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: 'reply body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+    });
     randomSpy.mockRestore();
   });
 
@@ -677,9 +680,10 @@ describe('ReplyModal', () => {
     await clickButtonByText('post');
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
-    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
-      content: 'silly reply<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: 'silly reply[fortune color=#fd4d32]Excellent Luck[/fortune]',
     });
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: 'silly reply' });
     randomSpy.mockRestore();
   });
 

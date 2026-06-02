@@ -42,6 +42,10 @@ interface PostOptionsStateRef<T> {
   current: T;
 }
 
+interface PostOptionsContentOptions {
+  includeFortune?: boolean;
+}
+
 const getRouteDirectoryCode = (pathname: string | undefined): string | undefined => {
   const firstSegment = pathname?.split('/').filter(Boolean)[0];
   return firstSegment && POST_OPTION_ROUTE_DIRECTORY_CODES.has(firstSegment) ? firstSegment : undefined;
@@ -210,9 +214,9 @@ const getDiceOption = (value: string, directoryCode: string | undefined): Return
 
 const getRandomFortuneEntry = (): FortuneEntry => FORTUNE_ENTRIES[Math.floor(Math.random() * FORTUNE_ENTRIES.length)] || FORTUNE_ENTRIES[0];
 
-const getFortuneMarkup = ({ color, text }: FortuneEntry): string => `<span class="fortune" style="color:${color}"><br><br><b>Your fortune: ${text}</b></span>`;
+const getFortuneBbcode = ({ color, text }: FortuneEntry): string => `[fortune color=${color}]${text}[/fortune]`;
 
-const appendFortuneToContent = (content: string, fortune: FortuneEntry): string => `${content}${getFortuneMarkup(fortune)}`;
+const appendFortuneToContent = (content: string, fortune: FortuneEntry): string => `${content}${getFortuneBbcode(fortune)}`;
 
 const rollDice = (diceOption: NonNullable<ReturnType<typeof parseDiceOption>>, currentDiceRoll: DiceRoll | null): DiceRoll => {
   if (currentDiceRoll?.option === diceOption.option) {
@@ -249,6 +253,7 @@ const getContentWithPostOptions = (
   currentFortuneEntry: FortuneEntry | null,
   currentDiceRoll: DiceRoll | null,
   directoryCode: string | undefined,
+  contentOptions: PostOptionsContentOptions = {},
 ): { content: string; fortuneEntry: FortuneEntry | null; diceRoll: DiceRoll | null } => {
   const diceOption = getDiceOption(options, directoryCode);
   const diceRoll = diceOption ? rollDice(diceOption, currentDiceRoll) : null;
@@ -256,6 +261,10 @@ const getContentWithPostOptions = (
 
   if (!hasFortuneOption(options, directoryCode)) {
     return { content: nextContent, fortuneEntry: null, diceRoll };
+  }
+
+  if (contentOptions.includeFortune === false) {
+    return { content: nextContent, fortuneEntry: currentFortuneEntry, diceRoll };
   }
 
   const fortuneEntry = currentFortuneEntry || getRandomFortuneEntry();
@@ -269,18 +278,22 @@ export const getContentWithPostOptionState = (
   fortuneEntryRef: PostOptionsStateRef<FortuneEntry | null>,
   diceRollRef: PostOptionsStateRef<DiceRoll | null>,
   directoryCode: string | undefined,
+  contentOptions?: PostOptionsContentOptions,
 ): string => {
-  const result = getContentWithPostOptions(content, options, fortuneEntryRef.current, diceRollRef.current, directoryCode);
+  const result = getContentWithPostOptions(content, options, fortuneEntryRef.current, diceRollRef.current, directoryCode, contentOptions);
   fortuneEntryRef.current = result.fortuneEntry;
   diceRollRef.current = result.diceRoll;
   return result.content;
 };
 
-const FORTUNE_MARKUP_PATTERN = '<span class="fortune" style="color:(#[0-9a-fA-F]{6})"><br><br><b>Your fortune: ([^<]+)<\\/b><\\/span>';
+const FORTUNE_BBCODE_PATTERN = '\\[fortune color=(#[0-9a-fA-F]{6})\\]([^\\r\\n]*?)\\[\\/fortune\\]';
 const DICE_ROLL_MARKUP_PATTERN = '<b>(Rolled \\d+(?:, \\d+)*(?: [+-] \\d+)?(?: = -?\\d+)? \\(\\d+d\\d+(?: [+-] \\d+)?\\))<br><br><\\/b>';
 
-export const createFortuneMarkupRegex = (): RegExp => new RegExp(FORTUNE_MARKUP_PATTERN, 'g');
+export const createFortuneBbcodeRegex = (): RegExp => new RegExp(FORTUNE_BBCODE_PATTERN, 'g');
 export const createDiceRollMarkupRegex = (): RegExp => new RegExp(DICE_ROLL_MARKUP_PATTERN, 'g');
 
 export const getMatchingFortuneEntry = (color: string, text: string): FortuneEntry | undefined =>
   FORTUNE_ENTRIES.find((entry) => entry.color.toLowerCase() === color.toLowerCase() && entry.text === text);
+
+export const stripGeneratedFortuneBbcode = (content: string): string =>
+  content.replace(createFortuneBbcodeRegex(), (match, color: string, text: string) => (getMatchingFortuneEntry(color, text) ? '' : match));

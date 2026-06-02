@@ -465,6 +465,27 @@ describe('CommentContent', () => {
     expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('Publishing');
   });
 
+  it('hides generated fortune output from unpublished comment content', async () => {
+    const content = 'body[fortune color=#fd4d32]Excellent Luck[/fortune]';
+
+    await renderContent({
+      content,
+      postCid: 'post-1',
+      state: 'publishing',
+    });
+
+    expect(queryMarkdownText()).toEqual(['body']);
+    expect(container.textContent).not.toContain('Excellent Luck');
+
+    await renderContent({
+      cid: 'post-1',
+      content,
+      postCid: 'post-1',
+    });
+
+    expect(queryMarkdownText()).toEqual([content]);
+  });
+
   it('renders failed unpublished comment errors through ErrorDisplay', async () => {
     testState.stateString = 'Failed';
     await renderContent({

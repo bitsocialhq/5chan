@@ -19,7 +19,7 @@ import ReplyQuotePreview from '../reply-quote-preview';
 import ExternalNumberQuoteLink from './external-number-quote-link';
 import { findDirectoryByAddress, useDirectories, type DirectoryCommunity } from '../../hooks/use-directories';
 import { getDirectoryCodeForBoardAddress } from '../../lib/utils/directory-list-lookup-utils';
-import { createDiceRollMarkupRegex, createFortuneMarkupRegex, getMatchingFortuneEntry, isFortuneDirectoryCode } from '../../lib/utils/post-options-utils';
+import { createDiceRollMarkupRegex, createFortuneBbcodeRegex, getMatchingFortuneEntry, isFortuneDirectoryCode } from '../../lib/utils/post-options-utils';
 
 const safeParseUrl = (href: string): URL | null => {
   try {
@@ -585,16 +585,16 @@ const DiceRoll = ({ text }: { text: string }) => (
 const renderLineContent = (line: string, context: RenderContext): React.ReactNode[] => {
   const elements: React.ReactNode[] = [];
   let lastIndex = 0;
-  const fortuneMarkupRegex = context.enableFortuneMarkup ? createFortuneMarkupRegex() : null;
+  const fortuneBbcodeRegex = context.enableFortuneMarkup ? createFortuneBbcodeRegex() : null;
   const diceRollMarkupRegex = createDiceRollMarkupRegex();
 
   while (lastIndex < line.length) {
-    if (fortuneMarkupRegex) {
-      fortuneMarkupRegex.lastIndex = lastIndex;
+    if (fortuneBbcodeRegex) {
+      fortuneBbcodeRegex.lastIndex = lastIndex;
     }
     diceRollMarkupRegex.lastIndex = lastIndex;
 
-    const fortuneMatch = fortuneMarkupRegex?.exec(line) ?? null;
+    const fortuneMatch = fortuneBbcodeRegex?.exec(line) ?? null;
     const diceMatch = diceRollMarkupRegex.exec(line);
     const nextMatch =
       fortuneMatch && diceMatch

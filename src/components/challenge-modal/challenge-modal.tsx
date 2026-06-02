@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { getPublicationPreview, getPublicationType, getVotePreview } from '../../lib/utils/challenge-utils';
+import { stripGeneratedFortuneBbcode } from '../../lib/utils/post-options-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useTrustedBoardUrlPermissionsStore from '../../stores/use-trusted-board-url-permissions-store';
@@ -325,6 +326,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const votePreview = getVotePreview(publication);
 
   const { author, content, link, title, parentCid, shortCommunityAddress, communityAddress } = publication || {};
+  const visibleContent = content ? stripGeneratedFortuneBbcode(content) : '';
   const { displayName } = author || {};
   const parentAddress = useParentAddress(parentCid);
   const community = shortCommunityAddress || communityAddress;
@@ -493,9 +495,9 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
           <input type='text' aria-label={capitalize(t('subject'))} value={title} disabled readOnly />
         </div>
       )}
-      {content && (
+      {visibleContent && (
         <div className={styles.content}>
-          <textarea aria-label={capitalize(t('comment'))} value={content} disabled readOnly cols={48} rows={4} wrap='soft' />
+          <textarea aria-label={capitalize(t('comment'))} value={visibleContent} disabled readOnly cols={48} rows={4} wrap='soft' />
         </div>
       )}
       {link && (

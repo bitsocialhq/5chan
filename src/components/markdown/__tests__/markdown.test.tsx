@@ -334,10 +334,10 @@ describe('Markdown', () => {
     expect(container.textContent).toBe('https://en.wikipedia.org/wiki/Function_(mathematics) https://example.com/path),');
   });
 
-  it('renders generated fortune markup on fortune boards without parsing surrounding user BBCode', async () => {
+  it('renders generated fortune BBCode on fortune boards without parsing surrounding user BBCode', async () => {
     await renderMarkdown(
       {
-        content: '[b]not bold[/b]<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
+        content: '[b]not bold[/b][fortune color=#fd4d32]Excellent Luck[/fortune]',
       },
       '/s5s/thread/post-1',
     );
@@ -350,22 +350,32 @@ describe('Markdown', () => {
     expect(container.textContent).toBe('[b]not bold[/b]Your fortune: Excellent Luck');
   });
 
-  it('leaves generated fortune markup raw outside fortune boards', async () => {
+  it('does not parse legacy fortune HTML text on fortune boards', async () => {
+    const legacyFortune = '<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>';
+
+    await renderMarkdown({ content: legacyFortune }, '/s5s/thread/post-1');
+
+    expect(container.querySelector('.fortune')).toBeNull();
+    expect(container.querySelector('strong')).toBeNull();
+    expect(container.textContent).toBe(legacyFortune);
+  });
+
+  it('leaves generated fortune BBCode raw outside fortune boards', async () => {
     await renderMarkdown({
-      content: 'body<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
+      content: 'body[fortune color=#fd4d32]Excellent Luck[/fortune]',
     });
 
     expect(container.querySelector('.fortune')).toBeNull();
     expect(container.querySelector('strong')).toBeNull();
-    expect(container.textContent).toBe('body<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>');
+    expect(container.textContent).toBe('body[fortune color=#fd4d32]Excellent Luck[/fortune]');
   });
 
-  it('renders generated fortune markup for s5s comments in multiboard views', async () => {
+  it('renders generated fortune BBCode for s5s comments in multiboard views', async () => {
     testState.directories = [...testState.directories, { address: 'silly-stuff.bso', directoryCode: 's5s', title: '/s5s/ - Shit 5chan Says' }];
 
     await renderMarkdown(
       {
-        content: 'silly<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
+        content: 'silly[fortune color=#fd4d32]Excellent Luck[/fortune]',
         communityAddress: 'silly-stuff.eth',
       },
       '/all',

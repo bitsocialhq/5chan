@@ -21,6 +21,7 @@ import capitalize from 'lodash/capitalize';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { formatErrorMessageForDisplay } from '../../lib/utils/error-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
+import { stripGeneratedFortuneBbcode } from '../../lib/utils/post-options-utils';
 
 const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
   const quotedNumber = usePostNumberStore((state) => state.cidToNumber[cid]);
@@ -99,6 +100,7 @@ const CommentContent = ({
   const resolvedPost = withResolvedCommentCommunityAddress(post);
 
   const { cid, content, deleted, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state } = resolvedPost || {};
+  const visibleContent = !cid && content ? stripGeneratedFortuneBbcode(content) : content;
   const communityAddress = getCommentCommunityAddress(resolvedPost);
   const authorAddress = resolvedPost?.author?.address;
   const authorRole = getRoleByAddress(roles, authorAddress);
@@ -110,12 +112,12 @@ const CommentContent = ({
 
   const [showFullComment, setShowFullComment] = useState(false);
   const displayContent =
-    content &&
-    (!isInPostView && content.length > 1000 && !showFullComment && !isPrivilegedAuthor
-      ? content.slice(0, 1000)
-      : isInPostView && content.length > 2000 && !showFullComment && !isPrivilegedAuthor
-        ? content.slice(0, 2000)
-        : content);
+    visibleContent &&
+    (!isInPostView && visibleContent.length > 1000 && !showFullComment && !isPrivilegedAuthor
+      ? visibleContent.slice(0, 1000)
+      : isInPostView && visibleContent.length > 2000 && !showFullComment && !isPrivilegedAuthor
+        ? visibleContent.slice(0, 2000)
+        : visibleContent);
 
   const quotelinkReplyFromStore = useCommunitiesPagesStore((state) => state.comments[parentCid]);
   const quotelinkReplyFromHook = useComment({ commentCid: parentCid, onlyIfCached: true });
@@ -126,9 +128,9 @@ const CommentContent = ({
   const isReplyingToReply = isReply && parentCid !== postCid;
 
   const contentNumbers = useMemo(() => {
-    if (!content) return new Set<number>();
-    return new Set([...content.matchAll(/(?<![>/\w])>>(\d+)(?![\d/])/g)].map((m) => parseInt(m[1], 10)));
-  }, [content]);
+    if (!visibleContent) return new Set<number>();
+    return new Set([...visibleContent.matchAll(/(?<![>/\w])>>(\d+)(?![\d/])/g)].map((m) => parseInt(m[1], 10)));
+  }, [visibleContent]);
 
   const relevantQuotedCids = useMemo(() => {
     const cids = quotedCids ? [...quotedCids] : [];
@@ -213,8 +215,7 @@ const CommentContent = ({
       ) : deleted ? (
         reasonMessage ? (
           <>
-            <span className={styles.grayEditMessage}>{t('user_deleted_this_post')}</span>{' '}
-            {renderContent(reasonMessage)}
+            <span className={styles.grayEditMessage}>{t('user_deleted_this_post')}</span> {renderContent(reasonMessage)}
           </>
         ) : (
           <span className={styles.grayEditMessage}>{t('user_deleted_this_post')}</span>
@@ -236,33 +237,34 @@ const CommentContent = ({
               ) : null}
             </>
           )}
-          {((!isInPostView && content?.length > 1000 && !showFullComment) || (isInPostView && content?.length > 2000 && !showFullComment)) && !isPrivilegedAuthor && (
-            <span className={styles.abbr}>
-              <br />
-              <br />
-              <Trans
-                i18nKey={'comment_too_long'}
-                shouldUnescape={true}
-                components={{
-                  1: (
-                    <button
-                      type='button'
-                      key={cid}
-                      aria-label={t('view')}
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          setShowFullComment(true);
-                        }
-                      }}
-                      onClick={() => setShowFullComment(true)}
-                    />
-                  ),
-                }}
-              />
-            </span>
-          )}
+          {((!isInPostView && visibleContent?.length > 1000 && !showFullComment) || (isInPostView && visibleContent?.length > 2000 && !showFullComment)) &&
+            !isPrivilegedAuthor && (
+              <span className={styles.abbr}>
+                <br />
+                <br />
+                <Trans
+                  i18nKey={'comment_too_long'}
+                  shouldUnescape={true}
+                  components={{
+                    1: (
+                      <button
+                        type='button'
+                        key={cid}
+                        aria-label={t('view')}
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setShowFullComment(true);
+                          }
+                        }}
+                        onClick={() => setShowFullComment(true)}
+                      />
+                    ),
+                  }}
+                />
+              </span>
+            )}
         </>
       )}
       {banned && (
