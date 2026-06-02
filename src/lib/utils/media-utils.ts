@@ -1,5 +1,5 @@
 import localForageLru from '@bitsocial/bitsocial-react-hooks/dist/lib/localforage-lru/index.js';
-import { canEmbed, getYouTubeVideoId } from '../../components/embed/embed-utils';
+import { canEmbed, getYouTubeVideoId, youtubeHosts } from '../../components/embed/embed-utils';
 import memoize from 'memoizee';
 import { isPrivateNetworkHostname, isValidURL, parseHttpUrl } from './url-utils';
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
@@ -65,6 +65,22 @@ export const getPostMediaTypeLabel = (commentMediaInfo: CommentMediaInfo | undef
   return getDisplayMediaInfoType(resolvedType, t);
 };
 
+const isYouTubeLikeUrl = (url: URL): boolean => youtubeHosts.has(url.host) || url.host.startsWith('yt.');
+
+export const getYouTubeThumbnailUrl = (url: URL): string | undefined => {
+  if (!isYouTubeLikeUrl(url)) {
+    return undefined;
+  }
+
+  const videoId = getYouTubeVideoId(url);
+  return videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : undefined;
+};
+
+export const getYouTubeThumbnailUrlFromLink = (link: string): string | undefined => {
+  const parsedUrl = parseHttpUrl(link.trim());
+  return parsedUrl ? getYouTubeThumbnailUrl(parsedUrl) : undefined;
+};
+
 export const getHasThumbnail = memoize(
   (commentMediaInfo: CommentMediaInfo | undefined, link: string | undefined): boolean => {
     if (!link || !commentMediaInfo) return false;
@@ -81,10 +97,9 @@ export const getHasThumbnail = memoize(
 );
 
 const getPatternThumbnailUrl = (url: URL): string | undefined => {
-  const videoId = getYouTubeVideoId(url);
-  if (videoId) {
-    return `https://img.youtube.com/vi/${videoId}/0.jpg`;
-  }
+  const youtubeThumbnailUrl = getYouTubeThumbnailUrl(url);
+  if (youtubeThumbnailUrl) return youtubeThumbnailUrl;
+
   if (url.host.includes('streamable.com')) {
     const videoId = url.pathname.split('/')[1];
     return `https://cdn-cf-east.streamable.com/image/${videoId}.jpg`;

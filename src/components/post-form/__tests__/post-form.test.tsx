@@ -88,6 +88,7 @@ vi.mock('react-i18next', async () => {
     useTranslation: () => ({
       t: (key: string, options?: Record<string, unknown>) => {
         if (key === 'choose_one') return 'Choose one:';
+        if (typeof options?.count !== 'undefined') return `${key}:${options.count}`;
         return options?.domain ? `${key}:${options.domain}` : key;
       },
     }),
@@ -298,6 +299,16 @@ vi.mock('../../../lib/utils/media-utils', () => ({
       return { type: 'video', url: link };
     }
     return { type: 'link', url: link };
+  },
+  getYouTubeThumbnailUrlFromLink: (link: string) => {
+    try {
+      const url = new URL(link);
+      if (!url.hostname.includes('youtube.com')) return undefined;
+      const videoId = url.searchParams.get('v');
+      return videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : undefined;
+    } catch {
+      return undefined;
+    }
   },
 }));
 
@@ -597,6 +608,63 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ communityAddress: 'music-posting.eth' });
+  });
+
+  it('converts YouTube links to thumbnail file links on media-only post forms', async () => {
+    const youtubeLink = 'https://www.youtube.com/watch?v=abc123';
+    const thumbnailLink = 'https://img.youtube.com/vi/abc123/0.jpg';
+
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const select = table.querySelector('select') as HTMLSelectElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const linkInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[3];
+    const getConversionNotice = () =>
+      Array.from(container.querySelectorAll<HTMLDivElement>('div'))
+        .reverse()
+        .find((element) => element.textContent?.includes('youtube_thumbnail_link_conversion_notice'));
+
+    await dispatchChange(select, 'music-posting.eth');
+
+    vi.useFakeTimers();
+    try {
+      await dispatchInput(linkInput, youtubeLink);
+
+      expect(linkInput.value).toBe(youtubeLink);
+      expect(container.textContent).toContain('youtube_thumbnail_link_conversion_notice');
+      expect(container.textContent).toContain('3');
+      expect(table.textContent).not.toContain('youtube_thumbnail_link_conversion_notice');
+      expect(getConversionNotice()?.className).toContain('formError');
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(container.textContent).toContain('2');
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(container.textContent).toContain('1');
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(linkInput.value).toBe(thumbnailLink);
+      expect(textarea.value).toBe(youtubeLink);
+      expect(container.textContent).not.toContain('youtube_thumbnail_link_conversion_notice');
+    } finally {
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    }
+
+    await clickByText(table, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishedPostOptions?.link).toBe(thumbnailLink);
+    expect(testState.publishedPostOptions?.content).toBe(youtubeLink);
   });
 
   it('shows Oekaki draw controls only on the /i/ board form', async () => {

@@ -400,5 +400,6 @@
   "timestamp": "타임스탬프",
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
-  "youtube_video": "YouTube 동영상"
+  "youtube_video": "YouTube 동영상",
+  "youtube_thumbnail_link_conversion_notice": "YouTube 링크가 감지되었습니다. {{count}} 후에 썸네일 이미지를 붙여넣는 중..."
 }

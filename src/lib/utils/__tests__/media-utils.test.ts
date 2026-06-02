@@ -46,6 +46,7 @@ import {
   getMediaDimensions,
   getPostMediaTypeLabel,
   getYouTubeEmbedPostMediaFileLink,
+  getYouTubeThumbnailUrlFromLink,
 } from '../media-utils';
 
 const clearMemoizedCache = (fn: unknown) => {
@@ -125,6 +126,8 @@ describe('media-utils', () => {
     expect(getYouTubeEmbedPostMediaFileLink(mediaInfo)).toBe('https://img.youtube.com/vi/abc123/0.jpg');
     expect(getPostMediaTypeLabel(mediaInfo, 'iframe', (key) => key)).toBe('youtube_video');
     expect(getYouTubeEmbedPostMediaFileLink({ type: 'iframe', url: 'https://streamable.com/clip123' })).toBeUndefined();
+    expect(getYouTubeThumbnailUrlFromLink('https://youtu.be/short123')).toBe('https://img.youtube.com/vi/short123/0.jpg');
+    expect(getYouTubeThumbnailUrlFromLink('https://example.com/watch?v=not-youtube')).toBeUndefined();
   });
 
   it('recognizes which media types expose thumbnails', () => {
