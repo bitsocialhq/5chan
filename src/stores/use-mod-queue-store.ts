@@ -70,7 +70,7 @@ const useModQueueStore = create<ModQueueState>()(
           return { queuedCommentHistory: [...rememberedByCid.values()].slice(0, MAX_QUEUE_HISTORY_COMMENTS) };
         }),
       selectedBoardFilter: null,
-      viewMode: 'compact',
+      viewMode: 'feed',
       setAlertThreshold: (value, unit) => set({ alertThresholdValue: value, alertThresholdUnit: unit }),
       setSelectedBoardFilter: (boardAddress) => set({ selectedBoardFilter: boardAddress }),
       setViewMode: (viewMode) => set({ viewMode }),
@@ -92,7 +92,7 @@ const useModQueueStore = create<ModQueueState>()(
             dismissedCommentCids: state.dismissedCommentCids ?? [],
             queuedCommentHistory: state.queuedCommentHistory ?? [],
             selectedBoardFilter: state.selectedBoardFilter ?? null,
-            viewMode: state.viewMode ?? 'compact',
+            viewMode: state.viewMode ?? 'feed',
           };
           // Zustand will merge this with the store definition (which includes methods)
           return migrated as ModQueueState;
@@ -104,7 +104,7 @@ const useModQueueStore = create<ModQueueState>()(
           dismissedCommentCids: state.dismissedCommentCids ?? [],
           queuedCommentHistory: state.queuedCommentHistory ?? [],
           selectedBoardFilter: state.selectedBoardFilter ?? null,
-          viewMode: state.viewMode ?? 'compact',
+          viewMode: state.viewMode ?? 'feed',
         };
         return current as ModQueueState;
       },

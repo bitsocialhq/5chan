@@ -68,6 +68,13 @@ describe('persisted extra stores', () => {
     expect(localStorage.getItem('5chan-homepage-stats-scope')).toBe('all');
   });
 
+  it('defaults the mod queue to feed view when no preference is stored', async () => {
+    const useModQueueStore = await loadModQueueStore();
+    await flushMicrotasks();
+
+    expect(useModQueueStore.getState().viewMode).toBe('feed');
+  });
+
   it('migrates legacy mod queue storage and computes threshold seconds from the active unit', async () => {
     localStorage.setItem(
       'mod-queue-storage',
@@ -75,7 +82,6 @@ describe('persisted extra stores', () => {
         state: {
           alertThresholdHours: 3,
           selectedBoardFilter: 'music.eth',
-          viewMode: 'feed',
         },
         version: 0,
       }),
