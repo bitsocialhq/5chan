@@ -319,13 +319,19 @@ vi.mock('../../../lib/utils/media-utils', () => ({
     if (link.endsWith('.gif')) {
       return { type: 'gif', url: link };
     }
-    if (link.endsWith('.png')) {
+    if (link.endsWith('.jpg') || link.endsWith('.jpeg') || link.endsWith('.png')) {
       return { type: 'image', url: link };
     }
     if (link.endsWith('.mp4')) {
       return { type: 'video', url: link };
     }
-    return { type: 'link', url: link };
+    if (link.endsWith('.mp3')) {
+      return { type: 'audio', url: link };
+    }
+    if (link.includes('youtube.com')) {
+      return { patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/0.jpg', type: 'iframe', url: link };
+    }
+    return { type: 'webpage', url: link };
   },
   getYouTubeThumbnailUrlFromLink: (link: string) => {
     try {
@@ -617,6 +623,12 @@ describe('PostForm', () => {
     expect(globalThis.alert).not.toHaveBeenCalled();
     expect(container.textContent).toContain('error: invalid_url_alert');
 
+    await dispatchInput(linkInput as HTMLInputElement, 'https://example.com/page');
+    await clickByText(table as HTMLTableElement, 'post');
+    expect(globalThis.alert).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('error: link_not_image_or_video_alert');
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+
     await dispatchInput(textarea as HTMLTextAreaElement, 'A valid body');
     await dispatchInput(linkInput as HTMLInputElement, 'https://i.4cdn.org/gif/file.jpg');
     await clickByText(table as HTMLTableElement, 'post');
@@ -668,6 +680,7 @@ describe('PostForm', () => {
       await dispatchInput(linkInput, youtubeLink);
 
       expect(linkInput.value).toBe(youtubeLink);
+      expect(linkInput.disabled).toBe(true);
       expect(container.textContent).toContain('youtube_thumbnail_link_conversion_notice');
       expect(container.textContent).toContain('3');
       expect(table.textContent).not.toContain('youtube_thumbnail_link_conversion_notice');
@@ -677,17 +690,20 @@ describe('PostForm', () => {
         vi.advanceTimersByTime(1000);
       });
       expect(container.textContent).toContain('2');
+      expect(linkInput.disabled).toBe(true);
 
       await act(async () => {
         vi.advanceTimersByTime(1000);
       });
       expect(container.textContent).toContain('1');
+      expect(linkInput.disabled).toBe(true);
 
       await act(async () => {
         vi.advanceTimersByTime(1000);
       });
 
       expect(linkInput.value).toBe(thumbnailLink);
+      expect(linkInput.disabled).toBe(false);
       expect(textarea.value).toBe(youtubeLink);
       expect(container.textContent).not.toContain('youtube_thumbnail_link_conversion_notice');
     } finally {
@@ -1433,16 +1449,34 @@ describe('LinkTypePreviewer', () => {
     await act(async () => {
       root.render(createElement(LinkTypePreviewer, { link: 'https://example.com/file.gif' }));
     });
-    expect(container.textContent).toBe('type: animated_gif');
+    expect(container.textContent).toBe('file: animated_gif');
 
     await act(async () => {
       root.render(createElement(LinkTypePreviewer, { link: 'https://example.com/file.mp4' }));
     });
-    expect(container.textContent).toBe('type: video');
+    expect(container.textContent).toBe('file: video');
 
     await act(async () => {
       root.render(createElement(LinkTypePreviewer, { link: 'not-a-url' }));
     });
     expect(container.textContent).toBe('invalid_url');
+  });
+
+  it('shows unsupported file links as not a file on media-only forms', async () => {
+    await act(async () => {
+      root.render(createElement(LinkTypePreviewer, { link: 'https://example.com/file.mp3', requireFile: true }));
+    });
+    expect(container.textContent).toBe('not_a_file');
+    expect(container.querySelector('span')?.className).toContain('linkTypeError');
+
+    await act(async () => {
+      root.render(createElement(LinkTypePreviewer, { link: 'https://www.youtube.com/watch?v=abc123', requireFile: true }));
+    });
+    expect(container.textContent).toBe('not_a_file');
+
+    await act(async () => {
+      root.render(createElement(LinkTypePreviewer, { link: 'https://example.com/page', requireFile: true }));
+    });
+    expect(container.textContent).toBe('not_a_file');
   });
 });

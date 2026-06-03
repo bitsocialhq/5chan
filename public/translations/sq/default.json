@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "U zbulua lidhje YouTube. Po ngjis imazhin miniaturë pas {{count}}...",
   "stats_scope_all_listed_boards": "Të gjitha bordet e listuara (ngadalë)",
   "stats_scope_directory_boards": "Vetëm bordet e drejtorisë (shpejt)",
-  "boards_loaded": "bordet e ngarkuara:"
+  "boards_loaded": "bordet e ngarkuara:",
+  "link_not_image_or_video_alert": "Lidhja nuk është imazh ose video.",
+  "not_a_file": "nuk është skedar"
 }

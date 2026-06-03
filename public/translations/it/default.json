@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "Link YouTube rilevato. Incollando l'immagine di anteprima tra {{count}}...",
   "stats_scope_all_listed_boards": "Tutte le board elencate (lento)",
   "stats_scope_directory_boards": "Solo board della directory (veloce)",
-  "boards_loaded": "board caricati:"
+  "boards_loaded": "board caricati:",
+  "link_not_image_or_video_alert": "Il link non è un'immagine né un video.",
+  "not_a_file": "non è un file"
 }

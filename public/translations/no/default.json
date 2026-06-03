@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube-lenke oppdaget. Limer inn miniatyrbilde om {{count}}...",
   "stats_scope_all_listed_boards": "Alle oppførte boards (tregt)",
   "stats_scope_directory_boards": "Bare katalog-boards (raskt)",
-  "boards_loaded": "lastede boards:"
+  "boards_loaded": "lastede boards:",
+  "link_not_image_or_video_alert": "Lenken er ikke et bilde eller en video.",
+  "not_a_file": "ikke en fil"
 }

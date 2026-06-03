@@ -55,6 +55,7 @@ import debounce from 'lodash/debounce';
 
 const FILE_LINK_PLACEHOLDER = 'https://website.com/image.jpg';
 const POST_FORM_FILE_DISPLAY_MAX_LENGTH = 28;
+const POST_FORM_FILE_MEDIA_TYPES = new Set(['gif', 'image', 'video']);
 
 const mergeFlairs = (...flairGroups: Array<Comment['flairs'] | undefined>): Comment['flairs'] | undefined => {
   const flairs = flairGroups.flatMap((group) => (Array.isArray(group) ? group : []));
@@ -67,11 +68,19 @@ const getPostFormFileDisplayLabel = (url: string, uploadedFileName: string | nul
   return truncateWithEllipsisInMiddle(raw, POST_FORM_FILE_DISPLAY_MAX_LENGTH);
 };
 
-export const LinkTypePreviewer = ({ link }: { link: string }) => {
+const isPostFormFileMediaType = (type: string | undefined): boolean => Boolean(type && POST_FORM_FILE_MEDIA_TYPES.has(type));
+
+const isPostFormFileMediaLink = (link: string): boolean => isPostFormFileMediaType(getLinkMediaInfo(link)?.type);
+
+export const LinkTypePreviewer = ({ link, requireFile = false }: { link: string; requireFile?: boolean }) => {
   const { t } = useTranslation();
   const mediaInfo = getLinkMediaInfo(link);
   let type = mediaInfo?.type;
   const { status: gifFrameStatus } = useFetchGifFirstFrame(type === 'gif' ? mediaInfo?.url : undefined);
+
+  if (requireFile && isValidURL(link) && !isPostFormFileMediaType(type)) {
+    return <span className={styles.linkTypeError}>{t('not_a_file')}</span>;
+  }
 
   if (type === 'gif' && gifFrameStatus === 'ready') {
     type = t('animated_gif');
@@ -81,7 +90,7 @@ export const LinkTypePreviewer = ({ link }: { link: string }) => {
     type = getDisplayMediaInfoType(type, t);
   }
 
-  return isValidURL(link) ? `type: ${type}` : t('invalid_url');
+  return isValidURL(link) ? `${t('file')}: ${type}` : t('invalid_url');
 };
 
 const PostFormActions = ({
@@ -149,6 +158,7 @@ interface PostFormFieldsProps {
   handleContentValueChange: (content: string, options?: string) => void;
   handleLinkChange: (link: string) => void;
   handleOptionsChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  disableLinkInput: boolean;
   setPublishPostOptions: (opts: Record<string, unknown>) => void;
   setPublishReplyOptions: (opts: Record<string, unknown>) => void;
   isUploading: boolean;
@@ -200,6 +210,7 @@ const PostFormFields = ({
   handleContentValueChange,
   handleLinkChange,
   handleOptionsChange,
+  disableLinkInput,
   setPublishPostOptions,
   setPublishReplyOptions,
   isUploading,
@@ -357,12 +368,12 @@ const PostFormFields = ({
           spellCheck='false'
           placeholder={requirePostLinkIsMedia ? FILE_LINK_PLACEHOLDER : undefined}
           ref={urlRef}
-          disabled={isUploading}
+          disabled={disableLinkInput}
           onChange={(e) => {
             handleLinkChange(e.target.value);
           }}
         />
-        <span className={styles.linkType}> {url && <LinkTypePreviewer link={url} />}</span>
+        <span className={styles.linkType}> {url && <LinkTypePreviewer link={url} requireFile={requirePostLinkIsMedia} />}</span>
       </td>
     </tr>
     {showUploadControls && (
@@ -633,6 +644,10 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       setFormError(`${t('error')}: ${t('invalid_url_alert')}`);
       return;
     }
+    if (currentUrl && requirePostLinkIsMedia && !isPostFormFileMediaLink(currentUrl)) {
+      setFormError(`${t('error')}: ${t('link_not_image_or_video_alert')}`);
+      return;
+    }
     const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
     if (expiringMediaLinkAlert) {
       setFormError(expiringMediaLinkAlert);
@@ -757,6 +772,10 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       setFormError(`${t('error')}: ${t('invalid_url_alert')}`);
       return;
     }
+    if (currentUrl && requirePostLinkIsMedia && !isPostFormFileMediaLink(currentUrl)) {
+      setFormError(`${t('error')}: ${t('link_not_image_or_video_alert')}`);
+      return;
+    }
     const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
     if (expiringMediaLinkAlert) {
       setFormError(expiringMediaLinkAlert);
@@ -873,6 +892,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             handleContentValueChange={handleContentValueChange}
             handleLinkChange={handleLinkChange}
             handleOptionsChange={handleOptionsChange}
+            disableLinkInput={isUploading || youtubeThumbnailConversionCountdown !== null}
             setPublishPostOptions={setPublishPostOptions}
             setPublishReplyOptions={setPublishReplyOptions}
             isUploading={isUploading}

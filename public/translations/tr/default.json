@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube bağlantısı algılandı. Küçük resim {{count}} içinde yapıştırılıyor...",
   "stats_scope_all_listed_boards": "Listelenen tüm panolar (yavaş)",
   "stats_scope_directory_boards": "Yalnızca dizin panolari (hızlı)",
-  "boards_loaded": "yüklenen panolar:"
+  "boards_loaded": "yüklenen panolar:",
+  "link_not_image_or_video_alert": "Bağlantı bir görsel veya video değil.",
+  "not_a_file": "dosya değil"
 }

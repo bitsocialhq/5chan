@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube లింక్ గుర్తించబడింది. {{count}}లో థంబ్‌నెయిల్ చిత్రాన్ని పేస్ట్ చేస్తున్నాము...",
   "stats_scope_all_listed_boards": "జాబితాలో ఉన్న అన్ని బోర్డులు (నెమ్మదిగా)",
   "stats_scope_directory_boards": "డైరెక్టరీ బోర్డులు మాత్రమే (వేగంగా)",
-  "boards_loaded": "లోడ్ చేసిన బోర్డులు:"
+  "boards_loaded": "లోడ్ చేసిన బోర్డులు:",
+  "link_not_image_or_video_alert": "లింక్ చిత్రం లేదా వీడియో కాదు.",
+  "not_a_file": "ఫైల్ కాదు"
 }

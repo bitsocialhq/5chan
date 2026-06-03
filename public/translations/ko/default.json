@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube 링크가 감지되었습니다. {{count}} 후에 썸네일 이미지를 붙여넣는 중...",
   "stats_scope_all_listed_boards": "등록된 모든 게시판 (느림)",
   "stats_scope_directory_boards": "디렉터리 게시판만 (빠름)",
-  "boards_loaded": "불러온 게시판:"
+  "boards_loaded": "불러온 게시판:",
+  "link_not_image_or_video_alert": "링크가 이미지 또는 동영상이 아닙니다.",
+  "not_a_file": "파일이 아님"
 }

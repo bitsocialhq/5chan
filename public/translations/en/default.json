@@ -422,5 +422,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube link detected. Pasting thumbnail image in {{count}}...",
   "stats_scope_all_listed_boards": "All listed boards (slow)",
   "stats_scope_directory_boards": "Directory boards only (fast)",
-  "boards_loaded": "boards loaded:"
+  "boards_loaded": "boards loaded:",
+  "link_not_image_or_video_alert": "Link is not an image or video.",
+  "not_a_file": "not a file"
 }

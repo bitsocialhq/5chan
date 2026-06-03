@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube-link registreret. Indsætter miniaturebillede om {{count}}...",
   "stats_scope_all_listed_boards": "Alle viste boards (langsomt)",
   "stats_scope_directory_boards": "Kun boards i kataloget (hurtigt)",
-  "boards_loaded": "indlæste boards:"
+  "boards_loaded": "indlæste boards:",
+  "link_not_image_or_video_alert": "Linket er ikke et billede eller en video.",
+  "not_a_file": "ikke en fil"
 }

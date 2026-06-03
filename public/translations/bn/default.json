@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube লিংক শনাক্ত হয়েছে। {{count}}-এর মধ্যে থাম্বনেইল ছবি পেস্ট করা হচ্ছে...",
   "stats_scope_all_listed_boards": "সব তালিকাভুক্ত বোর্ড (ধীর)",
   "stats_scope_directory_boards": "শুধু ডিরেক্টরি বোর্ড (দ্রুত)",
-  "boards_loaded": "লোড করা বোর্ড:"
+  "boards_loaded": "লোড করা বোর্ড:",
+  "link_not_image_or_video_alert": "লিংকটি ছবি বা ভিডিও নয়।",
+  "not_a_file": "ফাইল নয়"
 }

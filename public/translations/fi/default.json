@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube-linkki havaittu. Liitetään pikkukuva {{count}} kuluttua...",
   "stats_scope_all_listed_boards": "Kaikki listatut boardit (hidas)",
   "stats_scope_directory_boards": "Vain hakemiston boardit (nopea)",
-  "boards_loaded": "ladatut boardit:"
+  "boards_loaded": "ladatut boardit:",
+  "link_not_image_or_video_alert": "Linkki ei ole kuva tai video.",
+  "not_a_file": "ei ole tiedosto"
 }

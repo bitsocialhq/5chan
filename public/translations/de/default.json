@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube-Link erkannt. Vorschaubild wird in {{count}} eingefügt...",
   "stats_scope_all_listed_boards": "Alle aufgelisteten Boards (langsam)",
   "stats_scope_directory_boards": "Nur Verzeichnis-Boards (schnell)",
-  "boards_loaded": "geladene Boards:"
+  "boards_loaded": "geladene Boards:",
+  "link_not_image_or_video_alert": "Der Link ist kein Bild oder Video.",
+  "not_a_file": "keine Datei"
 }

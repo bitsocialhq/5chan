@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "Đã phát hiện liên kết YouTube. Đang dán ảnh thu nhỏ sau {{count}}...",
   "stats_scope_all_listed_boards": "Tất cả bảng được liệt kê (chậm)",
   "stats_scope_directory_boards": "Chỉ bảng trong thư mục (nhanh)",
-  "boards_loaded": "bảng đã tải:"
+  "boards_loaded": "bảng đã tải:",
+  "link_not_image_or_video_alert": "Liên kết không phải là hình ảnh hoặc video.",
+  "not_a_file": "không phải tệp"
 }
