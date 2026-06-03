@@ -2,6 +2,7 @@ import type { ChallengeVerification, Comment } from '@bitsocial/bitsocial-react-
 import { getFallbackDirectoriesData } from '../../hooks/use-directories';
 import { getCommentCommunityAddress } from './comment-utils';
 import { getBoardPath } from './route-utils';
+import { stripGeneratedFortuneMarkup } from './post-options-utils';
 
 const resolveBoardIdentifier = (communityAddress: unknown): string => {
   if (typeof communityAddress !== 'string' || !communityAddress) {
@@ -25,9 +26,53 @@ export type ChallengePublication = Partial<Comment> & {
   vote?: number;
 };
 
+export const redactGeneratedFortuneFromPublication = <T>(publication: T): T => {
+  if (!publication || typeof publication !== 'object') {
+    return publication;
+  }
+
+  const content = (publication as { content?: unknown }).content;
+  if (typeof content !== 'string') {
+    return publication;
+  }
+
+  const redactedContent = stripGeneratedFortuneMarkup(content);
+  if (redactedContent === content) {
+    return publication;
+  }
+
+  const redactedPublication = Object.create(Object.getPrototypeOf(publication)) as T & { content?: string; publishChallengeAnswers?: unknown };
+  Object.assign(redactedPublication, publication, { content: redactedContent || undefined });
+
+  const publishChallengeAnswers = (publication as { publishChallengeAnswers?: unknown }).publishChallengeAnswers;
+  if (typeof publishChallengeAnswers === 'function') {
+    Object.defineProperty(redactedPublication, 'publishChallengeAnswers', {
+      configurable: true,
+      value: publishChallengeAnswers.bind(publication),
+    });
+  }
+
+  return redactedPublication as T;
+};
+
+export const redactGeneratedFortuneFromChallenge = <T>(challenge: T): T => {
+  if (!Array.isArray(challenge)) {
+    return challenge;
+  }
+
+  const redactedChallenge = [...challenge];
+  if (redactedChallenge.length > 1) {
+    redactedChallenge[1] = redactGeneratedFortuneFromPublication(redactedChallenge[1]);
+  }
+  if (redactedChallenge.length > 2) {
+    redactedChallenge[2] = redactGeneratedFortuneFromPublication(redactedChallenge[2]);
+  }
+  return redactedChallenge as T;
+};
+
 export const alertChallengeVerificationFailed = (challengeVerification: ChallengeVerification, publication: ChallengePublication | undefined) => {
   if (challengeVerification?.challengeSuccess === false) {
-    console.warn('Challenge Verification Failed:', challengeVerification, 'Publication:', publication);
+    console.warn('Challenge Verification Failed:', challengeVerification, 'Publication:', redactGeneratedFortuneFromPublication(publication));
 
     let errorMessages: string[] = [];
     if (challengeVerification?.challengeErrors) {
@@ -94,11 +139,12 @@ export const getPublicationPreview = (publication: ChallengePublication | undefi
   if (publication.title) {
     publicationPreview += publication.title;
   }
-  if (publication.content) {
+  const content = publication.content ? stripGeneratedFortuneMarkup(publication.content) : '';
+  if (content) {
     if (publicationPreview) {
       publicationPreview += ': ';
     }
-    publicationPreview += publication.content;
+    publicationPreview += content;
   }
   if (!publicationPreview && publication.link) {
     publicationPreview += publication.link;

@@ -177,6 +177,24 @@ describe('interaction stores', () => {
     expect(useChallengesStore.getState().challenges).toEqual([]);
   });
 
+  it('redacts generated fortune content before storing challenge publications', async () => {
+    const publishChallengeAnswers = vi.fn();
+    const publication = {
+      content: 'body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+      publishChallengeAnswers,
+    };
+
+    useChallengesStore.getState().addChallenge([{ challenges: [] }, publication] as never);
+
+    const storedChallenge = useChallengesStore.getState().challenges[0]?.challenge as unknown[] | undefined;
+    const storedPublication = storedChallenge?.[1] as typeof publication | undefined;
+    expect(storedPublication?.content).toBe('body');
+    expect(storedPublication?.content).not.toContain('Excellent Luck');
+
+    await storedPublication?.publishChallengeAnswers(['4']);
+    expect(publishChallengeAnswers).toHaveBeenCalledWith(['4']);
+  });
+
   it('shows the disclaimer modal until accepted, then navigates directly on later opens', () => {
     const navigate = vi.fn();
 

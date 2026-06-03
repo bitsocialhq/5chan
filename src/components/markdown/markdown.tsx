@@ -17,7 +17,15 @@ import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stor
 import { useComment } from '@bitsocial/bitsocial-react-hooks';
 import ReplyQuotePreview from '../reply-quote-preview';
 import ExternalNumberQuoteLink from './external-number-quote-link';
-import { createDiceRollMarkupRegex, createFortuneMarkupRegex, getMatchingFortuneEntry } from '../../lib/utils/post-options-utils';
+import { findDirectoryByAddress, useDirectories, type DirectoryCommunity } from '../../hooks/use-directories';
+import { getDirectoryCodeForBoardAddress } from '../../lib/utils/directory-list-lookup-utils';
+import {
+  createDiceRollMarkupRegex,
+  createFortuneBbcodeRegex,
+  createLegacyFortuneMarkupRegex,
+  getMatchingFortuneEntry,
+  isFortuneDirectoryCode,
+} from '../../lib/utils/post-options-utils';
 
 const safeParseUrl = (href: string): URL | null => {
   try {
@@ -165,6 +173,34 @@ const QST_BBCODE_COLOR_STYLES = {
   green: { color: QST_BBCODE_COLORS.green },
   blue: { color: QST_BBCODE_COLORS.blue },
 } satisfies Record<Extract<QstBbcodeTag, 'red' | 'green' | 'blue'>, React.CSSProperties>;
+
+const getDirectoryCodeFromDirectory = (directory: Pick<DirectoryCommunity, 'directoryCode' | 'title'> | undefined): string | undefined =>
+  directory?.directoryCode?.trim().toLowerCase() || directory?.title?.match(/^\/([^/]+)\//)?.[1]?.toLowerCase();
+
+const getRouteBoardIdentifier = (pathname: string): string | undefined => pathname.split('/').filter(Boolean)[0]?.toLowerCase();
+
+const getDirectoryCodeForIdentifier = (identifier: string | undefined, directories: DirectoryCommunity[]): string | undefined => {
+  if (!identifier) return undefined;
+
+  const normalizedIdentifier = identifier.trim().toLowerCase();
+  if (!normalizedIdentifier) return undefined;
+
+  const matchingDirectory = directories.find((directory) => getDirectoryCodeFromDirectory(directory) === normalizedIdentifier);
+  if (matchingDirectory) {
+    return getDirectoryCodeFromDirectory(matchingDirectory);
+  }
+
+  return getDirectoryCodeFromDirectory(findDirectoryByAddress(directories, identifier)) ?? getDirectoryCodeForBoardAddress(identifier) ?? normalizedIdentifier;
+};
+
+const getActiveDirectoryCode = (pathname: string, communityAddress: string | undefined, directories: DirectoryCommunity[]): string | undefined => {
+  const routeDirectoryCode = getDirectoryCodeForIdentifier(getRouteBoardIdentifier(pathname), directories);
+  if (isFortuneDirectoryCode(routeDirectoryCode)) {
+    return routeDirectoryCode;
+  }
+
+  return getDirectoryCodeForIdentifier(communityAddress, directories);
+};
 
 const COMBINED_REGEX = new RegExp(
   `(${SPOILER_REGEX.source})|(${CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX.source})|(${CROSSBOARD_REGEX.source})|(${QUOTE_LINK_REGEX.source})|(${URL_REGEX.source})`,
@@ -326,6 +362,7 @@ interface RenderContext {
   isInCatalogView: boolean;
   postCid?: string;
   communityAddress?: string;
+  enableFortuneMarkup: boolean;
   enableQstBbcode: boolean;
   parseSpoilers: boolean;
 }
@@ -554,25 +591,33 @@ const DiceRoll = ({ text }: { text: string }) => (
 const renderLineContent = (line: string, context: RenderContext): React.ReactNode[] => {
   const elements: React.ReactNode[] = [];
   let lastIndex = 0;
-  const fortuneMarkupRegex = createFortuneMarkupRegex();
+  const fortuneBbcodeRegex = context.enableFortuneMarkup ? createFortuneBbcodeRegex() : null;
+  const legacyFortuneMarkupRegex = context.enableFortuneMarkup ? createLegacyFortuneMarkupRegex() : null;
   const diceRollMarkupRegex = createDiceRollMarkupRegex();
 
   while (lastIndex < line.length) {
-    fortuneMarkupRegex.lastIndex = lastIndex;
+    if (fortuneBbcodeRegex) {
+      fortuneBbcodeRegex.lastIndex = lastIndex;
+    }
+    if (legacyFortuneMarkupRegex) {
+      legacyFortuneMarkupRegex.lastIndex = lastIndex;
+    }
     diceRollMarkupRegex.lastIndex = lastIndex;
 
-    const fortuneMatch = fortuneMarkupRegex.exec(line);
+    const fortuneBbcodeMatch = fortuneBbcodeRegex?.exec(line) ?? null;
+    const legacyFortuneMatch = legacyFortuneMarkupRegex?.exec(line) ?? null;
     const diceMatch = diceRollMarkupRegex.exec(line);
-    const nextMatch =
-      fortuneMatch && diceMatch
-        ? fortuneMatch.index <= diceMatch.index
-          ? { type: 'fortune' as const, match: fortuneMatch }
-          : { type: 'dice' as const, match: diceMatch }
-        : fortuneMatch
-          ? { type: 'fortune' as const, match: fortuneMatch }
-          : diceMatch
-            ? { type: 'dice' as const, match: diceMatch }
-            : null;
+    let nextMatch: { type: 'dice'; match: RegExpExecArray } | { type: 'fortune'; match: RegExpExecArray } | null = null;
+
+    for (const candidate of [
+      fortuneBbcodeMatch ? { type: 'fortune' as const, match: fortuneBbcodeMatch } : null,
+      legacyFortuneMatch ? { type: 'fortune' as const, match: legacyFortuneMatch } : null,
+      diceMatch ? { type: 'dice' as const, match: diceMatch } : null,
+    ]) {
+      if (candidate && (!nextMatch || candidate.match.index < nextMatch.match.index)) {
+        nextMatch = candidate;
+      }
+    }
 
     if (!nextMatch) {
       break;
@@ -619,8 +664,11 @@ const renderLineContent = (line: string, context: RenderContext): React.ReactNod
 const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = true }: MarkdownProps) => {
   const location = useLocation();
   const params = useParams();
+  const directories = useDirectories();
   const isInCatalogView = isCatalogView(location.pathname, params);
   const enableQstBbcode = location.pathname.split('/').filter(Boolean)[0] === 'qst';
+  const activeDirectoryCode = getActiveDirectoryCode(location.pathname, communityAddress, directories);
+  const enableFortuneMarkup = isFortuneDirectoryCode(activeDirectoryCode);
 
   const rendered = useMemo(() => {
     const normalized = normalizeContent(content || '');
@@ -628,7 +676,7 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
     const elements: React.ReactNode[] = [];
     let lineOffset = 0;
 
-    const context = { isInCatalogView, postCid, communityAddress, enableQstBbcode, parseSpoilers };
+    const context = { isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers };
 
     lines.forEach((line, lineIndex) => {
       const lineKey = `line-${lineOffset}`;
@@ -656,7 +704,7 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
     });
 
     return elements;
-  }, [content, isInCatalogView, postCid, communityAddress, enableQstBbcode, parseSpoilers]);
+  }, [content, isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers]);
 
   return (
     <span className={styles.markdown}>

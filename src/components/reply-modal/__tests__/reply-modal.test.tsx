@@ -337,6 +337,12 @@ const waitForOptionsValidation = async () => {
   });
 };
 
+const waitForContentLengthValidation = async () => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 1020));
+  });
+};
+
 const clickButtonByText = async (text: string) => {
   const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === text);
   await act(async () => {
@@ -713,7 +719,7 @@ describe('ReplyModal', () => {
     });
   });
 
-  it('validates unsupported options and stores fortune output in reply content', async () => {
+  it('validates unsupported options and keeps fortune output out of preview state until reply publish', async () => {
     const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
     testState.openEmpty = true;
     testState.selectedText = '';
@@ -740,13 +746,36 @@ describe('ReplyModal', () => {
 
     expect(container.textContent).not.toContain('Unsupported options');
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
-      content: 'reply body<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
+      content: 'reply body',
     });
 
     await clickButtonByText('post');
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: 'reply body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+    });
     randomSpy.mockRestore();
+  });
+
+  it('counts hidden fortune output in reply length validation without revealing it', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = '';
+
+    await renderReplyModal('/b/thread/post-1', 'random-nsfw.bso');
+
+    const optionsInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement;
+    const longContent = 'x'.repeat(1930);
+
+    await dispatchInput(optionsInput, 'fortune');
+    await dispatchInput(textarea, longContent);
+    await waitForContentLengthValidation();
+
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: longContent });
+    expect(container.textContent).toContain('comment_field_too_long:2001');
+    expect(container.textContent).not.toContain('[fortune color=');
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
   });
 
   it('links the unsupported sage option to its FAQ entry in reply modal', async () => {
@@ -784,9 +813,10 @@ describe('ReplyModal', () => {
     await clickButtonByText('post');
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
-    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
-      content: 'silly reply<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>',
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: 'silly reply[fortune color=#fd4d32]Excellent Luck[/fortune]',
     });
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: 'silly reply' });
     randomSpy.mockRestore();
   });
 

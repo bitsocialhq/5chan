@@ -226,6 +226,30 @@ describe('ChallengeModal', () => {
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 
+  it('redacts generated fortune BBCode from challenge publication details', async () => {
+    const publication = {
+      ...createPublication(),
+      content: 'body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+    };
+    testState.publicationPreview = 'body';
+    testState.publicationType = 'post';
+    testState.challenges = [
+      createStoredChallenge(
+        {
+          challenge: '2 + 2',
+          type: 'text/plain',
+        },
+        publication,
+      ),
+    ];
+
+    await renderModal();
+
+    expect(container.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('body');
+    expect(container.textContent).not.toContain('Excellent Luck');
+    expect(container.textContent).not.toContain('[fortune');
+  });
+
   it('supports multi-step image challenges with next and previous navigation', async () => {
     const publication = createPublication();
     testState.challenges = [

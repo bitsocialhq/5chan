@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Challenge } from '@bitsocial/bitsocial-react-hooks';
+import { redactGeneratedFortuneFromChallenge } from '../lib/utils/challenge-utils';
 
 let nextChallengeId = 0;
 
@@ -14,7 +15,7 @@ const useChallengesStore = create<State>((set, get) => ({
   challenges: [],
   addChallenge: (challenge: Challenge, onAbandon?: () => Promise<void> | void) => {
     set((state) => ({
-      challenges: [...state.challenges, { challenge, id: nextChallengeId++, onAbandon }],
+      challenges: [...state.challenges, { challenge: redactGeneratedFortuneFromChallenge(challenge), id: nextChallengeId++, onAbandon }],
     }));
   },
   removeChallenge: () => {
