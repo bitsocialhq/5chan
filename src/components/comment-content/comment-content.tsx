@@ -232,7 +232,7 @@ const CommentContent = ({
                 <>
                   <br />
                   <br />
-                  {renderContent(pendingApprovalReasonMessage)}
+                  <span className={styles.pendingApprovalReason}>{renderContent(pendingApprovalReasonMessage)}</span>
                 </>
               ) : null}
             </>

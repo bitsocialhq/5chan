@@ -387,7 +387,7 @@
   "board_address_unverified_warning": "এই বোর্ড ঠিকানাটি যাচাই করা হয়নি। বোর্ডের মালিক এই ঠিকানার মালিক নাও হতে পারেন।",
   "go_to_settings_to_import_mod_account": "আপনার মড অ্যাকাউন্ট আমদানি করতে <1>সেটিংস</1>-এ যান",
   "post_form_rules_faq_prompt": "পোস্ট করার আগে <rules>নিয়ম</rules> এবং <faq>প্রশ্নোত্তর</faq> পড়ুন।",
-  "pending_mod_approval_reason": "AI মডারেশন এই পোস্টটি মডারেটর কিউতে পাঠিয়েছে। কারণ: \"{{reason}}\".",
+  "pending_mod_approval_reason": "{{reason}}",
   "flag": "পতাকা",
   "show_replies": "উত্তরগুলি দেখান",
   "hide_replies": "উত্তরগুলি লুকান",

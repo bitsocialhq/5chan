@@ -387,7 +387,7 @@
   "board_address_unverified_warning": "Ez a board-cím nincs ellenőrizve. Lehet, hogy a board tulajdonosa nem birtokolja ezt a címet.",
   "go_to_settings_to_import_mod_account": "Lépj a <1>beállítások</1> menübe a moderátori fiókod importálásához",
   "post_form_rules_faq_prompt": "Kérjük, olvasd el a <rules>Szabályokat</rules> és a <faq>GYIK</faq>-et posztolás előtt.",
-  "pending_mod_approval_reason": "Az AI-moderáció ezt a bejegyzést a moderátori várólistára küldte. Ok: \"{{reason}}\".",
+  "pending_mod_approval_reason": "{{reason}}",
   "flag": "Zászló",
   "show_replies": "Válaszok megjelenítése",
   "hide_replies": "válaszok elrejtése",

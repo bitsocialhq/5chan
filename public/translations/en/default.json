@@ -406,7 +406,7 @@
   "modQueue.dismiss": "Dismiss",
   "board_address_unverified_warning": "This board address is not verified. The board owner might not own this address.",
   "post_form_rules_faq_prompt": "Please read the <rules>Rules</rules> and <faq>FAQ</faq> before posting.",
-  "pending_mod_approval_reason": "AI moderation sent this post to the mod queue. Reason: \"{{reason}}\".",
+  "pending_mod_approval_reason": "{{reason}}",
   "flag": "Flag",
   "show_replies": "show replies",
   "hide_replies": "hide replies",

@@ -443,6 +443,8 @@ describe('CommentContent', () => {
     expect(container.textContent).toContain('pending_mod_approval');
     expect(container.textContent).toContain('pending-reason:rules violation');
     expect(queryMarkdownText()).toEqual(['queued body', 'pending-reason:rules violation']);
+    const pendingReasonMarkdown = container.querySelectorAll('[data-testid="markdown"]')[1];
+    expect(pendingReasonMarkdown?.parentElement?.className).toContain('pendingApprovalReason');
     const tooltip = container.querySelector('[data-testid="tooltip"]');
     expect(tooltip?.getAttribute('title')).toContain('ban:short:music-posting.eth:2024-01-01 12:00:00');
 
