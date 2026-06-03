@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { HashLink } from 'react-router-hash-link';
 import { Footer, HomeLogo } from '../home/home';
 import styles from './faq.module.css';
@@ -788,10 +788,20 @@ const FAQ_SECTIONS: FAQSection[] = [
 ];
 
 const FAQ = () => {
+  const { hash } = useLocation();
+
   useEffect(() => {
-    window.scrollTo(0, 0);
     document.title = 'FAQ - 5chan';
-  }, []);
+
+    const anchorId = hash.startsWith('#') ? hash.slice(1) : '';
+    const anchorElement = anchorId ? document.getElementById(anchorId) : null;
+    if (anchorElement) {
+      anchorElement.scrollIntoView();
+      return;
+    }
+
+    window.scrollTo(0, 0);
+  }, [hash]);
 
   return (
     <div className={styles.wrapper}>
