@@ -387,7 +387,7 @@
   "board_address_unverified_warning": "Esta dirección del tablón no está verificada. Es posible que el propietario del tablón no sea dueño de esta dirección.",
   "go_to_settings_to_import_mod_account": "Ve a <1>configuración</1> para importar tu cuenta de moderador",
   "post_form_rules_faq_prompt": "Por favor, lee las <rules>Reglas</rules> y las <faq>FAQ</faq> antes de publicar.",
-  "pending_mod_approval_reason": "La moderación con IA envió esta publicación a la cola de moderación. Motivo: \"{{reason}}\".",
+  "pending_mod_approval_reason": "{{reason}}",
   "flag": "Bandera",
   "show_replies": "mostrar respuestas",
   "hide_replies": "ocultar respuestas",

@@ -387,7 +387,7 @@
   "board_address_unverified_warning": "Tato adresa nástěnky není ověřená. Vlastník nástěnky nemusí tuto adresu vlastnit.",
   "go_to_settings_to_import_mod_account": "Přejděte do <1>nastavení</1> a importujte svůj moderátorský účet",
   "post_form_rules_faq_prompt": "Před odesláním si přečtěte <rules>Pravidla</rules> a <faq>FAQ</faq>.",
-  "pending_mod_approval_reason": "AI moderace odeslala tento příspěvek do fronty moderátorů. Důvod: \"{{reason}}\".",
+  "pending_mod_approval_reason": "{{reason}}",
   "flag": "Vlajka",
   "show_replies": "Zobrazit odpovědi",
   "hide_replies": "skrýt odpovědi",

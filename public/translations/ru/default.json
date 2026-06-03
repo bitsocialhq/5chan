@@ -387,7 +387,7 @@
   "board_address_unverified_warning": "Этот адрес доски не проверен. Владелец доски может не владеть этим адресом.",
   "go_to_settings_to_import_mod_account": "Перейдите в <1>настройки</1>, чтобы импортировать свой аккаунт модератора",
   "post_form_rules_faq_prompt": "Пожалуйста, прочитайте <rules>Правила</rules> и <faq>FAQ</faq> перед публикацией.",
-  "pending_mod_approval_reason": "ИИ-модерация отправила этот пост в очередь модераторов. Причина: \"{{reason}}\".",
+  "pending_mod_approval_reason": "{{reason}}",
   "flag": "Флаг",
   "show_replies": "показать ответы",
   "hide_replies": "скрыть ответы",

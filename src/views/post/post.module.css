@@ -653,6 +653,14 @@
   font-weight: 700;
 }
 
+.pendingApprovalReason {
+  color: var(--post-mobile-abbr-text-color);
+  --post-link-text-color: var(--post-mobile-abbr-text-color);
+  --post-link-text-color-hover: var(--post-mobile-abbr-text-color);
+  --post-quotelink-text-color: var(--post-mobile-abbr-text-color);
+  --post-quotelink-text-color-hover: var(--post-mobile-abbr-text-color);
+}
+
 .failedPublishNotice {
   display: block;
   color: red;

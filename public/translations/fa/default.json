@@ -387,7 +387,7 @@
   "board_address_unverified_warning": "این نشانی برد تأیید نشده است. ممکن است مالک برد صاحب این نشانی نباشد.",
   "go_to_settings_to_import_mod_account": "برای وارد کردن حساب مدیر خود به <1>تنظیمات</1> بروید",
   "post_form_rules_faq_prompt": "لطفاً قبل از ارسال <rules>قوانین</rules> و <faq>پرسش‌های متداول</faq> را بخوانید.",
-  "pending_mod_approval_reason": "مدیریت با هوش مصنوعی این پست را به صف مدیران فرستاد. دلیل: \"{{reason}}\".",
+  "pending_mod_approval_reason": "{{reason}}",
   "flag": "پرچم",
   "show_replies": "نمایش پاسخ‌ها",
   "hide_replies": "پنهان کردن پاسخ‌ها",
