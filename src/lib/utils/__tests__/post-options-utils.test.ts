@@ -1,10 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
+  getContentWithPostOptionState,
   getNonokoPendingAccountCommentIndex,
   getNonokoPendingRouteState,
   getPostOptionsValidationError,
   getUnsupportedPostOptionsMessage,
   hasNonokoOption,
+  stripGeneratedFortuneMarkup,
 } from '../post-options-utils';
 
 describe('post-options-utils', () => {
@@ -41,5 +43,41 @@ describe('post-options-utils', () => {
     expect(getNonokoPendingAccountCommentIndex({ usr: { nonokoPendingAccountCommentIndex: 8 } })).toBe(8);
     expect(getNonokoPendingAccountCommentIndex({ nonokoPendingAccountCommentIndex: -1 })).toBeUndefined();
     expect(getNonokoPendingAccountCommentIndex({ nonokoPendingAccountCommentIndex: '7' })).toBeUndefined();
+  });
+
+  it('strips generated fortune markers before appending a new fortune on fortune boards', () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
+    const fortuneEntryRef = { current: null };
+    const diceRollRef = { current: null };
+
+    expect(
+      getContentWithPostOptionState(
+        'body[fortune color=#6023f8]Outlook good[/fortune]<span class="fortune" style="color:#7fec11"><br><br><b>Your fortune: Bad Luck</b></span>',
+        'fortune',
+        fortuneEntryRef,
+        diceRollRef,
+        's5s',
+      ),
+    ).toBe('body[fortune color=#fd4d32]Excellent Luck[/fortune]');
+
+    randomSpy.mockRestore();
+  });
+
+  it('strips user-entered generated fortune markers even when fortune is not selected on fortune boards', () => {
+    const fortuneEntryRef = { current: null };
+    const diceRollRef = { current: null };
+
+    expect(getContentWithPostOptionState('body[fortune color=#6023f8]Outlook good[/fortune]', '', fortuneEntryRef, diceRollRef, 's5s')).toBe('body');
+  });
+
+  it('keeps invalid or non-fortune-board fortune-looking text', () => {
+    const fortuneEntryRef = { current: null };
+    const diceRollRef = { current: null };
+    const userText = '[fortune color=#000000]Excellent Luck[/fortune]';
+
+    expect(stripGeneratedFortuneMarkup(userText)).toBe(userText);
+    expect(getContentWithPostOptionState('body[fortune color=#6023f8]Outlook good[/fortune]', '', fortuneEntryRef, diceRollRef, 'mu')).toBe(
+      'body[fortune color=#6023f8]Outlook good[/fortune]',
+    );
   });
 });

@@ -2,7 +2,7 @@ import type { ChallengeVerification, Comment } from '@bitsocial/bitsocial-react-
 import { getFallbackDirectoriesData } from '../../hooks/use-directories';
 import { getCommentCommunityAddress } from './comment-utils';
 import { getBoardPath } from './route-utils';
-import { stripGeneratedFortuneBbcode } from './post-options-utils';
+import { stripGeneratedFortuneMarkup } from './post-options-utils';
 
 const resolveBoardIdentifier = (communityAddress: unknown): string => {
   if (typeof communityAddress !== 'string' || !communityAddress) {
@@ -36,7 +36,7 @@ export const redactGeneratedFortuneFromPublication = <T>(publication: T): T => {
     return publication;
   }
 
-  const redactedContent = stripGeneratedFortuneBbcode(content);
+  const redactedContent = stripGeneratedFortuneMarkup(content);
   if (redactedContent === content) {
     return publication;
   }
@@ -139,7 +139,7 @@ export const getPublicationPreview = (publication: ChallengePublication | undefi
   if (publication.title) {
     publicationPreview += publication.title;
   }
-  const content = publication.content ? stripGeneratedFortuneBbcode(publication.content) : '';
+  const content = publication.content ? stripGeneratedFortuneMarkup(publication.content) : '';
   if (content) {
     if (publicationPreview) {
       publicationPreview += ': ';

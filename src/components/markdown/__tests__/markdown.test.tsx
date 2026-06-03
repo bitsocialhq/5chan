@@ -350,24 +350,28 @@ describe('Markdown', () => {
     expect(container.textContent).toBe('[b]not bold[/b]Your fortune: Excellent Luck');
   });
 
-  it('does not parse legacy fortune HTML text on fortune boards', async () => {
+  it('renders legacy fortune HTML text on fortune boards for existing posts', async () => {
     const legacyFortune = '<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>';
 
-    await renderMarkdown({ content: legacyFortune }, '/s5s/thread/post-1');
+    await renderMarkdown({ content: `old${legacyFortune}` }, '/s5s/thread/post-1');
 
-    expect(container.querySelector('.fortune')).toBeNull();
-    expect(container.querySelector('strong')).toBeNull();
-    expect(container.textContent).toBe(legacyFortune);
+    const fortune = container.querySelector<HTMLElement>('.fortune');
+    expect(fortune?.textContent).toBe('Your fortune: Excellent Luck');
+    expect(fortune?.style.color).toBe('rgb(253, 77, 50)');
+    expect(fortune?.querySelectorAll('br')).toHaveLength(2);
+    expect(container.textContent).toBe('oldYour fortune: Excellent Luck');
   });
 
-  it('leaves generated fortune BBCode raw outside fortune boards', async () => {
+  it('leaves generated fortune markers raw outside fortune boards', async () => {
+    const legacyFortune = '<span class="fortune" style="color:#fd4d32"><br><br><b>Your fortune: Excellent Luck</b></span>';
+
     await renderMarkdown({
-      content: 'body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+      content: `body[fortune color=#fd4d32]Excellent Luck[/fortune]${legacyFortune}`,
     });
 
     expect(container.querySelector('.fortune')).toBeNull();
     expect(container.querySelector('strong')).toBeNull();
-    expect(container.textContent).toBe('body[fortune color=#fd4d32]Excellent Luck[/fortune]');
+    expect(container.textContent).toBe(`body[fortune color=#fd4d32]Excellent Luck[/fortune]${legacyFortune}`);
   });
 
   it('renders generated fortune BBCode for s5s comments in multiboard views', async () => {

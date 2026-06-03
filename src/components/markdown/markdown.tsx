@@ -19,7 +19,13 @@ import ReplyQuotePreview from '../reply-quote-preview';
 import ExternalNumberQuoteLink from './external-number-quote-link';
 import { findDirectoryByAddress, useDirectories, type DirectoryCommunity } from '../../hooks/use-directories';
 import { getDirectoryCodeForBoardAddress } from '../../lib/utils/directory-list-lookup-utils';
-import { createDiceRollMarkupRegex, createFortuneBbcodeRegex, getMatchingFortuneEntry, isFortuneDirectoryCode } from '../../lib/utils/post-options-utils';
+import {
+  createDiceRollMarkupRegex,
+  createFortuneBbcodeRegex,
+  createLegacyFortuneMarkupRegex,
+  getMatchingFortuneEntry,
+  isFortuneDirectoryCode,
+} from '../../lib/utils/post-options-utils';
 
 const safeParseUrl = (href: string): URL | null => {
   try {
@@ -586,26 +592,32 @@ const renderLineContent = (line: string, context: RenderContext): React.ReactNod
   const elements: React.ReactNode[] = [];
   let lastIndex = 0;
   const fortuneBbcodeRegex = context.enableFortuneMarkup ? createFortuneBbcodeRegex() : null;
+  const legacyFortuneMarkupRegex = context.enableFortuneMarkup ? createLegacyFortuneMarkupRegex() : null;
   const diceRollMarkupRegex = createDiceRollMarkupRegex();
 
   while (lastIndex < line.length) {
     if (fortuneBbcodeRegex) {
       fortuneBbcodeRegex.lastIndex = lastIndex;
     }
+    if (legacyFortuneMarkupRegex) {
+      legacyFortuneMarkupRegex.lastIndex = lastIndex;
+    }
     diceRollMarkupRegex.lastIndex = lastIndex;
 
-    const fortuneMatch = fortuneBbcodeRegex?.exec(line) ?? null;
+    const fortuneBbcodeMatch = fortuneBbcodeRegex?.exec(line) ?? null;
+    const legacyFortuneMatch = legacyFortuneMarkupRegex?.exec(line) ?? null;
     const diceMatch = diceRollMarkupRegex.exec(line);
-    const nextMatch =
-      fortuneMatch && diceMatch
-        ? fortuneMatch.index <= diceMatch.index
-          ? { type: 'fortune' as const, match: fortuneMatch }
-          : { type: 'dice' as const, match: diceMatch }
-        : fortuneMatch
-          ? { type: 'fortune' as const, match: fortuneMatch }
-          : diceMatch
-            ? { type: 'dice' as const, match: diceMatch }
-            : null;
+    let nextMatch: { type: 'dice'; match: RegExpExecArray } | { type: 'fortune'; match: RegExpExecArray } | null = null;
+
+    for (const candidate of [
+      fortuneBbcodeMatch ? { type: 'fortune' as const, match: fortuneBbcodeMatch } : null,
+      legacyFortuneMatch ? { type: 'fortune' as const, match: legacyFortuneMatch } : null,
+      diceMatch ? { type: 'dice' as const, match: diceMatch } : null,
+    ]) {
+      if (candidate && (!nextMatch || candidate.match.index < nextMatch.match.index)) {
+        nextMatch = candidate;
+      }
+    }
 
     if (!nextMatch) {
       break;

@@ -257,7 +257,8 @@ const getContentWithPostOptions = (
 ): { content: string; fortuneEntry: FortuneEntry | null; diceRoll: DiceRoll | null } => {
   const diceOption = getDiceOption(options, directoryCode);
   const diceRoll = diceOption ? rollDice(diceOption, currentDiceRoll) : null;
-  let nextContent = diceRoll ? prependDiceRollToContent(content, diceRoll) : content;
+  const baseContent = isFortuneDirectoryCode(directoryCode) ? stripGeneratedFortuneMarkup(content) : content;
+  let nextContent = diceRoll ? prependDiceRollToContent(baseContent, diceRoll) : baseContent;
 
   if (!hasFortuneOption(options, directoryCode)) {
     return { content: nextContent, fortuneEntry: null, diceRoll };
@@ -287,13 +288,18 @@ export const getContentWithPostOptionState = (
 };
 
 const FORTUNE_BBCODE_PATTERN = '\\[fortune color=(#[0-9a-fA-F]{6})\\]([^\\r\\n]*?)\\[\\/fortune\\]';
+const LEGACY_FORTUNE_MARKUP_PATTERN = '<span class="fortune" style="color:(#[0-9a-fA-F]{6})"><br><br><b>Your fortune: ([^<]+)<\\/b><\\/span>';
 const DICE_ROLL_MARKUP_PATTERN = '<b>(Rolled \\d+(?:, \\d+)*(?: [+-] \\d+)?(?: = -?\\d+)? \\(\\d+d\\d+(?: [+-] \\d+)?\\))<br><br><\\/b>';
 
 export const createFortuneBbcodeRegex = (): RegExp => new RegExp(FORTUNE_BBCODE_PATTERN, 'g');
+export const createLegacyFortuneMarkupRegex = (): RegExp => new RegExp(LEGACY_FORTUNE_MARKUP_PATTERN, 'g');
 export const createDiceRollMarkupRegex = (): RegExp => new RegExp(DICE_ROLL_MARKUP_PATTERN, 'g');
 
 export const getMatchingFortuneEntry = (color: string, text: string): FortuneEntry | undefined =>
   FORTUNE_ENTRIES.find((entry) => entry.color.toLowerCase() === color.toLowerCase() && entry.text === text);
 
-export const stripGeneratedFortuneBbcode = (content: string): string =>
-  content.replace(createFortuneBbcodeRegex(), (match, color: string, text: string) => (getMatchingFortuneEntry(color, text) ? '' : match));
+const stripGeneratedFortuneMatches = (content: string, createRegex: () => RegExp): string =>
+  content.replace(createRegex(), (match, color: string, text: string) => (getMatchingFortuneEntry(color, text) ? '' : match));
+
+export const stripGeneratedFortuneMarkup = (content: string): string =>
+  stripGeneratedFortuneMatches(stripGeneratedFortuneMatches(content, createFortuneBbcodeRegex), createLegacyFortuneMarkupRegex);

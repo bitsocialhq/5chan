@@ -2,7 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
 import { getPublicationPreview, getPublicationType, getVotePreview } from '../../lib/utils/challenge-utils';
-import { stripGeneratedFortuneBbcode } from '../../lib/utils/post-options-utils';
+import { stripGeneratedFortuneMarkup } from '../../lib/utils/post-options-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useTrustedBoardUrlPermissionsStore from '../../stores/use-trusted-board-url-permissions-store';
@@ -326,7 +326,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const votePreview = getVotePreview(publication);
 
   const { author, content, link, title, parentCid, shortCommunityAddress, communityAddress } = publication || {};
-  const visibleContent = content ? stripGeneratedFortuneBbcode(content) : '';
+  const visibleContent = content ? stripGeneratedFortuneMarkup(content) : '';
   const { displayName } = author || {};
   const parentAddress = useParentAddress(parentCid);
   const community = shortCommunityAddress || communityAddress;

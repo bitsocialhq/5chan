@@ -21,7 +21,7 @@ import capitalize from 'lodash/capitalize';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { formatErrorMessageForDisplay } from '../../lib/utils/error-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
-import { stripGeneratedFortuneBbcode } from '../../lib/utils/post-options-utils';
+import { stripGeneratedFortuneMarkup } from '../../lib/utils/post-options-utils';
 
 const QuotedCidLink = ({ cid, postCid }: { cid: string; postCid: string }) => {
   const quotedNumber = usePostNumberStore((state) => state.cidToNumber[cid]);
@@ -100,7 +100,7 @@ const CommentContent = ({
   const resolvedPost = withResolvedCommentCommunityAddress(post);
 
   const { cid, content, deleted, parentCid, postCid, pendingApproval, quotedCids, reason, removed, state } = resolvedPost || {};
-  const visibleContent = !cid && content ? stripGeneratedFortuneBbcode(content) : content;
+  const visibleContent = !cid && content ? stripGeneratedFortuneMarkup(content) : content;
   const communityAddress = getCommentCommunityAddress(resolvedPost);
   const authorAddress = resolvedPost?.author?.address;
   const authorRole = getRoleByAddress(roles, authorAddress);
