@@ -50,7 +50,6 @@
   "gif": "גיף",
   "total_posts": "סה\"כ פוסטים:",
   "current_users": "משתמשים נוכחיים:",
-  "boards_tracked": "פורומים שנמצאים במעקב:",
   "challenge_counter": "{{index}} מתוך {{total}}",
   "embed": "הטמע",
   "remove": "הסר",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "סרטון YouTube",
-  "youtube_thumbnail_link_conversion_notice": "זוהה קישור YouTube. מדביק תמונת ממוזערת בעוד {{count}}..."
+  "youtube_thumbnail_link_conversion_notice": "זוהה קישור YouTube. מדביק תמונת ממוזערת בעוד {{count}}...",
+  "stats_scope_all_listed_boards": "כל הלוחות הרשומים (איטי)",
+  "stats_scope_directory_boards": "רק לוחות מהספרייה (מהיר)",
+  "boards_loaded": "לוחות שנטענו:"
 }

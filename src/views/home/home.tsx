@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './home.module.css';
@@ -9,15 +9,15 @@ import PopularThreadsBox from './popular-threads-box';
 import BoardsList from './boards-list';
 import SiteLegalMeta from '../../components/site-legal-meta';
 import LoadingEllipsis from '../../components/loading-ellipsis';
-import { useFeedStateString } from '../../hooks/use-state-string';
+import Tooltip from '../../components/tooltip';
 import useDirectoryModalStore from '../../stores/use-directory-modal-store';
+import useHomepageStatsOptionsStore, { type HomepageStatsScope } from '../../stores/use-homepage-stats-options-store';
 import DisclaimerModal from '../../components/disclaimer-modal';
 import DirectoryModal from '../../components/directory-modal';
 import { extractDirectoryFromTitle, getBoardPath } from '../../lib/utils/route-utils';
 import { isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
+import { useFeedStateString } from '../../hooks/use-state-string';
 import lowerCase from 'lodash/lowerCase';
-import useCommunitiesLoadingStartTimestamps from '../../stores/use-communities-loading-start-timestamps-store';
-import { useNowSeconds } from '../../hooks/use-now-seconds';
 
 // https://github.com/bitsocialnet/lists/tree/master/5chan-directories
 
@@ -106,103 +106,152 @@ type HomepageStats = {
   state?: string;
 };
 
-const StatsLoading = ({ communityAddresses }: { communityAddresses: string[] }) => {
-  const { t } = useTranslation();
-  const loadingStateString = useFeedStateString(communityAddresses) || t('loading');
-
-  return <LoadingEllipsis string={loadingStateString} />;
-};
-
-const STATS_DIRECTORY_FALLBACK_DELAY_SECONDS = 30;
-
 const getDirectoryCode = (directory: DirectoryCommunity): string | null => directory.directoryCode ?? extractDirectoryFromTitle(directory.title ?? '');
 
 const getUniqueAddresses = (addresses: string[]): string[] => [...new Set(addresses.filter((address) => address.length > 0))];
 
 const hasLoadedStats = (stat: HomepageStats | undefined): stat is HomepageStats & { allPostCount: number } => stat?.allPostCount !== undefined;
 const hasFailedStats = (stat: HomepageStats | undefined): boolean => stat?.state === 'failed';
+const hasResolvedStats = (stat: HomepageStats | undefined): boolean => hasLoadedStats(stat) || hasFailedStats(stat);
+
+const STATS_SCOPE_OPTIONS: Array<{ scope: HomepageStatsScope; labelKey: string }> = [
+  { scope: 'directory', labelKey: 'stats_scope_directory_boards' },
+  { scope: 'all', labelKey: 'stats_scope_all_listed_boards' },
+];
+const EMPTY_STATS_LIST: string[] = [];
+
+const StatsOptionsModal = () => {
+  const { t } = useTranslation();
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const statsScope = useHomepageStatsOptionsStore((state) => state.statsScope);
+  const setStatsScope = useHomepageStatsOptionsStore((state) => state.setStatsScope);
+
+  useEffect(() => {
+    if (!showFilterModal) return;
+
+    const handleClickOutside = (event: globalThis.MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node) && buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
+        setShowFilterModal(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showFilterModal]);
+
+  const selectScope = (scope: HomepageStatsScope) => {
+    setStatsScope(scope);
+    setShowFilterModal(false);
+  };
+
+  const handleScopeKey = (event: ReactKeyboardEvent<HTMLButtonElement>, scope: HomepageStatsScope) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      selectScope(scope);
+    }
+  };
+
+  return (
+    <>
+      <button
+        type='button'
+        ref={buttonRef}
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            if (!showFilterModal) setShowFilterModal(true);
+          }
+        }}
+        onClick={() => !showFilterModal && setShowFilterModal(true)}
+      >
+        {t('options')} ▼
+      </button>
+      {showFilterModal && (
+        <div ref={modalRef} className={styles.filterModal}>
+          {STATS_SCOPE_OPTIONS.map((option) => (
+            <button
+              key={option.scope}
+              type='button'
+              className={`${styles.option} ${statsScope === option.scope ? styles.selected : ''}`}
+              tabIndex={0}
+              onKeyDown={(event) => handleScopeKey(event, option.scope)}
+              onClick={() => selectScope(option.scope)}
+            >
+              {t(option.labelKey)}
+            </button>
+          ))}
+        </div>
+      )}
+    </>
+  );
+};
 
 const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
   const { t } = useTranslation();
+  const statsScope = useHomepageStatsOptionsStore((state) => state.statsScope);
   const communitiesStats = useCommunitiesStatsStore((state) => state.communityStats);
   const defaultDirectoryAddresses = useMemo(() => directories.map((directory) => directory.address), [directories]);
-  const loadingStartTimestamps = useCommunitiesLoadingStartTimestamps(defaultDirectoryAddresses);
-  const nowSeconds = useNowSeconds(defaultDirectoryAddresses.length > 0);
-
-  const fallbackDirectoryCodes = useMemo(
+  const allDirectoryCodes = useMemo(
     () =>
-      directories.flatMap((directory, index) => {
-        const defaultStats = communitiesStats[directory.address];
-        if (hasLoadedStats(defaultStats)) {
-          return [];
-        }
-
-        const loadingStartTimestamp = loadingStartTimestamps[index];
-        if (!loadingStartTimestamp || nowSeconds - loadingStartTimestamp < STATS_DIRECTORY_FALLBACK_DELAY_SECONDS) {
-          return [];
-        }
-
-        const directoryCode = getDirectoryCode(directory);
-        return directoryCode ? [directoryCode] : [];
-      }),
-    [communitiesStats, directories, loadingStartTimestamps, nowSeconds],
+      getUniqueAddresses(
+        directories.flatMap((directory) => {
+          const directoryCode = getDirectoryCode(directory);
+          return directoryCode ? [directoryCode] : [];
+        }),
+      ),
+    [directories],
   );
 
-  const { listsByCode } = useDirectoryLists(fallbackDirectoryCodes);
+  const { listsByCode } = useDirectoryLists(statsScope === 'all' ? allDirectoryCodes : EMPTY_STATS_LIST);
 
-  const { collectorAddresses, totalPosts, currentUsers, boardsTracked, allDirectoryStatsLoaded } = useMemo(() => {
-    const collectorAddressSet = new Set(defaultDirectoryAddresses);
+  const collectorAddresses = useMemo(() => {
+    if (statsScope === 'directory') {
+      return defaultDirectoryAddresses;
+    }
+
+    return getUniqueAddresses(
+      directories.flatMap((directory) => {
+        const directoryCode = getDirectoryCode(directory);
+        const directoryList = directoryCode ? listsByCode[directoryCode] : null;
+        const listAddresses = directoryList ? sortDirectoryBoardsByRank(directoryList.boards).map((board) => board.address) : [];
+        return listAddresses.length > 0 ? listAddresses : [directory.address];
+      }),
+    );
+  }, [defaultDirectoryAddresses, directories, listsByCode, statsScope]);
+
+  const { totalPosts, currentUsers, boardsLoaded, boardsWithStats } = useMemo(() => {
     let totalPosts = 0;
     let currentUsers = 0;
-    let boardsTracked = 0;
-    let allDirectoryStatsLoaded = directories.length > 0;
+    let boardsLoaded = 0;
+    let boardsWithStats = 0;
 
-    for (const directory of directories) {
-      const directoryCode = getDirectoryCode(directory);
-      const directoryList = directoryCode ? listsByCode[directoryCode] : null;
-      const rankedAddresses = directoryList ? sortDirectoryBoardsByRank(directoryList.boards).map((board) => board.address) : [directory.address];
-      const candidateAddresses = getUniqueAddresses(rankedAddresses.length > 0 ? rankedAddresses : [directory.address]);
-
-      candidateAddresses.forEach((address) => collectorAddressSet.add(address));
-
-      let stat: HomepageStats | undefined;
-      let failedStat: HomepageStats | undefined;
-      let allCandidateStatsResolved = candidateAddresses.length > 0;
-      for (const address of candidateAddresses) {
-        const candidateStats = communitiesStats[address];
-        if (hasLoadedStats(candidateStats)) {
-          stat = candidateStats;
-          break;
-        }
-        if (hasFailedStats(candidateStats)) {
-          failedStat ??= candidateStats;
-          continue;
-        }
-        allCandidateStatsResolved = false;
-      }
-
-      if (!stat && allCandidateStatsResolved) {
-        stat = failedStat;
-      }
-
-      if (!stat || (!hasLoadedStats(stat) && !hasFailedStats(stat))) {
-        allDirectoryStatsLoaded = false;
+    for (const address of collectorAddresses) {
+      const stats = communitiesStats[address];
+      if (!hasResolvedStats(stats)) {
         continue;
       }
 
-      totalPosts += stat.allPostCount || 0;
-      currentUsers += stat.weekActiveUserCount || 0;
-      boardsTracked++;
+      boardsLoaded++;
+      if (hasLoadedStats(stats)) {
+        boardsWithStats++;
+        totalPosts += stats.allPostCount || 0;
+        currentUsers += stats.weekActiveUserCount || 0;
+      }
     }
 
     return {
-      collectorAddresses: [...collectorAddressSet],
       totalPosts,
       currentUsers,
-      boardsTracked,
-      allDirectoryStatsLoaded,
+      boardsLoaded,
+      boardsWithStats,
     };
-  }, [communitiesStats, defaultDirectoryAddresses, directories, listsByCode]);
+  }, [collectorAddresses, communitiesStats]);
+  const hasDisplayableStats = boardsWithStats > 0 || (collectorAddresses.length > 0 && boardsLoaded === collectorAddresses.length);
+  const isStatsLoading = !hasDisplayableStats || boardsLoaded < collectorAddresses.length;
+  const loadingStateString = useFeedStateString(isStatsLoading ? collectorAddresses : EMPTY_STATS_LIST) || t('loading');
 
   return (
     <>
@@ -212,10 +261,20 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
       ))}
       <div className={styles.box}>
         <div className={`${styles.boxBar} ${styles.color2ColorBar}`}>
-          <h2 className='capitalize'>{t('stats')}</h2>
+          <h2 className={styles.statsTitle}>
+            {t('stats')}
+            {isStatsLoading && (
+              <span className={styles.statsLoadingIconWrapper}>
+                <Tooltip content={loadingStateString}>
+                  <span className={`${styles.statsLoadingIcon} yellowOfflineIcon`} />
+                </Tooltip>
+              </span>
+            )}
+          </h2>
+          <StatsOptionsModal />
         </div>
         <div className={`${styles.boxContent} ${styles.stats}`}>
-          {allDirectoryStatsLoaded ? (
+          {hasDisplayableStats ? (
             <>
               <div className={styles.stat}>
                 <b>{t('total_posts')}</b> {totalPosts}
@@ -224,11 +283,11 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
                 <b>{t('current_users')}</b> {currentUsers}
               </div>
               <div className={styles.stat}>
-                <b>{t('boards_tracked')}</b> {boardsTracked}
+                <b>{t('boards_loaded')}</b> {boardsLoaded}
               </div>
             </>
           ) : (
-            <StatsLoading communityAddresses={collectorAddresses} />
+            <LoadingEllipsis string={loadingStateString} />
           )}
         </div>
       </div>

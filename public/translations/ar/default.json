@@ -50,7 +50,6 @@
   "gif": "جي آي إف",
   "total_posts": "إجمالي المشاركات:",
   "current_users": "المستخدمون الحاليون:",
-  "boards_tracked": "المنتديات المتابعة:",
   "challenge_counter": "{{index}} من {{total}}",
   "embed": "تضمين",
   "remove": "إزالة",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "فيديو YouTube",
-  "youtube_thumbnail_link_conversion_notice": "تم اكتشاف رابط YouTube. جارٍ لصق الصورة المصغرة خلال {{count}}..."
+  "youtube_thumbnail_link_conversion_notice": "تم اكتشاف رابط YouTube. جارٍ لصق الصورة المصغرة خلال {{count}}...",
+  "stats_scope_all_listed_boards": "جميع اللوحات المُدرجة (بطيء)",
+  "stats_scope_directory_boards": "لوحات الدليل فقط (سريع)",
+  "boards_loaded": "اللوحات المحملة:"
 }

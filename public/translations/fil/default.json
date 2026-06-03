@@ -50,7 +50,6 @@
   "gif": "GIF",
   "total_posts": "Kabuuang Posts:",
   "current_users": "kasalukuyang mga gumagamit:",
-  "boards_tracked": "mga board na sinusubaybayan:",
   "challenge_counter": "{{index}} ng {{total}}",
   "embed": "i-embed",
   "remove": "alisin",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "video sa YouTube",
-  "youtube_thumbnail_link_conversion_notice": "May nakita na link ng YouTube. Ipi-paste ang thumbnail image sa loob ng {{count}}..."
+  "youtube_thumbnail_link_conversion_notice": "May nakita na link ng YouTube. Ipi-paste ang thumbnail image sa loob ng {{count}}...",
+  "stats_scope_all_listed_boards": "Lahat ng nakalistang board (mabagal)",
+  "stats_scope_directory_boards": "Mga board ng directory lang (mabilis)",
+  "boards_loaded": "mga board na na-load:"
 }

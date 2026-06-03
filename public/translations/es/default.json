@@ -50,7 +50,6 @@
   "gif": "GIF",
   "total_posts": "Total de publicaciones:",
   "current_users": "usuarios actuales:",
-  "boards_tracked": "foros seguidos:",
   "challenge_counter": "{{index}} de {{total}}",
   "embed": "incrustar",
   "remove": "eliminar",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "video de YouTube",
-  "youtube_thumbnail_link_conversion_notice": "Se detectó un enlace de YouTube. Pegando imagen en miniatura en {{count}}..."
+  "youtube_thumbnail_link_conversion_notice": "Se detectó un enlace de YouTube. Pegando imagen en miniatura en {{count}}...",
+  "stats_scope_all_listed_boards": "Todos los boards listados (lento)",
+  "stats_scope_directory_boards": "Solo boards del directorio (rápido)",
+  "boards_loaded": "tableros cargados:"
 }

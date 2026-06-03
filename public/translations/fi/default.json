@@ -50,7 +50,6 @@
   "gif": "GIF",
   "total_posts": "Viestejä yhteensä:",
   "current_users": "nykyiset käyttäjät:",
-  "boards_tracked": "seuratut foorumit:",
   "challenge_counter": "{{index}} / {{total}}",
   "embed": "upota",
   "remove": "poista",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube-video",
-  "youtube_thumbnail_link_conversion_notice": "YouTube-linkki havaittu. Liitetään pikkukuva {{count}} kuluttua..."
+  "youtube_thumbnail_link_conversion_notice": "YouTube-linkki havaittu. Liitetään pikkukuva {{count}} kuluttua...",
+  "stats_scope_all_listed_boards": "Kaikki listatut boardit (hidas)",
+  "stats_scope_directory_boards": "Vain hakemiston boardit (nopea)",
+  "boards_loaded": "ladatut boardit:"
 }

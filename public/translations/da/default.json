@@ -50,7 +50,6 @@
   "gif": "GIF",
   "total_posts": "Samlede opslag:",
   "current_users": "nuværende brugere:",
-  "boards_tracked": "sporede opslagstavler:",
   "challenge_counter": "{{index}} af {{total}}",
   "embed": "integrer",
   "remove": "fjern",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube-video",
-  "youtube_thumbnail_link_conversion_notice": "YouTube-link registreret. Indsætter miniaturebillede om {{count}}..."
+  "youtube_thumbnail_link_conversion_notice": "YouTube-link registreret. Indsætter miniaturebillede om {{count}}...",
+  "stats_scope_all_listed_boards": "Alle viste boards (langsomt)",
+  "stats_scope_directory_boards": "Kun boards i kataloget (hurtigt)",
+  "boards_loaded": "indlæste boards:"
 }

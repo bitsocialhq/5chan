@@ -57,7 +57,7 @@
   font-weight: 700;
 }
 
-.boxBar span, .boxBar > button {
+.boxBar > span, .boxBar > button {
   all: unset;
   position: absolute;
   top: 0;
@@ -69,7 +69,7 @@
   line-height: inherit;
 }
 
-.boxBar span:hover, .boxBar > button:hover {
+.boxBar > span:hover, .boxBar > button:hover {
   cursor: pointer;
   color: var(--homepage-box-bar-text-color-hover);
 }
@@ -135,13 +135,14 @@
   top: 30px;
   right: 5px;
   display: inline-block;
-  position: absolute;
   text-align: right;
   background: #fff;
   border: 1px solid gray;
   box-shadow: 2px 2px 0 1px rgba(0, 0, 0, .1);
   padding: 4px 0;
   line-height: 1.7em;
+  min-width: max-content;
+  white-space: nowrap;
   z-index: 100;
 }
 
@@ -155,12 +156,13 @@
   all: unset;
   box-sizing: border-box;
   display: block;
-  width: 100%;
+  min-width: 100%;
   padding: 0 10px;
   color: inherit;
   font: inherit;
   line-height: inherit;
   text-align: right;
+  white-space: nowrap;
 }
 
 .filterModal .option:hover {
@@ -257,6 +259,31 @@
   margin-top: 5px;
   text-align: center;
   color: #800;
+}
+
+.statsTitle {
+  padding-right: 6em;
+  text-transform: none;
+}
+
+.statsLoadingIconWrapper {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.statsLoadingIconWrapper > span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.statsLoadingIcon {
+  box-sizing: border-box;
+  display: inline-block;
+  width: 14px;
+  height: 14px;
 }
 
 .stats .stat {

@@ -50,7 +50,6 @@
   "gif": "GIF",
   "total_posts": "Összes bejegyzés:",
   "current_users": "jelenlegi felhasználók:",
-  "boards_tracked": "követett fórumok:",
   "challenge_counter": "{{index}} a(z) {{total}}-ból/ből",
   "embed": "beágyaz",
   "remove": "eltávolít",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube-videó",
-  "youtube_thumbnail_link_conversion_notice": "YouTube-link észlelve. Bélyegkép beillesztése {{count}} múlva..."
+  "youtube_thumbnail_link_conversion_notice": "YouTube-link észlelve. Bélyegkép beillesztése {{count}} múlva...",
+  "stats_scope_all_listed_boards": "Az összes listázott board (lassú)",
+  "stats_scope_directory_boards": "Csak a könyvtár boardjai (gyors)",
+  "boards_loaded": "betöltött boardok:"
 }
