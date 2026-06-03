@@ -3,6 +3,7 @@ import {
   getContentWithPostOptionState,
   getNonokoPendingAccountCommentIndex,
   getNonokoPendingRouteState,
+  getPostOptionsPublishContentLength,
   getPostOptionsValidationError,
   getUnsupportedPostOptionsMessage,
   hasNonokoOption,
@@ -79,5 +80,13 @@ describe('post-options-utils', () => {
     expect(getContentWithPostOptionState('body[fortune color=#6023f8]Outlook good[/fortune]', '', fortuneEntryRef, diceRollRef, 'mu')).toBe(
       'body[fortune color=#6023f8]Outlook good[/fortune]',
     );
+  });
+
+  it('counts hidden fortune output against publish length without rolling a fortune', () => {
+    const longestFortune = '[fortune color=#0893e1]You will meet a dark handsome stranger[/fortune]';
+
+    expect(getPostOptionsPublishContentLength('body', 'fortune', 's5s')).toBe('body'.length + longestFortune.length);
+    expect(getPostOptionsPublishContentLength('body   ', 'fortune', 's5s')).toBe('body   '.length + longestFortune.length);
+    expect(getPostOptionsPublishContentLength('body   ', 'fortune', 'mu')).toBe('body'.length);
   });
 });

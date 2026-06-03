@@ -337,6 +337,12 @@ const waitForOptionsValidation = async () => {
   });
 };
 
+const waitForContentLengthValidation = async () => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 1020));
+  });
+};
+
 const clickButtonByText = async (text: string) => {
   const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === text);
   await act(async () => {
@@ -750,6 +756,26 @@ describe('ReplyModal', () => {
       content: 'reply body[fortune color=#fd4d32]Excellent Luck[/fortune]',
     });
     randomSpy.mockRestore();
+  });
+
+  it('counts hidden fortune output in reply length validation without revealing it', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = '';
+
+    await renderReplyModal('/b/thread/post-1', 'random-nsfw.bso');
+
+    const optionsInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement;
+    const longContent = 'x'.repeat(1930);
+
+    await dispatchInput(optionsInput, 'fortune');
+    await dispatchInput(textarea, longContent);
+    await waitForContentLengthValidation();
+
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: longContent });
+    expect(container.textContent).toContain('comment_field_too_long:2001');
+    expect(container.textContent).not.toContain('[fortune color=');
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
   });
 
   it('links the unsupported sage option to its FAQ entry in reply modal', async () => {

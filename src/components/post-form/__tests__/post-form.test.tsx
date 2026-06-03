@@ -458,6 +458,12 @@ const waitForOptionsValidation = async () => {
   });
 };
 
+const waitForContentLengthValidation = async () => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 1020));
+  });
+};
+
 const dispatchChange = async (element: HTMLInputElement | HTMLSelectElement, value: string | boolean) => {
   await act(async () => {
     if (typeof value === 'boolean' && 'checked' in element) {
@@ -972,6 +978,27 @@ describe('PostForm', () => {
       content: 'fortune body[fortune color=#fd4d32]Excellent Luck[/fortune]',
     });
     randomSpy.mockRestore();
+  });
+
+  it('counts hidden fortune output in post length validation without revealing it', async () => {
+    testState.resolvedCommunityAddress = 'random-nsfw.bso';
+
+    await renderPostForm('/b');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const optionsInput = table.querySelector<HTMLInputElement>('input[aria-label="options"]') as HTMLInputElement;
+    const textarea = table.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement;
+    const longContent = 'x'.repeat(1930);
+
+    await dispatchInput(optionsInput, 'fortune');
+    await dispatchInput(textarea, longContent);
+    await waitForContentLengthValidation();
+
+    expect(testState.publishPostOptions.content).toBe(longContent);
+    expect(container.textContent).toContain('comment_field_too_long');
+    expect(container.textContent).not.toContain('[fortune color=');
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
   });
 
   it('supports fortune on the /s5s/ route when directory metadata is not loaded', async () => {

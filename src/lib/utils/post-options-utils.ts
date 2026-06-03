@@ -219,8 +219,12 @@ const getDiceOption = (value: string, directoryCode: string | undefined): Return
 const getRandomFortuneEntry = (): FortuneEntry => FORTUNE_ENTRIES[Math.floor(Math.random() * FORTUNE_ENTRIES.length)] || FORTUNE_ENTRIES[0];
 
 const getFortuneBbcode = ({ color, text }: FortuneEntry): string => `[fortune color=${color}]${text}[/fortune]`;
+const MAX_FORTUNE_BBCODE_LENGTH = Math.max(...FORTUNE_ENTRIES.map((entry) => getFortuneBbcode(entry).length));
 
 const appendFortuneToContent = (content: string, fortune: FortuneEntry): string => `${content}${getFortuneBbcode(fortune)}`;
+
+export const getPostOptionsPublishContentLength = (content: string, options: string, directoryCode: string | undefined): number =>
+  hasFortuneOption(options, directoryCode) ? content.trimStart().length + MAX_FORTUNE_BBCODE_LENGTH : content.trim().length;
 
 const rollDice = (diceOption: NonNullable<ReturnType<typeof parseDiceOption>>, currentDiceRoll: DiceRoll | null): DiceRoll => {
   if (currentDiceRoll?.option === diceOption.option) {

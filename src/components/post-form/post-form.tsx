@@ -15,6 +15,7 @@ import {
   getContentWithPostOptionState as getContentWithOptions,
   getNonokoPendingRouteState,
   getPostOptionsDirectoryCode,
+  getPostOptionsPublishContentLength,
   getPostOptionsValidationError,
   hasNonokoOption,
   isPostOptionsValidationError,
@@ -548,8 +549,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
 
   const checkContentLength = useRef(
-    debounce((content: string, t: TFunction) => {
-      const length = content.trim().length;
+    debounce((content: string, t: TFunction, options: string, directoryCode: string | undefined) => {
+      const length = getPostOptionsPublishContentLength(content, options, directoryCode);
       if (length > 2000) {
         setLengthError(`${t('error')}: ${t('comment_field_too_long', { length })}`);
       } else {
@@ -703,7 +704,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     } else {
       setPublishPostOptions({ content: publishContent });
     }
-    checkContentLength(publishContent, t);
+    checkContentLength(publishContent, t, options, postOptionsDirectoryCode);
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
