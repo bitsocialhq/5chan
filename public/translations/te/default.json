@@ -50,7 +50,6 @@
   "gif": "జీఐఎఫ్",
   "total_posts": "మొత్తం పోస్ట్‌లు:",
   "current_users": "ప్రస్తుత వాడుకరులు:",
-  "boards_tracked": "ట్రాక్ చేయబడిన బోర్డులు:",
   "challenge_counter": "{{index}} లో {{total}}",
   "embed": "ఎంబెడ్",
   "remove": "తొలగించు",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube వీడియో",
-  "youtube_thumbnail_link_conversion_notice": "YouTube లింక్ గుర్తించబడింది. {{count}}లో థంబ్‌నెయిల్ చిత్రాన్ని పేస్ట్ చేస్తున్నాము..."
+  "youtube_thumbnail_link_conversion_notice": "YouTube లింక్ గుర్తించబడింది. {{count}}లో థంబ్‌నెయిల్ చిత్రాన్ని పేస్ట్ చేస్తున్నాము...",
+  "stats_scope_all_listed_boards": "జాబితాలో ఉన్న అన్ని బోర్డులు (నెమ్మదిగా)",
+  "stats_scope_directory_boards": "డైరెక్టరీ బోర్డులు మాత్రమే (వేగంగా)",
+  "boards_loaded": "లోడ్ చేసిన బోర్డులు:"
 }

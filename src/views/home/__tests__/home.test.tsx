@@ -15,9 +15,9 @@ const testState = vi.hoisted(() => ({
   directoryAddresses: [] as string[],
   directoryListCodes: [] as string[],
   directoryListsByCode: {} as Record<string, { boards: Array<{ address: string; score: number; managedByDevs: boolean; addedAt?: number }> }>,
-  loadingStartTimestamps: [] as number[],
-  nowSeconds: 1_704_067_210,
   navigateMock: vi.fn(),
+  setStatsScopeMock: vi.fn(),
+  statsScope: 'directory' as 'directory' | 'all',
   communities: {} as Record<string, unknown>,
   communityStats: {} as Record<string, { allPostCount?: number; weekActiveUserCount?: number; state?: string }>,
   feedStateString: 'Downloading boards',
@@ -70,12 +70,12 @@ vi.mock('../../../hooks/use-communities-stats', () => ({
   useCommunitiesStatsStore: (selector: (state: { communityStats: typeof testState.communityStats }) => unknown) => selector({ communityStats: testState.communityStats }),
 }));
 
-vi.mock('../../../stores/use-communities-loading-start-timestamps-store', () => ({
-  default: () => testState.loadingStartTimestamps,
-}));
-
-vi.mock('../../../hooks/use-now-seconds', () => ({
-  useNowSeconds: () => testState.nowSeconds,
+vi.mock('../../../stores/use-homepage-stats-options-store', () => ({
+  default: (selector: (state: { statsScope: typeof testState.statsScope; setStatsScope: typeof testState.setStatsScopeMock }) => unknown) =>
+    selector({
+      statsScope: testState.statsScope,
+      setStatsScope: testState.setStatsScopeMock,
+    }),
 }));
 
 vi.mock('../../../hooks/use-state-string', () => ({
@@ -84,6 +84,11 @@ vi.mock('../../../hooks/use-state-string', () => ({
 
 vi.mock('../../../components/loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('span', { 'data-testid': 'loading-ellipsis' }, string),
+}));
+
+vi.mock('../../../components/tooltip', () => ({
+  default: ({ content, children }: { content: React.ReactNode; children: React.ReactNode }) =>
+    createElement('span', { 'data-testid': 'tooltip', 'data-content': typeof content === 'string' ? content : undefined }, children),
 }));
 
 vi.mock('../../../stores/use-directory-modal-store', () => ({
@@ -135,8 +140,6 @@ describe('Home', () => {
     testState.directoryAddresses = ['music-posting.eth', 'tech-posting.eth'];
     testState.directoryListCodes = [];
     testState.directoryListsByCode = {};
-    testState.loadingStartTimestamps = [];
-    testState.nowSeconds = 1_704_067_210;
     testState.communities = {
       'music-posting.eth': { address: 'music-posting.eth' },
       'tech-posting.eth': { address: 'tech-posting.eth' },
@@ -146,6 +149,10 @@ describe('Home', () => {
       'tech-posting.eth': { allPostCount: 7, weekActiveUserCount: 5 },
     };
     testState.feedStateString = 'Downloading boards';
+    testState.statsScope = 'directory';
+    testState.setStatsScopeMock.mockImplementation((value: 'directory' | 'all') => {
+      testState.statsScope = value;
+    });
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -160,47 +167,62 @@ describe('Home', () => {
   it('renders the home view chrome, child sections, collectors, and aggregated stats', () => {
     renderHome();
 
-    expect(vi.mocked(useFeedStateString)).not.toHaveBeenCalled();
+    expect(vi.mocked(useFeedStateString)).toHaveBeenCalledWith([]);
     expect(document.title).toBe('5chan');
     expect(container.querySelector('[data-testid="disclaimer-modal"]')?.textContent).toBe('disclaimer-modal');
     expect(container.querySelector('[data-testid="directory-modal"]')?.textContent).toBe('directory-modal');
     expect(container.querySelector('[data-testid="boards-list"]')?.textContent).toBe('boards:2');
     expect(container.querySelector('[data-testid="popular-threads-box"]')?.textContent).toBe('popular:2:2');
     expect(container.querySelectorAll('[data-testid="stats-collector"]')).toHaveLength(2);
+    expect(testState.directoryListCodes).toEqual([]);
+    expect(container.textContent).toContain('stats');
+    expect(container.textContent).not.toContain('loaded 2/2 boards p2p');
+    expect(container.querySelector('.yellowOfflineIcon')).toBeNull();
     expect(container.querySelectorAll('[data-testid="loading-ellipsis"]')).toHaveLength(0);
     expect(container.textContent).toContain('total_posts 12');
     expect(container.textContent).toContain('current_users 7');
-    expect(container.textContent).toContain('boards_tracked 2');
+    expect(container.textContent).toContain('boards_loaded 2');
     expect(container.querySelector('[data-testid="site-legal-meta"]')?.textContent).toBe('site-legal-meta');
     expect(container.querySelector<HTMLAnchorElement>('a[href="/pass"]')?.textContent).toBe('support_5chan');
   });
 
-  it('keeps the stats values loading until every directory has loaded stats', () => {
+  it('shows the stats state string while no board stats have loaded yet', () => {
+    testState.communityStats = {};
+
+    renderHome();
+
+    expect(vi.mocked(useFeedStateString)).toHaveBeenCalledWith(['music-posting.eth', 'tech-posting.eth']);
+    expect(container.querySelector('.yellowOfflineIcon')).not.toBeNull();
+    expect(container.querySelector('[data-testid="tooltip"]')?.getAttribute('data-content')).toBe('Downloading boards');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('Downloading boards');
+    expect(container.textContent).not.toContain('total_posts');
+    expect(container.textContent).not.toContain('boards_loaded');
+  });
+
+  it('shows partial stats while some boards are still loading', () => {
     testState.communityStats = {
       'music-posting.eth': { allPostCount: 5, weekActiveUserCount: 2 },
     };
 
     renderHome();
 
-    const loadingValues = Array.from(container.querySelectorAll('[data-testid="loading-ellipsis"]'));
-    expect(loadingValues).toHaveLength(1);
-    expect(loadingValues[0]?.textContent).toBe('Downloading boards');
     expect(vi.mocked(useFeedStateString)).toHaveBeenCalledWith(['music-posting.eth', 'tech-posting.eth']);
-    expect(container.textContent).not.toContain('total_posts');
-    expect(container.textContent).not.toContain('current_users');
-    expect(container.textContent).not.toContain('boards_tracked');
-    expect(container.textContent).not.toContain('total_posts 5');
-    expect(container.textContent).not.toContain('current_users 2');
-    expect(container.textContent).not.toContain('boards_tracked 1');
+    expect(container.querySelector('.yellowOfflineIcon')).not.toBeNull();
+    expect(container.querySelector('[data-testid="tooltip"]')?.getAttribute('data-content')).toBe('Downloading boards');
+    expect(container.querySelectorAll('[data-testid="loading-ellipsis"]')).toHaveLength(0);
+    expect(container.textContent).not.toContain('loaded 1/2 boards p2p');
+    expect(container.textContent).toContain('total_posts 5');
+    expect(container.textContent).toContain('current_users 2');
+    expect(container.textContent).toContain('boards_loaded 1');
   });
 
-  it('uses a ranked directory fallback board when the default board stats stay unresolved', () => {
+  it('loads every listed board when the slow stats scope is selected', () => {
+    testState.statsScope = 'all';
     testState.directories = [
       { address: 'business-and-finance.bso', title: '/biz/ - Business & Finance', directoryCode: 'biz' },
       { address: 'tech-posting.eth', title: '/g/ - Technology', directoryCode: 'g' },
     ];
     testState.directoryAddresses = ['business-and-finance.bso', 'tech-posting.eth'];
-    testState.loadingStartTimestamps = [1_704_067_170, 1_704_067_170];
     testState.directoryListsByCode = {
       biz: {
         boards: [
@@ -217,12 +239,15 @@ describe('Home', () => {
     renderHome();
 
     const collectorAddresses = Array.from(container.querySelectorAll('[data-testid="stats-collector"]')).map((collector) => collector.getAttribute('data-address'));
-    expect(testState.directoryListCodes).toEqual(['biz']);
-    expect(collectorAddresses).toEqual(['business-and-finance.bso', 'tech-posting.eth', 'backup-business.bso']);
+    expect(testState.directoryListCodes).toEqual(['biz', 'g']);
+    expect(collectorAddresses).toEqual(['business-and-finance.bso', 'backup-business.bso', 'tech-posting.eth']);
+    expect(vi.mocked(useFeedStateString)).toHaveBeenCalledWith(['business-and-finance.bso', 'backup-business.bso', 'tech-posting.eth']);
+    expect(container.querySelector('.yellowOfflineIcon')).not.toBeNull();
     expect(container.querySelectorAll('[data-testid="loading-ellipsis"]')).toHaveLength(0);
+    expect(container.textContent).not.toContain('loaded 2/3 boards p2p');
     expect(container.textContent).toContain('total_posts 18');
     expect(container.textContent).toContain('current_users 7');
-    expect(container.textContent).toContain('boards_tracked 2');
+    expect(container.textContent).toContain('boards_loaded 2');
   });
 
   it('shows zero totals after every directory has loaded zero-count stats', () => {
@@ -234,9 +259,11 @@ describe('Home', () => {
     renderHome();
 
     expect(container.querySelectorAll('[data-testid="loading-ellipsis"]')).toHaveLength(0);
+    expect(container.querySelector('.yellowOfflineIcon')).toBeNull();
+    expect(container.textContent).not.toContain('loaded 2/2 boards p2p');
     expect(container.textContent).toContain('total_posts 0');
     expect(container.textContent).toContain('current_users 0');
-    expect(container.textContent).toContain('boards_tracked 2');
+    expect(container.textContent).toContain('boards_loaded 2');
   });
 
   it('does not keep aggregate stats loading after a directory stats fetch fails', () => {
@@ -248,9 +275,31 @@ describe('Home', () => {
     renderHome();
 
     expect(container.querySelectorAll('[data-testid="loading-ellipsis"]')).toHaveLength(0);
+    expect(container.querySelector('.yellowOfflineIcon')).toBeNull();
+    expect(container.textContent).not.toContain('loaded 2/2 boards p2p');
     expect(container.textContent).toContain('total_posts 5');
     expect(container.textContent).toContain('current_users 2');
-    expect(container.textContent).toContain('boards_tracked 2');
+    expect(container.textContent).toContain('boards_loaded 2');
+  });
+
+  it('switches the stats scope from the options menu', () => {
+    renderHome();
+
+    const optionsButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'options ▼');
+    expect(optionsButton).toBeTruthy();
+
+    act(() => {
+      optionsButton?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+
+    const option = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'stats_scope_all_listed_boards');
+    expect(option).toBeTruthy();
+
+    act(() => {
+      option?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+
+    expect(testState.setStatsScopeMock).toHaveBeenCalledWith('all');
   });
 
   it('navigates to the canonical board path when the search form is submitted', async () => {

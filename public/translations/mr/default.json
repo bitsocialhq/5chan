@@ -50,7 +50,6 @@
   "gif": "जीआईएफ",
   "total_posts": "एकूण पोस्ट:",
   "current_users": "सध्याचे वापरकर्ते:",
-  "boards_tracked": "ट्रॅक केलेले बोर्ड:",
   "challenge_counter": "{{index}} पैकी {{total}}",
   "embed": "एम्बेड",
   "remove": "काढा",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube व्हिडिओ",
-  "youtube_thumbnail_link_conversion_notice": "YouTube लिंक आढळली. {{count}} मध्ये थंबनेल प्रतिमा पेस्ट करत आहे..."
+  "youtube_thumbnail_link_conversion_notice": "YouTube लिंक आढळली. {{count}} मध्ये थंबनेल प्रतिमा पेस्ट करत आहे...",
+  "stats_scope_all_listed_boards": "सर्व सूचीबद्ध बोर्ड (मंद)",
+  "stats_scope_directory_boards": "फक्त निर्देशिका बोर्ड (जलद)",
+  "boards_loaded": "लोड केलेले बोर्ड:"
 }

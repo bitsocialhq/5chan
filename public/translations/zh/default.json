@@ -50,7 +50,6 @@
   "gif": "GIF",
   "total_posts": "总帖数:",
   "current_users": "当前用户:",
-  "boards_tracked": "跟踪的板块:",
   "challenge_counter": "{{index}} / {{total}}",
   "embed": "嵌入",
   "remove": "移除",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube 视频",
-  "youtube_thumbnail_link_conversion_notice": "检测到 YouTube 链接。将在 {{count}} 后粘贴缩略图..."
+  "youtube_thumbnail_link_conversion_notice": "检测到 YouTube 链接。将在 {{count}} 后粘贴缩略图...",
+  "stats_scope_all_listed_boards": "所有已列出的版块（较慢）",
+  "stats_scope_directory_boards": "仅目录板块（快速）",
+  "boards_loaded": "已加载的版块:"
 }

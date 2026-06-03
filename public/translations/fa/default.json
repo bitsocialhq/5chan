@@ -50,7 +50,6 @@
   "gif": "گیف",
   "total_posts": "کل پست‌ها:",
   "current_users": "کاربران فعلی:",
-  "boards_tracked": "تالارهای پیگیری شده:",
   "challenge_counter": "{{index}} از {{total}}",
   "embed": "جاسازی",
   "remove": "حذف",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "ویدیوی YouTube",
-  "youtube_thumbnail_link_conversion_notice": "پیوند YouTube شناسایی شد. در حال چسباندن تصویر بندانگشتی در {{count}}..."
+  "youtube_thumbnail_link_conversion_notice": "پیوند YouTube شناسایی شد. در حال چسباندن تصویر بندانگشتی در {{count}}...",
+  "stats_scope_all_listed_boards": "همهٔ بردهای فهرست‌شده (کند)",
+  "stats_scope_directory_boards": "فقط بردهای دایرکتوری (سریع)",
+  "boards_loaded": "بردهای بارگذاری‌شده:"
 }

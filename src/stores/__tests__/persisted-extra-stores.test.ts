@@ -6,6 +6,7 @@ const flushMicrotasks = async () => {
 };
 
 const loadBlotterVisibilityStore = async () => (await import('../use-blotter-visibility-store')).default;
+const loadHomepageStatsOptionsStore = async () => (await import('../use-homepage-stats-options-store')).default;
 const loadModQueueStore = async () => (await import('../use-mod-queue-store')).default;
 const loadPopularThreadsOptionsStore = async () => (await import('../use-popular-threads-options-store')).default;
 
@@ -54,6 +55,17 @@ describe('persisted extra stores', () => {
 
     expect(localStorage.getItem('showWorksafeContentOnly')).toBe('false');
     expect(localStorage.getItem('showNsfwContentOnly')).toBe('true');
+  });
+
+  it('loads homepage stats scope from localStorage defaults and persists changes', async () => {
+    const useHomepageStatsOptionsStore = await loadHomepageStatsOptionsStore();
+
+    expect(useHomepageStatsOptionsStore.getState().statsScope).toBe('directory');
+
+    useHomepageStatsOptionsStore.getState().setStatsScope('all');
+
+    expect(useHomepageStatsOptionsStore.getState().statsScope).toBe('all');
+    expect(localStorage.getItem('5chan-homepage-stats-scope')).toBe('all');
   });
 
   it('migrates legacy mod queue storage and computes threshold seconds from the active unit', async () => {

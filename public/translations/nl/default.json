@@ -50,7 +50,6 @@
   "gif": "GIF",
   "total_posts": "Totaal aantal berichten:",
   "current_users": "huidige gebruikers:",
-  "boards_tracked": "gevolgde borden:",
   "challenge_counter": "{{index}} van {{total}}",
   "embed": "insluiten",
   "remove": "verwijderen",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube-video",
-  "youtube_thumbnail_link_conversion_notice": "YouTube-link gedetecteerd. Miniatuurafbeelding wordt over {{count}} geplakt..."
+  "youtube_thumbnail_link_conversion_notice": "YouTube-link gedetecteerd. Miniatuurafbeelding wordt over {{count}} geplakt...",
+  "stats_scope_all_listed_boards": "Alle vermelde boards (traag)",
+  "stats_scope_directory_boards": "Alleen directory-boards (snel)",
+  "boards_loaded": "geladen boards:"
 }

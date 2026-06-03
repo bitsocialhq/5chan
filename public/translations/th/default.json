@@ -50,7 +50,6 @@
   "gif": "จีไอเอฟ",
   "total_posts": "โพสต์ทั้งหมด:",
   "current_users": "ผู้ใช้งานปัจจุบัน:",
-  "boards_tracked": "บอร์ดที่ติดตาม:",
   "challenge_counter": "{{index}} จาก {{total}}",
   "embed": "ฝัง",
   "remove": "ลบ",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "วิดีโอ YouTube",
-  "youtube_thumbnail_link_conversion_notice": "ตรวจพบลิงก์ YouTube กำลังวางรูปภาพขนาดย่อในอีก {{count}}..."
+  "youtube_thumbnail_link_conversion_notice": "ตรวจพบลิงก์ YouTube กำลังวางรูปภาพขนาดย่อในอีก {{count}}...",
+  "stats_scope_all_listed_boards": "บอร์ดที่แสดงทั้งหมด (ช้า)",
+  "stats_scope_directory_boards": "เฉพาะบอร์ดในไดเรกทอรี (เร็ว)",
+  "boards_loaded": "บอร์ดที่โหลดแล้ว:"
 }

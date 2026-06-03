@@ -50,7 +50,6 @@
   "gif": "GIF",
   "total_posts": "Συνολικές Δημοσιεύσεις:",
   "current_users": "τρέχοντες χρήστες:",
-  "boards_tracked": "πίνακες που παρακολουθούνται:",
   "challenge_counter": "{{index}} από {{total}}",
   "embed": "ενσωμάτωση",
   "remove": "αφαίρεση",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "βίντεο YouTube",
-  "youtube_thumbnail_link_conversion_notice": "Εντοπίστηκε σύνδεσμος YouTube. Επικόλληση μικρογραφίας σε {{count}}..."
+  "youtube_thumbnail_link_conversion_notice": "Εντοπίστηκε σύνδεσμος YouTube. Επικόλληση μικρογραφίας σε {{count}}...",
+  "stats_scope_all_listed_boards": "Όλα τα καταχωρισμένα boards (αργό)",
+  "stats_scope_directory_boards": "Μόνο boards καταλόγου (γρήγορο)",
+  "boards_loaded": "φορτωμένοι πίνακες:"
 }

@@ -50,7 +50,6 @@
   "gif": "ГИФ",
   "total_posts": "Всего сообщений:",
   "current_users": "текущие пользователи:",
-  "boards_tracked": "отслеживаемые форумы:",
   "challenge_counter": "{{index}} из {{total}}",
   "embed": "встроить",
   "remove": "удалить",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "видео YouTube",
-  "youtube_thumbnail_link_conversion_notice": "Обнаружена ссылка YouTube. Вставка миниатюры через {{count}}..."
+  "youtube_thumbnail_link_conversion_notice": "Обнаружена ссылка YouTube. Вставка миниатюры через {{count}}...",
+  "stats_scope_all_listed_boards": "Все перечисленные доски (медленно)",
+  "stats_scope_directory_boards": "Только доски каталога (быстро)",
+  "boards_loaded": "загруженные доски:"
 }

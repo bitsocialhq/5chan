@@ -50,7 +50,6 @@
   "gif": "GIF",
   "total_posts": "Toplam Gönderi:",
   "current_users": "mevcut kullanıcılar:",
-  "boards_tracked": "takip edilen panolar:",
   "challenge_counter": "{{index}} / {{total}}",
   "embed": "göm",
   "remove": "kaldır",
@@ -401,5 +400,8 @@
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
   "youtube_video": "YouTube videosu",
-  "youtube_thumbnail_link_conversion_notice": "YouTube bağlantısı algılandı. Küçük resim {{count}} içinde yapıştırılıyor..."
+  "youtube_thumbnail_link_conversion_notice": "YouTube bağlantısı algılandı. Küçük resim {{count}} içinde yapıştırılıyor...",
+  "stats_scope_all_listed_boards": "Listelenen tüm panolar (yavaş)",
+  "stats_scope_directory_boards": "Yalnızca dizin panolari (hızlı)",
+  "boards_loaded": "yüklenen panolar:"
 }
