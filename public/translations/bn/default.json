@@ -400,5 +400,6 @@
   "timestamp": "টাইমস্ট্যাম্প",
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
-  "youtube_video": "YouTube ভিডিও"
+  "youtube_video": "YouTube ভিডিও",
+  "youtube_thumbnail_link_conversion_notice": "YouTube লিংক শনাক্ত হয়েছে। {{count}}-এর মধ্যে থাম্বনেইল ছবি পেস্ট করা হচ্ছে..."
 }

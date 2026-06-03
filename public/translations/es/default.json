@@ -400,5 +400,6 @@
   "timestamp": "marca de tiempo",
   "tag": "tag",
   "post_form_flash_upload_prompt": "Recommended SWF host: <catbox>Catbox</catbox>. Upload a .swf, then paste the direct https://files.catbox.moe/...swf link in Link. Other hosts must provide a direct HTTPS .swf URL with CORS enabled.",
-  "youtube_video": "video de YouTube"
+  "youtube_video": "video de YouTube",
+  "youtube_thumbnail_link_conversion_notice": "Se detectó un enlace de YouTube. Pegando imagen en miniatura en {{count}}..."
 }

@@ -1,4 +1,7 @@
 export const POST_OPTIONS_VALIDATION_DELAY_MS = 700;
+export const SAGE_FAQ_LINK_LABEL = 'learn why';
+export const SAGE_FAQ_PATH = '/faq#sage';
+export const SAGE_OPTION = 'sage';
 const FORTUNE_DIRECTORY_CODES = new Set(['b', 's5s']);
 const DICE_DIRECTORY_CODES = new Set(['qst', 'tg']);
 const POST_OPTION_ROUTE_DIRECTORY_CODES = new Set([...FORTUNE_DIRECTORY_CODES, ...DICE_DIRECTORY_CODES]);
@@ -154,7 +157,8 @@ export const getUnsupportedPostOptionsMessage = (value: string, directoryCode: s
     return null;
   }
 
-  let message = `Unsupported options: ${error.unsupportedOptions.join(', ')}.`;
+  const unsupportedOptionsLabel = error.unsupportedOptions.map((option) => (option === SAGE_OPTION ? `${option} [${SAGE_FAQ_LINK_LABEL}]` : option)).join(', ');
+  let message = `Unsupported options: ${unsupportedOptionsLabel}.`;
 
   for (const { option, directoryCodes } of error.supportedDirectoryCodesByOption) {
     message += ` Option "${option}" is supported on: ${directoryCodes.map((code) => `/${code}/`).join(', ')}.`;

@@ -20,6 +20,15 @@ const testState = vi.hoisted(() => ({
       title: '/mu/ - Music',
     },
   } as Record<string, { address: string; directoryCode?: string; features?: Record<string, unknown>; title?: string }>,
+  directoryListsByCode: {} as Record<
+    string,
+    {
+      boards: Array<{ address: string; features?: Record<string, unknown>; publicKey?: string }>;
+      directoryCode: string;
+      features?: Record<string, unknown>;
+      title?: string;
+    }
+  >,
   handleUploadMock: vi.fn(),
   uploadFileMock: vi.fn(),
   isMobile: false,
@@ -149,6 +158,24 @@ vi.mock('../../../hooks/use-directories', () => ({
   useDirectoryByAddress: (address: string) => testState.directoryByAddress[address],
   normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
 }));
+
+vi.mock('../../../hooks/use-directory-entry', async () => {
+  const actual = await vi.importActual<typeof import('../../../hooks/use-directory-entry')>('../../../hooks/use-directory-entry');
+  return {
+    ...actual,
+    useDirectoryEntry: (address: string | undefined, directoryCodeHint?: string) => {
+      const list =
+        testState.directoryListsByCode[directoryCodeHint ?? ''] ??
+        Object.values(testState.directoryListsByCode).find((candidate) => candidate.boards.some((board) => board.address === address));
+      return actual.getDirectoryEntryForAddress({
+        address,
+        directories: Object.values(testState.directoryByAddress),
+        directoryCodeHint,
+        list,
+      });
+    },
+  };
+});
 
 vi.mock('../../../hooks/use-community-identifiers', () => ({
   useCommunityIdentifier: (address?: string) => (address ? { name: address } : undefined),
@@ -368,6 +395,7 @@ describe('ReplyModal', () => {
         title: '/tg/ - Traditional Games',
       },
     };
+    testState.directoryListsByCode = {};
     testState.handleUploadMock.mockReset();
     testState.uploadFileMock.mockReset();
     testState.isMobile = false;
@@ -506,6 +534,32 @@ describe('ReplyModal', () => {
     });
   });
 
+  it('shows the /pol/ flag selector for replies on a non-primary directory candidate board', async () => {
+    testState.directoryListsByCode.pol = {
+      directoryCode: 'pol',
+      features: { hasFlags: true },
+      title: '/pol/ - Politically Incorrect',
+      boards: [{ address: 'politically-incorrect.bso' }, { address: 'nothing-is-beyond-our-reach.bso' }],
+    };
+
+    await renderReplyModal('/pol/thread/post-1', 'nothing-is-beyond-our-reach.bso');
+
+    const flagSelect = container.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
+
+    expect(flagSelect).toBeTruthy();
+    expect(flagSelect?.value).toBe('country:auto');
+
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: '>>42\nselected text',
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+      },
+      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+    });
+  });
+
   it.each([
     { boardPath: '/bant/thread/post-1', communityAddress: 'international-nsfw.bso' },
     { boardPath: '/int/thread/post-1', communityAddress: 'international-sfw.bso' },
@@ -621,6 +675,44 @@ describe('ReplyModal', () => {
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
   });
 
+  it('moves YouTube links into reply content and publishes the thumbnail link on media-only boards', async () => {
+    const youtubeLink = 'https://youtu.be/reply123';
+    const thumbnailLink = 'https://img.youtube.com/vi/reply123/0.jpg';
+    testState.openEmpty = true;
+    testState.selectedText = 'reply body';
+    testState.directoryByAddress['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { requirePostLinkIsMedia: true },
+      title: '/mu/ - Music',
+    };
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement;
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+    const linkContainer = linkInput.parentElement as HTMLElement;
+    const getConversionNotice = () =>
+      Array.from(container.querySelectorAll<HTMLDivElement>('div'))
+        .reverse()
+        .find((element) => element.textContent?.includes('youtube_thumbnail_link_conversion_notice'));
+
+    await dispatchInput(linkInput, youtubeLink);
+
+    expect(linkInput.value).toBe(youtubeLink);
+    expect(container.textContent).toContain('youtube_thumbnail_link_conversion_notice:{"count":3}');
+    expect(linkContainer.textContent).not.toContain('youtube_thumbnail_link_conversion_notice');
+    expect(getConversionNotice()?.className).toContain('error');
+
+    await clickButtonByText('post');
+
+    expect(linkInput.value).toBe(thumbnailLink);
+    expect(textarea.value).toBe(`${youtubeLink}\nreply body`);
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: `${youtubeLink}\nreply body`,
+      link: thumbnailLink,
+    });
+  });
+
   it('validates unsupported options and keeps fortune output out of preview state until reply publish', async () => {
     const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
     testState.openEmpty = true;
@@ -658,6 +750,21 @@ describe('ReplyModal', () => {
       content: 'reply body[fortune color=#fd4d32]Excellent Luck[/fortune]',
     });
     randomSpy.mockRestore();
+  });
+
+  it('links the unsupported sage option to its FAQ entry in reply modal', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = '';
+
+    await renderReplyModal('/b/thread/post-1', 'random-nsfw.bso');
+
+    const optionsInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[1];
+
+    await dispatchInput(optionsInput, 'sage');
+    await waitForOptionsValidation();
+
+    expect(container.textContent).toContain('Unsupported options: sage [learn why].');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/faq#sage"]')?.textContent).toBe('learn why');
   });
 
   it('supports fortune on the /s5s/ route when directory metadata is not loaded', async () => {

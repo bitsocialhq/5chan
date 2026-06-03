@@ -69,7 +69,7 @@
   position: relative;
 }
 
-.postFormTable input[type="text"], .postFormTable textarea, .postFormTable select:not(.flagSelector) {
+.postFormTable input[type="text"], .postFormTable textarea, .postFormTable select:not(.flagSelector):not(.boardSelector) {
   border: var(--post-form-field-input-border, revert);
   font-family: var(--post-form-field-font-family, revert);
   appearance: var(--post-form-field-input-appearance, revert);
@@ -80,8 +80,12 @@
   font-size: 10pt;
 }
 
-.postFormTable input[type="text"]:focus, .postFormTable textarea:focus, .postFormTable select:not(.flagSelector):focus {
+.postFormTable input[type="text"]:focus, .postFormTable textarea:focus, .postFormTable select:not(.flagSelector):not(.boardSelector):focus {
   border: var(--post-form-field-input-focus-border, revert);
+}
+
+.boardSelector {
+  appearance: auto;
 }
       
 .postFormTable td > input[type="text"] {

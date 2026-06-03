@@ -22,6 +22,15 @@ const testState = vi.hoisted(() => ({
     { address: 'music-posting.eth', features: {}, title: '/mu/ - Music' },
     { address: 'mod.eth', features: {}, title: '/mod/ - Moderation' },
   ] as Array<{ address: string; directoryCode?: string; features?: Record<string, unknown>; title?: string }>,
+  directoryListsByCode: {} as Record<
+    string,
+    {
+      boards: Array<{ address: string; features?: Record<string, unknown>; publicKey?: string }>;
+      directoryCode: string;
+      features?: Record<string, unknown>;
+      title?: string;
+    }
+  >,
   editedComment: undefined as { commentModeration?: { archived?: boolean }; deleted?: boolean; locked?: boolean; postCid?: string; removed?: boolean } | undefined,
   gifFrameStatus: 'idle' as 'idle' | 'ready',
   handleUploadMock: vi.fn(),
@@ -88,6 +97,7 @@ vi.mock('react-i18next', async () => {
     useTranslation: () => ({
       t: (key: string, options?: Record<string, unknown>) => {
         if (key === 'choose_one') return 'Choose one:';
+        if (typeof options?.count !== 'undefined') return `${key}:${options.count}`;
         return options?.domain ? `${key}:${options.domain}` : key;
       },
     }),
@@ -131,6 +141,24 @@ vi.mock('../../../hooks/use-directories', () => ({
   useDirectoryByAddress: (address: string | undefined) => testState.directories.find((entry) => entry.address === address),
   normalizeBoardAddress: (address: string) => address.replace(/\.(bso|eth)$/, ''),
 }));
+
+vi.mock('../../../hooks/use-directory-entry', async () => {
+  const actual = await vi.importActual<typeof import('../../../hooks/use-directory-entry')>('../../../hooks/use-directory-entry');
+  return {
+    ...actual,
+    useDirectoryEntry: (address: string | undefined, directoryCodeHint?: string) => {
+      const list =
+        testState.directoryListsByCode[directoryCodeHint ?? ''] ??
+        Object.values(testState.directoryListsByCode).find((candidate) => candidate.boards.some((board) => board.address === address));
+      return actual.getDirectoryEntryForAddress({
+        address,
+        directories: testState.directories,
+        directoryCodeHint,
+        list,
+      });
+    },
+  };
+});
 
 vi.mock('../../../hooks/use-community-identifiers', () => ({
   useCommunityIdentifier: (address?: string) => (address ? { name: address } : undefined),
@@ -299,6 +327,16 @@ vi.mock('../../../lib/utils/media-utils', () => ({
     }
     return { type: 'link', url: link };
   },
+  getYouTubeThumbnailUrlFromLink: (link: string) => {
+    try {
+      const url = new URL(link);
+      if (!url.hostname.includes('youtube.com')) return undefined;
+      const videoId = url.searchParams.get('v');
+      return videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : undefined;
+    } catch {
+      return undefined;
+    }
+  },
 }));
 
 vi.mock('../../../lib/media-hosting/show-upload-controls', () => ({
@@ -456,6 +494,7 @@ describe('PostForm', () => {
       { address: 'traditional-games.bso', features: {}, title: '/tg/ - Traditional Games' },
       { address: 'mod.eth', features: {}, title: '/mod/ - Moderation' },
     ];
+    testState.directoryListsByCode = {};
     testState.editedComment = undefined;
     testState.gifFrameStatus = 'idle';
     testState.isOffline = false;
@@ -565,6 +604,7 @@ describe('PostForm', () => {
     expect(linkInput?.getAttribute('placeholder')).toBe('https://website.com/image.jpg');
     expect(textarea).toBeTruthy();
     expect(select).toBeTruthy();
+    expect(select?.className).toContain('boardSelector');
 
     await dispatchInput(linkInput as HTMLInputElement, 'not-a-url');
     await clickByText(table as HTMLTableElement, 'post');
@@ -597,6 +637,63 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ communityAddress: 'music-posting.eth' });
+  });
+
+  it('converts YouTube links to thumbnail file links on media-only post forms', async () => {
+    const youtubeLink = 'https://www.youtube.com/watch?v=abc123';
+    const thumbnailLink = 'https://img.youtube.com/vi/abc123/0.jpg';
+
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const select = table.querySelector('select') as HTMLSelectElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const linkInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[3];
+    const getConversionNotice = () =>
+      Array.from(container.querySelectorAll<HTMLDivElement>('div'))
+        .reverse()
+        .find((element) => element.textContent?.includes('youtube_thumbnail_link_conversion_notice'));
+
+    await dispatchChange(select, 'music-posting.eth');
+
+    vi.useFakeTimers();
+    try {
+      await dispatchInput(linkInput, youtubeLink);
+
+      expect(linkInput.value).toBe(youtubeLink);
+      expect(container.textContent).toContain('youtube_thumbnail_link_conversion_notice');
+      expect(container.textContent).toContain('3');
+      expect(table.textContent).not.toContain('youtube_thumbnail_link_conversion_notice');
+      expect(getConversionNotice()?.className).toContain('formError');
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(container.textContent).toContain('2');
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(container.textContent).toContain('1');
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(linkInput.value).toBe(thumbnailLink);
+      expect(textarea.value).toBe(youtubeLink);
+      expect(container.textContent).not.toContain('youtube_thumbnail_link_conversion_notice');
+    } finally {
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    }
+
+    await clickByText(table, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishedPostOptions?.link).toBe(thumbnailLink);
+    expect(testState.publishedPostOptions?.content).toBe(youtubeLink);
   });
 
   it('shows Oekaki draw controls only on the /i/ board form', async () => {
@@ -693,6 +790,37 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
       content: 'flagged post',
+      challengeRequest: {
+        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
+      },
+      flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
+    });
+  });
+
+  it('shows the /pol/ flag field when a non-primary directory candidate is hosting /pol/', async () => {
+    testState.resolvedCommunityAddress = 'nothing-is-beyond-our-reach.bso';
+    testState.directoryListsByCode.pol = {
+      directoryCode: 'pol',
+      features: { hasFlags: true },
+      title: '/pol/ - Politically Incorrect',
+      boards: [{ address: 'politically-incorrect.bso' }, { address: 'nothing-is-beyond-our-reach.bso' }],
+    };
+
+    await renderPostForm('/pol');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const flagSelect = table?.querySelector<HTMLSelectElement>('select[aria-label="flag"]');
+    const textarea = table?.querySelector<HTMLTextAreaElement>('textarea');
+
+    expect(flagSelect).toBeTruthy();
+    expect(flagSelect?.value).toBe('country:auto');
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'candidate board flag post');
+    await clickByText(table as HTMLTableElement, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledWith({
+      content: 'candidate board flag post',
       challengeRequest: {
         challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },
@@ -934,7 +1062,8 @@ describe('PostForm', () => {
     await dispatchInput(optionsInput as HTMLInputElement, 'sage fortune');
     await waitForOptionsValidation();
 
-    expect(container.textContent).toContain('Unsupported options: sage, fortune. Option "fortune" is supported on: /b/, /s5s/.');
+    expect(container.textContent).toContain('Unsupported options: sage [learn why], fortune. Option "fortune" is supported on: /b/, /s5s/.');
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/faq#sage"]')?.textContent).toBe('learn why');
     expect(container.querySelector<HTMLAnchorElement>('a[href="/b"]')?.textContent).toBe('/b/');
     expect(container.querySelector<HTMLAnchorElement>('a[href="/s5s"]')?.textContent).toBe('/s5s/');
   });
