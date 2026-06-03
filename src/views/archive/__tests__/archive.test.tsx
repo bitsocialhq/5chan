@@ -81,7 +81,6 @@ vi.mock('../../../hooks/use-is-mobile', () => ({
 vi.mock('../../../components/board-buttons/board-buttons', () => ({
   BracketedCatalogButton: () => createElement('span', null, '[', createElement('button', { type: 'button' }, 'catalog'), ']'),
   BottomButton: () => createElement('button', { type: 'button' }, 'bottom'),
-  BracketedCatalogButton: () => createElement('button', { type: 'button' }, 'catalog'),
   CatalogButton: () => createElement('button', { type: 'button' }, 'catalog'),
   ReturnButton: () => createElement('button', { type: 'button' }, 'return'),
   TopButton: () => createElement('button', { type: 'button' }, 'top'),

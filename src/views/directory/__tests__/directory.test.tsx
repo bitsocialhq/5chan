@@ -70,7 +70,6 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
 vi.mock('../../../components/board-buttons/board-buttons', () => ({
   BracketedCatalogButton: () => createElement('span', null, '[', createElement('a', null, 'catalog'), ']'),
   BottomButton: () => createElement('button', { type: 'button' }, 'bottom'),
-  BracketedCatalogButton: () => createElement('a', null, 'catalog'),
   CatalogButton: () => createElement('a', null, 'catalog'),
   ReturnButton: () => createElement('a', null, 'return'),
   TopButton: () => createElement('button', { type: 'button' }, 'top'),
