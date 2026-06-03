@@ -113,6 +113,10 @@
   text-transform: lowercase;
 }
 
+.linkTypeError {
+  color: red;
+}
+
 .linkField input[type="text"] {
   width: 190px !important;
 }

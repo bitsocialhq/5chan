@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "پیوند YouTube شناسایی شد. در حال چسباندن تصویر بندانگشتی در {{count}}...",
   "stats_scope_all_listed_boards": "همهٔ بردهای فهرست‌شده (کند)",
   "stats_scope_directory_boards": "فقط بردهای دایرکتوری (سریع)",
-  "boards_loaded": "بردهای بارگذاری‌شده:"
+  "boards_loaded": "بردهای بارگذاری‌شده:",
+  "link_not_image_or_video_alert": "پیوند تصویر یا ویدیو نیست.",
+  "not_a_file": "فایل نیست"
 }

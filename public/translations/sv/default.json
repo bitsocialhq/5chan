@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube-länk upptäckt. Klistrar in miniatyrbild om {{count}}...",
   "stats_scope_all_listed_boards": "Alla listade boards (långsamt)",
   "stats_scope_directory_boards": "Endast katalogens boards (snabbt)",
-  "boards_loaded": "laddade boards:"
+  "boards_loaded": "laddade boards:",
+  "link_not_image_or_video_alert": "Länken är inte en bild eller video.",
+  "not_a_file": "inte en fil"
 }

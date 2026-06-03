@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "May nakita na link ng YouTube. Ipi-paste ang thumbnail image sa loob ng {{count}}...",
   "stats_scope_all_listed_boards": "Lahat ng nakalistang board (mabagal)",
   "stats_scope_directory_boards": "Mga board ng directory lang (mabilis)",
-  "boards_loaded": "mga board na na-load:"
+  "boards_loaded": "mga board na na-load:",
+  "link_not_image_or_video_alert": "Ang link ay hindi larawan o video.",
+  "not_a_file": "hindi file"
 }

@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "ตรวจพบลิงก์ YouTube กำลังวางรูปภาพขนาดย่อในอีก {{count}}...",
   "stats_scope_all_listed_boards": "บอร์ดที่แสดงทั้งหมด (ช้า)",
   "stats_scope_directory_boards": "เฉพาะบอร์ดในไดเรกทอรี (เร็ว)",
-  "boards_loaded": "บอร์ดที่โหลดแล้ว:"
+  "boards_loaded": "บอร์ดที่โหลดแล้ว:",
+  "link_not_image_or_video_alert": "ลิงก์ไม่ใช่รูปภาพหรือวิดีโอ",
+  "not_a_file": "ไม่ใช่ไฟล์"
 }

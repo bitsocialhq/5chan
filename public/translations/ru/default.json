@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "Обнаружена ссылка YouTube. Вставка миниатюры через {{count}}...",
   "stats_scope_all_listed_boards": "Все перечисленные доски (медленно)",
   "stats_scope_directory_boards": "Только доски каталога (быстро)",
-  "boards_loaded": "загруженные доски:"
+  "boards_loaded": "загруженные доски:",
+  "link_not_image_or_video_alert": "Ссылка не является изображением или видео.",
+  "not_a_file": "не файл"
 }

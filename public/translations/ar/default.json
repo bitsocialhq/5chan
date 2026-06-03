@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "تم اكتشاف رابط YouTube. جارٍ لصق الصورة المصغرة خلال {{count}}...",
   "stats_scope_all_listed_boards": "جميع اللوحات المُدرجة (بطيء)",
   "stats_scope_directory_boards": "لوحات الدليل فقط (سريع)",
-  "boards_loaded": "اللوحات المحملة:"
+  "boards_loaded": "اللوحات المحملة:",
+  "link_not_image_or_video_alert": "الرابط ليس صورة أو فيديو.",
+  "not_a_file": "ليس ملفًا"
 }

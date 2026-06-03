@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "Byl zjištěn odkaz na YouTube. Vkládám náhledový obrázek za {{count}}...",
   "stats_scope_all_listed_boards": "Všechny uvedené nástěnky (pomalé)",
   "stats_scope_directory_boards": "Pouze nástěnky v adresáři (rychlé)",
-  "boards_loaded": "načtené nástěnky:"
+  "boards_loaded": "načtené nástěnky:",
+  "link_not_image_or_video_alert": "Odkaz není obrázek ani video.",
+  "not_a_file": "není soubor"
 }

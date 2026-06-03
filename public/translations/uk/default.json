@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "Виявлено посилання YouTube. Вставляю мініатюру через {{count}}...",
   "stats_scope_all_listed_boards": "Усі перелічені дошки (повільно)",
   "stats_scope_directory_boards": "Лише дошки каталогу (швидко)",
-  "boards_loaded": "завантажені дошки:"
+  "boards_loaded": "завантажені дошки:",
+  "link_not_image_or_video_alert": "Посилання не є зображенням або відео.",
+  "not_a_file": "не файл"
 }

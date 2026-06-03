@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "Tautan YouTube terdeteksi. Menempelkan gambar thumbnail dalam {{count}}...",
   "stats_scope_all_listed_boards": "Semua board yang terdaftar (lambat)",
   "stats_scope_directory_boards": "Hanya board direktori (cepat)",
-  "boards_loaded": "board dimuat:"
+  "boards_loaded": "board dimuat:",
+  "link_not_image_or_video_alert": "Tautan bukan gambar atau video.",
+  "not_a_file": "bukan file"
 }

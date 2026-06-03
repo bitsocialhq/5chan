@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "Link do YouTube detectado. Colando imagem em miniatura em {{count}}...",
   "stats_scope_all_listed_boards": "Todos os boards listados (lento)",
   "stats_scope_directory_boards": "Somente boards do diretório (rápido)",
-  "boards_loaded": "boards carregados:"
+  "boards_loaded": "boards carregados:",
+  "link_not_image_or_video_alert": "O link não é uma imagem nem um vídeo.",
+  "not_a_file": "não é um arquivo"
 }

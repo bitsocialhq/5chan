@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube लिंक मिला। {{count}} में थंबनेल इमेज पेस्ट की जा रही है...",
   "stats_scope_all_listed_boards": "सभी सूचीबद्ध बोर्ड (धीमा)",
   "stats_scope_directory_boards": "सिर्फ डायरेक्टरी बोर्ड (तेज़)",
-  "boards_loaded": "लोड किए गए बोर्ड:"
+  "boards_loaded": "लोड किए गए बोर्ड:",
+  "link_not_image_or_video_alert": "लिंक कोई छवि या वीडियो नहीं है.",
+  "not_a_file": "फ़ाइल नहीं है"
 }

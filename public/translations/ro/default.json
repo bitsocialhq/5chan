@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "Link YouTube detectat. Lipesc imaginea miniatură în {{count}}...",
   "stats_scope_all_listed_boards": "Toate boardurile listate (lent)",
   "stats_scope_directory_boards": "Doar boardurile din director (rapid)",
-  "boards_loaded": "boarduri încărcate:"
+  "boards_loaded": "boarduri încărcate:",
+  "link_not_image_or_video_alert": "Linkul nu este o imagine sau un videoclip.",
+  "not_a_file": "nu este fișier"
 }

@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "זוהה קישור YouTube. מדביק תמונת ממוזערת בעוד {{count}}...",
   "stats_scope_all_listed_boards": "כל הלוחות הרשומים (איטי)",
   "stats_scope_directory_boards": "רק לוחות מהספרייה (מהיר)",
-  "boards_loaded": "לוחות שנטענו:"
+  "boards_loaded": "לוחות שנטענו:",
+  "link_not_image_or_video_alert": "הקישור אינו תמונה או וידאו.",
+  "not_a_file": "לא קובץ"
 }

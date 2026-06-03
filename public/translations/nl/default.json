@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube-link gedetecteerd. Miniatuurafbeelding wordt over {{count}} geplakt...",
   "stats_scope_all_listed_boards": "Alle vermelde boards (traag)",
   "stats_scope_directory_boards": "Alleen directory-boards (snel)",
-  "boards_loaded": "geladen boards:"
+  "boards_loaded": "geladen boards:",
+  "link_not_image_or_video_alert": "De link is geen afbeelding of video.",
+  "not_a_file": "geen bestand"
 }

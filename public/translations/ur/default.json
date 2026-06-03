@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube لنک مل گیا۔ {{count}} میں تھمب نیل تصویر پیسٹ کی جا رہی ہے...",
   "stats_scope_all_listed_boards": "تمام فہرست شدہ بورڈز (سست)",
   "stats_scope_directory_boards": "صرف ڈائریکٹری بورڈز (تیز)",
-  "boards_loaded": "لوڈ شدہ بورڈز:"
+  "boards_loaded": "لوڈ شدہ بورڈز:",
+  "link_not_image_or_video_alert": "لنک تصویر یا ویڈیو نہیں ہے۔",
+  "not_a_file": "فائل نہیں ہے"
 }

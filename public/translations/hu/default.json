@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "YouTube-link észlelve. Bélyegkép beillesztése {{count}} múlva...",
   "stats_scope_all_listed_boards": "Az összes listázott board (lassú)",
   "stats_scope_directory_boards": "Csak a könyvtár boardjai (gyors)",
-  "boards_loaded": "betöltött boardok:"
+  "boards_loaded": "betöltött boardok:",
+  "link_not_image_or_video_alert": "A hivatkozás nem kép vagy videó.",
+  "not_a_file": "nem fájl"
 }

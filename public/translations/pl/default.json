@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "Wykryto link YouTube. Wklejam miniaturę za {{count}}...",
   "stats_scope_all_listed_boards": "Wszystkie wymienione boardy (wolno)",
   "stats_scope_directory_boards": "Tylko boardy z katalogu (szybko)",
-  "boards_loaded": "załadowane boardy:"
+  "boards_loaded": "załadowane boardy:",
+  "link_not_image_or_video_alert": "Link nie jest obrazem ani filmem.",
+  "not_a_file": "to nie plik"
 }

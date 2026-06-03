@@ -403,5 +403,7 @@
   "youtube_thumbnail_link_conversion_notice": "检测到 YouTube 链接。将在 {{count}} 后粘贴缩略图...",
   "stats_scope_all_listed_boards": "所有已列出的版块（较慢）",
   "stats_scope_directory_boards": "仅目录板块（快速）",
-  "boards_loaded": "已加载的版块:"
+  "boards_loaded": "已加载的版块:",
+  "link_not_image_or_video_alert": "链接不是图片或视频。",
+  "not_a_file": "不是文件"
 }
