@@ -9,7 +9,6 @@ import useTrustedBoardUrlPermissionsStore from '../../stores/use-trusted-board-u
 import useTheme from '../../hooks/use-theme';
 import styles from './challenge-modal.module.css';
 import capitalize from 'lodash/capitalize';
-import { useSpring, animated } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 import getShortAddress from '../../lib/get-short-address';
 
@@ -339,10 +338,15 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   const nodeRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  const [{ x, y }, api] = useSpring(() => ({
-    x: window.innerWidth / 2 - 150,
-    y: window.innerHeight / 2 - 200,
-  }));
+  // Initial centered position, computed once. It is rendered as a stable transform so React never
+  // re-applies it after mount (React skips unchanged style props), which lets the imperative drag
+  // position below survive re-renders.
+  const [initialPosition] = useState(() => ({ x: window.innerWidth / 2 - 150, y: window.innerHeight / 2 - 200 }));
+  // Live dragged position: kept in a ref and written straight to the DOM, so dragging never
+  // re-renders the modal. It must NOT come from react-spring's function-form useSpring, whose
+  // every-render re-application of these initial centered values animated the modal back to the
+  // center by itself after the user had dragged it elsewhere.
+  const positionRef = useRef(initialPosition);
 
   const currentChallenge = challenges?.[currentChallengeIndex];
   const iframeChallengeKey = `${currentChallengeIndex}:${currentChallenge?.challenge ?? ''}`;
@@ -362,10 +366,14 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
       } else {
         Object.assign(document.body.style, { userSelect: '', webkitUserSelect: '' });
       }
-      api.start({ x: ox, y: oy, immediate: true });
+      positionRef.current = { x: ox, y: oy };
+      const node = nodeRef.current;
+      if (node) {
+        node.style.transform = `translate3d(${Math.round(ox)}px, ${Math.round(oy)}px, 0)`;
+      }
     },
     {
-      from: () => [x.get(), y.get()],
+      from: () => [positionRef.current.x, positionRef.current.y],
       filterTaps: true,
       bounds: undefined,
     },
@@ -509,15 +517,16 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   );
 
   return (
-    <animated.div
+    <div
       className={containerClasses.join(' ')}
       ref={nodeRef}
       role='dialog'
       aria-modal='true'
       aria-labelledby='challenge-modal-title'
       style={{
-        x: isMobile ? mobileX : x.to((value) => Math.round(value)),
-        y: isMobile ? mobileY : y.to((value) => Math.round(value)),
+        transform: isMobile
+          ? `translate3d(${Math.round(mobileX)}px, ${Math.round(mobileY)}px, 0)`
+          : `translate3d(${Math.round(initialPosition.x)}px, ${Math.round(initialPosition.y)}px, 0)`,
         touchAction: 'none',
       }}
     >
@@ -588,7 +597,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
           </>
         )}
       </div>
-    </animated.div>
+    </div>
   );
 };
 
