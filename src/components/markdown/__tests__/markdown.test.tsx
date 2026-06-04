@@ -321,6 +321,38 @@ describe('Markdown', () => {
     expect(link?.textContent).toBe('https://5chan.local/#/mu');
   });
 
+  it('renders inline Markdown links through the standard link renderer', async () => {
+    await renderMarkdown({
+      content: '[AI moderation](https://bitsocial.net/apps/ai-moderation-challenge) sent this reply to the mod queue because the fortune check is missing',
+    });
+
+    const link = container.querySelector<HTMLAnchorElement>('a[href="https://bitsocial.net/apps/ai-moderation-challenge"]');
+    expect(link?.textContent).toBe('AI moderation');
+    expect(link?.getAttribute('target')).toBe('_blank');
+    expect(container.textContent).toBe('AI moderation sent this reply to the mod queue because the fortune check is missing');
+  });
+
+  it('renders inline Markdown links for app routes and inert empty hrefs', async () => {
+    await renderMarkdown({
+      content: '[Rules](/rules/biz) [AI moderation]( )',
+    });
+
+    const links = Array.from(container.querySelectorAll('a'));
+    expect(links).toHaveLength(1);
+    expect(links[0]?.getAttribute('href')).toBe('/rules/biz');
+    expect(links[0]?.textContent).toBe('Rules');
+    expect(container.textContent).toBe('Rules AI moderation');
+  });
+
+  it('does not render unsafe inline Markdown hrefs', async () => {
+    await renderMarkdown({
+      content: '[bad](javascript:alert(1))',
+    });
+
+    expect(container.querySelector('a')).toBeNull();
+    expect(container.textContent).toBe('[bad](javascript:alert(1))');
+  });
+
   it('preserves balanced URL parentheses and leaves unmatched trailing punctuation outside links', async () => {
     await renderMarkdown({
       content: 'https://en.wikipedia.org/wiki/Function_(mathematics) https://example.com/path),',

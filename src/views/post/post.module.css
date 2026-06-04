@@ -657,8 +657,12 @@
   color: var(--post-mobile-abbr-text-color);
   --post-link-text-color: var(--post-mobile-abbr-text-color);
   --post-link-text-color-hover: var(--post-mobile-abbr-text-color);
+  --post-content-link-text-decoration: underline;
+  --post-content-link-text-decoration-hover: underline;
   --post-quotelink-text-color: var(--post-mobile-abbr-text-color);
   --post-quotelink-text-color-hover: var(--post-mobile-abbr-text-color);
+  --post-quotelink-text-decoration: underline;
+  --post-quotelink-text-decoration-hover: underline;
 }
 
 .failedPublishNotice {

@@ -151,6 +151,7 @@ const normalizeContent = (content: string): string => {
 
 type Token =
   | { key: string; type: 'text'; value: string }
+  | { key: string; type: 'markdownLink'; text: string; href: string }
   | { key: string; type: 'url'; href: string }
   | { key: string; type: 'quoteLink'; number: number }
   | { key: string; type: 'crossBoardNumberQuoteLink'; reference: ExternalQuoteReference }
@@ -158,6 +159,7 @@ type Token =
   | { key: string; type: 'spoiler'; tokens: Token[] };
 
 const SPOILER_REGEX = /\[[sS][pP][oO][iI][lL][eE][rR]\]([\s\S]*?)\[\/[sS][pP][oO][iI][lL][eE][rR]\]/;
+const MARKDOWN_LINK_REGEX = /(?<!!)\[([^\]\n]+)\]\(\s*([^\n)]*?)\s*\)/;
 const CROSSBOARD_REGEX = />>>\/((?:[a-zA-Z0-9]{1,10}\/(?:[a-zA-Z0-9]{46})?|[a-zA-Z0-9\-.]+(?:\/[a-zA-Z0-9]{46})?))[.,:;!?]*/;
 const QUOTE_LINK_REGEX = /(?<![>/\w])>>(\d+)(?![\d/])/;
 const URL_REGEX = /https?:\/\/[^\s<>[\]]+/;
@@ -203,12 +205,12 @@ const getActiveDirectoryCode = (pathname: string, communityAddress: string | und
 };
 
 const COMBINED_REGEX = new RegExp(
-  `(${SPOILER_REGEX.source})|(${CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX.source})|(${CROSSBOARD_REGEX.source})|(${QUOTE_LINK_REGEX.source})|(${URL_REGEX.source})`,
+  `(${SPOILER_REGEX.source})|(${MARKDOWN_LINK_REGEX.source})|(${CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX.source})|(${CROSSBOARD_REGEX.source})|(${QUOTE_LINK_REGEX.source})|(${URL_REGEX.source})`,
   'g',
 );
 
 const COMBINED_REGEX_WITHOUT_SPOILER = new RegExp(
-  `(${CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX.source})|(${CROSSBOARD_REGEX.source})|(${QUOTE_LINK_REGEX.source})|(${URL_REGEX.source})`,
+  `(${MARKDOWN_LINK_REGEX.source})|(${CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX.source})|(${CROSSBOARD_REGEX.source})|(${QUOTE_LINK_REGEX.source})|(${URL_REGEX.source})`,
   'g',
 );
 
@@ -258,6 +260,9 @@ function splitUrlTrailingText(rawHref: string): { href: string; trailingText: st
   return { href, trailingText };
 }
 
+const isAllowedMarkdownHref = (href: string): boolean =>
+  !href || href.startsWith('http://') || href.startsWith('https://') || href.startsWith('#/') || href.startsWith('/#/') || href.startsWith('/');
+
 function getCrossboardRoute(fullPattern: string): string | null {
   const pathPart = fullPattern.replace(/^>>>\//, '').replace(/[.,:;!?]+$/, '');
   if (!isValidCrossboardPattern(`>>>/${pathPart}`)) {
@@ -280,6 +285,33 @@ function getCrossboardRoute(fullPattern: string): string | null {
 function tokenize(text: string, keyPrefix = '', parseSpoilers = true): Token[] {
   const tokens: Token[] = [];
   let lastIndex = 0;
+  const matchIndexes = parseSpoilers
+    ? {
+        markdownLink: 3,
+        markdownLinkText: 4,
+        markdownLinkHref: 5,
+        crossBoardNumberQuoteLink: 6,
+        crossBoardNumberQuoteLinkBoard: 7,
+        crossBoardNumberQuoteLinkNumber: 8,
+        crossBoardLink: 9,
+        crossBoardLinkPath: 10,
+        quoteLink: 11,
+        quoteLinkNumber: 12,
+        url: 13,
+      }
+    : {
+        markdownLink: 1,
+        markdownLinkText: 2,
+        markdownLinkHref: 3,
+        crossBoardNumberQuoteLink: 4,
+        crossBoardNumberQuoteLinkBoard: 5,
+        crossBoardNumberQuoteLinkNumber: 6,
+        crossBoardLink: 7,
+        crossBoardLinkPath: 8,
+        quoteLink: 9,
+        quoteLinkNumber: 10,
+        url: 11,
+      };
 
   const regex = new RegExp((parseSpoilers ? COMBINED_REGEX : COMBINED_REGEX_WITHOUT_SPOILER).source, 'g');
   let match: RegExpExecArray | null;
@@ -301,9 +333,21 @@ function tokenize(text: string, keyPrefix = '', parseSpoilers = true): Token[] {
       const innerContent = match[2];
       const key = makeTokenKey(keyPrefix, 'spoiler', matchStart, matchEnd);
       tokens.push({ key, type: 'spoiler', tokens: tokenize(innerContent, `${key}/`, parseSpoilers) });
-    } else if (match[parseSpoilers ? 3 : 1] !== undefined) {
-      const boardIdentifier = match[parseSpoilers ? 4 : 2];
-      const number = parseInt(match[parseSpoilers ? 5 : 3], 10);
+    } else if (match[matchIndexes.markdownLink] !== undefined) {
+      const href = match[matchIndexes.markdownLinkHref].trim();
+      if (isAllowedMarkdownHref(href)) {
+        tokens.push({
+          key: makeTokenKey(keyPrefix, 'markdownLink', matchStart, matchEnd),
+          type: 'markdownLink',
+          text: match[matchIndexes.markdownLinkText],
+          href,
+        });
+      } else {
+        tokens.push({ key: makeTokenKey(keyPrefix, 'text', matchStart, matchEnd), type: 'text', value: fullMatch });
+      }
+    } else if (match[matchIndexes.crossBoardNumberQuoteLink] !== undefined) {
+      const boardIdentifier = match[matchIndexes.crossBoardNumberQuoteLinkBoard];
+      const number = parseInt(match[matchIndexes.crossBoardNumberQuoteLinkNumber], 10);
       if (boardIdentifier && !Number.isNaN(number)) {
         tokens.push({
           key: makeTokenKey(keyPrefix, 'crossBoardNumberQuoteLink', matchStart, matchEnd),
@@ -318,8 +362,8 @@ function tokenize(text: string, keyPrefix = '', parseSpoilers = true): Token[] {
       } else {
         tokens.push({ key: makeTokenKey(keyPrefix, 'text', matchStart, matchEnd), type: 'text', value: fullMatch });
       }
-    } else if (match[parseSpoilers ? 6 : 4] !== undefined) {
-      const pathPart = match[parseSpoilers ? 7 : 5];
+    } else if (match[matchIndexes.crossBoardLink] !== undefined) {
+      const pathPart = match[matchIndexes.crossBoardLinkPath];
       const fullPattern = `>>>/${pathPart}`;
       const route = getCrossboardRoute(fullPattern);
       if (route) {
@@ -332,10 +376,10 @@ function tokenize(text: string, keyPrefix = '', parseSpoilers = true): Token[] {
       } else {
         tokens.push({ key: makeTokenKey(keyPrefix, 'text', matchStart, matchEnd), type: 'text', value: fullMatch });
       }
-    } else if (match[parseSpoilers ? 8 : 6] !== undefined) {
-      const number = parseInt(match[parseSpoilers ? 9 : 7], 10);
+    } else if (match[matchIndexes.quoteLink] !== undefined) {
+      const number = parseInt(match[matchIndexes.quoteLinkNumber], 10);
       tokens.push({ key: makeTokenKey(keyPrefix, 'quoteLink', matchStart, matchEnd), type: 'quoteLink', number });
-    } else if (match[parseSpoilers ? 10 : 8] !== undefined) {
+    } else if (match[matchIndexes.url] !== undefined) {
       const { href, trailingText } = splitUrlTrailingText(fullMatch);
       const linkEnd = trailingText ? matchEnd - trailingText.length : matchEnd;
       tokens.push({ key: makeTokenKey(keyPrefix, 'url', matchStart, linkEnd), type: 'url', href });
@@ -439,6 +483,7 @@ const AnchorLink = ({ href, text }: { href: string; text: string }) => {
     href.startsWith('/#/') ||
     href.startsWith('/p/') ||
     href.match(/^\/p\/[^/]+(\/c\/[^/]+)?$/) ||
+    href.match(/^\/rules\/[^/]+$/) ||
     href.match(/^\/[^/]+(\/thread\/[^/]+)?$/) ||
     href.match(/^\/[^/]+\/(catalog|description|rules)(\/settings)?$/)
   ) {
@@ -458,6 +503,8 @@ const TokenNode = ({ token, context }: { token: Token; context: RenderContext })
   switch (token.type) {
     case 'text':
       return context.enableQstBbcode ? <QstBbcodeText text={token.value} tokenKey={token.key} /> : <>{token.value}</>;
+    case 'markdownLink':
+      return <AnchorLink href={token.href} text={token.text} />;
     case 'url': {
       const href = token.href;
       const linkMediaInfo = getLinkMediaInfo(href);
