@@ -5,7 +5,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Comment, setAccount, useAccount, useEditedComment } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
-import { getDisplayMediaInfoType, getLinkMediaInfo } from '../../lib/utils/media-utils';
+import { getDisplayMediaInfoType, getLinkMediaInfo, getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
 import { getExpiringMediaLinkAlert } from '../../lib/utils/media-link-validation-utils';
 import {
   type DiceRoll,
@@ -71,6 +71,15 @@ const getPostFormFileDisplayLabel = (url: string, uploadedFileName: string | nul
 const isPostFormFileMediaType = (type: string | undefined): boolean => Boolean(type && POST_FORM_FILE_MEDIA_TYPES.has(type));
 
 const isPostFormFileMediaLink = (link: string): boolean => isPostFormFileMediaType(getLinkMediaInfo(link)?.type);
+
+const getPublishLinkOptions = (link: string, includeCurrentLink: boolean): Partial<Pick<Comment, 'link'>> => {
+  const twimgPublishUrl = getTwimgMediaFilePublishUrl(link);
+  if (twimgPublishUrl) {
+    return { link: twimgPublishUrl };
+  }
+
+  return includeCurrentLink && link ? { link } : {};
+};
 
 export const LinkTypePreviewer = ({ link, requireFile = false }: { link: string; requireFile?: boolean }) => {
   const { t } = useTranslation();
@@ -673,7 +682,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     };
 
     nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-    publishPost({ content: publishContent, ...(appliedYouTubeConversion ? { link: currentUrl } : {}), ...publishOptions });
+    publishPost({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...publishOptions });
   };
 
   // redirect to pending page when pending comment is created
@@ -790,7 +799,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
 
     nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-    publishReply({ content: publishContent, ...(appliedYouTubeConversion ? { link: currentUrl } : {}), ...flagPublishOptions });
+    publishReply({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...flagPublishOptions });
   };
 
   const setLinkValue = (nextUrl: string) => {

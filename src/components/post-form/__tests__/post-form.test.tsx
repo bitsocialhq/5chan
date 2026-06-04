@@ -313,37 +313,57 @@ vi.mock('../../loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('span', { 'data-testid': 'loading-ellipsis' }, string),
 }));
 
-vi.mock('../../../lib/utils/media-utils', () => ({
-  getDisplayMediaInfoType: (type: string, t: (key: string) => string) => t(type),
-  getLinkMediaInfo: (link: string) => {
-    if (link.endsWith('.gif')) {
-      return { type: 'gif', url: link };
-    }
-    if (link.endsWith('.jpg') || link.endsWith('.jpeg') || link.endsWith('.png')) {
-      return { type: 'image', url: link };
-    }
-    if (link.endsWith('.mp4')) {
-      return { type: 'video', url: link };
-    }
-    if (link.endsWith('.mp3')) {
-      return { type: 'audio', url: link };
-    }
-    if (link.includes('youtube.com')) {
-      return { patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/0.jpg', type: 'iframe', url: link };
-    }
-    return { type: 'webpage', url: link };
-  },
-  getYouTubeThumbnailUrlFromLink: (link: string) => {
+vi.mock('../../../lib/utils/media-utils', () => {
+  const getTwimgMediaFilePublishUrl = (link: string) => {
     try {
-      const url = new URL(link);
-      if (!url.hostname.includes('youtube.com')) return undefined;
-      const videoId = url.searchParams.get('v');
-      return videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : undefined;
+      const url = new URL(link.trim());
+      const pathParts = url.pathname.split('/').filter(Boolean);
+      const [mediaPath, mediaId] = pathParts;
+      const format = url.searchParams.get('format')?.toLowerCase();
+      if (url.hostname !== 'pbs.twimg.com' || pathParts.length !== 2 || mediaPath !== 'media' || !mediaId || mediaId.includes('.')) return undefined;
+      if (!format || !['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(format)) return undefined;
+      return `https://pbs.twimg.com/media/${mediaId}.${format}`;
     } catch {
       return undefined;
     }
-  },
-}));
+  };
+
+  return {
+    getDisplayMediaInfoType: (type: string, t: (key: string) => string) => t(type),
+    getLinkMediaInfo: (link: string) => {
+      if (getTwimgMediaFilePublishUrl(link)) {
+        return { type: 'image', url: link };
+      }
+      if (link.endsWith('.gif')) {
+        return { type: 'gif', url: link };
+      }
+      if (link.endsWith('.jpg') || link.endsWith('.jpeg') || link.endsWith('.png')) {
+        return { type: 'image', url: link };
+      }
+      if (link.endsWith('.mp4')) {
+        return { type: 'video', url: link };
+      }
+      if (link.endsWith('.mp3')) {
+        return { type: 'audio', url: link };
+      }
+      if (link.includes('youtube.com')) {
+        return { patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/0.jpg', type: 'iframe', url: link };
+      }
+      return { type: 'webpage', url: link };
+    },
+    getTwimgMediaFilePublishUrl,
+    getYouTubeThumbnailUrlFromLink: (link: string) => {
+      try {
+        const url = new URL(link);
+        if (!url.hostname.includes('youtube.com')) return undefined;
+        const videoId = url.searchParams.get('v');
+        return videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : undefined;
+      } catch {
+        return undefined;
+      }
+    },
+  };
+});
 
 vi.mock('../../../lib/media-hosting/show-upload-controls', () => ({
   getMediaHostingRuntime: () => testState.mediaHostingRuntime,
@@ -716,6 +736,32 @@ describe('PostForm', () => {
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.publishedPostOptions?.link).toBe(thumbnailLink);
     expect(testState.publishedPostOptions?.content).toBe(youtubeLink);
+  });
+
+  it('publishes known twimg query-format post links with a path extension without editing the field', async () => {
+    const twimgLink = 'https://pbs.twimg.com/media/HJxnhNKWMAAhqFU?format=jpg&name=medium';
+    const publishLink = 'https://pbs.twimg.com/media/HJxnhNKWMAAhqFU.jpg';
+
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const select = table.querySelector('select') as HTMLSelectElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const linkInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[3];
+
+    await dispatchChange(select, 'music-posting.eth');
+    await dispatchInput(textarea, 'Twimg thread');
+    await dispatchInput(linkInput, twimgLink);
+    await clickByText(table, 'post');
+
+    expect(linkInput.value).toBe(twimgLink);
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishPostMock).toHaveBeenCalledWith({
+      content: 'Twimg thread',
+      link: publishLink,
+    });
+    expect(testState.publishedPostOptions?.link).toBe(publishLink);
   });
 
   it('shows Oekaki draw controls only on the /i/ board form', async () => {
@@ -1429,6 +1475,36 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('publishes known twimg query-format reply links with a path extension without editing the field', async () => {
+    const twimgLink = 'https://pbs.twimg.com/media/HJxnhNKWMAAhqFU?format=jpg&name=medium';
+    const publishLink = 'https://pbs.twimg.com/media/HJxnhNKWMAAhqFU.jpg';
+
+    testState.comments = {
+      'thread-cid': {
+        postCid: 'thread-cid',
+      },
+    };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await renderPostForm('/mu/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const linkInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+
+    await dispatchInput(textarea, 'Twimg reply');
+    await dispatchInput(linkInput, twimgLink);
+    await clickByText(table, 'post');
+
+    expect(linkInput.value).toBe(twimgLink);
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: 'Twimg reply',
+      link: publishLink,
+    });
   });
 });
 

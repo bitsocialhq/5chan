@@ -112,6 +112,7 @@ const KNOWN_VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'avi', 'mkv', 'flv', 'wmv'
 const KNOWN_AUDIO_EXTENSIONS = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma'];
 const KNOWN_SWF_EXTENSIONS = ['swf'];
 const KNOWN_MEDIA_EXTENSIONS = new Set([...KNOWN_IMAGE_EXTENSIONS, ...KNOWN_VIDEO_EXTENSIONS, ...KNOWN_AUDIO_EXTENSIONS, ...KNOWN_SWF_EXTENSIONS]);
+const TWIMG_MEDIA_FORMAT_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif']);
 
 // some sites don't show thumbnails, so the backend-side thumbnail fetching needs to be  disabled, or it might fetch non-thumbnails such as emojis
 const THUMBNAIL_BLACKLISTED_DOMAINS = ['twitter.com', 'x.com'];
@@ -155,6 +156,27 @@ const getDirectMediaExtension = (url: URL): string => {
 
   const pathParts = url.pathname.toLowerCase().split('.');
   return pathParts.length > 1 ? pathParts[pathParts.length - 1] : '';
+};
+
+export const getTwimgMediaFilePublishUrl = (link: string): string | undefined => {
+  const url = parseHttpUrl(link.trim());
+  if (!url || url.hostname.toLowerCase() !== 'pbs.twimg.com') {
+    return undefined;
+  }
+
+  const pathParts = url.pathname.split('/').filter(Boolean);
+  const [mediaPath, mediaId] = pathParts;
+  if (pathParts.length !== 2 || mediaPath !== 'media' || !mediaId || mediaId.includes('.')) {
+    return undefined;
+  }
+
+  const format = url.searchParams.get('format')?.toLowerCase();
+  if (!format || !TWIMG_MEDIA_FORMAT_EXTENSIONS.has(format)) {
+    return undefined;
+  }
+
+  url.protocol = 'https:';
+  return `${url.origin}/media/${mediaId}.${format}`;
 };
 
 export const getLinkMediaInfo = memoize(

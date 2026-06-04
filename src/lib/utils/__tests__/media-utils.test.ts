@@ -45,6 +45,7 @@ import {
   getLinkMediaInfo,
   getMediaDimensions,
   getPostMediaTypeLabel,
+  getTwimgMediaFilePublishUrl,
   getYouTubeEmbedPostMediaFileLink,
   getYouTubeThumbnailUrlFromLink,
 } from '../media-utils';
@@ -190,6 +191,14 @@ describe('media-utils', () => {
       type: 'iframe',
       url: 'https://yewtu.be/invidious123',
     });
+  });
+
+  it('normalizes known twimg query-format media links for publishing', () => {
+    expect(getTwimgMediaFilePublishUrl('https://pbs.twimg.com/media/HJxnhNKWMAAhqFU?format=jpg&name=medium')).toBe('https://pbs.twimg.com/media/HJxnhNKWMAAhqFU.jpg');
+    expect(getTwimgMediaFilePublishUrl('http://pbs.twimg.com/media/HJxnhNKWMAAhqFU?format=PNG&name=small')).toBe('https://pbs.twimg.com/media/HJxnhNKWMAAhqFU.png');
+    expect(getTwimgMediaFilePublishUrl('https://pbs.twimg.com/media/HJxnhNKWMAAhqFU.jpg?format=png&name=medium')).toBeUndefined();
+    expect(getTwimgMediaFilePublishUrl('https://example.com/media/HJxnhNKWMAAhqFU?format=jpg&name=medium')).toBeUndefined();
+    expect(getTwimgMediaFilePublishUrl('https://pbs.twimg.com/media/HJxnhNKWMAAhqFU?format=txt&name=medium')).toBeUndefined();
   });
 
   it('builds comment media info and strips thumbnails for blacklisted domains', () => {
