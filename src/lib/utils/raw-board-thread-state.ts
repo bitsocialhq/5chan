@@ -51,10 +51,9 @@ export const getRawBoardThreadState = ({
     };
   }
 
-  const pageCids = community.posts?.pageCids || {};
-  const hasPageCids = Object.keys(pageCids).length > 0;
-  const preloadedPages = Object.values(community.posts?.pages || {}) as Array<{ comments?: Comment[]; nextCid?: string }>;
-  const hasCompletePreloadedPage = !hasPageCids && preloadedPages.some((page) => Array.isArray(page?.comments)) && preloadedPages.every((page) => !page?.nextCid);
+  const hasPageCid = Boolean(community.posts?.pageCids?.[sortType]);
+  const preloadedPages = (preloadedSortPage ? [preloadedSortPage] : []) as Array<{ comments?: Comment[]; nextCid?: string }>;
+  const hasCompletePreloadedPage = !hasPageCid && preloadedPages.some((page) => Array.isArray(page?.comments)) && preloadedPages.every((page) => !page?.nextCid);
 
   if (hasCompletePreloadedPage) {
     for (const page of preloadedPages) {
