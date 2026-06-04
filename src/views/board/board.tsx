@@ -665,8 +665,10 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     communityIdentifier.publicKey.length > 0 &&
     communityData?.nameResolved === false;
   const displayFeed = effectiveInfiniteScroll ? combinedFeed : currentPageFeed;
-  const shouldShowFlashTableLoading =
-    shouldUseFlashTable && displayFeed.length === 0 && !isRawBoardThreadStateFullyLoaded && communityState !== 'failed' && feedState !== 'failed';
+  const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
+  const isFeedSucceeded = feedState === 'succeeded';
+  const canShowEmptyFlashTable = isLoadedCommunityState && isFeedSucceeded && isRawBoardThreadStateFullyLoaded;
+  const shouldShowFlashTableLoading = shouldUseFlashTable && displayFeed.length === 0 && !canShowEmptyFlashTable && communityState !== 'failed' && feedState !== 'failed';
 
   return (
     <>

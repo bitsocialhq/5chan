@@ -676,6 +676,7 @@ describe('Board', () => {
       title: '/f/ - Flash',
     };
     testState.hasMore = true;
+    markRawBoardThreadsFullyLoaded();
 
     await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
 
