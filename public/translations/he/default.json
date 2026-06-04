@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "רק לוחות מהספרייה (מהיר)",
   "boards_loaded": "לוחות שנטענו:",
   "link_not_image_or_video_alert": "הקישור אינו תמונה או וידאו.",
-  "not_a_file": "לא קובץ"
+  "not_a_file": "לא קובץ",
+  "tor_author_flag_label": "המשתמש הזה נמצא ב-Tor"
 }

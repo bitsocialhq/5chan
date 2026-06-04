@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Лише дошки каталогу (швидко)",
   "boards_loaded": "завантажені дошки:",
   "link_not_image_or_video_alert": "Посилання не є зображенням або відео.",
-  "not_a_file": "не файл"
+  "not_a_file": "не файл",
+  "tor_author_flag_label": "Цей користувач у Tor"
 }

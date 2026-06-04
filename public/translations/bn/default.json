@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "শুধু ডিরেক্টরি বোর্ড (দ্রুত)",
   "boards_loaded": "লোড করা বোর্ড:",
   "link_not_image_or_video_alert": "লিংকটি ছবি বা ভিডিও নয়।",
-  "not_a_file": "ফাইল নয়"
+  "not_a_file": "ফাইল নয়",
+  "tor_author_flag_label": "এই ব্যবহারকারী Tor ব্যবহার করছেন"
 }

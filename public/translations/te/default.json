@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "డైరెక్టరీ బోర్డులు మాత్రమే (వేగంగా)",
   "boards_loaded": "లోడ్ చేసిన బోర్డులు:",
   "link_not_image_or_video_alert": "లింక్ చిత్రం లేదా వీడియో కాదు.",
-  "not_a_file": "ఫైల్ కాదు"
+  "not_a_file": "ఫైల్ కాదు",
+  "tor_author_flag_label": "ఈ వినియోగదారు Tor లో ఉన్నారు"
 }

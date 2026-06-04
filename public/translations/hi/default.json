@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "सिर्फ डायरेक्टरी बोर्ड (तेज़)",
   "boards_loaded": "लोड किए गए बोर्ड:",
   "link_not_image_or_video_alert": "लिंक कोई छवि या वीडियो नहीं है.",
-  "not_a_file": "फ़ाइल नहीं है"
+  "not_a_file": "फ़ाइल नहीं है",
+  "tor_author_flag_label": "यह उपयोगकर्ता Tor पर है"
 }

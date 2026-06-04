@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Chỉ bảng trong thư mục (nhanh)",
   "boards_loaded": "bảng đã tải:",
   "link_not_image_or_video_alert": "Liên kết không phải là hình ảnh hoặc video.",
-  "not_a_file": "không phải tệp"
+  "not_a_file": "không phải tệp",
+  "tor_author_flag_label": "Người dùng này đang ở trên Tor"
 }

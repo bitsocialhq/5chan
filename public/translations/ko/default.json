@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "디렉터리 게시판만 (빠름)",
   "boards_loaded": "불러온 게시판:",
   "link_not_image_or_video_alert": "링크가 이미지 또는 동영상이 아닙니다.",
-  "not_a_file": "파일이 아님"
+  "not_a_file": "파일이 아님",
+  "tor_author_flag_label": "이 사용자는 Tor를 사용 중입니다"
 }

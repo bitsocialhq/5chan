@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "فقط بردهای دایرکتوری (سریع)",
   "boards_loaded": "بردهای بارگذاری‌شده:",
   "link_not_image_or_video_alert": "پیوند تصویر یا ویدیو نیست.",
-  "not_a_file": "فایل نیست"
+  "not_a_file": "فایل نیست",
+  "tor_author_flag_label": "این کاربر روی Tor است"
 }

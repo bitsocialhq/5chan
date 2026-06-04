@@ -424,5 +424,6 @@
   "stats_scope_directory_boards": "Directory boards only (fast)",
   "boards_loaded": "boards loaded:",
   "link_not_image_or_video_alert": "Link is not an image or video.",
-  "not_a_file": "not a file"
+  "not_a_file": "not a file",
+  "tor_author_flag_label": "This user is on Tor"
 }

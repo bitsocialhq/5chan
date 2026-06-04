@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "फक्त निर्देशिका बोर्ड (जलद)",
   "boards_loaded": "लोड केलेले बोर्ड:",
   "link_not_image_or_video_alert": "लिंक प्रतिमा किंवा व्हिडिओ नाही.",
-  "not_a_file": "फाइल नाही"
+  "not_a_file": "फाइल नाही",
+  "tor_author_flag_label": "हा वापरकर्ता Tor वर आहे"
 }

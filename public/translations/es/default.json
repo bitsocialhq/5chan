@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Solo boards del directorio (rápido)",
   "boards_loaded": "tableros cargados:",
   "link_not_image_or_video_alert": "El enlace no es una imagen ni un video.",
-  "not_a_file": "no es un archivo"
+  "not_a_file": "no es un archivo",
+  "tor_author_flag_label": "Este usuario está en Tor"
 }

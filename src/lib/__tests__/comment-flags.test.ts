@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getCommentFlagFlairs, getAuthorFlagFlairs, getAuthorFlagViewModels } from '../comment-flags';
+import { getCommentFlagFlairs, getAuthorFlagFlairs, getAuthorFlagViewModels, TOR_AUTHOR_FLAG_LABEL_KEY } from '../comment-flags';
 
 describe('comment-flags', () => {
   it('parses the pkc-js challenge flair example for country flags', () => {
@@ -23,6 +23,16 @@ describe('comment-flags', () => {
     expect(flags.map((flag) => flag.key)).toEqual(['country:de', 'pol:AC', 'pony:AJ']);
     expect(flags[1]).toMatchObject({ label: 'Anarcho-Capitalist', x: 0, y: 0 });
     expect(flags[2]).toMatchObject({ label: 'Applejack', x: 80, y: 0 });
+  });
+
+  it('labels the xx country flag as Tor traffic', () => {
+    const [flag] = getAuthorFlagViewModels([{ text: 'flag:country:xx' }], 1000);
+
+    expect(flag).toMatchObject({
+      key: 'country:xx',
+      label: 'This user is on Tor',
+      labelKey: TOR_AUTHOR_FLAG_LABEL_KEY,
+    });
   });
 
   it('normalizes text flag kinds before parsing', () => {

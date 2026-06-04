@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Tylko boardy z katalogu (szybko)",
   "boards_loaded": "załadowane boardy:",
   "link_not_image_or_video_alert": "Link nie jest obrazem ani filmem.",
-  "not_a_file": "to nie plik"
+  "not_a_file": "to nie plik",
+  "tor_author_flag_label": "Ten użytkownik jest w sieci Tor"
 }

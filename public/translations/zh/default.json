@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "仅目录板块（快速）",
   "boards_loaded": "已加载的版块:",
   "link_not_image_or_video_alert": "链接不是图片或视频。",
-  "not_a_file": "不是文件"
+  "not_a_file": "不是文件",
+  "tor_author_flag_label": "该用户正在使用 Tor"
 }

@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Hanya board direktori (cepat)",
   "boards_loaded": "board dimuat:",
   "link_not_image_or_video_alert": "Tautan bukan gambar atau video.",
-  "not_a_file": "bukan file"
+  "not_a_file": "bukan file",
+  "tor_author_flag_label": "Pengguna ini ada di Tor"
 }

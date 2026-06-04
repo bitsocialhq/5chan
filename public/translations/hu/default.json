@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Csak a könyvtár boardjai (gyors)",
   "boards_loaded": "betöltött boardok:",
   "link_not_image_or_video_alert": "A hivatkozás nem kép vagy videó.",
-  "not_a_file": "nem fájl"
+  "not_a_file": "nem fájl",
+  "tor_author_flag_label": "Ez a felhasználó a Tor hálózatán van"
 }

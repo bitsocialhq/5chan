@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Μόνο boards καταλόγου (γρήγορο)",
   "boards_loaded": "φορτωμένοι πίνακες:",
   "link_not_image_or_video_alert": "Ο σύνδεσμος δεν είναι εικόνα ή βίντεο.",
-  "not_a_file": "δεν είναι αρχείο"
+  "not_a_file": "δεν είναι αρχείο",
+  "tor_author_flag_label": "Αυτός ο χρήστης είναι στο Tor"
 }
