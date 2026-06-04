@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { useAccount, type Comment, type CommunitiesPages, type Community } from '@bitsocial/bitsocial-react-hooks';
+import { useAccount, type Comment } from '@bitsocial/bitsocial-react-hooks';
 import accountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts';
 import communitiesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities';
-import communitiesPagesStore, { getCommunityFirstPageCid, getCommunityPages } from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
+import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
 import { isCommentArchived } from '../lib/utils/comment-moderation-utils';
+import { getRawBoardThreadState } from '../lib/utils/raw-board-thread-state';
 import { useDirectories } from './use-directories';
 import { getBoardAddressKeys, isBoardAddressInScope } from './use-hidden-catalog-threads';
 
@@ -15,72 +16,12 @@ type UsePruneHiddenCatalogThreadsOptions = {
   sortType: 'active' | 'new';
 };
 
-type RawBoardCatalogState = {
-  isFullyLoaded: boolean;
-  rootThreadCids: Set<string>;
-};
-
-const EMPTY_RAW_BOARD_CATALOG_STATE: RawBoardCatalogState = {
-  isFullyLoaded: false,
-  rootThreadCids: new Set<string>(),
-};
-
-const addRootThreadCids = (cids: Set<string>, comments: readonly Comment[] | undefined) => {
-  for (const comment of comments || []) {
-    if (comment?.cid && !comment.parentCid) {
-      cids.add(comment.cid);
-    }
-  }
-};
-
-const getRawBoardCatalogState = ({
-  accountId,
-  communitiesPages,
-  community,
-  sortType,
-}: {
-  accountId: string | undefined;
-  communitiesPages: CommunitiesPages;
-  community: Community | undefined;
-  sortType: 'active' | 'new';
-}): RawBoardCatalogState => {
-  if (!community) {
-    return EMPTY_RAW_BOARD_CATALOG_STATE;
-  }
-
-  const rootThreadCids = new Set<string>();
-  const preloadedSortPage = community.posts?.pages?.[sortType];
-  addRootThreadCids(rootThreadCids, preloadedSortPage?.comments);
-
-  const firstPageCid = getCommunityFirstPageCid(community, sortType, 'posts');
-  const pages = firstPageCid ? getCommunityPages(community, sortType, communitiesPages, 'posts', accountId) : [];
-  for (const page of pages) {
-    addRootThreadCids(rootThreadCids, page?.comments);
-  }
-
-  if (pages.length > 0) {
-    return {
-      isFullyLoaded: !pages[pages.length - 1]?.nextCid,
-      rootThreadCids,
-    };
-  }
-
-  const pageCids = community.posts?.pageCids || {};
-  const hasPageCids = Object.keys(pageCids).length > 0;
-  const preloadedPages = Object.values(community.posts?.pages || {}) as Array<{ comments?: Comment[]; nextCid?: string }>;
-  const hasCompletePreloadedPage = !hasPageCids && preloadedPages.some((page) => Array.isArray(page?.comments)) && preloadedPages.every((page) => !page?.nextCid);
-
-  if (hasCompletePreloadedPage) {
-    for (const page of preloadedPages) {
-      addRootThreadCids(rootThreadCids, page?.comments);
-    }
-  }
-
-  return {
-    isFullyLoaded: hasCompletePreloadedPage,
-    rootThreadCids,
-  };
-};
+const EMPTY_RAW_BOARD_THREAD_STATE = getRawBoardThreadState({
+  accountId: undefined,
+  communitiesPages: {},
+  community: undefined,
+  sortType: 'active',
+});
 
 const usePruneHiddenCatalogThreads = ({ enabled, hiddenThreadCandidates, communityAddress, sortType }: UsePruneHiddenCatalogThreadsOptions) => {
   const account = useAccount();
@@ -92,13 +33,13 @@ const usePruneHiddenCatalogThreads = ({ enabled, hiddenThreadCandidates, communi
   const rawBoardCatalogState = useMemo(
     () =>
       enabled
-        ? getRawBoardCatalogState({
+        ? getRawBoardThreadState({
             accountId: account?.id,
             communitiesPages,
             community,
             sortType,
           })
-        : EMPTY_RAW_BOARD_CATALOG_STATE,
+        : EMPTY_RAW_BOARD_THREAD_STATE,
     [account?.id, communitiesPages, community, enabled, sortType],
   );
 

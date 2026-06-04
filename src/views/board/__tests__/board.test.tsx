@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
 import Board, { type BoardProps } from '../board';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
 
@@ -35,6 +36,10 @@ type TestComment = {
 type TestCommunity = {
   error?: Error;
   nameResolved?: boolean;
+  posts?: {
+    pageCids?: Record<string, string>;
+    pages?: Record<string, { comments?: TestComment[]; nextCid?: string }>;
+  };
   shortAddress?: string;
   state?: string;
   title?: string;
@@ -312,6 +317,19 @@ const flushEffects = async (count = 5) => {
   }
 };
 
+const markRawBoardThreadsFullyLoaded = (comments: TestComment[] = []) => {
+  testState.community = {
+    ...testState.community,
+    posts: {
+      pages: {
+        active: {
+          comments,
+        },
+      },
+    },
+  };
+};
+
 const renderBoard = async ({
   boardProps,
   initialEntry,
@@ -393,6 +411,7 @@ describe('Board', () => {
     document.title = 'before';
     clearStableLastVisitTimeFilterName();
     localStorage.setItem(LAST_VISIT_STORAGE_KEY, String(Date.now()));
+    communitiesPagesStore.setState({ communitiesPages: {}, comments: {} });
     Object.defineProperty(window, 'scrollTo', {
       configurable: true,
       value: vi.fn(),
@@ -407,6 +426,7 @@ describe('Board', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    communitiesPagesStore.setState({ communitiesPages: {}, comments: {} });
     clearStableLastVisitTimeFilterName();
     localStorage.clear();
   });
@@ -622,6 +642,7 @@ describe('Board', () => {
       shortAddress: 'flash-posting.bso',
       title: '/f/ - Flash',
     };
+    markRawBoardThreadsFullyLoaded();
 
     await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
 
@@ -655,6 +676,7 @@ describe('Board', () => {
       title: '/f/ - Flash',
     };
     testState.hasMore = true;
+    markRawBoardThreadsFullyLoaded();
 
     await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
 
@@ -988,10 +1010,28 @@ describe('Board', () => {
       state: 'succeeded',
       title: '/mu/ - Music',
     };
+    markRawBoardThreadsFullyLoaded();
 
     await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
 
     expect(container.textContent).toContain('no_threads');
     expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+  });
+
+  it('does not show no threads after board metadata loads but raw thread pages are still missing', async () => {
+    testState.feedStateString = undefined;
+    testState.feedState = 'succeeded';
+    testState.hasMore = false;
+    testState.community = {
+      error: undefined,
+      shortAddress: 'music-posting.eth',
+      state: 'succeeded',
+      title: '/mu/ - Music',
+    };
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(container.textContent).not.toContain('no_threads');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
   });
 });

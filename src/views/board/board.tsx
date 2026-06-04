@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Comment, useAccount, useAccountComments, useCommunity, useFeed } from '@bitsocial/bitsocial-react-hooks';
 import { useCommunityField } from '../../hooks/use-stable-community';
+import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './board.module.css';
@@ -19,6 +20,7 @@ import usePostNumberStore from '../../stores/use-post-number-store';
 import { useBoardFeedPageSize } from '../../hooks/use-board-feed-page-size';
 import useExpandedTimeFilter from '../../hooks/use-expanded-time-filter';
 import useIsMobile from '../../hooks/use-is-mobile';
+import { useNowSeconds } from '../../hooks/use-now-seconds';
 import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader';
 import useTimeFilter from '../../hooks/use-time-filter';
 import { getPageSlice } from '../../lib/utils/board-feed-pagination';
@@ -26,6 +28,7 @@ import { getPageFromFeedPath, isDirectoryBoard, normalizeMultiboardFeedPath, str
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getNonokoPendingAccountCommentIndex } from '../../lib/utils/post-options-utils';
+import { getRawBoardThreadState } from '../../lib/utils/raw-board-thread-state';
 import { getSearchWithTimeFilter, getTimeFilterSuggestion, type TimeFilterSuggestion } from '../../lib/utils/time-filter-utils';
 import { getPretextItemSizeFromElement, resolveFeedVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
 import { isFlashDirectory, isFlashDirectoryCode } from '../../lib/flash-tags';
@@ -45,6 +48,7 @@ const MONTH_IN_SECONDS = 30 * 24 * 60 * 60;
 const YEAR_IN_SECONDS = 365 * 24 * 60 * 60;
 // Keep the hook on its indexed fast path when this view should not inject local posts.
 const EMPTY_ACCOUNT_COMMENT_LOOKUP = { commentIndices: [-1] };
+const EMPTY_COMMUNITIES_PAGES = {};
 
 /** Board feed always uses 'active' sort; catalog dropdown does not affect board ordering. */
 const BOARD_SORT_TYPE = 'active' as const;
@@ -55,6 +59,7 @@ interface BoardFooterProps {
   feedState: string | undefined;
   combinedFeedLength: number;
   isSingleCommunityBoard: boolean;
+  isRawBoardThreadStateFullyLoaded: boolean;
   isInSubscriptionsView: boolean;
   isInModView: boolean;
   currentTimeFilterName: string;
@@ -78,6 +83,7 @@ const BoardFooter = ({
   feedState,
   combinedFeedLength,
   isSingleCommunityBoard,
+  isRawBoardThreadStateFullyLoaded,
   isInSubscriptionsView,
   isInModView,
   currentTimeFilterName,
@@ -96,7 +102,7 @@ const BoardFooter = ({
   const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
   const isFeedSucceeded = feedState === 'succeeded';
   const isFeedFailed = feedState === 'failed';
-  const canShowNoThreads = isSingleCommunityBoard ? isLoadedCommunityState && isFeedSucceeded : isFeedSucceeded && !hasMore;
+  const canShowNoThreads = isSingleCommunityBoard ? isLoadedCommunityState && isFeedSucceeded && isRawBoardThreadStateFullyLoaded : isFeedSucceeded && !hasMore;
   const isEmptyFeedLoading = combinedFeedLength === 0 && !canShowNoThreads && (isSingleCommunityBoard ? communityState !== 'failed' : !isFeedFailed);
   const showFooterLoading = showLoadingEllipsis && (hasMore || isEmptyFeedLoading);
 
@@ -306,6 +312,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     [communityAddress],
   );
   const { accountComments: recentAccountComments } = useAccountComments(accountCommentLookupOptions);
+  const nowSeconds = useNowSeconds(recentAccountComments.length > 0);
   const nonokoPendingAccountCommentIndex = getNonokoPendingAccountCommentIndex(routerLocation.state);
   const nonokoPendingAccountCommentLookupOptions = useMemo(
     () =>
@@ -353,7 +360,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
         return (
           !deleted &&
           !removed &&
-          timestamp > Date.now() / 1000 - RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS &&
+          timestamp > nowSeconds - RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS &&
           state === 'succeeded' &&
           cid &&
           cid === postCid &&
@@ -361,7 +368,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
           !feedCids.has(cid)
         );
       }),
-    [recentAccountComments, communityAddress, feedCids],
+    [recentAccountComments, communityAddress, feedCids, nowSeconds],
   );
   const localAccountComments = useMemo(() => {
     if (!nonokoPendingAccountComment) return filteredComments;
@@ -451,6 +458,20 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   // useCommunityField only reads from store, doesn't trigger fetching
   const communityData = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
   const { error: communityError, state: communityState } = communityData || {};
+  const communitiesPages = communitiesPagesStore((state) => (isMultiboardView ? EMPTY_COMMUNITIES_PAGES : state.communitiesPages));
+  const rawBoardThreadState = useMemo(
+    () =>
+      isMultiboardView
+        ? undefined
+        : getRawBoardThreadState({
+            accountId: account?.id,
+            communitiesPages,
+            community: communityData,
+            sortType: BOARD_SORT_TYPE,
+          }),
+    [account?.id, communitiesPages, communityData, isMultiboardView],
+  );
+  const isRawBoardThreadStateFullyLoaded = rawBoardThreadState?.isFullyLoaded ?? false;
   const title = isInAllView ? t('all') : isInSubscriptionsView ? t('subscriptions') : isInModView ? t('mod') : communityTitle;
 
   // Memoize footer component to preserve identity across renders (Virtuoso optimization)
@@ -466,6 +487,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               feedState={feedState}
               combinedFeedLength={combinedFeed.length}
               isSingleCommunityBoard={!isInAllView && !isInSubscriptionsView && !isInModView}
+              isRawBoardThreadStateFullyLoaded={isRawBoardThreadStateFullyLoaded}
               isInSubscriptionsView={isInSubscriptionsView}
               isInModView={isInModView}
               currentTimeFilterName={currentTimeFilterName}
@@ -546,6 +568,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       communityAddresses,
       hasMore,
       combinedFeed.length,
+      isRawBoardThreadStateFullyLoaded,
       isInAllView,
       isInSubscriptionsView,
       isInModView,
@@ -644,8 +667,8 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const displayFeed = effectiveInfiniteScroll ? combinedFeed : currentPageFeed;
   const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
   const isFeedSucceeded = feedState === 'succeeded';
-  const shouldShowFlashTableLoading =
-    shouldUseFlashTable && displayFeed.length === 0 && !(isLoadedCommunityState && isFeedSucceeded) && communityState !== 'failed' && feedState !== 'failed';
+  const canShowEmptyFlashTable = isLoadedCommunityState && isFeedSucceeded && isRawBoardThreadStateFullyLoaded;
+  const shouldShowFlashTableLoading = shouldUseFlashTable && displayFeed.length === 0 && !canShowEmptyFlashTable && communityState !== 'failed' && feedState !== 'failed';
 
   return (
     <>
