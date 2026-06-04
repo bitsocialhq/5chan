@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Alleen directory-boards (snel)",
   "boards_loaded": "geladen boards:",
   "link_not_image_or_video_alert": "De link is geen afbeelding of video.",
-  "not_a_file": "geen bestand"
+  "not_a_file": "geen bestand",
+  "tor_author_flag_label": "Deze gebruiker zit op Tor"
 }

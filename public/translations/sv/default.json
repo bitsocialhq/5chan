@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Endast katalogens boards (snabbt)",
   "boards_loaded": "laddade boards:",
   "link_not_image_or_video_alert": "Länken är inte en bild eller video.",
-  "not_a_file": "inte en fil"
+  "not_a_file": "inte en fil",
+  "tor_author_flag_label": "Den här användaren är på Tor"
 }

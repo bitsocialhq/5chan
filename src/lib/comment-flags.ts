@@ -2,6 +2,9 @@ import { COUNTRY_FLAG_HEIGHT, COUNTRY_FLAG_WIDTH, getCountryFlagPosition, getCou
 import { getBoardFlagDefinition, normalizeBoardFlagKind, type BoardFlagKind } from './board-flags';
 
 const COUNTRY_FLAG_SPRITE_PATH = 'assets/icons/flags-1.png';
+const TOR_COUNTRY_CODE = 'xx';
+const TOR_AUTHOR_FLAG_LABEL = 'This user is on Tor';
+export const TOR_AUTHOR_FLAG_LABEL_KEY = 'tor_author_flag_label';
 const FLAG_TEXT_PATTERN = /^flag:([a-z-]+):([a-z0-9-]+)$/i;
 const SHORT_FLAG_TEXT_PATTERN = /^(country|geo|pol|political|meme|memeflag|memeflags|pony|mlp):([a-z0-9-]+)$/i;
 const COUNTRY_EMOJI_TEXT_PATTERN = /^([a-z]{2}|catalonia|eu|fam|xe|xs|xw|xk|xx)-emoji$/i;
@@ -46,6 +49,7 @@ export interface AuthorFlagViewModel {
   type: 'country' | BoardFlagKind;
   code: string;
   label: string;
+  labelKey?: string;
   spritePath: string;
   width: number;
   height: number;
@@ -161,7 +165,8 @@ const toCountryFlagViewModel = (codeValue: string): AuthorFlagViewModel | undefi
     key: `country:${code}`,
     type: 'country',
     code,
-    label: getCountryLabel(code) ?? code.toUpperCase(),
+    label: code === TOR_COUNTRY_CODE ? TOR_AUTHOR_FLAG_LABEL : (getCountryLabel(code) ?? code.toUpperCase()),
+    ...(code === TOR_COUNTRY_CODE ? { labelKey: TOR_AUTHOR_FLAG_LABEL_KEY } : {}),
     spritePath: COUNTRY_FLAG_SPRITE_PATH,
     width: COUNTRY_FLAG_WIDTH,
     height: COUNTRY_FLAG_HEIGHT,

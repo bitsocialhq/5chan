@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "لوحات الدليل فقط (سريع)",
   "boards_loaded": "اللوحات المحملة:",
   "link_not_image_or_video_alert": "الرابط ليس صورة أو فيديو.",
-  "not_a_file": "ليس ملفًا"
+  "not_a_file": "ليس ملفًا",
+  "tor_author_flag_label": "هذا المستخدم يستخدم Tor"
 }

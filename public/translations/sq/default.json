@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Vetëm bordet e drejtorisë (shpejt)",
   "boards_loaded": "bordet e ngarkuara:",
   "link_not_image_or_video_alert": "Lidhja nuk është imazh ose video.",
-  "not_a_file": "nuk është skedar"
+  "not_a_file": "nuk është skedar",
+  "tor_author_flag_label": "Ky përdorues është në Tor"
 }

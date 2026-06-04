@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Yalnızca dizin panolari (hızlı)",
   "boards_loaded": "yüklenen panolar:",
   "link_not_image_or_video_alert": "Bağlantı bir görsel veya video değil.",
-  "not_a_file": "dosya değil"
+  "not_a_file": "dosya değil",
+  "tor_author_flag_label": "Bu kullanıcı Tor'da"
 }

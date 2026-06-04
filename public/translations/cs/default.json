@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Pouze nástěnky v adresáři (rychlé)",
   "boards_loaded": "načtené nástěnky:",
   "link_not_image_or_video_alert": "Odkaz není obrázek ani video.",
-  "not_a_file": "není soubor"
+  "not_a_file": "není soubor",
+  "tor_author_flag_label": "Tento uživatel je na síti Tor"
 }

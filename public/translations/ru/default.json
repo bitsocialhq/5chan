@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Только доски каталога (быстро)",
   "boards_loaded": "загруженные доски:",
   "link_not_image_or_video_alert": "Ссылка не является изображением или видео.",
-  "not_a_file": "не файл"
+  "not_a_file": "не файл",
+  "tor_author_flag_label": "Этот пользователь находится в Tor"
 }

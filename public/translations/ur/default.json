@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "صرف ڈائریکٹری بورڈز (تیز)",
   "boards_loaded": "لوڈ شدہ بورڈز:",
   "link_not_image_or_video_alert": "لنک تصویر یا ویڈیو نہیں ہے۔",
-  "not_a_file": "فائل نہیں ہے"
+  "not_a_file": "فائل نہیں ہے",
+  "tor_author_flag_label": "یہ صارف Tor پر ہے"
 }

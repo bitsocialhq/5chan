@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "ディレクトリの掲示板のみ（高速）",
   "boards_loaded": "読み込まれた板:",
   "link_not_image_or_video_alert": "リンクは画像または動画ではありません。",
-  "not_a_file": "ファイルではありません"
+  "not_a_file": "ファイルではありません",
+  "tor_author_flag_label": "このユーザーはTorを使用しています"
 }

@@ -405,5 +405,6 @@
   "stats_scope_directory_boards": "Mga board ng directory lang (mabilis)",
   "boards_loaded": "mga board na na-load:",
   "link_not_image_or_video_alert": "Ang link ay hindi larawan o video.",
-  "not_a_file": "hindi file"
+  "not_a_file": "hindi file",
+  "tor_author_flag_label": "Ang user na ito ay nasa Tor"
 }
