@@ -10,8 +10,11 @@ const act = (React as { act?: (callback: () => void | Promise<void>) => void | P
 
 type TestComment = {
   cid: string;
+  content?: string;
   communityAddress?: string;
+  number?: number;
   pendingApproval?: boolean;
+  timestamp?: number;
 };
 
 const testState = vi.hoisted(() => ({
@@ -96,6 +99,22 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js', () => 
     selector({ accountsEditsSummaries: { account: {} }, activeAccountId: 'account' }),
 }));
 
+vi.mock('@floating-ui/react', () => ({
+  autoUpdate: vi.fn(),
+  flip: vi.fn(),
+  offset: vi.fn(),
+  shift: vi.fn(),
+  size: vi.fn(),
+  useFloating: () => ({
+    floatingStyles: { position: 'fixed' },
+    refs: {
+      setFloating: () => undefined,
+      setReference: () => undefined,
+    },
+    update: vi.fn(),
+  }),
+}));
+
 vi.mock('react-virtuoso', () => ({
   Virtuoso: ({
     components,
@@ -172,7 +191,18 @@ vi.mock('../../../components/tooltip', () => ({
 }));
 
 vi.mock('../../post/post', () => ({
-  Post: () => createElement('div', { 'data-testid': 'mod-queue-feed-post' }),
+  Post: ({ isModQueue, post, showReplies }: { isModQueue?: boolean; post?: TestComment; showReplies?: boolean }) =>
+    createElement(
+      'div',
+      {
+        'data-cid': post?.cid,
+        'data-content': post?.content,
+        'data-is-mod-queue': String(Boolean(isModQueue)),
+        'data-show-replies': String(Boolean(showReplies)),
+        'data-testid': 'mod-queue-feed-post',
+      },
+      post?.cid ?? 'missing',
+    ),
 }));
 
 let container: HTMLDivElement;
@@ -233,5 +263,63 @@ describe('ModQueueView', () => {
     expect(text).toContain('excerpt');
     expect(text).toContain('queue_is_empty');
     expect(text.indexOf('No.')).toBeLessThan(text.indexOf('queue_is_empty'));
+  });
+
+  it('opens a full floating post preview from a compact excerpt hover', async () => {
+    testState.feed = [
+      {
+        cid: 'pending-reply',
+        communityAddress: 'music-posting.eth',
+        content: 'pending reply body',
+        number: 7,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    const excerptLink = Array.from(container.querySelectorAll<HTMLAnchorElement>('a')).find((link) => link.textContent === 'pending reply body');
+    expect(excerptLink).toBeTruthy();
+    expect(document.body.querySelector('[data-mod-queue-excerpt-preview="true"]')).toBeNull();
+
+    await act(async () => {
+      excerptLink?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    });
+
+    const previewPost = document.body.querySelector('[data-mod-queue-excerpt-preview="true"] [data-testid="mod-queue-feed-post"]');
+    expect(previewPost?.getAttribute('data-cid')).toBe('pending-reply');
+    // Rendered like a quote-link hover preview: a clean read-only Post, not the
+    // mod-queue feed layout (no leading <hr>, no inline approve/reject buttons).
+    expect(previewPost?.getAttribute('data-is-mod-queue')).toBe('false');
+    expect(previewPost?.getAttribute('data-show-replies')).toBe('false');
+  });
+
+  it('caps long content in the floating preview so the hover card stays compact', async () => {
+    testState.feed = [
+      {
+        cid: 'long-post',
+        communityAddress: 'music-posting.eth',
+        content: 'x'.repeat(500),
+        number: 9,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    const excerptLink = Array.from(container.querySelectorAll<HTMLAnchorElement>('a')).find((link) => link.textContent?.startsWith('xxx'));
+    expect(excerptLink).toBeTruthy();
+
+    await act(async () => {
+      excerptLink?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    });
+
+    const previewPost = document.body.querySelector('[data-mod-queue-excerpt-preview="true"] [data-testid="mod-queue-feed-post"]');
+    const previewContent = previewPost?.getAttribute('data-content') ?? '';
+    // 350-char cap + a single ellipsis character (shorter than the feed's 1000).
+    expect(previewContent.length).toBe(351);
+    expect(previewContent.endsWith('…')).toBe(true);
   });
 });

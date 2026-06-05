@@ -25,8 +25,10 @@ type TestComment = {
   linkWidth?: number;
   number?: number;
   parentCid?: string;
+  pendingApproval?: boolean;
   pinned?: boolean;
   postCid?: string;
+  approved?: boolean;
   removed?: boolean;
   replyCount?: number;
   replies?: {
@@ -167,6 +169,8 @@ vi.mock('../../lib/utils/time-utils', () => ({
 
 vi.mock('../../lib/utils/pending-approval-moderation', () => ({
   approvePendingCommentModeration: {},
+  isPendingApprovalAwaiting: (comment?: TestComment) =>
+    comment?.pendingApproval === true && comment?.approved !== true && comment?.approved !== false && !comment?.removed,
   isPendingApprovalRejected: () => false,
   rejectPendingCommentModeration: {},
 }));
@@ -178,7 +182,7 @@ vi.mock('../../lib/utils/url-utils', () => ({
 
 vi.mock('../../lib/utils/view-utils', () => ({
   isAllView: (pathname: string) => pathname === '/all',
-  isModQueueView: () => false,
+  isModQueueView: (pathname: string) => pathname === '/mod/queue' || pathname.endsWith('/mod/queue'),
   isModView: () => false,
   isPendingPostView: () => false,
   isPostPageView: (pathname: string) => pathname.includes('/thread/'),
@@ -534,5 +538,35 @@ describe('post community address compatibility', () => {
 
     await renderWithRoute(createElement(PostMobile, { post: makeLegacyThreadWithoutReplies() }));
     expect(container.querySelector('.postMobile')?.getAttribute('data-pretext-height')).toBeTruthy();
+  });
+
+  it('does not show a mod queue age alert for published preview posts on the mod queue route', async () => {
+    const publishedPost = {
+      ...makeLegacyThread(),
+      pendingApproval: false,
+      timestamp: 1_700_000_000,
+    };
+
+    await renderWithRoute(createElement(PostDesktop, { post: publishedPost, showReplies: false }), '/mod/queue');
+    expect(container.textContent).toContain('2026-03-13');
+    expect(container.textContent).not.toContain('moments ago');
+
+    await renderWithRoute(createElement(PostMobile, { post: publishedPost, showReplies: false }), '/mod/queue');
+    expect(container.textContent).toContain('2026-03-13');
+    expect(container.textContent).not.toContain('moments ago');
+  });
+
+  it('keeps the mod queue age alert for pending preview posts on the mod queue route', async () => {
+    const pendingPost = {
+      ...makeLegacyThread(),
+      pendingApproval: true,
+      timestamp: 1_700_000_000,
+    };
+
+    await renderWithRoute(createElement(PostDesktop, { post: pendingPost, showReplies: false }), '/mod/queue');
+    expect(container.textContent).toContain('moments ago');
+
+    await renderWithRoute(createElement(PostMobile, { post: pendingPost, showReplies: false }), '/mod/queue');
+    expect(container.textContent).toContain('moments ago');
   });
 });

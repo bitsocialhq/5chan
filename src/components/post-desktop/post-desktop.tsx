@@ -8,7 +8,7 @@ import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getHasThumbnail, getMediaDimensions, getPostMediaTypeLabel, getYouTubeEmbedPostMediaFileLink } from '../../lib/utils/media-utils';
 import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
-import { approvePendingCommentModeration, isPendingApprovalRejected, rejectPendingCommentModeration } from '../../lib/utils/pending-approval-moderation';
+import { approvePendingCommentModeration, isPendingApprovalAwaiting, rejectPendingCommentModeration } from '../../lib/utils/pending-approval-moderation';
 import { isValidURL, parseHttpUrl } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
@@ -263,10 +263,7 @@ const PostInfo = ({
   const shouldShowPendingApprovalButtons = isInPostPageView && !isInModQueueView && pendingApproval && isAccountMod && communityAddress;
 
   // Check if post is awaiting approval and over threshold (for mod queue view)
-  const approved = post?.approved;
-  const alreadyApproved = approved === true;
-  const alreadyRejected = isPendingApprovalRejected(post);
-  const isAwaitingApproval = isInModQueueView && !alreadyApproved && !alreadyRejected;
+  const isAwaitingApproval = isInModQueueView && isPendingApprovalAwaiting(post);
   const timeWaiting = timestamp ? currentTime - timestamp : 0;
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;

@@ -9,7 +9,7 @@ import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getTextColorForBackground, hashStringToColor } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
-import { approvePendingCommentModeration, isPendingApprovalRejected, rejectPendingCommentModeration } from '../../lib/utils/pending-approval-moderation';
+import { approvePendingCommentModeration, isPendingApprovalAwaiting, rejectPendingCommentModeration } from '../../lib/utils/pending-approval-moderation';
 import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
@@ -210,10 +210,7 @@ const PostInfoAndMedia = ({
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
 
   // Check if post is awaiting approval and over threshold (for mod queue view)
-  const approved = resolvedPost?.approved;
-  const alreadyApproved = approved === true;
-  const alreadyRejected = isPendingApprovalRejected(post);
-  const isAwaitingApproval = isInModQueueView && !alreadyApproved && !alreadyRejected;
+  const isAwaitingApproval = isInModQueueView && isPendingApprovalAwaiting(resolvedPost);
   const timeWaiting = timestamp ? currentTime - timestamp : 0;
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
