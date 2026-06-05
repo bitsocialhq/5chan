@@ -1,10 +1,13 @@
 import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useCommunity, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import useAccountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js';
+import { useFloating, offset, shift, size, flip, autoUpdate } from '@floating-ui/react';
 import { Virtuoso } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
+import postStyles from '../post/post.module.css';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import LoadingEllipsis from '../../components/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display/error-display';
@@ -168,6 +171,114 @@ interface ModQueueActionsProps {
   handleRemove?: () => void;
   variant: 'row' | 'card';
 }
+
+interface ModQueueExcerptPreviewLinkProps {
+  comment: Comment;
+  excerpt: string;
+  postUrl: string | undefined;
+  postUrlState: ReturnType<typeof getQueuedCommentRouteState>;
+}
+
+const getExcerptPreviewClassName = (comment: Comment) =>
+  !comment.parentCid ? `${postStyles.replyQuotePreview} ${postStyles.replyQuotePreviewOp}` : postStyles.replyQuotePreview;
+
+// The hover card is a compact preview, so cap its body shorter than the feed's
+// 1000-char CommentContent limit and mark the cut with an ellipsis.
+const PREVIEW_CONTENT_MAX_LENGTH = 350;
+
+const truncatePreviewComment = (comment: Comment): Comment => {
+  const { content } = comment;
+  if (typeof content !== 'string' || content.length <= PREVIEW_CONTENT_MAX_LENGTH) {
+    return comment;
+  }
+  return { ...comment, content: `${content.slice(0, PREVIEW_CONTENT_MAX_LENGTH).trimEnd()}…` };
+};
+
+// Floating preview of the full pending post, anchored to the excerpt text.
+// Mirrors the quote-link hover previews (reply-quote-preview): a clean read-only
+// Post positioned with useFloating, not the feed/mod-queue layout. Rendering it
+// without isModQueue keeps it consistent with quote previews (no leading <hr>,
+// no thread container, no inline approve/reject buttons that hover can't reach).
+//
+// Placement mirrors the quote previews: to the right of the excerpt on desktop,
+// below it on mobile. See setReferenceNode for why desktop anchors to the cell.
+const ModQueueExcerptPreviewLink = ({ comment, excerpt, postUrl, postUrlState }: ModQueueExcerptPreviewLinkProps) => {
+  const isMobile = useIsMobile();
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const previewComment = truncatePreviewComment(comment);
+
+  const { refs, floatingStyles } = useFloating({
+    placement: isMobile ? 'bottom-start' : 'right-start',
+    middleware: [
+      offset(isMobile ? 4 : 8),
+      flip({ fallbackPlacements: isMobile ? ['top-start'] : ['left-start'] }),
+      shift({ padding: 10 }),
+      size({
+        padding: 10,
+        apply({ availableWidth, elements }) {
+          elements.floating.style.maxWidth = `${Math.max(0, availableWidth - 12)}px`;
+        },
+      }),
+    ],
+    whileElementsMounted: autoUpdate,
+  });
+  // Stable callback refs from useFloating (not React refs read during render).
+  const { setReference, setFloating } = refs;
+
+  // Desktop anchors the card to the excerpt cell, not the inline <a>. The excerpt
+  // is a wide single-line link whose box overflows the clipped flex cell, so its
+  // right edge sits far past the visible text; anchoring there shoved the card off
+  // to the right. The parent cell's right edge tracks where the ellipsized excerpt
+  // visibly ends. Mobile keeps the <a> itself and opens below it.
+  const setReferenceNode = (node: HTMLElement | null) => {
+    setReference(!node || isMobile ? node : (node.parentElement ?? node));
+  };
+
+  const openPreview = () => setIsPreviewOpen(true);
+  const closePreview = () => setIsPreviewOpen(false);
+
+  const preview =
+    isPreviewOpen && typeof document !== 'undefined'
+      ? createPortal(
+          <div className={getExcerptPreviewClassName(comment)} data-mod-queue-excerpt-preview='true' ref={setFloating} style={floatingStyles}>
+            <Post post={previewComment} showReplies={false} />
+          </div>,
+          document.body,
+        )
+      : null;
+
+  return (
+    <>
+      {postUrl ? (
+        <Link
+          to={postUrl}
+          state={postUrlState}
+          title={excerpt}
+          ref={setReferenceNode}
+          onMouseEnter={openPreview}
+          onFocus={openPreview}
+          onMouseLeave={closePreview}
+          onBlur={closePreview}
+        >
+          {excerpt}
+        </Link>
+      ) : (
+        <span
+          title={excerpt}
+          ref={setReferenceNode}
+          tabIndex={0}
+          onMouseEnter={openPreview}
+          onFocus={openPreview}
+          onMouseLeave={closePreview}
+          onBlur={closePreview}
+        >
+          {excerpt}
+        </span>
+      )}
+      {preview}
+    </>
+  );
+};
 
 const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove, variant }: ModQueueActionsProps) => {
   const { t } = useTranslation();
@@ -419,13 +530,7 @@ const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath
         <div className={styles.board}>{modQueueUrl ? <Link to={modQueueUrl}>/{boardDisplayPath ?? '—'}/</Link> : <span>/{boardDisplayPath ?? '—'}/</span>}</div>
       )}
       <div className={styles.excerpt}>
-        {postUrl ? (
-          <Link to={postUrl} state={postUrlState} title={excerpt}>
-            {excerpt}
-          </Link>
-        ) : (
-          <span title={excerpt}>{excerpt}</span>
-        )}
+        <ModQueueExcerptPreviewLink comment={displayComment} excerpt={excerpt} postUrl={postUrl} postUrlState={postUrlState} />
       </div>
       <div className={styles.time}>
         {isMobile ? (
@@ -539,15 +644,8 @@ const ModQueueCard = memo(({ comment, showBoard = false, boardPath, boardDisplay
         </span>
       </div>
       <div className={styles.cardContent}>
-        {t('excerpt')}:{' '}
-        {postUrl ? (
-          <Link to={postUrl} state={postUrlState} title={excerpt}>
-            {excerpt}
-          </Link>
-        ) : (
-          <span title={excerpt}>{excerpt}</span>
-        )}{' '}
-        / {t('type')}: {isReply ? t('reply') : t('post')} / {capitalize(t('image'))}: {hasThumbnail ? lowerCase(t('yes')) : lowerCase(t('no'))}
+        {t('excerpt')}: <ModQueueExcerptPreviewLink comment={displayComment} excerpt={excerpt} postUrl={postUrl} postUrlState={postUrlState} /> / {t('type')}:{' '}
+        {isReply ? t('reply') : t('post')} / {capitalize(t('image'))}: {hasThumbnail ? lowerCase(t('yes')) : lowerCase(t('no'))}
       </div>
       <ModQueueActions
         status={status}
