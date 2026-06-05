@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAccount, useComment, useSubscribe } from '@bitsocial/bitsocial-react-hooks';
@@ -225,19 +224,16 @@ const HiddenCatalogThreadsToggle = ({
   const filteredDirectoryAddresses = useFilteredDirectoryAddresses();
   const sortType = useSortingStore((state) => state.sortType);
   const toggleShownScopeKey = useHiddenCatalogThreadsStore((state) => state.toggleShownScopeKey);
-  const communityAddresses = useMemo(() => {
-    if (isInAllView) {
-      return filteredDirectoryAddresses;
-    }
-    if (isInSubscriptionsView) {
-      return account?.subscriptions?.filter(Boolean) || EMPTY_COMMUNITY_ADDRESSES;
-    }
-    if (isInModView) {
-      return accountCommunityAddresses;
-    }
-
-    return address ? [address] : EMPTY_COMMUNITY_ADDRESSES;
-  }, [account?.subscriptions, accountCommunityAddresses, address, filteredDirectoryAddresses, isInAllView, isInModView, isInSubscriptionsView]);
+  let communityAddresses: string[];
+  if (isInAllView) {
+    communityAddresses = filteredDirectoryAddresses;
+  } else if (isInSubscriptionsView) {
+    communityAddresses = account?.subscriptions?.filter(Boolean) || EMPTY_COMMUNITY_ADDRESSES;
+  } else if (isInModView) {
+    communityAddresses = accountCommunityAddresses;
+  } else {
+    communityAddresses = address ? [address] : EMPTY_COMMUNITY_ADDRESSES;
+  }
   const { hiddenCatalogThreads, isLoadingHiddenCatalogThreads, scopeKey } = useHiddenCatalogThreads({
     communityAddresses,
     sortType: sortType === 'new' ? 'new' : 'active',
@@ -295,11 +291,12 @@ export const AutoButton = () => {
   );
 };
 
+const scrollToBottom = () => {
+  window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+};
+
 export const BottomButton = () => {
   const { t } = useTranslation();
-  const scrollToBottom = () => {
-    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
-  };
   return (
     <button type='button' className='button' onClick={scrollToBottom}>
       {t('bottom')}
@@ -307,11 +304,12 @@ export const BottomButton = () => {
   );
 };
 
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+};
+
 export const TopButton = () => {
   const { t } = useTranslation();
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  };
   return (
     <button type='button' className='button' onClick={scrollToTop}>
       {t('top')}

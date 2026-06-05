@@ -1,0 +1,52 @@
+{
+  "task": "react-doctor-score",
+  "last_updated": "2026-06-05",
+  "goal": "react-doctor product-code score >= 90 with zero UI/UX regressions",
+  "baseline": { "score": 55, "errors": 92, "warnings": 515, "total": 607, "files": 118, "config": "doctor.config.json excludes tests via ignore.overrides" },
+  "scoring_note": "Score is density-based: removing files/issues proportionally barely moves it. Reaching 90 requires clearing most of the 607 product diagnostics. Re-measure after every phase.",
+  "verification_gate": [
+    "yarn type-check", "yarn lint", "yarn test", "yarn build", "yarn doctor:score",
+    "playwright-cli e2e across Blink/Gecko/WebKit + mobile on touched surfaces"
+  ],
+  "items": [
+    {
+      "id": "F001", "priority": 1, "status": "verified",
+      "description": "Fix react-doctor config so only test files are excluded (ignore.overrides), single canonical doctor.config.json",
+      "verification": ["yarn doctor:score == 55", "0 test-file diagnostics", "all product files still scored"],
+      "files": ["doctor.config.json", "package.json", "react-doctor.config.json (deleted)"],
+      "notes": "Committed 928784aa3. ignore.files is broken in rd 0.4.0; overrides works. Baseline 55, not 54."
+    },
+    {
+      "id": "F002", "priority": 2, "status": "in_progress",
+      "description": "Phase 1 safe bulk: delete compiler-redundant memo in non-bailout files (166) + barrel imports (39) + hoists/pure-fn/deprecated/simple-memo (~11). One agent per file.",
+      "verification": ["doctor re-measure", "type-check/lint/test/build", "no new diagnostics", "playwright smoke"],
+      "files": ["76 files - see /tmp/rd-phase1.json"],
+      "notes": "Skip memo with side-effect factory or memo() custom comparator. Low regression risk."
+    },
+    {
+      "id": "F003", "priority": 3, "status": "pending",
+      "description": "Phase 2 compiler bailouts (errors): refs(37), set-state-in-effect(13), todo(14), preserve-manual-memoization(7), immutability(2), hooks(1), purity(1). Fix so files compile, then delete the 117 now-unlocked memo.",
+      "verification": ["doctor re-measure", "full suite", "playwright e2e on touched components"],
+      "files": ["29 bailout files"],
+      "notes": "Behavioral risk - smaller batches, careful verification."
+    },
+    {
+      "id": "F004", "priority": 4, "status": "pending",
+      "description": "Phase 3 behavioral state bugs: no-adjust-state-on-prop-change(17), no-event-handler(30), no-pass-data-to-parent(7), prefer-useReducer(4), derived/cascading/chain state, exhaustive-deps, etc.",
+      "verification": ["doctor re-measure", "full suite", "playwright e2e"],
+      "files": [], "notes": "Highest UX-regression risk. Smallest batches."
+    },
+    {
+      "id": "F005", "priority": 5, "status": "pending",
+      "description": "Phase 4 structural: no-multi-comp(35), no-giant-component(12), no-many-boolean-props(12), no-render-in-render(4).",
+      "verification": ["doctor re-measure", "full suite", "playwright e2e + visual"],
+      "files": [], "notes": "Component splits - UI layout regression risk."
+    },
+    {
+      "id": "F006", "priority": 6, "status": "pending",
+      "description": "Phase 5 a11y + careful perf: media-has-caption(5), js-* perf refactors(~30), async-await-in-loop(13), rerender-lazy-ref-init(7), etc. Only as needed to reach 90.",
+      "verification": ["doctor re-measure", "full suite", "playwright e2e"],
+      "files": [], "notes": "async-* changes sequential->parallel semantics - verify carefully."
+    }
+  ]
+}

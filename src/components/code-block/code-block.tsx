@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { highlightCode } from '../../lib/utils/code-highlight';
 import styles from './code-block.module.css';
 
@@ -9,7 +8,7 @@ import styles from './code-block.module.css';
  * inline markdown <span>.
  */
 const CodeBlock = ({ source }: { source: string }) => {
-  const tokens = useMemo(() => highlightCode(source), [source]);
+  const tokens = highlightCode(source);
 
   return (
     <code className={styles.code}>

@@ -31,7 +31,6 @@ Source: https://github.com/bitsocialnet/5chan/blob/master/README.md
 ```markdown
 [![Build Status](https://img.shields.io/github/actions/workflow/status/bitsocialnet/5chan/ci.yml?branch=master)](https://github.com/bitsocialnet/5chan/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/endpoint?url=https://bitsocialnet.github.io/5chan/badges/coverage.json)](https://github.com/bitsocialnet/5chan/blob/master/scripts/write-coverage-badge.mjs)
-[![React Doctor](https://img.shields.io/endpoint?url=https://bitsocialnet.github.io/5chan/badges/react-doctor.json)](https://github.com/bitsocialnet/5chan/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/bitsocialnet/5chan)](https://github.com/bitsocialnet/5chan/releases/latest)
 [![License](https://img.shields.io/badge/license-GPL--3.0--or--later-red.svg)](https://github.com/bitsocialnet/5chan/blob/master/LICENSE)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
@@ -326,7 +325,7 @@ src/
 - After adding or changing tests, run `yarn test`.
 - Do not commit or force-add local rebuild output. `build/` is the main generated build output in this repo; remove or restore generated output directories after local verification before committing.
 - After React UI logic changes, run: `yarn doctor`.
-- Treat React Doctor output as actionable guidance; prioritize `error` then `warning`.
+- Treat React Doctor output as guidance for *newly introduced* issues (the CI `yarn doctor --diff` PR check flags those), not as an aggregate score to grind up: many `error`-level diagnostics flag intentional patterns or current React-Compiler limitations, not bugs. See `docs/agent-playbooks/known-surprises.md`.
 - For UI/visual changes, verify with `playwright-cli` across Chrome/Blink, Firefox/Gecko, and WebKit/Safari.
 - Cover desktop and a mobile viewport flow in each browser engine when the change affects layout, touch behavior, or responsiveness.
 - When loading, navigation, or interaction speed matters (or you cannot tell whether perf is real or just a fast dev machine), run a low-spec pass: `./scripts/pw-throttle.sh <session> mid` (or `low`) applies CPU + network throttling to a Chromium `playwright-cli` session before you measure. Throttling is Chromium-only; keep the Firefox/WebKit checks unthrottled. See `docs/agent-playbooks/low-spec-verification.md`.
@@ -796,6 +795,16 @@ If uncertain, ask the developer before adding an entry.
 ```
 
 ## Entries
+
+### react-doctor score reflects React-Compiler coverage, not code health — do not chase it
+
+- **Date:** 2026-06-05
+- **Observed by:** Tommaso + Claude
+- **Context:** Trying to raise the `yarn doctor` (react-doctor) score to 90 (PR #1155).
+- **What was surprising:** The score is overwhelmingly driven by React-Compiler *optimizability* diagnostics, not code quality. Most of the ~92 "errors" are the `react-hooks-js` plugin flagging valid, idiomatic code the React Compiler (v1.0) cannot optimize *yet* — `refs` (the deliberate latest-ref idiom for a stable callback) and `todo` (`try/finally` and throw-in-`try/catch` the compiler can't lower). The score also saturates on the *fraction of files with zero diagnostics*: removing 150 warnings moved it +1; suppressing all 76 compiler-bailout errors reached only 63; only suppressing essentially every rule reaches 90.
+- **Impact:** Agents/contributors can burn large effort (and risk real regressions) "fixing" the score by rewriting correct code into compiler-friendly-but-worse shapes, or by suppressing rules until the badge is meaningless. ~63 is the honest, no-regression ceiling.
+- **Mitigation:** Do NOT treat the aggregate react-doctor score as a target to grind up (the README badge was removed for this reason). Use react-doctor as a PR-diff reviewer — `yarn doctor --diff <base> --annotations`, already wired in `.github/workflows/ci.yml` — to catch *newly introduced* issues. `doctor.config.jsonc` deliberately does not enforce the `react-hooks-js` rules or `react-compiler-no-manual-memoization` (intentional patterns / current compiler limits). Only fix genuine bugs (e.g. clean `no-adjust-state-on-prop-change` cases). Full reasoning: `docs/agent-runs/react-doctor-score/`.
+- **Status:** confirmed
 
 ### Portless 0.11 reuses legacy proxy state unless the launcher forces HTTPS
 

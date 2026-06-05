@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import blotterData from '../../data/5chan-blotter.json';
-import BlotterMessage from '../blotter-message';
+import BlotterMessage from '../blotter-message/blotter-message';
 import { formatBlotterDate, getBlotterPreview, isBlotterEntry, sortBlotterEntries } from '../../lib/utils/blotter-utils';
 import useBlotterVisibilityStore from '../../stores/use-blotter-visibility-store';
 import styles from './board-blotter.module.css';
