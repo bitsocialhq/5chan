@@ -263,7 +263,15 @@ const ModQueueExcerptPreviewLink = ({ comment, excerpt, postUrl, postUrlState }:
           {excerpt}
         </Link>
       ) : (
-        <span title={excerpt} ref={setReferenceNode} onMouseEnter={openPreview} onMouseLeave={closePreview}>
+        <span
+          title={excerpt}
+          ref={setReferenceNode}
+          tabIndex={0}
+          onMouseEnter={openPreview}
+          onFocus={openPreview}
+          onMouseLeave={closePreview}
+          onBlur={closePreview}
+        >
           {excerpt}
         </span>
       )}
