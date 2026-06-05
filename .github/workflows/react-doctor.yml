@@ -1,0 +1,28 @@
+# React Doctor PR review.
+# Reports only issues this PR INTRODUCES (diffed against the merge-base) as inline
+# review comments + a sticky summary. It reads doctor.config.jsonc, so the
+# React-Compiler rules we don't enforce stay suppressed (see that file and
+# docs/agent-playbooks/known-surprises.md). We do NOT chase the aggregate score.
+name: React Doctor
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: react-doctor-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  react-doctor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # so React Doctor can diff against the merge-base for new-vs-existing
+      - uses: millionco/react-doctor@v1
