@@ -6,16 +6,16 @@ import { canConfigureBrowserPureP2P, isBrowserPureP2PEnabled } from '../../../li
 import styles from './advanced-settings.module.css';
 
 interface SettingsProps {
-  ipfsGatewayUrlsRef?: RefObject<HTMLTextAreaElement>;
-  mediaIpfsGatewayUrlRef?: RefObject<HTMLInputElement>;
-  pubsubProvidersRef?: RefObject<HTMLTextAreaElement>;
-  httpRoutersRef?: RefObject<HTMLTextAreaElement>;
-  ethRpcRef?: RefObject<HTMLTextAreaElement>;
-  p2pRpcRef?: RefObject<HTMLInputElement>;
-  p2pDataPathRef?: RefObject<HTMLInputElement>;
+  ipfsGatewayUrlsRef?: RefObject<HTMLTextAreaElement | null>;
+  mediaIpfsGatewayUrlRef?: RefObject<HTMLInputElement | null>;
+  pubsubProvidersRef?: RefObject<HTMLTextAreaElement | null>;
+  httpRoutersRef?: RefObject<HTMLTextAreaElement | null>;
+  ethRpcRef?: RefObject<HTMLTextAreaElement | null>;
+  p2pRpcRef?: RefObject<HTMLInputElement | null>;
+  p2pDataPathRef?: RefObject<HTMLInputElement | null>;
   onPureP2PBrowserChange?: (enabled: boolean) => void;
   pureP2PBrowserEnabled?: boolean;
-  pureP2PBrowserRef?: RefObject<HTMLInputElement>;
+  pureP2PBrowserRef?: RefObject<HTMLInputElement | null>;
 }
 
 type AccountProtocolOptions = {
