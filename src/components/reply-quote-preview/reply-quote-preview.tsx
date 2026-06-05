@@ -19,6 +19,10 @@ interface ReplyQuotePreviewProps {
   isQuotelinkReply?: boolean;
   quotelinkReply?: Comment;
   quotelinkNumber?: number;
+  // Known cid of the quoted comment even when its body has not been loaded yet, so a pending
+  // quotelink can still be hovered (to position the preview) and request a lazy fetch.
+  quotelinkCid?: string;
+  onResolveQuotelink?: () => void;
   isQuotelinkUnavailable?: boolean;
   isOP?: boolean;
   showTrailingBreak?: boolean;
@@ -99,6 +103,8 @@ const DesktopQuotePreview = ({
   backlinkReply,
   quotelinkReply,
   quotelinkNumber,
+  quotelinkCid,
+  onResolveQuotelink,
   isBacklinkReply,
   isQuotelinkReply,
   isQuotelinkUnavailable,
@@ -252,7 +258,21 @@ const DesktopQuotePreview = ({
       {quotelinkUnavailable ? (
         <span className={quotelinkClassName}>{quotelinkLabel}</span>
       ) : quotelinkPendingResolution ? (
-        <span className={styles.quoteLink}>{quotelinkLabel}</span>
+        quotelinkCid ? (
+          <span
+            ref={refs.setReference}
+            className={styles.quoteLink}
+            onMouseOver={() => {
+              onResolveQuotelink?.();
+              handleMouseOver(quotelinkCid);
+            }}
+            onMouseLeave={() => handleMouseLeave(quotelinkCid)}
+          >
+            {quotelinkLabel}
+          </span>
+        ) : (
+          <span className={styles.quoteLink}>{quotelinkLabel}</span>
+        )
       ) : (
         <Link
           to={quotelinkRoute}
@@ -283,6 +303,8 @@ const MobileQuotePreview = ({
   backlinkReply,
   quotelinkReply,
   quotelinkNumber,
+  quotelinkCid,
+  onResolveQuotelink,
   isBacklinkReply,
   isQuotelinkReply,
   isQuotelinkUnavailable,
@@ -399,16 +421,28 @@ const MobileQuotePreview = ({
     isUnavailable: quotelinkUnavailable,
   });
   const isOwnQuotelink = useIsOwnQuotelink(normalizedQuotelinkReply);
+  // When the body is not loaded yet but the cid is known, still allow hover/focus so the lazy fetch
+  // can be requested and the preview can position itself once the comment resolves.
+  const lazyResolvableQuotelinkCid = quotelinkPendingResolution && quotelinkCid ? quotelinkCid : undefined;
+  const quotelinkHoverCid = resolvedQuotelinkCid ?? lazyResolvableQuotelinkCid;
+  const isQuotelinkHoverable = !quotelinkUnavailable && Boolean(quotelinkHoverCid);
+  const handleQuotelinkPointerEnter = () => {
+    if (lazyResolvableQuotelinkCid) {
+      onResolveQuotelink?.();
+    }
+    handleMouseOver(quotelinkHoverCid);
+  };
+  const handleQuotelinkPointerLeave = () => handleMouseLeave(quotelinkHoverCid ?? null);
 
   const replyQuotelink = (
     <>
       <span
-        ref={quotelinkUnavailable || quotelinkPendingResolution ? undefined : refs.setReference}
+        ref={isQuotelinkHoverable ? refs.setReference : undefined}
         className={quotelinkPendingResolution ? styles.quoteLink : quotelinkClassName}
-        onMouseOver={quotelinkUnavailable || quotelinkPendingResolution ? undefined : () => handleMouseOver(resolvedQuotelinkCid)}
-        onFocus={quotelinkUnavailable || quotelinkPendingResolution ? undefined : () => handleMouseOver(resolvedQuotelinkCid)}
-        onMouseLeave={quotelinkUnavailable || quotelinkPendingResolution ? undefined : () => handleMouseLeave(resolvedQuotelinkCid)}
-        onBlur={quotelinkUnavailable || quotelinkPendingResolution ? undefined : () => handleMouseLeave(resolvedQuotelinkCid)}
+        onMouseOver={isQuotelinkHoverable ? handleQuotelinkPointerEnter : undefined}
+        onFocus={isQuotelinkHoverable ? handleQuotelinkPointerEnter : undefined}
+        onMouseLeave={isQuotelinkHoverable ? handleQuotelinkPointerLeave : undefined}
+        onBlur={isQuotelinkHoverable ? handleQuotelinkPointerLeave : undefined}
       >
         {formatQuoteNumber(resolvedQuotelinkNumber)}
         {isOP && ' (OP)'}
@@ -449,6 +483,8 @@ const ReplyQuotePreview = ({
   backlinkReply,
   quotelinkReply,
   quotelinkNumber,
+  quotelinkCid,
+  onResolveQuotelink,
   isBacklinkReply,
   isQuotelinkReply,
   isQuotelinkUnavailable,
@@ -462,6 +498,8 @@ const ReplyQuotePreview = ({
       backlinkReply={backlinkReply}
       quotelinkReply={quotelinkReply}
       quotelinkNumber={quotelinkNumber}
+      quotelinkCid={quotelinkCid}
+      onResolveQuotelink={onResolveQuotelink}
       isBacklinkReply={isBacklinkReply}
       isQuotelinkReply={isQuotelinkReply}
       isQuotelinkUnavailable={isQuotelinkUnavailable}
@@ -473,6 +511,8 @@ const ReplyQuotePreview = ({
       backlinkReply={backlinkReply}
       quotelinkReply={quotelinkReply}
       quotelinkNumber={quotelinkNumber}
+      quotelinkCid={quotelinkCid}
+      onResolveQuotelink={onResolveQuotelink}
       isBacklinkReply={isBacklinkReply}
       isQuotelinkReply={isQuotelinkReply}
       isQuotelinkUnavailable={isQuotelinkUnavailable}

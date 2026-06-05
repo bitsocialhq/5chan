@@ -80,7 +80,8 @@ describe('usePublishReply', () => {
     testState.lastPublishOptions = undefined;
     testState.publishAuthorBlockedReason = undefined;
     useChallengesStore.setState({ challenges: [] });
-    usePostNumberStore.setState({ cidToNumber: {}, numberToCid: { 'music.eth': { 12: 'quoted-cid' } } });
+    // 'quoted-cid' (post #12) lives under the reply's own thread (postCid falls back to 'parent-cid').
+    usePostNumberStore.setState({ cidToNumber: {}, numberToCid: { 'music.eth': { 12: 'quoted-cid' } }, cidToPostCid: { 'quoted-cid': 'parent-cid' } });
     usePublishReplyStore.setState({
       author: {},
       challengeRequest: {},
@@ -127,12 +128,49 @@ describe('usePublishReply', () => {
     });
   });
 
+  it('drops cross-thread quoted cids so the protocol does not reject the publish', async () => {
+    // Post #12 resolves to a comment that lives under a different thread; quoting it must not be
+    // published as a quotedCid (ERR_QUOTED_CID_NOT_UNDER_POST), even though the >>12 text stays.
+    usePostNumberStore.setState({ cidToPostCid: { 'quoted-cid': 'another-thread-cid' } });
+
+    await act(async () => {
+      latestValue.setPublishReplyOptions({
+        content: 'Replying to >>12',
+      } as never);
+    });
+
+    expect(testState.lastPublishOptions).toMatchObject({
+      content: 'Replying to >>12',
+      parentCid: 'parent-cid',
+      postCid: 'parent-cid',
+    });
+    expect(testState.lastPublishOptions?.quotedCids).toBeUndefined();
+  });
+
+  it('drops cross-thread cids that arrive via stored publish options, keeping same-thread ones', async () => {
+    // Defense in depth: even quotedCids carried on the stored publish options must be filtered to
+    // the reply's own thread before publishing, never bypassing the same-thread guard.
+    await act(async () => {
+      usePostNumberStore.setState({ cidToPostCid: { 'quoted-cid': 'parent-cid', 'foreign-cid': 'other-thread-cid' } });
+      usePublishReplyStore.setState({
+        publishCommentOptions: {
+          'parent-cid': { content: 'body', parentCid: 'parent-cid', postCid: 'parent-cid', quotedCids: ['quoted-cid', 'foreign-cid'] },
+        },
+      });
+    });
+
+    expect(testState.lastPublishOptions?.quotedCids).toEqual(['quoted-cid']);
+  });
+
   it('resolves same-board external quote references before triggering publish', async () => {
     testState.resolveExternalQuoteTargetMock.mockResolvedValue({
       cid: 'external-cid',
       route: '/music/thread/external-cid',
       communityAddress: 'music.eth',
     });
+    // The resolver registers whatever it finds; here #44 turns out to be an unloaded reply under
+    // this same thread, so its cid is allowed in the published quotedCids.
+    usePostNumberStore.setState({ cidToPostCid: { 'quoted-cid': 'parent-cid', 'external-cid': 'parent-cid' } });
 
     await act(async () => {
       latestValue.setPublishReplyOptions({

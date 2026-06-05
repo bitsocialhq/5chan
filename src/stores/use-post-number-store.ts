@@ -7,6 +7,8 @@ interface PostNumberState {
   // Post numbers are only unique within a board, so scope by canonical community address.
   numberToCid: Record<string, Record<number, string>>;
   cidToNumber: Record<string, number>;
+  // Thread (post) cid each comment lives under, so replies only publish same-thread quotedCids.
+  cidToPostCid: Record<string, string>;
   registerComments: (comments: Comment[]) => void;
 }
 
@@ -45,13 +47,23 @@ export const getCidForPostNumber = (numberToCid: Record<string, Record<number, s
 const usePostNumberStore = create<PostNumberState>((set) => ({
   numberToCid: {},
   cidToNumber: {},
+  cidToPostCid: {},
   registerComments: (comments: Comment[]) => {
     if (!comments?.length) return;
 
     set((state) => {
       let nextNumberToCid = state.numberToCid;
       let nextCidToNumber = state.cidToNumber;
+      let nextCidToPostCid = state.cidToPostCid;
       let hasUpdates = false;
+
+      const ensureCloned = () => {
+        if (hasUpdates) return;
+        nextNumberToCid = { ...state.numberToCid };
+        nextCidToNumber = { ...state.cidToNumber };
+        nextCidToPostCid = { ...state.cidToPostCid };
+        hasUpdates = true;
+      };
 
       for (const c of comments) {
         const num = c?.number;
@@ -61,16 +73,19 @@ const usePostNumberStore = create<PostNumberState>((set) => ({
 
         const existingCid = nextNumberToCid[addr]?.[num];
         if (existingCid !== cid || nextCidToNumber[cid] !== num) {
-          if (!hasUpdates) {
-            nextNumberToCid = { ...state.numberToCid };
-            nextCidToNumber = { ...state.cidToNumber };
-            hasUpdates = true;
-          }
+          ensureCloned();
           if (!nextNumberToCid[addr] || nextNumberToCid[addr] === state.numberToCid[addr]) {
             nextNumberToCid[addr] = { ...nextNumberToCid[addr] };
           }
           nextNumberToCid[addr][num] = cid;
           nextCidToNumber[cid] = num;
+        }
+
+        // OPs are their own thread (no postCid); replies always carry their thread's postCid.
+        const postCid = c?.postCid || cid;
+        if (nextCidToPostCid[cid] !== postCid) {
+          ensureCloned();
+          nextCidToPostCid[cid] = postCid;
         }
       }
 
@@ -78,7 +93,7 @@ const usePostNumberStore = create<PostNumberState>((set) => ({
         return state;
       }
 
-      return { numberToCid: nextNumberToCid, cidToNumber: nextCidToNumber };
+      return { numberToCid: nextNumberToCid, cidToNumber: nextCidToNumber, cidToPostCid: nextCidToPostCid };
     });
   },
 }));
