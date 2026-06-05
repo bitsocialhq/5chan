@@ -596,4 +596,40 @@ describe('ReplyQuotePreview', () => {
     expect(container.textContent).toContain('>>42');
     expect(Array.from(container.querySelectorAll('a')).some((anchor) => anchor.textContent?.includes('#'))).toBe(false);
   });
+
+  it('requests a lazy fetch on hover for a pending quotelink with a known cid, then shows the preview once it resolves', async () => {
+    testState.quoteAvailability = 'unresolved';
+    const onResolveQuotelink = vi.fn();
+
+    // Pending: the cross-thread body is not loaded yet, but the cid is known.
+    await renderPreview({
+      isQuotelinkReply: true,
+      quotelinkNumber: 2,
+      quotelinkReply: undefined,
+      quotelinkCid: 'cross-thread-cid',
+      onResolveQuotelink,
+    });
+
+    const pendingQuote = Array.from(container.querySelectorAll('span')).find((node) => node.textContent === '>>2');
+    expect(pendingQuote).toBeTruthy();
+    expect(document.querySelector('[data-testid="post-preview"]')).toBeNull();
+
+    // Hovering requests the lazy fetch (and primes the hover state for the quoted cid).
+    await act(async () => {
+      pendingQuote?.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    });
+    expect(onResolveQuotelink).toHaveBeenCalledTimes(1);
+
+    // Once the body resolves, the floating preview appears without needing to re-hover.
+    testState.quoteAvailability = 'available';
+    await renderPreview({
+      isQuotelinkReply: true,
+      quotelinkNumber: 2,
+      quotelinkReply: { cid: 'cross-thread-cid', number: 2, communityAddress: 'music-posting.eth' },
+      quotelinkCid: 'cross-thread-cid',
+      onResolveQuotelink,
+    });
+
+    expect(document.querySelector('[data-testid="post-preview"]')?.textContent).toBe('cross-thread-cid');
+  });
 });

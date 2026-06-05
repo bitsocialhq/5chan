@@ -421,10 +421,14 @@ interface MarkdownProps {
 }
 
 const NumberQuoteLink = ({ number, threadPostCid, communityAddress }: { number: number; threadPostCid?: string; communityAddress?: string }) => {
+  // A cross-thread quote's number->cid mapping can be known locally while its comment body is not
+  // yet cached. Fetch the body lazily on hover so the floating preview can show, instead of leaving
+  // the quotelink inert. Same-thread quotes stay cached, so this never fetches for them.
+  const [resolveRequested, setResolveRequested] = useState(false);
   const cid = usePostNumberStore((state) => getCidForPostNumber(state.numberToCid, communityAddress, number));
   const threadPostNumber = usePostNumberStore((state) => (threadPostCid ? state.cidToNumber[threadPostCid] : undefined));
   const commentFromStore = useCommunitiesPagesStore((state) => (cid ? state.comments[cid] : undefined));
-  const commentFromHook = useComment({ commentCid: cid, onlyIfCached: true });
+  const commentFromHook = useComment({ commentCid: cid, onlyIfCached: !resolveRequested });
   const comment = commentFromHook?.number !== undefined ? commentFromHook : commentFromStore;
   const isOP = Boolean((threadPostCid && cid === threadPostCid) || (threadPostNumber !== undefined && number === threadPostNumber));
 
@@ -448,7 +452,17 @@ const NumberQuoteLink = ({ number, threadPostCid, communityAddress }: { number: 
     );
   }
 
-  return <ReplyQuotePreview isQuotelinkReply={true} quotelinkReply={comment} quotelinkNumber={number} isOP={isOP} showTrailingBreak={false} />;
+  return (
+    <ReplyQuotePreview
+      isQuotelinkReply={true}
+      quotelinkReply={comment}
+      quotelinkNumber={number}
+      quotelinkCid={cid}
+      onResolveQuotelink={resolveRequested ? undefined : () => setResolveRequested(true)}
+      isOP={isOP}
+      showTrailingBreak={false}
+    />
+  );
 };
 
 const AnchorLink = ({ href, text }: { href: string; text: string }) => {

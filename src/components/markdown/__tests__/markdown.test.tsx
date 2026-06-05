@@ -191,17 +191,20 @@ vi.mock('../../reply-quote-preview', () => ({
   default: ({
     isOP,
     isQuotelinkUnavailable,
+    quotelinkCid,
     quotelinkNumber,
     quotelinkReply,
   }: {
     isOP?: boolean;
     isQuotelinkUnavailable?: boolean;
+    quotelinkCid?: string;
     quotelinkNumber?: number;
     quotelinkReply?: TestComment;
   }) =>
     createElement(
       'span',
       {
+        'data-cid': quotelinkCid ?? '',
         'data-number': String(quotelinkNumber ?? ''),
         'data-op': String(Boolean(isOP)),
         'data-testid': 'reply-quote-preview',
@@ -575,6 +578,26 @@ describe('Markdown', () => {
 
     const lazyLinks = Array.from(container.querySelectorAll('[data-testid="external-number-quote-link"]'));
     expect(lazyLinks.map((node) => node.textContent)).toEqual(['>>42', '>>>/fit/77']);
+  });
+
+  it('passes the known cid to the quote preview when a cross-thread number resolves but its body is uncached', async () => {
+    // #2 lives in another thread: its number->cid mapping is registered, but the comment body is not
+    // cached. It must NOT render the lazy external link (cid is known); it renders the quote preview
+    // with the cid so the body can be fetched on hover instead of staying inert.
+    testState.numberToCid = { 'music-posting.eth': { 2: 'comment-2' } };
+    testState.cidToNumber = { 'comment-2': 2 };
+
+    await renderMarkdown({
+      content: '>>2',
+      postCid: 'thread-cid',
+      communityAddress: 'music-posting.eth',
+    });
+
+    expect(container.querySelector('[data-testid="external-number-quote-link"]')).toBeNull();
+    const preview = container.querySelector('[data-testid="reply-quote-preview"]');
+    expect(preview?.getAttribute('data-number')).toBe('2');
+    expect(preview?.getAttribute('data-cid')).toBe('comment-2');
+    expect(preview?.textContent).toBe('missing');
   });
 
   it('shows youtube thumbnails in the floating hover preview instead of loading the iframe', async () => {
