@@ -298,7 +298,7 @@ const PostPage = () => {
   const communityAddress = resolvedCommunityAddress ?? commentCommunityAddress;
   const communityIdentifier = useCommunityIdentifier(communityAddress);
   const consumedThreadTopScrollRef = useRef<string | null>(null);
-  const previousThreadCidRef = useRef<string>();
+  const previousThreadCidRef = useRef<string>(undefined);
   const lastProcessedUpdateRequestIdRef = useRef(0);
 
   const navigate = useNavigate();

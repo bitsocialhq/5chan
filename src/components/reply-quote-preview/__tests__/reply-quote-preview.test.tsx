@@ -38,19 +38,8 @@ vi.mock('react-router-dom', async () => {
   const ReactModule = await vi.importActual<typeof import('react')>('react');
 
   return {
-    Link: ReactModule.forwardRef(
-      (
-        {
-          children,
-          to,
-          ...props
-        }: {
-          children?: React.ReactNode;
-          to: string;
-          [key: string]: unknown;
-        },
-        ref,
-      ) => ReactModule.createElement('a', { ...props, href: to, ref }, children),
+    Link: ReactModule.forwardRef<HTMLAnchorElement, { children?: React.ReactNode; to: string }>(({ children, to, ...props }, ref) =>
+      ReactModule.createElement('a', { ...props, href: to, ref }, children),
     ),
     useLocation: () => ({
       pathname: testState.locationPath,

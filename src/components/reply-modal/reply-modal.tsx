@@ -358,9 +358,9 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     }
   }, [showReplyModal]);
 
-  const handleContentInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    lastSelectionStartRef.current = e.target.selectionStart ?? e.target.value.length;
-    lastSelectionEndRef.current = e.target.selectionEnd ?? lastSelectionStartRef.current;
+  const handleContentInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
+    lastSelectionStartRef.current = e.currentTarget.selectionStart ?? e.currentTarget.value.length;
+    lastSelectionEndRef.current = e.currentTarget.selectionEnd ?? lastSelectionStartRef.current;
   };
 
   const handleContentValueChange = (content: string, selectionStart?: number, selectionEnd?: number, options = optionsRef.current?.value || '') => {

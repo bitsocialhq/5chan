@@ -25,7 +25,7 @@ const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
   const setPublishPostStore = usePublishPostStore((state) => state.setPublishPostStore);
   const resetPublishPostStore = usePublishPostStore((state) => state.resetPublishPostStore);
   const addChallenge = useChallengesStore((state) => state.addChallenge);
-  const abandonPublishRef = useRef<(() => Promise<void>) | undefined>();
+  const abandonPublishRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const [publishPostError, setPublishPostError] = useState<string | null>(null);
   const [pendingPublishRequestId, setPendingPublishRequestId] = useState(0);
   const startedPublishRequestIdRef = useRef(0);
