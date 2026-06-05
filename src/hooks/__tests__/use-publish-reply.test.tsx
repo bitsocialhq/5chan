@@ -147,6 +147,21 @@ describe('usePublishReply', () => {
     expect(testState.lastPublishOptions?.quotedCids).toBeUndefined();
   });
 
+  it('drops cross-thread cids that arrive via stored publish options, keeping same-thread ones', async () => {
+    // Defense in depth: even quotedCids carried on the stored publish options must be filtered to
+    // the reply's own thread before publishing, never bypassing the same-thread guard.
+    await act(async () => {
+      usePostNumberStore.setState({ cidToPostCid: { 'quoted-cid': 'parent-cid', 'foreign-cid': 'other-thread-cid' } });
+      usePublishReplyStore.setState({
+        publishCommentOptions: {
+          'parent-cid': { content: 'body', parentCid: 'parent-cid', postCid: 'parent-cid', quotedCids: ['quoted-cid', 'foreign-cid'] },
+        },
+      });
+    });
+
+    expect(testState.lastPublishOptions?.quotedCids).toEqual(['quoted-cid']);
+  });
+
   it('resolves same-board external quote references before triggering publish', async () => {
     testState.resolveExternalQuoteTargetMock.mockResolvedValue({
       cid: 'external-cid',

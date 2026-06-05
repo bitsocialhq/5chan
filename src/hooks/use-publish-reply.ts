@@ -125,10 +125,22 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
       merged.add(cid);
     }
 
-    return filterSameThreadQuotedCids(merged.size > 0 ? [...merged] : undefined, cidToPostCid, threadPostCid);
-  }, [quotedCids, resolvedExternalQuotedCids, cidToPostCid, threadPostCid]);
+    return merged.size > 0 ? [...merged] : undefined;
+  }, [quotedCids, resolvedExternalQuotedCids]);
 
-  const mergedPublishOptions = useMemo(() => mergeQuotedCids(publishCommentOptions, mergedQuotedCids), [publishCommentOptions, mergedQuotedCids]);
+  const mergedPublishOptions = useMemo(() => {
+    // Filter the FINAL payload so a reply only ever publishes same-thread quotedCids, even for any
+    // that arrived via stored publishCommentOptions. The protocol rejects cross-thread quotes
+    // (ERR_QUOTED_CID_NOT_UNDER_POST); cross-thread quotelinks still render/navigate via their text.
+    const options = mergeQuotedCids(publishCommentOptions, mergedQuotedCids);
+    if (!options?.quotedCids) {
+      return options;
+    }
+
+    const sameThreadQuotedCids = filterSameThreadQuotedCids(options.quotedCids, cidToPostCid, threadPostCid);
+    const { quotedCids: _crossThreadQuotedCids, ...optionsWithoutQuotedCids } = options;
+    return sameThreadQuotedCids ? { ...optionsWithoutQuotedCids, quotedCids: sameThreadQuotedCids } : optionsWithoutQuotedCids;
+  }, [publishCommentOptions, mergedQuotedCids, cidToPostCid, threadPostCid]);
   const publishOptionsWithAbandon = useMemo(
     () => ({
       ...mergedPublishOptions,
