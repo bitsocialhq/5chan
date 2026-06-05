@@ -26,6 +26,7 @@ const waitFor = async (predicate: () => boolean) => {
 describe('useThemeStore', () => {
   beforeEach(() => {
     vi.resetModules();
+    localStorage.clear();
     testState.entriesMock.mockReset();
     testState.entriesMock.mockResolvedValue([]);
     testState.setItemMock.mockReset();
@@ -68,5 +69,40 @@ describe('useThemeStore', () => {
 
     expect(store.getState().getTheme('sfw')).toBe('yotsuba-b');
     expect(store.getState().currentTheme).toBe('yotsuba-b');
+  });
+
+  it('initializes themes synchronously from localStorage before async load resolves', async () => {
+    // Keep the async localForage load pending so it cannot overwrite the synchronous init.
+    testState.entriesMock.mockReturnValue(new Promise(() => {}));
+    localStorage.setItem('5chan-themes', JSON.stringify({ nsfw: 'tomorrow', sfw: 'photon' }));
+
+    const store = (await import('../use-theme-store')).default;
+
+    // No await for the async load: the first render must already see the saved themes,
+    // otherwise the default theme flashes before the saved one loads.
+    expect(store.getState().themes).toEqual({ nsfw: 'tomorrow', sfw: 'photon' });
+  });
+
+  it('falls back to defaults when localStorage is empty or invalid', async () => {
+    testState.entriesMock.mockReturnValue(new Promise(() => {}));
+    localStorage.setItem('5chan-themes', 'not-json');
+
+    const store = (await import('../use-theme-store')).default;
+
+    expect(store.getState().themes).toEqual({ nsfw: 'yotsuba', sfw: 'yotsuba-b' });
+  });
+
+  it('setTheme mirrors the saved theme into localStorage', async () => {
+    // Keep the async load pending so it cannot race and overwrite the localStorage mirror.
+    testState.entriesMock.mockReturnValue(new Promise(() => {}));
+    const store = (await import('../use-theme-store')).default;
+
+    await store.getState().setTheme('sfw', 'tomorrow');
+
+    expect(testState.setItemMock).toHaveBeenCalledWith('sfw', 'tomorrow');
+    expect(JSON.parse(localStorage.getItem('5chan-themes') ?? '{}')).toEqual({
+      nsfw: 'yotsuba',
+      sfw: 'tomorrow',
+    });
   });
 });
