@@ -60,7 +60,7 @@ const SearchBar = ({ setShowSearchBar }: { setShowSearchBar: (show: boolean) => 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const searchInput = searchInputRef.current?.value;
-    if (searchInput) {
+    if (searchInput && searchInputRef.current) {
       searchInputRef.current.value = '';
       navigate(`/${searchInput}`);
       setShowSearchBar(false);

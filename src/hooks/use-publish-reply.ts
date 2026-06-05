@@ -38,7 +38,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const resetPublishReplyStore = usePublishReplyStore((state) => state.resetPublishReplyStore);
   const addChallenge = useChallengesStore((state) => state.addChallenge);
   const { blockedReason } = usePublishAuthorDomainGuard();
-  const abandonPublishRef = useRef<(() => Promise<void>) | undefined>();
+  const abandonPublishRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const startedPublishRequestIdRef = useRef(0);
   const [resolvedExternalQuotedCids, setResolvedExternalQuotedCids] = useState<string[] | undefined>();
   const [pendingPublishRequestId, setPendingPublishRequestId] = useState(0);

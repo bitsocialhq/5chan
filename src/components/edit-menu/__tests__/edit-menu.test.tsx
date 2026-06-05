@@ -34,7 +34,7 @@ const testState = vi.hoisted(() => ({
 }));
 
 vi.mock('react-i18next', () => ({
-  Trans: ({ components, i18nKey }: { components?: Record<number, React.ReactElement>; i18nKey: string }) =>
+  Trans: ({ components, i18nKey }: { components?: Record<number, React.ReactElement<Record<string, unknown>>>; i18nKey: string }) =>
     createElement(
       'span',
       { 'data-testid': `trans-${i18nKey}` },

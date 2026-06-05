@@ -74,7 +74,7 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
   const [isRetryRedirectPending, setIsRetryRedirectPending] = useState(false);
   const addChallenge = useChallengesStore((state) => state.addChallenge);
   const navigate = useNavigate();
-  const abandonPublishRef = useRef<(() => Promise<void>) | undefined>();
+  const abandonPublishRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const abandonCurrentPublish = useCallback(async () => {
     await abandonPublishRef.current?.();
   }, []);

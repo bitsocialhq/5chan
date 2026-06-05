@@ -156,10 +156,10 @@ interface PostFormFieldsProps {
   isBbcodePreviewing: boolean;
   postCid: string;
   subjectRef: React.Ref<HTMLInputElement>;
-  optionsRef: React.RefObject<HTMLInputElement>;
-  flagRef: React.RefObject<HTMLSelectElement>;
-  flashTagRef: React.RefObject<HTMLSelectElement>;
-  textRef: React.RefObject<HTMLTextAreaElement>;
+  optionsRef: React.RefObject<HTMLInputElement | null>;
+  flagRef: React.RefObject<HTMLSelectElement | null>;
+  flashTagRef: React.RefObject<HTMLSelectElement | null>;
+  textRef: React.RefObject<HTMLTextAreaElement | null>;
   urlRef: React.Ref<HTMLInputElement>;
   url: string;
   lengthError: string | null;
