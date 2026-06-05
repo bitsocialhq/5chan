@@ -5,7 +5,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useDirectories } from './use-directories';
 import usePublishReplyStore from '../stores/use-publish-reply-store';
 import usePostNumberStore, { getScopedNumberToCidMap } from '../stores/use-post-number-store';
-import { getQuotedCidsFromContent, mergeQuotedCids } from '../lib/utils/reply-quote-utils';
+import { filterSameThreadQuotedCids, getQuotedCidsFromContent, mergeQuotedCids } from '../lib/utils/reply-quote-utils';
 import { extractUnresolvedExternalQuoteReferences, getExternalQuoteStatusMessage } from '../lib/utils/external-quote-utils';
 import { resolveExternalQuoteTarget } from '../lib/utils/external-quote-resolver';
 import useChallengesStore from '../stores/use-challenges-store';
@@ -97,6 +97,8 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const resetPublishReplyOptions = useCallback(() => resetPublishReplyStore(parentCid), [parentCid, resetPublishReplyStore]);
 
   const scopedNumberToCid = usePostNumberStore((state) => getScopedNumberToCidMap(state.numberToCid, communityAddress));
+  const cidToPostCid = usePostNumberStore((state) => state.cidToPostCid);
+  const threadPostCid = postCid ?? parentCid;
   const quotedCids = useMemo(() => getQuotedCidsFromContent(content, scopedNumberToCid), [content, scopedNumberToCid]);
   const unresolvedExternalQuoteReferences = useMemo(
     () =>
@@ -123,8 +125,8 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
       merged.add(cid);
     }
 
-    return merged.size > 0 ? [...merged] : undefined;
-  }, [quotedCids, resolvedExternalQuotedCids]);
+    return filterSameThreadQuotedCids(merged.size > 0 ? [...merged] : undefined, cidToPostCid, threadPostCid);
+  }, [quotedCids, resolvedExternalQuotedCids, cidToPostCid, threadPostCid]);
 
   const mergedPublishOptions = useMemo(() => mergeQuotedCids(publishCommentOptions, mergedQuotedCids), [publishCommentOptions, mergedQuotedCids]);
   const publishOptionsWithAbandon = useMemo(

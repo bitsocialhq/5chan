@@ -10,7 +10,7 @@ import {
   hasEnoughPreviewReplies,
   sortRepliesForDisplay,
 } from '../replies-preview-utils';
-import { getQuotedCidsFromContent, mergeQuotedCids } from '../reply-quote-utils';
+import { filterSameThreadQuotedCids, getQuotedCidsFromContent, mergeQuotedCids } from '../reply-quote-utils';
 import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../string-utils';
 import { getActiveSpecialTheme, getFormattedDate, getFormattedTimeAgo, getSpecialThemeClass, isChristmas, isHalloween } from '../time-utils';
 
@@ -247,6 +247,18 @@ describe('misc utils', () => {
       quotedCids: ['cid-12', 'cid-45'],
     });
     expect(mergeQuotedCids(undefined, ['cid-12'])).toBeUndefined();
+  });
+
+  it('keeps only same-thread quoted cids so cross-thread quotes are not published', () => {
+    const cidToPostCid = { 'cid-12': 'thread-a', 'cid-45': 'thread-b', 'cid-op': 'thread-a' };
+    // cid-12 and the OP (cid-op) are under thread-a; cid-45 lives under another thread and is dropped.
+    expect(filterSameThreadQuotedCids(['cid-12', 'cid-45', 'cid-op'], cidToPostCid, 'thread-a')).toEqual(['cid-12', 'cid-op']);
+    // Every quote points at another thread, so nothing is published.
+    expect(filterSameThreadQuotedCids(['cid-45'], cidToPostCid, 'thread-a')).toBeUndefined();
+    // Unknown thread mapping or missing inputs resolve to no quoted cids.
+    expect(filterSameThreadQuotedCids(['cid-unknown'], cidToPostCid, 'thread-a')).toBeUndefined();
+    expect(filterSameThreadQuotedCids(['cid-12'], cidToPostCid, undefined)).toBeUndefined();
+    expect(filterSameThreadQuotedCids(undefined, cidToPostCid, 'thread-a')).toBeUndefined();
   });
 
   it('formats ids, truncates long strings, and localizes time labels', () => {
