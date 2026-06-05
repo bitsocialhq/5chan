@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAccount, setAccount, useResolvedAuthorAddress } from '@bitsocial/bitsocial-react-hooks';
 import styles from './crypto-address-setting.module.css';
@@ -244,4 +244,4 @@ const CryptoAddressSetting = () => {
   return <CryptoAddressSettingContent key={accountResetKey} account={account} />;
 };
 
-export default memo(CryptoAddressSetting);
+export default CryptoAddressSetting;

@@ -7,8 +7,10 @@ interface PopularThreadsOptionsStore {
   setShowNsfwContentOnly: (value: boolean) => void;
 }
 
+const storedShowWorksafeContentOnly = localStorage.getItem('showWorksafeContentOnly');
+
 const usePopularThreadsOptionsStore = create<PopularThreadsOptionsStore>((set) => ({
-  showWorksafeContentOnly: localStorage.getItem('showWorksafeContentOnly') === 'true' || localStorage.getItem('showWorksafeContentOnly') === null ? true : false,
+  showWorksafeContentOnly: storedShowWorksafeContentOnly === 'true' || storedShowWorksafeContentOnly === null ? true : false,
   setShowWorksafeContentOnly: (value: boolean) => {
     set({ showWorksafeContentOnly: value });
     localStorage.setItem('showWorksafeContentOnly', value.toString());

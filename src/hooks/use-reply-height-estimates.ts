@@ -26,30 +26,26 @@ const useReplyHeightEstimates = ({ directRepliesByParentCid, enabled = true, isM
   const location = useLocation();
   const windowWidth = useWindowWidth();
   const themeKey = typeof document !== 'undefined' ? document.body.className : '';
-  const effectiveMode = useMemo(() => mode ?? resolveReplyVirtualizationMode(location.search), [location.search, mode]);
+  const effectiveMode = mode ?? resolveReplyVirtualizationMode(location.search);
 
   const metrics = useMemo(() => readReplyTypographyMetrics(), [themeKey, windowWidth]);
 
-  const rawHeightEstimates = useMemo(
-    () =>
-      !enabled
-        ? []
-        : getReplyHeightEstimates({
-            context: 'thread',
-            directRepliesByParentCid,
-            isMobile,
-            maxContentChars,
-            metrics,
-            quotedByMap,
-            replies,
-            windowWidth,
-          }),
-    [directRepliesByParentCid, enabled, isMobile, maxContentChars, metrics, quotedByMap, replies, windowWidth],
-  );
+  const rawHeightEstimates = !enabled
+    ? []
+    : getReplyHeightEstimates({
+        context: 'thread',
+        directRepliesByParentCid,
+        isMobile,
+        maxContentChars,
+        metrics,
+        quotedByMap,
+        replies,
+        windowWidth,
+      });
 
   const heightEstimates = effectiveMode === 'off' ? undefined : rawHeightEstimates;
-  const defaultItemHeight = useMemo(() => getTypicalReplyHeight(rawHeightEstimates, isMobile), [rawHeightEstimates, isMobile]);
-  const itemSize = useMemo<SizeFunction | undefined>(() => (effectiveMode === 'item-size' ? getReplyItemSizeFromElement : undefined), [effectiveMode]);
+  const defaultItemHeight = getTypicalReplyHeight(rawHeightEstimates, isMobile);
+  const itemSize: SizeFunction | undefined = effectiveMode === 'item-size' ? getReplyItemSizeFromElement : undefined;
 
   return { defaultItemHeight, heightEstimates, itemSize, metrics, mode: effectiveMode, windowWidth };
 };
