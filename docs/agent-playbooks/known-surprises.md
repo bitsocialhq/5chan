@@ -28,6 +28,16 @@ If uncertain, ask the developer before adding an entry.
 
 ## Entries
 
+### react-doctor score reflects React-Compiler coverage, not code health — do not chase it
+
+- **Date:** 2026-06-05
+- **Observed by:** Tommaso + Claude
+- **Context:** Trying to raise the `yarn doctor` (react-doctor) score to 90 (PR #1155).
+- **What was surprising:** The score is overwhelmingly driven by React-Compiler *optimizability* diagnostics, not code quality. Most of the ~92 "errors" are the `react-hooks-js` plugin flagging valid, idiomatic code the React Compiler (v1.0) cannot optimize *yet* — `refs` (the deliberate latest-ref idiom for a stable callback) and `todo` (`try/finally` and throw-in-`try/catch` the compiler can't lower). The score also saturates on the *fraction of files with zero diagnostics*: removing 150 warnings moved it +1; suppressing all 76 compiler-bailout errors reached only 63; only suppressing essentially every rule reaches 90.
+- **Impact:** Agents/contributors can burn large effort (and risk real regressions) "fixing" the score by rewriting correct code into compiler-friendly-but-worse shapes, or by suppressing rules until the badge is meaningless. ~63 is the honest, no-regression ceiling.
+- **Mitigation:** Do NOT treat the aggregate react-doctor score as a target to grind up (the README badge was removed for this reason). Use react-doctor as a PR-diff reviewer — `yarn doctor --diff <base> --annotations`, already wired in `.github/workflows/ci.yml` — to catch *newly introduced* issues. `doctor.config.jsonc` deliberately does not enforce the `react-hooks-js` rules or `react-compiler-no-manual-memoization` (intentional patterns / current compiler limits). Only fix genuine bugs (e.g. clean `no-adjust-state-on-prop-change` cases). Full reasoning: `docs/agent-runs/react-doctor-score/`.
+- **Status:** confirmed
+
 ### Portless 0.11 reuses legacy proxy state unless the launcher forces HTTPS
 
 - **Date:** 2026-04-28

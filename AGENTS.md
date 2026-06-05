@@ -155,7 +155,7 @@ src/
 - After adding or changing tests, run `yarn test`.
 - Do not commit or force-add local rebuild output. `build/` is the main generated build output in this repo; remove or restore generated output directories after local verification before committing.
 - After React UI logic changes, run: `yarn doctor`.
-- Treat React Doctor output as actionable guidance; prioritize `error` then `warning`.
+- Treat React Doctor output as guidance for *newly introduced* issues (the CI `yarn doctor --diff` PR check flags those), not as an aggregate score to grind up: many `error`-level diagnostics flag intentional patterns or current React-Compiler limitations, not bugs. See `docs/agent-playbooks/known-surprises.md`.
 - For UI/visual changes, verify with `playwright-cli` across Chrome/Blink, Firefox/Gecko, and WebKit/Safari.
 - Cover desktop and a mobile viewport flow in each browser engine when the change affects layout, touch behavior, or responsiveness.
 - When loading, navigation, or interaction speed matters (or you cannot tell whether perf is real or just a fast dev machine), run a low-spec pass: `./scripts/pw-throttle.sh <session> mid` (or `low`) applies CPU + network throttling to a Chromium `playwright-cli` session before you measure. Throttling is Chromium-only; keep the Firefox/WebKit checks unthrottled. See `docs/agent-playbooks/low-spec-verification.md`.
