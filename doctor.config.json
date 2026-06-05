@@ -1,0 +1,6 @@
+{
+  "diff": false,
+  "ignore": {
+    "overrides": [{ "files": ["**/__tests__/**", "**/*.test.*"] }]
+  }
+}
