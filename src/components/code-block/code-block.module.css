@@ -1,0 +1,47 @@
+/* Matches 4chan's computed prettyprint styling: bare monospace at the surrounding post-text
+   size, 5px padding, no border on light themes (white box on the post bg), translucent box
+   with a border on dark themes. box-sizing/max-width keep it from overflowing on mobile. */
+.code {
+  display: inline-block;
+  box-sizing: border-box;
+  /* Center the box on the line so a single-line block sits level with adjacent text;
+     has no effect on a block that sits alone on its own line (the common 4chan case). */
+  vertical-align: middle;
+  max-width: min(600px, 100%);
+  max-height: 400px;
+  overflow: auto;
+  margin: 0;
+  padding: 5px;
+  background-color: var(--code-block-background-color);
+  border: var(--code-block-border, none);
+  color: var(--code-token-pln-color);
+  font-family: monospace;
+  line-height: normal;
+  white-space: pre;
+  tab-size: 8;
+  -moz-tab-size: 8;
+}
+
+.pln {
+  color: var(--code-token-pln-color);
+}
+
+.str {
+  color: var(--code-token-str-color);
+}
+
+.kwd {
+  color: var(--code-token-kwd-color);
+}
+
+.com {
+  color: var(--code-token-com-color);
+}
+
+.lit {
+  color: var(--code-token-lit-color);
+}
+
+.pun {
+  color: var(--code-token-pun-color);
+}

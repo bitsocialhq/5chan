@@ -6,6 +6,7 @@ import { getLinkMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import { isCatalogView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import CommentMedia from '../comment-media';
+import CodeBlock from '../code-block';
 import styles from './markdown.module.css';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { canEmbed } from '../embed';
@@ -708,6 +709,69 @@ const renderLineContent = (line: string, context: RenderContext): React.ReactNod
   return elements;
 };
 
+// [code]...[/code] blocks (4chan rule 4 of /g/): rendered literally, never parsed for
+// greentext/quotelinks/spoilers, and syntax-highlighted via <CodeBlock>.
+const CODE_TAG_REGEX = /\[code\]([\s\S]*?)\[\/code\]/gi;
+const HAS_CODE_TAG_REGEX = /\[code\]/i;
+const CODE_DIRECTORY_CODE = 'g';
+
+type ContentSegment = { type: 'text' | 'code'; value: string; start: number };
+
+const splitCodeSegments = (raw: string): ContentSegment[] => {
+  const segments: ContentSegment[] = [];
+  const regex = new RegExp(CODE_TAG_REGEX.source, 'gi');
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(raw)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ type: 'text', value: raw.slice(lastIndex, match.index), start: lastIndex });
+    }
+    // Drop one leading/trailing newline so [code]\n...\n[/code] has no blank first/last line.
+    segments.push({ type: 'code', value: match[1].replace(/^\n/, '').replace(/\n$/, ''), start: match.index });
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < raw.length) {
+    segments.push({ type: 'text', value: raw.slice(lastIndex), start: lastIndex });
+  }
+
+  return segments;
+};
+
+const renderTextLines = (normalized: string, context: RenderContext, keyPrefix: string): React.ReactNode[] => {
+  const lines = normalized.split('\n');
+  const elements: React.ReactNode[] = [];
+  let lineOffset = 0;
+
+  lines.forEach((line, lineIndex) => {
+    const lineKey = `${keyPrefix}line-${lineOffset}`;
+    lineOffset += line.length + 1;
+
+    if (lineIndex > 0) {
+      elements.push(<br key={`br-${lineKey}`} />);
+    }
+
+    if (line.length === 0) return;
+
+    const isGreentext = isGreentextLine(line);
+
+    const lineElements = renderLineContent(line, context);
+
+    if (isGreentext) {
+      elements.push(
+        <span key={lineKey} className='greentext'>
+          {lineElements}
+        </span>,
+      );
+    } else {
+      elements.push(<React.Fragment key={lineKey}>{lineElements}</React.Fragment>);
+    }
+  });
+
+  return elements;
+};
+
 const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = true }: MarkdownProps) => {
   const location = useLocation();
   const params = useParams();
@@ -716,42 +780,32 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
   const enableQstBbcode = location.pathname.split('/').filter(Boolean)[0] === 'qst';
   const activeDirectoryCode = getActiveDirectoryCode(location.pathname, communityAddress, directories);
   const enableFortuneMarkup = isFortuneDirectoryCode(activeDirectoryCode);
+  // [code] tags are a /g/ feature (4chan rule 4): enabled when the post's board or the current
+  // route resolves to /g/, and rendered as literal text everywhere else.
+  const enableCodeTags =
+    getDirectoryCodeForIdentifier(getRouteBoardIdentifier(location.pathname), directories) === CODE_DIRECTORY_CODE ||
+    getDirectoryCodeForIdentifier(communityAddress, directories) === CODE_DIRECTORY_CODE;
 
   const rendered = useMemo(() => {
-    const normalized = normalizeContent(content || '');
-    const lines = normalized.split('\n');
-    const elements: React.ReactNode[] = [];
-    let lineOffset = 0;
-
     const context = { isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers };
+    const raw = content || '';
 
-    lines.forEach((line, lineIndex) => {
-      const lineKey = `line-${lineOffset}`;
-      lineOffset += line.length + 1;
+    if (!enableCodeTags || !HAS_CODE_TAG_REGEX.test(raw)) {
+      return renderTextLines(normalizeContent(raw), context, '');
+    }
 
-      if (lineIndex > 0) {
-        elements.push(<br key={`br-${lineKey}`} />);
+    const elements: React.ReactNode[] = [];
+    splitCodeSegments(raw).forEach((segment) => {
+      if (segment.type === 'code') {
+        elements.push(<CodeBlock key={`code-${segment.start}`} source={segment.value} />);
+        return;
       }
-
-      if (line.length === 0) return;
-
-      const isGreentext = isGreentextLine(line);
-
-      const lineElements = renderLineContent(line, context);
-
-      if (isGreentext) {
-        elements.push(
-          <span key={lineKey} className='greentext'>
-            {lineElements}
-          </span>,
-        );
-      } else {
-        elements.push(<React.Fragment key={lineKey}>{lineElements}</React.Fragment>);
-      }
+      if (!segment.value) return;
+      elements.push(<React.Fragment key={`text-${segment.start}`}>{renderTextLines(normalizeContent(segment.value), context, `${segment.start}:`)}</React.Fragment>);
     });
 
     return elements;
-  }, [content, isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers]);
+  }, [content, isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers, enableCodeTags]);
 
   return (
     <span className={styles.markdown}>

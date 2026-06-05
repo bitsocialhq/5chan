@@ -1,3 +1,29 @@
+/* Code block ([code] tags on /g/) — Prettify-style token palette.
+   Light themes use the default google-code-prettify colours; dark themes
+   (.tomorrow, .spooky) use 4chan's "Tomorrow" code palette. */
+:root {
+  --code-block-background-color: #ffffff;
+  --code-block-border: none;
+  --code-token-pln-color: #000000;
+  --code-token-str-color: #008000;
+  --code-token-kwd-color: #000088;
+  --code-token-com-color: #880000;
+  --code-token-lit-color: #006666;
+  --code-token-pun-color: #666600;
+}
+
+:root .tomorrow,
+:root .spooky {
+  --code-block-background-color: rgba(255, 255, 255, 0.1);
+  --code-block-border: 1px solid rgba(0, 0, 0, 0.5);
+  --code-token-pln-color: #c5c8c6;
+  --code-token-str-color: #8ea062;
+  --code-token-kwd-color: #81a2be;
+  --code-token-com-color: #bb6793;
+  --code-token-lit-color: #6e9b89;
+  --code-token-pun-color: #72814d;
+}
+
 :root .yotsuba {
   --color-scheme: light;
 
