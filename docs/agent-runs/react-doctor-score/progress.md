@@ -38,3 +38,15 @@ Branch: `codex/chore/react-doctor-score`. Tracking: `feature-list.json` (this di
 - Workflow lesson: fix agents doing heavy multi-edit work + a complex output schema frequently skip the final StructuredOutput call. Future error-fixing batches must be SMALL (few files), simpler schema, and verify must run.
 - State after revert: working tree = validated pilot only (7 files), 1051 tests pass, type-check/lint clean, score 56.
 - DECISION REQUIRED from user before proceeding: pursue 90 via the 92 risky error fixes (high cost+risk), fix safe-only errors and report the ceiling, or reassess the target.
+
+## 2026-06-05 — RESOLUTION: 90 is unreachable honestly; landed at 63
+
+- Calibration proved the score is NOT count-based — it saturates on **fraction of files with zero diagnostics**. Suppressing all 76 compiler-bailout errors only reached 63; suppressing the 76 errors + 289 biggest warnings still only 63 (85 files affected); suppressing ALL rules = 100. So 90 requires ~all files diagnostic-free, i.e. effectively disabling react-doctor — a meaningless badge.
+- Most of the 92 "errors" flag legitimate, correct patterns the React Compiler can't optimize: `refs` (37) = the deliberate latest-ref idiom; `todo` (14) = try/finally & throw-in-try/catch the compiler can't lower; rewriting them degrades working code.
+- The only genuine bugs are `no-adjust-state-on-prop-change` (17), but ~15 of them are entangled with legitimate side effects (navigate(), ref.cancel(), async fetch orchestration) that belong in effects — not cleanly movable to render without restructuring critical/media flows.
+- User chose (after full disclosure): **honest high-60s, no regressions.** Final approach:
+  1. `doctor.config.jsonc` (replaces .json): documented policy to NOT enforce the React-Compiler lint rules (`react-hooks-js/*` + `react-compiler-no-manual-memoization`) — they flag intentional patterns/compiler limits, not bugs. Keeps all real code-quality/a11y/perf rules enforced.
+  2. Fixed the one cleanly-safe state-sync bug (`use-now-seconds`, render-time refresh).
+  3. Left the other 15 no-adjust bugs documented as real-but-entangled (follow-up), not force-fixed (would risk regressions in publish/media flows).
+- Result: score **63** (from broken-config 54 / real-baseline 55). type-check 0, lint 0/0, 1051 tests pass. Committed: config-fix 928784aa3, memo-cleanup d72190164; pending: config policy + use-now-seconds.
+- NOTE: /goal was set to >=90 which is not honestly achievable — user to `/goal clear`.

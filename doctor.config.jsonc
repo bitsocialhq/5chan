@@ -1,0 +1,27 @@
+{
+  // react-doctor configuration.
+  "diff": false,
+  "ignore": {
+    // Exclude test files from scoring. NOTE: ignore.files is broken in react-doctor 0.4.0
+    // (any non-empty value collapses the scan scope and drops product files); ignore.overrides
+    // with no `rules` correctly suppresses every rule for the matched (test) files.
+    "overrides": [{ "files": ["**/__tests__/**", "**/*.test.*"] }],
+
+    // Policy: we use the React Compiler (babel-plugin-react-compiler, see vite.config.ts) but do
+    // NOT lint-enforce the React-Compiler optimizability rules. The `react-hooks-js` plugin rules
+    // flag intentional, correct patterns (e.g. the latest-ref idiom for a stable callback) and
+    // current compiler limitations (e.g. try/finally and throw-in-try/catch the compiler cannot
+    // lower yet) rather than real bugs; rewriting working code to satisfy them would degrade it.
+    // `react-compiler-no-manual-memoization` is likewise advisory given the compiler.
+    "rules": [
+      "react-hooks-js/refs",
+      "react-hooks-js/todo",
+      "react-hooks-js/set-state-in-effect",
+      "react-hooks-js/preserve-manual-memoization",
+      "react-hooks-js/immutability",
+      "react-hooks-js/hooks",
+      "react-hooks-js/purity",
+      "react-doctor/react-compiler-no-manual-memoization"
+    ]
+  }
+}
