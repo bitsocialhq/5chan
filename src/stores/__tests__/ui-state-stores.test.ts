@@ -35,7 +35,7 @@ describe('ui state stores', () => {
   it('useExpandedMediaStore persists expanded media preferences', async () => {
     const store = (await import('../use-expanded-media-store')).default;
 
-    expect(store.getState().fitExpandedImagesToScreen).toBe(false);
+    expect(store.getState().fitExpandedImagesToScreen).toBe(true);
     expect(store.getState().unmuteExpandedVideoSound).toBe(false);
 
     store.getState().setFitExpandedImagesToScreen(true);

@@ -11,7 +11,7 @@ interface ExpandedMediaState {
 const useExpandedMediaStore = create<ExpandedMediaState>()(
   persist(
     (set) => ({
-      fitExpandedImagesToScreen: false,
+      fitExpandedImagesToScreen: true,
       unmuteExpandedVideoSound: false,
       setFitExpandedImagesToScreen: (fit) => set({ fitExpandedImagesToScreen: fit }),
       setUnmuteExpandedVideoSound: (unmute) => set({ unmuteExpandedVideoSound: unmute }),
