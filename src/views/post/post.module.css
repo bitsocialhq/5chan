@@ -672,8 +672,11 @@
 }
 
 .failedDeletePostAction {
-  color: var(--button-desktop-text-color);
   font-weight: 400;
+}
+
+.failedDeletePostBracket {
+  color: var(--body-font-color);
 }
 
 .failedDeletePostButton {

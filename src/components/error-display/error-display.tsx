@@ -79,11 +79,11 @@ const ErrorDisplay = ({ error, displayMessage, inline = false, showImmediately =
       {originalDisplayMessage && <span className={styles.errorMessage}>{originalDisplayMessage}</span>}
       {canCopyError && (
         <span className={styles.copyErrorButtonWrapper}>
-          [
+          <span className={styles.copyErrorBracket}>[</span>
           <button type='button' className={copyButtonClassNames.join(' ')} onClick={handleCopyError} title={t('copyFullError', 'copy full error')}>
             {displayCopyButtonLabel}
           </button>
-          ]
+          <span className={styles.copyErrorBracket}>]</span>
         </span>
       )}
     </div>
