@@ -65,7 +65,7 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
   const { t } = useTranslation();
   const directories = useDirectories();
   const boardIdentifier = getBoardPath(communityAddress, directories);
-  const copyDirectLink = async () => {
+  const copyShareLink = async () => {
     await copyShareLinkSafe(boardIdentifier, linkType, linkType === 'thread' ? cid : undefined);
     onClose();
   };
@@ -73,15 +73,15 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
     <button
       type='button'
       tabIndex={0}
-      onClick={copyDirectLink}
+      onClick={copyShareLink}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          copyDirectLink();
+          copyShareLink();
         }
       }}
     >
-      <div className={styles.postMenuItem}>{t('copy_direct_link')}</div>
+      <div className={styles.postMenuItem}>{t('copy_share_link')}</div>
     </button>
   );
 };
@@ -147,29 +147,6 @@ const ImageSearchButtons = ({ url, onClose }: { url: string; onClose: () => void
         <div className={styles.postMenuItem}>{t('search_image_on_saucenao')}</div>
       </a>
     </div>
-  );
-};
-
-const ReportPostButton = ({ onClose }: { onClose: () => void }) => {
-  const { t } = useTranslation();
-  const reportPost = () => {
-    alert("Reporting isn't available yet.");
-    onClose();
-  };
-  return (
-    <button
-      type='button'
-      tabIndex={0}
-      onClick={reportPost}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          reportPost();
-        }
-      }}
-    >
-      <div className={styles.postMenuItem}>{t('report_post')}</div>
-    </button>
   );
 };
 
@@ -353,7 +330,6 @@ const PostMenuMobile = ({ postMenu, editMenuPost }: PostMenuMobileProps) => {
             createPortal(
               <FloatingFocusManager context={context} modal={false}>
                 <div className={styles.postMenu} ref={refs.setFloating} style={floatingStyles} aria-labelledby={headingId} {...getFloatingProps()}>
-                  <ReportPostButton onClose={handleClose} />
                   {cid && communityAddress && <HidePostButton cid={cid} comment={postMenu.comment} isReply={!!parentCid} postCid={postCid} onClose={handleClose} />}
                   {(isAccountCommentAuthor || canAttemptAuthorDelete) && cid && editMenuPost && <DeletePostButton post={editMenuPost} onClose={handleClose} />}
                   {cid && communityAddress && <CopyLinkButton cid={cid} communityAddress={communityAddress} linkType='thread' onClose={handleClose} />}

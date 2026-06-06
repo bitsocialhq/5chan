@@ -72,12 +72,12 @@ describe('url-utils', () => {
     expect(getExpiringMediaLinkHostname('not-a-url')).toBeNull();
   });
 
-  it('copies share links for threads and catalog pages using the production fallback base url', async () => {
+  it('copies path-based share links for threads and catalog pages using the share subdomain', async () => {
     await copyShareLinkToClipboard('music.eth', 'thread', 'cid-123');
-    expect(testState.copyToClipboardMock).toHaveBeenCalledWith('https://5chan.app/#/music.eth/thread/cid-123');
+    expect(testState.copyToClipboardMock).toHaveBeenCalledWith('https://s.5chan.app/music.eth/thread/cid-123');
 
     await copyShareLinkToClipboard('music.eth', 'catalog');
-    expect(testState.copyToClipboardMock).toHaveBeenCalledWith('https://5chan.app/#/music.eth/catalog');
+    expect(testState.copyToClipboardMock).toHaveBeenCalledWith('https://s.5chan.app/music.eth/catalog');
 
     const copyThreadWithoutCid = copyShareLinkToClipboard as (boardIdentifier: string, linkType: 'thread', cid?: string) => Promise<void>;
     await expect(copyThreadWithoutCid('music.eth', 'thread')).rejects.toThrow('copyShareLinkToClipboard: thread links require a cid');
@@ -89,6 +89,8 @@ describe('url-utils', () => {
     expect(is5chanLink('https://5chan.app/#/music.eth/catalog')).toBe(true);
     expect(is5chanLink('https://5chan.app/p/music.eth/c/cid-123')).toBe(true);
     expect(is5chanLink('https://5chan.app/all/catalog')).toBe(true);
+    expect(is5chanLink('https://s.5chan.app/music.eth/thread/cid-123')).toBe(true);
+    expect(is5chanLink('https://s.5chan.app/music.eth/catalog')).toBe(true);
     expect(is5chanLink('https://example.com/music.eth')).toBe(false);
   });
 

@@ -236,7 +236,6 @@
   "no": "Nein",
   "pending_mod_approval": "Ausstehende Moderatorgenehmigung, für Benutzer nicht sichtbar",
   "copy_user_id": "Benutzer-ID kopieren",
-  "copy_direct_link": "Direktlink kopieren",
   "posts_auto_update_info": "Beiträge werden automatisch etwa alle ~2 Minuten aktualisiert. Es ist derzeit nicht möglich, dies zu deaktivieren.",
   "board_address_tooltip": "Die Adresse des Peer-to-Peer-Knotens dieses Boards",
   "upload_failed": "Upload fehlgeschlagen",
@@ -307,7 +306,6 @@
   "loading_archive": "Archiv wird geladen...",
   "thread_archived": "Thread archiviert.",
   "view": "Ansehen",
-  "report_post": "Beitrag melden",
   "delete_post": "Beitrag löschen",
   "delete_post_confirm": "Diesen Beitrag dauerhaft löschen? Dies kann nicht rückgängig gemacht werden.",
   "app_p2p_info": "Du kannst dich jederzeit mit jedem Board verbinden, vollständig P2P, niemand kann dich aufhalten. Füge einfach seine Adresse in das Suchfeld oben ein.",
@@ -406,5 +404,6 @@
   "boards_loaded": "geladene Boards:",
   "link_not_image_or_video_alert": "Der Link ist kein Bild oder Video.",
   "not_a_file": "keine Datei",
-  "tor_author_flag_label": "Dieser Benutzer ist auf Tor"
+  "tor_author_flag_label": "Dieser Benutzer ist auf Tor",
+  "copy_share_link": "Freigabelink kopieren"
 }

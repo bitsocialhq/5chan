@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "Odottaa moderaattorin hyväksyntää, ei näkyvissä käyttäjille",
   "copy_user_id": "kopioi käyttäjätunnus",
-  "copy_direct_link": "kopioi suora linkki",
   "posts_auto_update_info": "Viestit päivittyvät automaattisesti noin 2 minuutin välein. Tätä ei ole mahdollista poistaa käytöstä tällä hetkellä.",
   "board_address_tooltip": "Tämän laudan vertaisverkko-solmun osoite",
   "upload_failed": "Lataus epäonnistui",
@@ -307,7 +306,6 @@
   "loading_archive": "Ladataan arkistoa...",
   "thread_archived": "Keskustelu arkistoitu.",
   "view": "Katso",
-  "report_post": "Ilmoita viestistä",
   "delete_post": "Poista viesti",
   "delete_post_confirm": "Poistetaanko tämä julkaisu pysyvästi? Tätä ei voi perua.",
   "app_p2p_info": "Voit aina yhdistää mihin tahansa boardiin, täysin P2P, kukaan ei voi estää sinua. Liitä vain sen osoite yllä olevaan hakukenttään.",
@@ -406,5 +404,6 @@
   "boards_loaded": "ladatut boardit:",
   "link_not_image_or_video_alert": "Linkki ei ole kuva tai video.",
   "not_a_file": "ei ole tiedosto",
-  "tor_author_flag_label": "Tämä käyttäjä on Torissa"
+  "tor_author_flag_label": "Tämä käyttäjä on Torissa",
+  "copy_share_link": "Kopioi jakolinkkii"
 }

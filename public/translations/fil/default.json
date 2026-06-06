@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "Naghihintay ng pag-apruba ng moderator, hindi nakikita ng mga gumagamit",
   "copy_user_id": "kopyahin ang user ID",
-  "copy_direct_link": "kopyahin ang direct link",
   "posts_auto_update_info": "Ang mga post ay awtomatikong nag-update bawat ~2 minuto. Kasalukuyang hindi posible na i-disable ito.",
   "board_address_tooltip": "Ang address ng peer-to-peer node ng board na ito",
   "upload_failed": "Nabigo ang pag-upload",
@@ -307,7 +306,6 @@
   "loading_archive": "Naglo-load ng arkibo...",
   "thread_archived": "Thread na-archive na.",
   "view": "Tingnan",
-  "report_post": "I-report ang post",
   "delete_post": "Tanggalin ang post",
   "delete_post_confirm": "Permanenteng tanggalin ang post na ito? Hindi na ito maibabalik.",
   "app_p2p_info": "Maaari mong palaging kumonekta sa anumang board, ganap na P2P, walang makakapigil sa iyo. I-paste lamang ang address nito sa search field sa itaas.",
@@ -406,5 +404,6 @@
   "boards_loaded": "mga board na na-load:",
   "link_not_image_or_video_alert": "Ang link ay hindi larawan o video.",
   "not_a_file": "hindi file",
-  "tor_author_flag_label": "Ang user na ito ay nasa Tor"
+  "tor_author_flag_label": "Ang user na ito ay nasa Tor",
+  "copy_share_link": "Kopyahin ang link sa pagbabahagi"
 }

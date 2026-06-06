@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "Menunggu persetujuan moderator, tidak terlihat oleh pengguna",
   "copy_user_id": "salin ID pengguna",
-  "copy_direct_link": "salin tautan langsung",
   "posts_auto_update_info": "Posting diperbarui secara otomatis setiap ~2 menit. Saat ini tidak mungkin untuk menonaktifkan ini.",
   "board_address_tooltip": "Alamat node peer-to-peer papan ini",
   "upload_failed": "Unggahan gagal",
@@ -307,7 +306,6 @@
   "loading_archive": "Memuat arsip...",
   "thread_archived": "Benang diarsipkan.",
   "view": "Lihat",
-  "report_post": "Laporkan kiriman",
   "delete_post": "Hapus kiriman",
   "delete_post_confirm": "Hapus permanen postingan ini? Tindakan ini tidak dapat dibatalkan.",
   "app_p2p_info": "Anda selalu dapat terhubung ke board mana pun, sepenuhnya P2P, tidak ada yang bisa menghentikan Anda. Cukup tempel alamatnya di kolom pencarian di atas.",
@@ -406,5 +404,6 @@
   "boards_loaded": "board dimuat:",
   "link_not_image_or_video_alert": "Tautan bukan gambar atau video.",
   "not_a_file": "bukan file",
-  "tor_author_flag_label": "Pengguna ini ada di Tor"
+  "tor_author_flag_label": "Pengguna ini ada di Tor",
+  "copy_share_link": "Salin tautan bagian"
 }

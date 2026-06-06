@@ -98,7 +98,6 @@
   "invalid_url": "Invalid URL",
   "image_search": "image search",
   "hide_post": "Hide post",
-  "report_post": "Report post",
   "delete_post": "Delete post",
   "delete_post_confirm": "Delete this post permanently? This cannot be undone.",
   "hide_thread": "Hide thread",
@@ -259,7 +258,6 @@
   "no": "No",
   "pending_mod_approval": "Pending mod approval, not visible to users",
   "copy_user_id": "Copy user ID",
-  "copy_direct_link": "Copy direct link",
   "board_address_tooltip": "The address of this board's peer-to-peer node",
   "directory_heading": "Displaying all ({{count}}) known /{{boardIdentifier}}/ boards on 5chan",
   "directory_score": "Score",
@@ -425,5 +423,6 @@
   "boards_loaded": "boards loaded:",
   "link_not_image_or_video_alert": "Link is not an image or video.",
   "not_a_file": "not a file",
-  "tor_author_flag_label": "This user is on Tor"
+  "tor_author_flag_label": "This user is on Tor",
+  "copy_share_link": "Copy share link"
 }

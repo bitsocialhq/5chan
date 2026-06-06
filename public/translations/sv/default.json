@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "Väntar på moderatorgodkännande, inte synligt för användare",
   "copy_user_id": "kopiera användar-ID",
-  "copy_direct_link": "kopiera direktlänk",
   "posts_auto_update_info": "Inlägg uppdateras automatiskt ungefär var ~2:e minut. Det är för närvarande inte möjligt att inaktivera detta.",
   "board_address_tooltip": "Adressen till denna tavlas peer-to-peer-nod",
   "upload_failed": "Uppladdning misslyckades",
@@ -307,7 +306,6 @@
   "loading_archive": "Laddar arkiv...",
   "thread_archived": "Tråd arkiverad.",
   "view": "Visa",
-  "report_post": "Rapportera inlägg",
   "delete_post": "Radera inlägg",
   "delete_post_confirm": "Radera detta inlägg permanent? Detta kan inte ångras.",
   "app_p2p_info": "Du kan alltid ansluta till vilket board som helst, helt P2P, ingen kan stoppa dig. Klistra bara in dess adress i sökfältet ovan.",
@@ -406,5 +404,6 @@
   "boards_loaded": "laddade boards:",
   "link_not_image_or_video_alert": "Länken är inte en bild eller video.",
   "not_a_file": "inte en fil",
-  "tor_author_flag_label": "Den här användaren är på Tor"
+  "tor_author_flag_label": "Den här användaren är på Tor",
+  "copy_share_link": "Kopiera delningslänk"
 }

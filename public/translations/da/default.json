@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "Afventer moderatorgodkendelse, ikke synlig for brugere",
   "copy_user_id": "kopier bruger-ID",
-  "copy_direct_link": "kopier direkte link",
   "posts_auto_update_info": "Indlæg opdateres automatisk hver ~2 minut. Det er ikke muligt at deaktivere dette i øjeblikket.",
   "board_address_tooltip": "Adressen til dette boards peer-to-peer-node",
   "upload_failed": "Upload mislykkedes",
@@ -307,7 +306,6 @@
   "loading_archive": "Indlæser arkiv...",
   "thread_archived": "Tråd arkiveret.",
   "view": "Se",
-  "report_post": "Rapporter indlæg",
   "delete_post": "Slet indlæg",
   "delete_post_confirm": "Slet dette opslag permanent? Dette kan ikke fortrydes.",
   "app_p2p_info": "Du kan altid forbinde til ethvert board, fuldt P2P, ingen kan stoppe dig. Indsæt blot dens adresse i søgefeltet ovenfor.",
@@ -406,5 +404,6 @@
   "boards_loaded": "indlæste boards:",
   "link_not_image_or_video_alert": "Linket er ikke et billede eller en video.",
   "not_a_file": "ikke en fil",
-  "tor_author_flag_label": "Denne bruger er på Tor"
+  "tor_author_flag_label": "Denne bruger er på Tor",
+  "copy_share_link": "Kopier delingslinkk"
 }

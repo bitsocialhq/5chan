@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "În așteptarea aprobării moderatorului, nu este vizibil pentru utilizatori",
   "copy_user_id": "copiați ID-ul utilizatorului",
-  "copy_direct_link": "copiați linkul direct",
   "posts_auto_update_info": "Postările se actualizează automat la fiecare ~2 minute. În prezent, nu este posibil să dezactivezi aceasta.",
   "board_address_tooltip": "Adresa nodului peer-to-peer al acestei plăci",
   "upload_failed": "Încărcarea a eșuat",
@@ -307,7 +306,6 @@
   "loading_archive": "Încărcare arhivă...",
   "thread_archived": "Thread arhivat.",
   "view": "Vizualizare",
-  "report_post": "Raportează postarea",
   "delete_post": "Șterge postarea",
   "delete_post_confirm": "Șterge definitiv această postare? Această acțiune nu poate fi anulată.",
   "app_p2p_info": "Poți oricând să te conectezi la orice board, complet P2P, nimeni nu te poate opri. Pur și simplu lipește adresa în câmpul de căutare de mai sus.",
@@ -406,5 +404,6 @@
   "boards_loaded": "boarduri încărcate:",
   "link_not_image_or_video_alert": "Linkul nu este o imagine sau un videoclip.",
   "not_a_file": "nu este fișier",
-  "tor_author_flag_label": "Acest utilizator este pe Tor"
+  "tor_author_flag_label": "Acest utilizator este pe Tor",
+  "copy_share_link": "Copiezi link-ul de partajare"
 }

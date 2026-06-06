@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "Moderatör onayı beklemede, kullanıcılara görünmüyor",
   "copy_user_id": "kullanıcı ID'sini kopyala",
-  "copy_direct_link": "doğrudan bağlantıyı kopyala",
   "posts_auto_update_info": "Gönderiler her ~2 dakikada otomatik olarak güncellenir. Şu anda bunu devre dışı bırakmak mümkün değildir.",
   "board_address_tooltip": "Bu panonun eşler arası düğüm adresi",
   "upload_failed": "Yükleme başarısız",
@@ -307,7 +306,6 @@
   "loading_archive": "Arşiv yükleniyor...",
   "thread_archived": "Konu arşivlendi.",
   "view": "Görüntüle",
-  "report_post": "Gönderiyi bildir",
   "delete_post": "Gönderiyi sil",
   "delete_post_confirm": "Bu gönderiyi kalıcı olarak silmek istiyor musunuz? Bu işlem geri alınamaz.",
   "app_p2p_info": "Her zaman herhangi bir boarda bağlanabilirsin, tamamen P2P, kimse seni durduramaz. Sadece adresini yukarıdaki arama alanına yapıştır.",
@@ -406,5 +404,6 @@
   "boards_loaded": "yüklenen panolar:",
   "link_not_image_or_video_alert": "Bağlantı bir görsel veya video değil.",
   "not_a_file": "dosya değil",
-  "tor_author_flag_label": "Bu kullanıcı Tor'da"
+  "tor_author_flag_label": "Bu kullanıcı Tor'da",
+  "copy_share_link": "Paylaşma bağlantısını kopyala"
 }

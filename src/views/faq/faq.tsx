@@ -230,8 +230,8 @@ const FAQ_SECTIONS: FAQSection[] = [
         question: 'How do I report posts?',
         answer: (
           <>
-            Reporting is not available yet. For now, board moderation happens through board-specific moderator tools and rules. If you are a board moderator, use the mod
-            queue and edit controls available for that board.
+            5chan does not use manual user reports. Moderation is handled automatically by AI moderation, and board moderators review flagged content through the mod
+            queue. If you run a board, use the mod queue and edit controls available for that board.
           </>
         ),
       },

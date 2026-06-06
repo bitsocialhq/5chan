@@ -236,7 +236,6 @@
   "no": "否",
   "pending_mod_approval": "等待版主批准，用户不可见",
   "copy_user_id": "复制用户ID",
-  "copy_direct_link": "复制直接链接",
   "posts_auto_update_info": "帖子每约2分钟自动更新一次。目前无法禁用此功能。",
   "board_address_tooltip": "此板块的点对点节点地址",
   "upload_failed": "上传失败",
@@ -307,7 +306,6 @@
   "loading_archive": "正在加载归档...",
   "thread_archived": "主题已归档。",
   "view": "查看",
-  "report_post": "举报帖子",
   "delete_post": "删除帖子",
   "delete_post_confirm": "永久删除此帖子？此操作无法撤销。",
   "app_p2p_info": "你随时可以连接到任何看板，完全 P2P，没人能阻止你。只需将其地址粘贴到上方搜索框中即可。",
@@ -406,5 +404,6 @@
   "boards_loaded": "已加载的版块:",
   "link_not_image_or_video_alert": "链接不是图片或视频。",
   "not_a_file": "不是文件",
-  "tor_author_flag_label": "该用户正在使用 Tor"
+  "tor_author_flag_label": "该用户正在使用 Tor",
+  "copy_share_link": "复制分享链接"
 }

@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "Oczekiwanie na zatwierdzenie moderatora, niewidoczne dla użytkowników",
   "copy_user_id": "skopiuj ID użytkownika",
-  "copy_direct_link": "skopiuj bezpośredni link",
   "posts_auto_update_info": "Posty aktualizują się automatycznie co ~2 minuty. Chwilowo nie jest możliwe wyłączenie tej funkcji.",
   "board_address_tooltip": "Adres węzła peer-to-peer tej tablicy",
   "upload_failed": "Przesyłanie nie powiodło się",
@@ -307,7 +306,6 @@
   "loading_archive": "Ładowanie archiwum...",
   "thread_archived": "Wątek zarchiwizowany.",
   "view": "Zobacz",
-  "report_post": "Zgłoś post",
   "delete_post": "Usuń post",
   "delete_post_confirm": "Usunąć ten post na stałe? Tej operacji nie można cofnąć.",
   "app_p2p_info": "Zawsze możesz połączyć się z dowolnym boardem, w pełni P2P, nikt nie może cię powstrzymać. Wklej po prostu jego adres w pole wyszukiwania powyżej.",
@@ -406,5 +404,6 @@
   "boards_loaded": "załadowane boardy:",
   "link_not_image_or_video_alert": "Link nie jest obrazem ani filmem.",
   "not_a_file": "to nie plik",
-  "tor_author_flag_label": "Ten użytkownik jest w sieci Tor"
+  "tor_author_flag_label": "Ten użytkownik jest w sieci Tor",
+  "copy_share_link": "Kopiuj link udostępniania"
 }

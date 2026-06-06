@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "Čekání na schválení moderatorem, není viditelné uživatelům",
   "copy_user_id": "kopírovat ID uživatele",
-  "copy_direct_link": "kopírovat přímý odkaz",
   "posts_auto_update_info": "Příspěvky se aktualizují automaticky přibližně každých ~2 minut. V současné době není možné tuto funkci zakázat.",
   "board_address_tooltip": "Adresa uzlu peer-to-peer této desky",
   "upload_failed": "Nahrávání se nezdařilo",
@@ -307,7 +306,6 @@
   "loading_archive": "Načítání archivu...",
   "thread_archived": "Vlákno archivováno.",
   "view": "Zobrazit",
-  "report_post": "Nahlásit příspěvek",
   "delete_post": "Smazat příspěvek",
   "delete_post_confirm": "Nadobro smazat tento příspěvek? Tuto akci nelze vrátit zpět.",
   "app_p2p_info": "K jakékoli desce se můžete kdykoli připojit, plně P2P, nikdo vás nemůže zastavit. Stačí vložit její adresu do vyhledávacího pole výše.",
@@ -406,5 +404,6 @@
   "boards_loaded": "načtené nástěnky:",
   "link_not_image_or_video_alert": "Odkaz není obrázek ani video.",
   "not_a_file": "není soubor",
-  "tor_author_flag_label": "Tento uživatel je na síti Tor"
+  "tor_author_flag_label": "Tento uživatel je na síti Tor",
+  "copy_share_link": "Kopírovat odkaz pro sdílení"
 }

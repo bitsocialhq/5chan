@@ -236,7 +236,6 @@
   "no": "いいえ",
   "pending_mod_approval": "モデレーターの承認待ち、ユーザーには表示されません",
   "copy_user_id": "ユーザーIDをコピー",
-  "copy_direct_link": "直接リンクをコピー",
   "posts_auto_update_info": "投稿は約2分ごとに自動更新されます。現在、これを無効にすることはできません。",
   "board_address_tooltip": "この板のピアツーピアノードのアドレス",
   "upload_failed": "アップロードに失敗しました",
@@ -307,7 +306,6 @@
   "loading_archive": "アーカイブを読み込み中...",
   "thread_archived": "スレッドがアーカイブされました。",
   "view": "表示",
-  "report_post": "投稿を報告",
   "delete_post": "投稿を削除",
   "delete_post_confirm": "この投稿を完全に削除しますか？元に戻せません。",
   "app_p2p_info": "いつでもどのボードにも接続できます。完全にP2Pなので、誰にも止められません。上の検索欄にアドレスを貼り付けるだけです。",
@@ -406,5 +404,6 @@
   "boards_loaded": "読み込まれた板:",
   "link_not_image_or_video_alert": "リンクは画像または動画ではありません。",
   "not_a_file": "ファイルではありません",
-  "tor_author_flag_label": "このユーザーはTorを使用しています"
+  "tor_author_flag_label": "このユーザーはTorを使用しています",
+  "copy_share_link": "シェアリンクをコピー"
 }

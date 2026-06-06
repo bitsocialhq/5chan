@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "Moderátor jóváhagyása alatt áll, a felhasználók számára nem látható",
   "copy_user_id": "felhasználói ID másolása",
-  "copy_direct_link": "közvetlen link másolása",
   "posts_auto_update_info": "A bejegyzések kb. 2 percenként automatikusan frissülnek. Jelenleg nem lehetséges ezt letiltani.",
   "board_address_tooltip": "Ennek a táblának a peer-to-peer csomópontja címe",
   "upload_failed": "A feltöltés sikertelen",
@@ -307,7 +306,6 @@
   "loading_archive": "Archívum betöltése...",
   "thread_archived": "A téma archiválva.",
   "view": "Megtekintés",
-  "report_post": "Bejegyzés jelentése",
   "delete_post": "Bejegyzés törlése",
   "delete_post_confirm": "Végleg törölni ezt a bejegyzést? Ez nem vonható vissza.",
   "app_p2p_info": "Bármikor csatlakozhatsz bármely boardhoz, teljesen P2P, senki sem állíthat meg. Egyszerűen illeszd be a címét a fenti keresőmezőbe.",
@@ -406,5 +404,6 @@
   "boards_loaded": "betöltött boardok:",
   "link_not_image_or_video_alert": "A hivatkozás nem kép vagy videó.",
   "not_a_file": "nem fájl",
-  "tor_author_flag_label": "Ez a felhasználó a Tor hálózatán van"
+  "tor_author_flag_label": "Ez a felhasználó a Tor hálózatán van",
+  "copy_share_link": "Megosztási hivatkozás másolása"
 }

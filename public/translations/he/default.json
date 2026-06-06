@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "ממתין לאישור מנהל, לא ניתן לראות למשתמשים",
   "copy_user_id": "העתק מזהה משתמש",
-  "copy_direct_link": "העתק קישור ישיר",
   "posts_auto_update_info": "הפוסטים מתעדכנים באופן אוטומטי בערך כל ~2 דקות. כרגע לא ניתן להשבית זאת.",
   "board_address_tooltip": "כתובת צומת ה-P2P של הלוח הזה",
   "upload_failed": "ההעלאה נכשלה",
@@ -307,7 +306,6 @@
   "loading_archive": "טוען ארכיון...",
   "thread_archived": "השרשור נשמר בארכיון.",
   "view": "צפה",
-  "report_post": "דווח על פוסט",
   "delete_post": "מחק פוסט",
   "delete_post_confirm": "למחוק את הפוסט הזה לצמיתות? לא ניתן לבטל פעולה זו.",
   "app_p2p_info": "תמיד תוכל להתחבר לכל לוח, במלואו P2P, אף אחד לא יכול לעצור אותך. פשוט הדבק את הכתובת שלו בשדה החיפוש למעלה.",
@@ -406,5 +404,6 @@
   "boards_loaded": "לוחות שנטענו:",
   "link_not_image_or_video_alert": "הקישור אינו תמונה או וידאו.",
   "not_a_file": "לא קובץ",
-  "tor_author_flag_label": "המשתמש הזה נמצא ב-Tor"
+  "tor_author_flag_label": "המשתמש הזה נמצא ב-Tor",
+  "copy_share_link": "העתק קישור שיתוף"
 }

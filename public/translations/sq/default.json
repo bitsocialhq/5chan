@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "Duke pritur miratimin e moderatorit, jo i dukshëm për përdoruesit",
   "copy_user_id": "kopjo ID e përdoruesit",
-  "copy_direct_link": "kopjo lidhjen e drejtpërdrejtë",
   "posts_auto_update_info": "Postimet përditësohen automatikisht çdo ~2 minuta. Nuk është e mundur ta çaktivizoni këtë për momentin.",
   "board_address_tooltip": "Adresa e nyjës peer-to-peer të kësaj tabele",
   "upload_failed": "Ngarkimi dështoi",
@@ -307,7 +306,6 @@
   "loading_archive": "Po ngarkoni arkivin...",
   "thread_archived": "Fjala është arkivuar.",
   "view": "Shiko",
-  "report_post": "Raporto postimin",
   "delete_post": "Fshi postimin",
   "delete_post_confirm": "Fshini këtë postim përgjithmonë? Kjo nuk mund të zhbëhet.",
   "app_p2p_info": "Mund të lidhesh gjithmonë me çdo board, plotësisht P2P, askush nuk mund të të ndalojë. Thjesht ngjite adresën e tij në fushën e kërkimit më sipër.",
@@ -406,5 +404,6 @@
   "boards_loaded": "bordet e ngarkuara:",
   "link_not_image_or_video_alert": "Lidhja nuk është imazh ose video.",
   "not_a_file": "nuk është skedar",
-  "tor_author_flag_label": "Ky përdorues është në Tor"
+  "tor_author_flag_label": "Ky përdorues është në Tor",
+  "copy_share_link": "Kopjo lidhjen e ndarjes"
 }

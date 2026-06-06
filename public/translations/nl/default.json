@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "In afwachting van moderatorgoedkeuring, niet zichtbaar voor gebruikers",
   "copy_user_id": "gebruikers-ID kopiëren",
-  "copy_direct_link": "directe link kopiëren",
   "posts_auto_update_info": "Berichten worden automatisch ongeveer elke ~2 minuten bijgewerkt. Het is momenteel niet mogelijk dit uit te schakelen.",
   "board_address_tooltip": "Het adres van de peer-to-peer-node van dit bord",
   "upload_failed": "Upload mislukt",
@@ -307,7 +306,6 @@
   "loading_archive": "Archief laden...",
   "thread_archived": "Thread gearchiveerd.",
   "view": "Bekijken",
-  "report_post": "Bericht melden",
   "delete_post": "Bericht verwijderen",
   "delete_post_confirm": "Dit bericht permanent verwijderen? Dit kan niet ongedaan worden gemaakt.",
   "app_p2p_info": "Je kunt altijd verbinding maken met elk board, volledig P2P, niemand kan je tegenhouden. Plak gewoon het adres in het zoekveld hierboven.",
@@ -406,5 +404,6 @@
   "boards_loaded": "geladen boards:",
   "link_not_image_or_video_alert": "De link is geen afbeelding of video.",
   "not_a_file": "geen bestand",
-  "tor_author_flag_label": "Deze gebruiker zit op Tor"
+  "tor_author_flag_label": "Deze gebruiker zit op Tor",
+  "copy_share_link": "Delen link kopiëren"
 }

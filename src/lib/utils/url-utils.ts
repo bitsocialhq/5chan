@@ -128,10 +128,14 @@ export const getPublishURLFilename = (url: string): string | null => {
   }
 };
 
-const CHAN_5_HOSTNAMES = ['5chan.app', '5chan.eth.limo', '5chan.eth.link', '5chan.eth.sucks', '5chan.netlify.app'];
+// Dedicated subdomain that serves shared posts. Its server renders social-media link
+// previews (OpenGraph/Twitter cards) for the shared post before handing off to the app.
+const SHARE_HOSTNAME = 's.5chan.app';
+
+const CHAN_5_HOSTNAMES = ['5chan.app', SHARE_HOSTNAME, '5chan.eth.limo', '5chan.eth.link', '5chan.eth.sucks', '5chan.netlify.app'];
 
 function getShareBaseUrl(): string {
-  return `https://${CHAN_5_HOSTNAMES[0]}`;
+  return `https://${SHARE_HOSTNAME}`;
 }
 
 export type ShareLinkType = 'thread' | 'catalog';
@@ -140,16 +144,18 @@ export type ShareLinkType = 'thread' | 'catalog';
 export function copyShareLinkToClipboard(boardIdentifier: string, linkType: 'thread', cid: string): Promise<void>;
 export function copyShareLinkToClipboard(boardIdentifier: string, linkType: Exclude<ShareLinkType, 'thread'>): Promise<void>;
 export async function copyShareLinkToClipboard(boardIdentifier: string, linkType: ShareLinkType, cid?: string): Promise<void> {
+  // Share links are path-based (no HashRouter `#/`) so the share server can read the post
+  // from the request path and render its preview; URL fragments never reach the server.
   if (linkType === 'thread') {
     if (!cid) {
       throw new Error('copyShareLinkToClipboard: thread links require a cid');
     }
-    const shareLink = `${getShareBaseUrl()}/#/${boardIdentifier}/thread/${cid}`;
+    const shareLink = `${getShareBaseUrl()}/${boardIdentifier}/thread/${cid}`;
     await copyToClipboard(shareLink);
     return;
   }
 
-  const shareLink = `${getShareBaseUrl()}/#/${boardIdentifier}/${linkType}`;
+  const shareLink = `${getShareBaseUrl()}/${boardIdentifier}/${linkType}`;
   await copyToClipboard(shareLink);
 }
 

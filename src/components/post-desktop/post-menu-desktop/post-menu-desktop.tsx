@@ -46,7 +46,7 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
   const { t } = useTranslation();
   const directories = useDirectories();
   const boardIdentifier = getBoardPath(communityAddress, directories);
-  const copyDirectLink = async () => {
+  const copyShareLink = async () => {
     await safeCopyShareLink(boardIdentifier, linkType, linkType === 'thread' ? cid : undefined);
     onClose();
   };
@@ -55,15 +55,15 @@ const CopyLinkButton = ({ cid, communityAddress, linkType, onClose }: CopyLinkBu
       type='button'
       className={styles.postMenuItem}
       tabIndex={0}
-      onClick={copyDirectLink}
+      onClick={copyShareLink}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          copyDirectLink();
+          copyShareLink();
         }
       }}
     >
-      {t('copy_direct_link')}
+      {t('copy_share_link')}
     </button>
   );
 };
@@ -225,24 +225,6 @@ const PostMenuDesktop = ({ postMenu }: PostMenuDesktopProps) => {
         createPortal(
           <FloatingFocusManager context={context} modal={false}>
             <div className={styles.postMenu} ref={refs.setFloating} style={floatingStyles} aria-labelledby={headingId} {...getFloatingProps()}>
-              <button
-                type='button'
-                className={styles.postMenuItem}
-                tabIndex={0}
-                onClick={() => {
-                  alert("Reporting isn't available yet.");
-                  handleClose();
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    alert("Reporting isn't available yet.");
-                    handleClose();
-                  }
-                }}
-              >
-                {t('report_post')}
-              </button>
               {!(isInPostPageView && postCid === cid) && (
                 <button
                   type='button'

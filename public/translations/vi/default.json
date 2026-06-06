@@ -236,7 +236,6 @@
   "no": "No",
   "pending_mod_approval": "Chờ duyệt của người điều hành, không hiển thị cho người dùng",
   "copy_user_id": "sao chép ID người dùng",
-  "copy_direct_link": "sao chép liên kết trực tiếp",
   "posts_auto_update_info": "Bài đăng được cập nhật tự động cứ ~2 phút một lần. Hiện tại không thể tắt tính năng này.",
   "board_address_tooltip": "Địa chỉ nút peer-to-peer của bảng này",
   "upload_failed": "Tải lên thất bại",
@@ -307,7 +306,6 @@
   "loading_archive": "Đang tải lưu trữ...",
   "thread_archived": "Chủ đề đã được lưu trữ.",
   "view": "Xem",
-  "report_post": "Báo cáo bài viết",
   "delete_post": "Xóa bài viết",
   "delete_post_confirm": "Xóa bài viết này vĩnh viễn? Hành động này không thể hoàn tác.",
   "app_p2p_info": "Bạn luôn có thể kết nối với bất kỳ board nào, hoàn toàn P2P, không ai có thể ngăn cản bạn. Chỉ cần dán địa chỉ của nó vào ô tìm kiếm phía trên.",
@@ -406,5 +404,6 @@
   "boards_loaded": "bảng đã tải:",
   "link_not_image_or_video_alert": "Liên kết không phải là hình ảnh hoặc video.",
   "not_a_file": "không phải tệp",
-  "tor_author_flag_label": "Người dùng này đang ở trên Tor"
+  "tor_author_flag_label": "Người dùng này đang ở trên Tor",
+  "copy_share_link": "Sao chép liên kết chia sẻ"
 }

@@ -144,7 +144,7 @@ describe('PostMenuDesktop', () => {
     await renderMenu();
 
     await openMenu();
-    const copyLink = Array.from(document.body.querySelectorAll('button')).find((node) => node.textContent === 'copy_direct_link');
+    const copyLink = Array.from(document.body.querySelectorAll('button')).find((node) => node.textContent === 'copy_share_link');
     await act(async () => {
       copyLink?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
