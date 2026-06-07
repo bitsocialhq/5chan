@@ -398,6 +398,35 @@ describe('EditMenu', () => {
     });
   });
 
+  it('lets moderators clear an existing canonical author ban', async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+
+    await renderMenu({
+      ...basePost,
+      author: {
+        ...basePost.author,
+        community: {
+          banExpiresAt: Math.floor(new Date('2026-03-12T00:00:00Z').getTime() / 1000),
+        },
+      },
+    });
+    await openMenu();
+
+    const banCheckbox = getCheckbox('banUser');
+    expect(banCheckbox?.checked).toBe(true);
+    expect(container.querySelector<HTMLInputElement>('[data-testid="ban-duration-input"]')?.value).toBe('4');
+
+    await click(banCheckbox);
+    await clickButton('save');
+
+    expect(testState.publishCommentModerationMock).toHaveBeenCalledOnce();
+    expect(testState.modOptions?.commentModeration?.author).toBeUndefined();
+  });
+
   it('does not enable purge when the confirmation is rejected', async () => {
     confirmSpy.mockReturnValue(false);
     testState.privileges = {
