@@ -44,7 +44,9 @@ jobs:
       - name: Build React app
         run: CI='' NODE_ENV=production yarn build
       - name: Run React Doctor
-        run: yarn doctor
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^)
+          yarn doctor --diff "$PREVIOUS_TAG" --annotations
       - name: Install Chromium for smoke tests
         run: npx playwright install --with-deps chromium
       - name: Smoke test built web app
