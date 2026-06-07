@@ -424,5 +424,6 @@
   "link_not_image_or_video_alert": "Link is not an image or video.",
   "not_a_file": "not a file",
   "tor_author_flag_label": "This user is on Tor",
-  "copy_share_link": "Copy share link"
+  "copy_share_link": "Copy share link",
+  "directory_submit_board": "Submit Your Board"
 }

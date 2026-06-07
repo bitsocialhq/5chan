@@ -405,5 +405,6 @@
   "link_not_image_or_video_alert": "Tautan bukan gambar atau video.",
   "not_a_file": "bukan file",
   "tor_author_flag_label": "Pengguna ini ada di Tor",
-  "copy_share_link": "Salin tautan bagian"
+  "copy_share_link": "Salin tautan bagian",
+  "directory_submit_board": "Kirim board Anda"
 }

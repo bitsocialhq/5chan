@@ -405,5 +405,6 @@
   "link_not_image_or_video_alert": "Odkaz není obrázek ani video.",
   "not_a_file": "není soubor",
   "tor_author_flag_label": "Tento uživatel je na síti Tor",
-  "copy_share_link": "Kopírovat odkaz pro sdílení"
+  "copy_share_link": "Kopírovat odkaz pro sdílení",
+  "directory_submit_board": "Odeslat svou nástěnku"
 }

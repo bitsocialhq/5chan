@@ -405,5 +405,6 @@
   "link_not_image_or_video_alert": "پیوند تصویر یا ویدیو نیست.",
   "not_a_file": "فایل نیست",
   "tor_author_flag_label": "این کاربر روی Tor است",
-  "copy_share_link": "کپی کردن لینک اشتراک"
+  "copy_share_link": "کپی کردن لینک اشتراک",
+  "directory_submit_board": "برد خود را ارسال کنید"
 }

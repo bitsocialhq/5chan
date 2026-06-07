@@ -405,5 +405,6 @@
   "link_not_image_or_video_alert": "Linkki ei ole kuva tai video.",
   "not_a_file": "ei ole tiedosto",
   "tor_author_flag_label": "Tämä käyttäjä on Torissa",
-  "copy_share_link": "Kopioi jakolinkkii"
+  "copy_share_link": "Kopioi jakolinkkii",
+  "directory_submit_board": "Lähetä boardisi"
 }

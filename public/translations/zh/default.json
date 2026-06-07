@@ -405,5 +405,6 @@
   "link_not_image_or_video_alert": "链接不是图片或视频。",
   "not_a_file": "不是文件",
   "tor_author_flag_label": "该用户正在使用 Tor",
-  "copy_share_link": "复制分享链接"
+  "copy_share_link": "复制分享链接",
+  "directory_submit_board": "提交你的版块"
 }

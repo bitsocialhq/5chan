@@ -405,5 +405,6 @@
   "link_not_image_or_video_alert": "링크가 이미지 또는 동영상이 아닙니다.",
   "not_a_file": "파일이 아님",
   "tor_author_flag_label": "이 사용자는 Tor를 사용 중입니다",
-  "copy_share_link": "공유 링크 복사"
+  "copy_share_link": "공유 링크 복사",
+  "directory_submit_board": "게시판 제출하기"
 }

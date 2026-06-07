@@ -405,5 +405,6 @@
   "link_not_image_or_video_alert": "लिंक प्रतिमा किंवा व्हिडिओ नाही.",
   "not_a_file": "फाइल नाही",
   "tor_author_flag_label": "हा वापरकर्ता Tor वर आहे",
-  "copy_share_link": "शेअर लिंक कॉपी करा"
+  "copy_share_link": "शेअर लिंक कॉपी करा",
+  "directory_submit_board": "तुमचा बोर्ड सबमिट करा"
 }

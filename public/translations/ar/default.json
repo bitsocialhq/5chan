@@ -405,5 +405,6 @@
   "link_not_image_or_video_alert": "الرابط ليس صورة أو فيديو.",
   "not_a_file": "ليس ملفًا",
   "tor_author_flag_label": "هذا المستخدم يستخدم Tor",
-  "copy_share_link": "نسخ رابط المشاركة"
+  "copy_share_link": "نسخ رابط المشاركة",
+  "directory_submit_board": "أرسل لوحتك"
 }
