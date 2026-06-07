@@ -1,3 +1,47 @@
+## [0.9.1](https://github.com/bitsocialnet/5chan/compare/v0.9.0...v0.9.1) (2026-06-07)
+
+
+### Bug Fixes
+
+* **board-buttons:** hide catalog controls on flash upload boards ([b686def](https://github.com/bitsocialnet/5chan/commit/b686def1a1fd6e35a06aea47622cda0b76e3d208))
+* **board:** prevent transient no threads state ([#1151](https://github.com/bitsocialnet/5chan/issues/1151)) ([608402b](https://github.com/bitsocialnet/5chan/commit/608402b5c8bffa2da756896a0651393469853174))
+* **challenge modal:** stop drag position snapback on re-render ([0ee3fb0](https://github.com/bitsocialnet/5chan/commit/0ee3fb00bd5a4aca7d2496c120f209d42a3271d5))
+* **comment-content:** render reason text as comment content ([d3b5c40](https://github.com/bitsocialnet/5chan/commit/d3b5c40321667b81e7c05f0ec016c73276e37341))
+* default fit expanded images to screen on ([e47750e](https://github.com/bitsocialnet/5chan/commit/e47750edf8aef116d977a63b5be236281f727849))
+* default mod queue to feed view ([40bafa2](https://github.com/bitsocialnet/5chan/commit/40bafa2a0fddb619be2bbc555757e0ec754a1460))
+* **edit menu:** read canonical author bans ([38d18b1](https://github.com/bitsocialnet/5chan/commit/38d18b141ee3383437c81f012cbd148dd696a5e8))
+* **embed:** restore youtube thumbnails and file-row labels ([#1148](https://github.com/bitsocialnet/5chan/issues/1148)) ([829b672](https://github.com/bitsocialnet/5chan/commit/829b6720533e7c41f3712d5299f0dfa42f9888f8))
+* **faq:** scroll direct hash links ([72aca22](https://github.com/bitsocialnet/5chan/commit/72aca22723fbbac739daa58ea02fc6d75440e285))
+* **flags:** hide geolocation-only selectors on /int/ and /sp/ ([1bd8d6d](https://github.com/bitsocialnet/5chan/commit/1bd8d6dc349ad6695648f9d145145ce9b01df64f))
+* **flags:** label Tor country flag ([0f6d745](https://github.com/bitsocialnet/5chan/commit/0f6d74592ec1aa2ce8353347889dc50062a15101))
+* **flags:** resolve comment flags from directory list candidates ([4cc2bf4](https://github.com/bitsocialnet/5chan/commit/4cc2bf4ea1b4296d88bc021d464e90cc3de431ef))
+* **fortune:** scope s5s fortune markup ([#1150](https://github.com/bitsocialnet/5chan/issues/1150)) ([d09d2d0](https://github.com/bitsocialnet/5chan/commit/d09d2d05d19ea5f8952d27ee4f025c4f995bd39f))
+* **markdown:** render moderation reason links ([54f2cf2](https://github.com/bitsocialnet/5chan/commit/54f2cf2b84386179e085be51adc209878d2e7a84))
+* **mod queue:** show pending approval reasons directly ([be2b774](https://github.com/bitsocialnet/5chan/commit/be2b774382cd64cf1717b922a9602fc3e0fffe5d))
+* **mod-queue:** rework excerpt hover preview, scope pending-age alerts ([#1152](https://github.com/bitsocialnet/5chan/issues/1152)) ([12977fa](https://github.com/bitsocialnet/5chan/commit/12977fa24a396e900d79b968b527cf790b313e4a))
+* **p2p-stats:** show peer flags for DNS6 relay hostnames ([3480dc0](https://github.com/bitsocialnet/5chan/commit/3480dc0505484a285e5fff98fc429f57aafcc3ed))
+* **post form:** publish twimg query-format links with path extension ([3ece699](https://github.com/bitsocialnet/5chan/commit/3ece699a6ff583cbd51c138f16b241f318b9e2b1))
+* **post form:** reject non-media file links ([95f3a54](https://github.com/bitsocialnet/5chan/commit/95f3a54b9deb2e35143fe16de2fc049ebce2dee9))
+* **post options:** link sage warning to FAQ ([75c805c](https://github.com/bitsocialnet/5chan/commit/75c805c8224aec73679cd90c9fe6bb5c3e11bf0e))
+* **post-form:** auto-convert YouTube links to thumbnail URLs ([0a601c9](https://github.com/bitsocialnet/5chan/commit/0a601c9392572430e3206b5dfa3de72e17fb1db9))
+* **post-form:** restore native board selector appearance ([a7cd3ac](https://github.com/bitsocialnet/5chan/commit/a7cd3ac87f5cb4499f849eabf9db2338858bc989))
+* **post-form:** use native browser styling for flash tag select ([872116b](https://github.com/bitsocialnet/5chan/commit/872116b13214ad2733097a3c42c6f72728e009fd))
+* **post:** show specific role in moderation posting warning ([812b6bc](https://github.com/bitsocialnet/5chan/commit/812b6bc79c6a6c1fd815f482ff861e4eca70cf77))
+* **quotes:** handle cross-thread quotes (publish + hover preview) ([#1153](https://github.com/bitsocialnet/5chan/issues/1153)) ([69ee157](https://github.com/bitsocialnet/5chan/commit/69ee15786b9a4f09914089727eb2e7853bef95b2))
+* **react-doctor:** correct test exclusion + React-Compiler lint policy + state-sync fix ([#1155](https://github.com/bitsocialnet/5chan/issues/1155)) ([0493492](https://github.com/bitsocialnet/5chan/commit/0493492f55b626d64eb1ba39ce98a272a5c7fd32))
+* **theme:** prevent default theme flash on hard refresh ([bdbe44a](https://github.com/bitsocialnet/5chan/commit/bdbe44aa905681a4db5b8469527b34b2afe9ba6c))
+* use body color for brackets around inline action buttons ([bc67e96](https://github.com/bitsocialnet/5chan/commit/bc67e961fc0da8ae402b684dbd0a2ff5b119291c))
+
+
+### Features
+
+* **directory:** add submit board link ([04af198](https://github.com/bitsocialnet/5chan/commit/04af1981400c90a6bb63710880c3f581015983d1))
+* **home stats:** load stats progressively ([d357514](https://github.com/bitsocialnet/5chan/commit/d35751439772d48c31ca12bcf6e823723f4204f5))
+* **markdown:** add /g/ [code] tag syntax highlighting ([ae16ae3](https://github.com/bitsocialnet/5chan/commit/ae16ae3dd3d9bddc62384854d304facdfc2fc396))
+* use s.5chan.app share links and remove report menu items ([404a464](https://github.com/bitsocialnet/5chan/commit/404a464310c82df1a39a9bf7568aeb2db915fd68))
+
+
+
 # [0.9.0](https://github.com/bitsocialnet/5chan/compare/v0.8.5...v0.9.0) (2026-05-31)
 
 

@@ -105,7 +105,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version adds directory rules and board directory pages, Flash SWF posting, /i/ drawing, comment flags, a Halloween theme, pure browser P2P by default, and clearer P2P, posting, moderation, and loading feedback.';
+  'This version adds share links, /g/ code formatting, directory board submissions, progressive homepage stats, and fixes quote previews, expanded images, moderation approval details, and comment moderation edits.';
 
 const releaseBody = `${oneLinerDescription}
 

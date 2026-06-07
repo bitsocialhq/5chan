@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.1",
+      "kind": "release",
+      "timestamp": 1780833600,
+      "message": "v0.9.1: Share links, /g/ code formatting, directory board submissions",
+      "version": "0.9.1"
+    },
+    {
       "id": "release-0.9.0",
       "kind": "release",
       "timestamp": 1780228800,
