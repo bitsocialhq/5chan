@@ -405,5 +405,6 @@
   "link_not_image_or_video_alert": "A hivatkozás nem kép vagy videó.",
   "not_a_file": "nem fájl",
   "tor_author_flag_label": "Ez a felhasználó a Tor hálózatán van",
-  "copy_share_link": "Megosztási hivatkozás másolása"
+  "copy_share_link": "Megosztási hivatkozás másolása",
+  "directory_submit_board": "Küldd be a boardodat"
 }

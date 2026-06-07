@@ -44,6 +44,7 @@ vi.mock('react-i18next', () => ({
       if (key === 'directory_status_online') return 'online';
       if (key === 'directory_status_offline') return 'offline';
       if (key === 'directory_heading') return `${values?.boardIdentifier} directory`;
+      if (key === 'directory_submit_board') return 'Submit Your Board';
       if (key === 'view') return 'View';
       return key;
     },
@@ -75,18 +76,18 @@ vi.mock('../../../components/board-buttons/board-buttons', () => ({
   TopButton: () => createElement('button', { type: 'button' }, 'top'),
 }));
 
-vi.mock('../../../components/footer', () => ({
+vi.mock('../../../components/footer/footer', () => ({
   PageFooterDesktop: ({ firstRow, styleRow }: { firstRow: React.ReactNode; styleRow: React.ReactNode }) =>
     createElement('footer', { 'data-testid': 'desktop-footer' }, firstRow, styleRow),
   PageFooterMobile: ({ children }: { children: React.ReactNode }) => createElement('footer', { 'data-testid': 'mobile-footer' }, children),
   ThreadFooterStyleRow: () => createElement('div', null, 'style'),
 }));
 
-vi.mock('../../../components/loading-ellipsis', () => ({
+vi.mock('../../../components/loading-ellipsis/loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('span', null, string),
 }));
 
-vi.mock('../../../components/tooltip', () => ({
+vi.mock('../../../components/tooltip/tooltip', () => ({
   default: ({ content, children }: { content: React.ReactNode; children: React.ReactNode }) =>
     createElement('span', { title: typeof content === 'string' ? content : undefined }, children),
 }));
@@ -167,6 +168,7 @@ const createCommunity = (address: string, updatedAt = testState.nowSeconds - 60)
 });
 
 const getDirectoryRow = (address = 'anime-and-manga.bso') => Array.from(container.querySelectorAll('tbody tr')).find((row) => row.textContent?.includes(address));
+const getSubmitBoardLinks = () => Array.from(container.querySelectorAll<HTMLAnchorElement>('a')).filter((link) => link.textContent === 'Submit Your Board');
 
 describe('Directory', () => {
   beforeEach(() => {
@@ -228,6 +230,20 @@ describe('Directory', () => {
       address: 'anime-and-manga.bso',
       communityAddressHint: 'anime-and-manga.bso',
     });
+  });
+
+  it('links the submit-board controls to the GitHub directory edit flow', async () => {
+    await renderDirectory();
+
+    const submitLinks = getSubmitBoardLinks();
+    expect(submitLinks).toHaveLength(4);
+
+    for (const link of submitLinks) {
+      expect(link.getAttribute('href')).toBe('https://github.com/bitsocialnet/lists/edit/master/5chan-directories/5chan-a-directory.json');
+      expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('rel')).toContain('noreferrer');
+      expect(link.getAttribute('rel')).toContain('noopener');
+    }
   });
 
   it('shows loading status while the listed board status is loading', async () => {

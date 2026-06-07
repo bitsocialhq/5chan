@@ -405,5 +405,6 @@
   "link_not_image_or_video_alert": "Länken är inte en bild eller video.",
   "not_a_file": "inte en fil",
   "tor_author_flag_label": "Den här användaren är på Tor",
-  "copy_share_link": "Kopiera delningslänk"
+  "copy_share_link": "Kopiera delningslänk",
+  "directory_submit_board": "Skicka in ditt board"
 }

@@ -4,9 +4,9 @@ import { Trans, useTranslation } from 'react-i18next';
 import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { shouldShowSnow } from '../../lib/snow';
 import { BottomButton, BracketedCatalogButton, CatalogButton, ReturnButton, TopButton } from '../../components/board-buttons/board-buttons';
-import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer';
-import LoadingEllipsis from '../../components/loading-ellipsis';
-import Tooltip from '../../components/tooltip';
+import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer/footer';
+import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
+import Tooltip from '../../components/tooltip/tooltip';
 import { useDirectories } from '../../hooks/use-directories';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
@@ -44,43 +44,73 @@ const computeBoardStatus = (
 
 const PASS_LINK = '/pass';
 
-const DirectoryDesktopTopControls = ({ communityAddress }: { communityAddress: string | undefined }) => (
+const DirectorySubmitBoardLink = ({ href }: { href: string }) => {
+  const { t } = useTranslation();
+
+  return (
+    <a className='button' href={href} target='_blank' rel='noreferrer noopener'>
+      {t('directory_submit_board')}
+    </a>
+  );
+};
+
+const DirectoryDesktopTopControls = ({ communityAddress, submitHref }: { communityAddress: string | undefined; submitHref: string }) => (
   <div className={styles.desktopNavLinks}>
-    <span>
-      [<ReturnButton address={communityAddress} />]
-    </span>
-    <BracketedCatalogButton address={communityAddress} />
-    <span>
-      [<BottomButton />]
+    <div className={styles.navButtonGroup}>
+      <span>
+        [<ReturnButton address={communityAddress} />]
+      </span>
+      <BracketedCatalogButton address={communityAddress} />
+      <span>
+        [<BottomButton />]
+      </span>
+    </div>
+    <span className={styles.submitBoardControl}>
+      [<DirectorySubmitBoardLink href={submitHref} />]
     </span>
   </div>
 );
 
-const DirectoryDesktopFooterControls = ({ communityAddress }: { communityAddress: string | undefined }) => (
+const DirectoryDesktopFooterControls = ({ communityAddress, submitHref }: { communityAddress: string | undefined; submitHref: string }) => (
   <div className={styles.desktopFooterButtons}>
-    <span>
-      [<ReturnButton address={communityAddress} />]
-    </span>
-    <BracketedCatalogButton address={communityAddress} />
-    <span>
-      [<TopButton />]
+    <div className={styles.navButtonGroup}>
+      <span>
+        [<ReturnButton address={communityAddress} />]
+      </span>
+      <BracketedCatalogButton address={communityAddress} />
+      <span>
+        [<TopButton />]
+      </span>
+    </div>
+    <span className={styles.submitBoardControl}>
+      [<DirectorySubmitBoardLink href={submitHref} />]
     </span>
   </div>
 );
 
-const DirectoryMobileTopControls = ({ communityAddress }: { communityAddress: string | undefined }) => (
+const DirectoryMobileTopControls = ({ communityAddress, submitHref }: { communityAddress: string | undefined; submitHref: string }) => (
   <div className={styles.mobileNavLinks}>
-    <ReturnButton address={communityAddress} />
-    <CatalogButton address={communityAddress} />
-    <BottomButton />
+    <div>
+      <ReturnButton address={communityAddress} />
+      <CatalogButton address={communityAddress} />
+      <BottomButton />
+    </div>
+    <div className={styles.mobileSubmitRow}>
+      <DirectorySubmitBoardLink href={submitHref} />
+    </div>
   </div>
 );
 
-const DirectoryMobileFooterControls = ({ communityAddress }: { communityAddress: string | undefined }) => (
+const DirectoryMobileFooterControls = ({ communityAddress, submitHref }: { communityAddress: string | undefined; submitHref: string }) => (
   <div className={styles.mobileFooterButtons}>
-    <ReturnButton address={communityAddress} />
-    <CatalogButton address={communityAddress} />
-    <TopButton />
+    <div>
+      <ReturnButton address={communityAddress} />
+      <CatalogButton address={communityAddress} />
+      <TopButton />
+    </div>
+    <div className={styles.mobileSubmitRow}>
+      <DirectorySubmitBoardLink href={submitHref} />
+    </div>
   </div>
 );
 
@@ -199,9 +229,9 @@ const Directory = () => {
 
   return (
     <div id='top' className={`${styles.page} ${shouldShowSnow() ? styles.garland : ''}`}>
-      <DirectoryMobileTopControls communityAddress={communityAddress} />
+      <DirectoryMobileTopControls communityAddress={communityAddress} submitHref={repoEditUrl} />
       <hr className={styles.desktopDivider} />
-      <DirectoryDesktopTopControls communityAddress={communityAddress} />
+      <DirectoryDesktopTopControls communityAddress={communityAddress} submitHref={repoEditUrl} />
       <hr className={styles.divider} />
       {isLoadingShell ? (
         <h4 className={styles.directorySummary}>
@@ -257,9 +287,9 @@ const Directory = () => {
         </>
       )}
 
-      <PageFooterDesktop firstRow={<DirectoryDesktopFooterControls communityAddress={communityAddress} />} styleRow={<ThreadFooterStyleRow />} />
+      <PageFooterDesktop firstRow={<DirectoryDesktopFooterControls communityAddress={communityAddress} submitHref={repoEditUrl} />} styleRow={<ThreadFooterStyleRow />} />
       <PageFooterMobile>
-        <DirectoryMobileFooterControls communityAddress={communityAddress} />
+        <DirectoryMobileFooterControls communityAddress={communityAddress} submitHref={repoEditUrl} />
       </PageFooterMobile>
     </div>
   );

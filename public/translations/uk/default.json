@@ -405,5 +405,6 @@
   "link_not_image_or_video_alert": "Посилання не є зображенням або відео.",
   "not_a_file": "не файл",
   "tor_author_flag_label": "Цей користувач у Tor",
-  "copy_share_link": "Копіювати посилання для спільного доступу"
+  "copy_share_link": "Копіювати посилання для спільного доступу",
+  "directory_submit_board": "Надіслати свою дошку"
 }

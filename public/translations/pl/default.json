@@ -405,5 +405,6 @@
   "link_not_image_or_video_alert": "Link nie jest obrazem ani filmem.",
   "not_a_file": "to nie plik",
   "tor_author_flag_label": "Ten użytkownik jest w sieci Tor",
-  "copy_share_link": "Kopiuj link udostępniania"
+  "copy_share_link": "Kopiuj link udostępniania",
+  "directory_submit_board": "Prześlij swój board"
 }

@@ -405,5 +405,6 @@
   "link_not_image_or_video_alert": "De link is geen afbeelding of video.",
   "not_a_file": "geen bestand",
   "tor_author_flag_label": "Deze gebruiker zit op Tor",
-  "copy_share_link": "Delen link kopiëren"
+  "copy_share_link": "Delen link kopiëren",
+  "directory_submit_board": "Dien je board in"
 }

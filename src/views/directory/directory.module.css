@@ -18,10 +18,22 @@
 .desktopNavLinks {
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
   text-align: left;
   font-size: 13px;
   text-transform: capitalize;
+}
+
+.navButtonGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.submitBoardControl {
+  white-space: nowrap;
 }
 
 .desktopNavLinks a:not([class~='button']),
@@ -36,9 +48,16 @@
   margin-top: 5px;
 }
 
-.mobileNavLinks button {
+.mobileNavLinks button,
+.mobileNavLinks a[class~='button'],
+.mobileFooterButtons button,
+.mobileFooterButtons a[class~='button'] {
   text-transform: capitalize;
   margin: 5px 2px;
+}
+
+.mobileSubmitRow {
+  margin-top: -5px;
 }
 
 .mobileNavLinks a:not([class~='button']),
@@ -49,7 +68,8 @@
 .desktopFooterButtons {
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 8px;
   width: 100%;
   text-transform: capitalize;
 }
@@ -57,11 +77,6 @@
 .mobileFooterButtons {
   text-align: center;
   text-transform: capitalize;
-}
-
-.mobileFooterButtons button {
-  text-transform: capitalize;
-  margin: 5px 2px;
 }
 
 .directorySummary {
