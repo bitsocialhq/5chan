@@ -38,7 +38,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const communityAddress = getCommentCommunityAddress(resolvedPost);
   const archived = isCommentArchived(resolvedPost);
   const authorDisplayName = resolvedPost?.author?.displayName;
-  const modBanExpiresAt = resolvedPost?.commentModeration?.author?.banExpiresAt;
+  const modBanExpiresAt = resolvedPost?.author?.community?.banExpiresAt ?? resolvedPost?.commentModeration?.author?.banExpiresAt;
   const purged = resolvedPost?.commentModeration?.purged ?? false;
   const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
   const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
