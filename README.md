@@ -47,6 +47,17 @@ Directory voting pages are planned for each slot on 5chan. These pages will list
 - **Desktop version** (full P2P bitsocial node, seeds automatically): Available for Mac/Windows/Linux, [download from the release page](https://github.com/bitsocialnet/5chan/releases/latest)
 - **Mobile version**: Available for Android, [download from the release page](https://github.com/bitsocialnet/5chan/releases/latest)
 
+## Run 5chan in Your Browser With a Local Node
+
+If you want the full P2P node but prefer opening 5chan in your normal browser instead of using the desktop app, use [bitsocial-cli](https://github.com/bitsocialnet/bitsocial-cli). It runs the Bitsocial/IPFS node and serves the bundled 5chan Web UI locally, so you do not need to run this repository separately.
+
+```sh-session
+npm install -g @bitsocial/bitsocial-cli
+bitsocial daemon
+```
+
+When the daemon starts, it prints a `WebUI (5chan - Imageboard-style UI)` URL. Open that URL in your browser to use 5chan through your local node. See the [bitsocial-cli daemon docs](https://github.com/bitsocialnet/bitsocial-cli#running-daemon) for details.
+
 ## Creating a Board
 
 In the bitsocial protocol, a 5chan board is called a _community_. To deliver the expected 5chan imageboard UX, a board should run on a bitsocial node together with [5chan Board Manager](https://github.com/bitsocialnet/5chan-board-manager). The board manager applies imageboard-style lifecycle rules that bitsocial communities do not enforce by themselves: thread limits, bump limits, archived-thread retention, and purging of author-deleted content.
