@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import useFeedCacheStore, { CachedFeed } from '../../stores/use-feed-cache-store';
 import { getFeedCacheKey, getFeedType, isFeedRoute } from '../../lib/utils/route-utils';
 import { TIME_FILTER_QUERY_PARAM } from '../../lib/utils/time-filter-utils';
-import Board from '../../views/board';
-import Catalog from '../../views/catalog';
+import { restoreSuspendedMediaPlayback, suspendMediaPlayback } from '../../lib/utils/media-playback-utils';
+import Board from '../../views/board/board';
+import Catalog from '../../views/catalog/catalog';
 import styles from './feed-cache-container.module.css';
 
 interface FeedContextFromKey {
@@ -41,10 +42,21 @@ interface CachedFeedWrapperProps {
 }
 
 const CachedFeedWrapper = ({ feed, isVisible }: CachedFeedWrapperProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const context = parseFeedKey(feed.key);
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (isVisible) {
+      restoreSuspendedMediaPlayback(container, { visibleOnly: true });
+      return;
+    }
+
+    suspendMediaPlayback(container);
+  }, [isVisible]);
+
   return (
-    <div className={isVisible ? styles.visible : styles.hidden}>
+    <div ref={containerRef} className={isVisible ? styles.visible : styles.hidden}>
       {feed.type === 'catalog' ? (
         <Catalog
           feedCacheKey={feed.key}
