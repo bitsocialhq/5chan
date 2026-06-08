@@ -958,7 +958,11 @@ describe('Board', () => {
   });
 
   it('waits to probe broader multiboard suggestions until the current time window is exhausted', async () => {
-    testState.feed = [{ cid: 'recent-post', communityAddress: 'music-posting.eth' }];
+    const now = Math.floor(Date.now() / 1000);
+    testState.feed = [
+      { cid: 'recent-post', communityAddress: 'music-posting.eth', timestamp: now - 12 * 60 * 60 },
+      { cid: 'older-post', communityAddress: 'music-posting.eth', timestamp: now - 5 * 24 * 60 * 60 },
+    ];
     testState.feedState = 'fetching-ipns';
     testState.hasMore = true;
 
@@ -975,6 +979,7 @@ describe('Board', () => {
         expect.objectContaining({ newerThan: 365 * 24 * 60 * 60, communitiesLength: 0 }),
       ]),
     );
+    expect(container.querySelector('[data-testid="expand-time-window-button"]')).toBeNull();
   });
 
   it('surfaces board load errors when the feed is empty', async () => {

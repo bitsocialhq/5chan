@@ -392,8 +392,8 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     [effectiveInfiniteScroll, combinedFeed, guiPostsPerPage, maxGuiPages],
   );
   const moreThreadsSuggestion = useMemo(
-    () => (isMultiboardView ? getTimeFilterSuggestion(feed.length, weeklyFeed.length, monthlyFeed.length, yearlyFeed.length, currentTimeFilterSeconds) : null),
-    [currentTimeFilterSeconds, feed.length, isMultiboardView, monthlyFeed.length, weeklyFeed.length, yearlyFeed.length],
+    () => (shouldProbeSuggestionFeeds ? getTimeFilterSuggestion(feed.length, weeklyFeed.length, monthlyFeed.length, yearlyFeed.length, currentTimeFilterSeconds) : null),
+    [currentTimeFilterSeconds, feed.length, monthlyFeed.length, shouldProbeSuggestionFeeds, weeklyFeed.length, yearlyFeed.length],
   );
   const moreThreadsSuggestionPathname = isInAllView ? '/all' : isInSubscriptionsView ? '/subs' : isInModView ? '/mod' : null;
   const registerComments = usePostNumberStore((state) => state.registerComments);
