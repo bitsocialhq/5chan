@@ -27,6 +27,7 @@ type TestComment = {
   reason?: string;
   replyCount?: number;
   replies?: unknown[];
+  refresh?: () => Promise<void>;
   state?: string;
   communityAddress?: string;
   timestamp?: number;
@@ -59,6 +60,7 @@ const testState = vi.hoisted(() => ({
     },
   } as { roles?: Record<string, unknown> },
   useCommentCalls: [] as Array<{ commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string } }>,
+  evictThreadRefreshCachesMock: vi.fn(),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -212,6 +214,10 @@ vi.mock('../../../components/post-mobile', () => ({
     ),
 }));
 
+vi.mock('../../../lib/utils/thread-refresh-cache-utils', () => ({
+  evictThreadRefreshCaches: testState.evictThreadRefreshCachesMock,
+}));
+
 let container: HTMLDivElement;
 let root: Root;
 
@@ -254,6 +260,8 @@ describe('Post', () => {
     testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.repliesByCommentCid = {};
     testState.useCommentCalls = [];
+    testState.evictThreadRefreshCachesMock.mockReset();
+    testState.evictThreadRefreshCachesMock.mockResolvedValue(undefined);
     useThreadLiveUpdatesStore.getState().resetState();
     testState.community = {
       error: undefined,
@@ -736,5 +744,53 @@ describe('Post', () => {
         }),
       ]),
     );
+  });
+
+  it('evicts stale thread caches before refreshing a manual thread update', async () => {
+    const events: string[] = [];
+    const refreshReply = vi.fn(async () => {
+      events.push('refresh-reply');
+    });
+    const refreshPost = vi.fn(async () => {
+      events.push('refresh-post');
+    });
+    testState.evictThreadRefreshCachesMock.mockImplementation(async () => {
+      events.push('evict-cache');
+    });
+    testState.commentsByCid = {
+      'reply-cid': {
+        cid: 'reply-cid',
+        communityAddress: 'music-posting.eth',
+        parentCid: 'root-cid',
+        postCid: 'root-cid',
+        refresh: refreshReply,
+      },
+      'root-cid': {
+        cid: 'root-cid',
+        communityAddress: 'music-posting.eth',
+        number: 31,
+        postCid: 'root-cid',
+        refresh: refreshPost,
+        replyCount: 0,
+        title: 'Root thread',
+      },
+    };
+
+    await renderPostPage('/mu/thread/reply-cid');
+
+    await act(async () => {
+      useThreadLiveUpdatesStore.getState().requestUpdate();
+    });
+    await flushEffects();
+
+    expect(testState.evictThreadRefreshCachesMock).toHaveBeenCalledWith([testState.commentsByCid['reply-cid'], testState.commentsByCid['root-cid']]);
+    expect(events[0]).toBe('evict-cache');
+    expect(refreshReply).toHaveBeenCalledTimes(1);
+    expect(refreshPost).toHaveBeenCalledTimes(1);
+    expect(useThreadLiveUpdatesStore.getState()).toMatchObject({
+      isUpdating: false,
+      repliesResetRequestId: 1,
+      updateRequestId: 1,
+    });
   });
 });

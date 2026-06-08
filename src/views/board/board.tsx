@@ -236,7 +236,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     timeFilterSeconds: multiboardTimeFilterSeconds,
     expandTimeWindow,
   });
-  const shouldProbeSuggestionFeeds = isVisible && isMultiboardView && typeof currentTimeFilterSeconds === 'number';
+  const shouldProbeSuggestionFeeds = isVisible && isMultiboardView && typeof currentTimeFilterSeconds === 'number' && feedState === 'succeeded' && !hasMore;
   const shouldProbeWeeklyFeed = shouldProbeSuggestionFeeds && currentTimeFilterSeconds < WEEK_IN_SECONDS;
   const shouldProbeMonthlyFeed = shouldProbeSuggestionFeeds && currentTimeFilterSeconds < MONTH_IN_SECONDS;
   const shouldProbeYearlyFeed = shouldProbeSuggestionFeeds && currentTimeFilterSeconds < YEAR_IN_SECONDS;

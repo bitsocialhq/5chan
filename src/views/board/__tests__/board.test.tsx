@@ -957,6 +957,26 @@ describe('Board', () => {
     );
   });
 
+  it('waits to probe broader multiboard suggestions until the current time window is exhausted', async () => {
+    testState.feed = [{ cid: 'recent-post', communityAddress: 'music-posting.eth' }];
+    testState.feedState = 'fetching-ipns';
+    testState.hasMore = true;
+
+    await renderBoard({
+      boardProps: { viewType: 'all' },
+      initialEntry: '/all?t=24h',
+      routePath: '/all/*',
+    });
+
+    expect(testState.feedOptionsCalls).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ newerThan: 7 * 24 * 60 * 60, communitiesLength: 0 }),
+        expect.objectContaining({ newerThan: 30 * 24 * 60 * 60, communitiesLength: 0 }),
+        expect.objectContaining({ newerThan: 365 * 24 * 60 * 60, communitiesLength: 0 }),
+      ]),
+    );
+  });
+
   it('surfaces board load errors when the feed is empty', async () => {
     testState.community = {
       error: new Error('board failed'),
