@@ -406,5 +406,6 @@
   "not_a_file": "ei ole tiedosto",
   "tor_author_flag_label": "Tämä käyttäjä on Torissa",
   "copy_share_link": "Kopioi jakolinkkii",
-  "directory_submit_board": "Lähetä boardisi"
+  "directory_submit_board": "Lähetä boardisi",
+  "all_subtitle": "Korkeimman pistemäärän saanut foorumi jokaisesta hakemistosta"
 }

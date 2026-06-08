@@ -406,5 +406,6 @@
   "not_a_file": "nu este fișier",
   "tor_author_flag_label": "Acest utilizator este pe Tor",
   "copy_share_link": "Copiezi link-ul de partajare",
-  "directory_submit_board": "Trimite boardul tău"
+  "directory_submit_board": "Trimite boardul tău",
+  "all_subtitle": "Forumul cu cea mai mare punctaj din fiecare director"
 }

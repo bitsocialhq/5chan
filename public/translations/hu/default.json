@@ -406,5 +406,6 @@
   "not_a_file": "nem fájl",
   "tor_author_flag_label": "Ez a felhasználó a Tor hálózatán van",
   "copy_share_link": "Megosztási hivatkozás másolása",
-  "directory_submit_board": "Küldd be a boardodat"
+  "directory_submit_board": "Küldd be a boardodat",
+  "all_subtitle": "A legmagasabb pontszámú Fórum minden könyvtárból"
 }

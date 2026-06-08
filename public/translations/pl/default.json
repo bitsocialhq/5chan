@@ -406,5 +406,6 @@
   "not_a_file": "to nie plik",
   "tor_author_flag_label": "Ten użytkownik jest w sieci Tor",
   "copy_share_link": "Kopiuj link udostępniania",
-  "directory_submit_board": "Prześlij swój board"
+  "directory_submit_board": "Prześlij swój board",
+  "all_subtitle": "Forum o najwyższej punktacji z każdego katalogu"
 }

@@ -406,5 +406,6 @@
   "not_a_file": "není soubor",
   "tor_author_flag_label": "Tento uživatel je na síti Tor",
   "copy_share_link": "Kopírovat odkaz pro sdílení",
-  "directory_submit_board": "Odeslat svou nástěnku"
+  "directory_submit_board": "Odeslat svou nástěnku",
+  "all_subtitle": "Fórum s nejvyšším skóre z každého adresáře"
 }
