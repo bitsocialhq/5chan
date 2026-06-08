@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChallengeVerification, Comment, PublishCommentOptions, deleteComment, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
 import { alertChallengeVerificationFailed } from '../lib/utils/challenge-utils';
 import useChallengesStore from '../stores/use-challenges-store';
+import useFailedPostRetryStore from '../stores/use-failed-post-retry-store';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
 
 const retryExcludedFields = new Set([
@@ -73,6 +74,8 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
   const [isRetryingFailedPost, setIsRetryingFailedPost] = useState(false);
   const [isRetryRedirectPending, setIsRetryRedirectPending] = useState(false);
   const addChallenge = useChallengesStore((state) => state.addChallenge);
+  const startRetry = useFailedPostRetryStore((state) => state.startRetry);
+  const endRetry = useFailedPostRetryStore((state) => state.endRetry);
   const navigate = useNavigate();
   const abandonPublishRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const abandonCurrentPublish = useCallback(async () => {
@@ -95,11 +98,12 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
             onError: (error: Error) => {
               console.error('Failed to retry failed post:', error);
               setIsRetryRedirectPending(false);
+              endRetry();
               alert(`Failed to retry post: ${error.message}`);
             },
           }
         : undefined,
-    [abandonCurrentPublish, addChallenge, retryPublishOptions],
+    [abandonCurrentPublish, addChallenge, endRetry, retryPublishOptions],
   );
   const { abandonPublish, index: retryPostIndex, publishComment } = usePublishComment(publishOptionsWithCallbacks);
   abandonPublishRef.current = abandonPublish;
@@ -110,8 +114,9 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
     }
 
     setIsRetryRedirectPending(false);
+    endRetry();
     navigate(`/pending/${retryPostIndex}`, { replace: true });
-  }, [isRetryRedirectPending, navigate, retryPostIndex]);
+  }, [endRetry, isRetryRedirectPending, navigate, retryPostIndex]);
 
   const onDeleteFailedPost = useCallback(() => {
     if (isDeletingFailedPost || isRetryingFailedPost || !canDeleteFailedPost) {
@@ -150,8 +155,15 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
       return;
     }
 
+    const accountCommentIndex = post?.index;
+
     setIsRetryingFailedPost(true);
     setIsRetryRedirectPending(true);
+    // Mark this pending row as mid-retry so the pending view does not treat the brief
+    // post-delete gap (no addressable comment, no active challenge yet) as an abandoned challenge.
+    if (typeof accountCommentIndex === 'number') {
+      startRetry(accountCommentIndex);
+    }
 
     try {
       await deleteComment(targetComment);
@@ -159,11 +171,12 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
     } catch (error) {
       console.error('Failed to retry failed post:', error);
       setIsRetryRedirectPending(false);
+      endRetry();
       alert(`Failed to retry post: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsRetryingFailedPost(false);
     }
-  }, [canRetryFailedPost, isDeletingFailedPost, isRetryingFailedPost, post, publishComment]);
+  }, [canRetryFailedPost, endRetry, isDeletingFailedPost, isRetryingFailedPost, post, publishComment, startRetry]);
 
   return {
     canDeleteFailedPost,
