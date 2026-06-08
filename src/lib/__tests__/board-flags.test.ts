@@ -56,7 +56,12 @@ describe('board-flags', () => {
       x: 0,
       y: 0,
     });
-    expect(getBoardFlagDefinition('pony', 'AJ')).toMatchObject({ code: 'AJ', label: 'Applejack', x: 80, y: 0 });
+    // Selector order (PONY_FLAG_ENTRIES) differs from the sprite's alphabetical-by-code layout,
+    // so these codes only land on the right cell via PONY_FLAG_COORDINATES.
+    expect(getBoardFlagDefinition('pony', 'AB')).toMatchObject({ code: 'AB', label: 'Aria Blaze', x: 16, y: 0 });
+    expect(getBoardFlagDefinition('pony', 'ADA')).toMatchObject({ code: 'ADA', label: 'Adagio Dazzle', x: 32, y: 0 });
+    expect(getBoardFlagDefinition('pony', 'AJ')).toMatchObject({ code: 'AJ', label: 'Applejack', x: 48, y: 0 });
+    expect(getBoardFlagDefinition('pony', 'AN')).toMatchObject({ code: 'AN', label: 'Anon', x: 64, y: 0 });
     expect(getBoardFlagDefinition('pony', 'ZS')).toMatchObject({ code: 'ZS', label: 'Zipp Storm', x: 16, y: 144 });
   });
 });
