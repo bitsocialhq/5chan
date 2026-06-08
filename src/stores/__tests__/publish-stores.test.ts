@@ -97,9 +97,9 @@ describe('publish stores', () => {
       spoiler: false,
       communityAddress: 'music-posting.eth',
       challengeRequest: {
-        challengeAnswers: ['bitsocial-flags:5chan:flag:pol:AC'],
+        challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },
-      flairs: [{ text: 'flag:pol:AC', type: 'pol', code: 'AC' }],
+      flairs: [{ text: 'flag:country:auto', type: 'country', code: 'auto' }],
     };
 
     usePublishReplyStore.getState().setPublishReplyStore(comment);
@@ -111,9 +111,9 @@ describe('publish stores', () => {
     expect(state.publishCommentOptions['parent-1']?.parentCid).toBe('parent-1');
     expect(state.publishCommentOptions['parent-1']?.postCid).toBe('parent-1');
     expect(state.publishCommentOptions['parent-1']?.challengeRequest).toEqual({
-      challengeAnswers: ['bitsocial-flags:5chan:flag:pol:AC'],
+      challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
     });
-    expect(state.publishCommentOptions['parent-1']?.flairs).toEqual([{ text: 'flag:pol:AC', type: 'pol', code: 'AC' }]);
+    expect(state.publishCommentOptions['parent-1']?.flairs).toEqual([{ text: 'flag:country:auto', type: 'country', code: 'auto' }]);
 
     state.publishCommentOptions['parent-1']?.onChallengeVerification?.({ token: 'challenge' } as never, comment);
     expect(testState.alertChallengeVerificationFailedMock).toHaveBeenCalledWith({ token: 'challenge' }, comment);

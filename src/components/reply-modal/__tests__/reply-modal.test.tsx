@@ -601,9 +601,6 @@ describe('ReplyModal', () => {
 
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
       content: 'reply body',
-      challengeRequest: {
-        challengeAnswers: ['bitsocial-flags:5chan:flag:pol:AC'],
-      },
       flairs: [{ type: 'pol', code: 'AC', text: 'flag:pol:AC' }],
     });
   });
