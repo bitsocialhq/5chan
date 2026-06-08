@@ -22,6 +22,7 @@ const testState = vi.hoisted(() => ({
   locationState: null as { boardPath?: string } | null,
   navigateMock: vi.fn(),
   post: undefined as TestComment | undefined,
+  retryingAccountCommentIndex: null as number | null,
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -56,6 +57,10 @@ vi.mock('../../../lib/utils/route-utils', () => ({
 
 vi.mock('../../../stores/use-challenges-store', () => ({
   default: (selector: (state: { challenges: unknown[] }) => unknown) => selector({ challenges: Array.from({ length: testState.challengeCount }) }),
+}));
+
+vi.mock('../../../stores/use-failed-post-retry-store', () => ({
+  default: (selector: (state: { retryingAccountCommentIndex: number | null }) => unknown) => selector({ retryingAccountCommentIndex: testState.retryingAccountCommentIndex }),
 }));
 
 vi.mock('../../post', () => ({
@@ -93,6 +98,7 @@ describe('PendingPost', () => {
     testState.locationState = null;
     testState.navigateMock.mockReset();
     testState.post = undefined;
+    testState.retryingAccountCommentIndex = null;
 
     window.scrollTo = scrollToMock;
 
@@ -179,6 +185,19 @@ describe('PendingPost', () => {
     await renderPendingPost();
 
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
+  });
+
+  it('keeps a mid-retry pending post in place while the failed row is deleted and republished', async () => {
+    testState.accountCommentIndex = '0';
+    testState.accountComments = [];
+    testState.challengeCount = 0;
+    testState.locationState = { boardPath: 'mu' };
+    testState.post = undefined;
+    testState.retryingAccountCommentIndex = 0;
+
+    await renderPendingPost();
+
+    expect(testState.navigateMock).not.toHaveBeenCalled();
   });
 
   it('redirects missing sparse pending account comment indices to not found', async () => {
