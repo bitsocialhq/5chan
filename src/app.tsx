@@ -16,6 +16,7 @@ import { useDirectories } from './hooks/use-directories';
 import { useCommunityIdentifier } from './hooks/use-community-identifiers';
 import { useResolvedCommunityAddress, useResolvedDirectoryBoardPath } from './hooks/use-resolved-community-address';
 import useSafeAccountComment from './hooks/use-safe-account-comment';
+import useSuspendOffscreenMediaPlayback from './hooks/use-suspend-offscreen-media-playback';
 import { getCommentCommunityAddress } from './lib/utils/comment-utils';
 import {
   getBoardPath,
@@ -32,24 +33,24 @@ import {
   isFlashBoardRoute,
 } from './lib/utils/route-utils';
 import styles from './app.module.css';
-import { DesktopBoardButtons, MobileAllFeedFilter, MobileBoardButtons } from './components/board-buttons';
-import Blotter from './views/blotter';
-import Faq from './views/faq';
-import Home from './views/home';
+import { DesktopBoardButtons, MobileAllFeedFilter, MobileBoardButtons } from './components/board-buttons/board-buttons';
+import Blotter from './views/blotter/blotter';
+import Faq from './views/faq/faq';
+import Home from './views/home/home';
 import Archive from './views/archive/archive';
 import Directory from './views/directory/directory';
-import ModQueueView from './views/mod-queue';
-import NotAllowed from './views/not-allowed';
-import NotFound from './views/not-found';
-import Pass from './views/pass';
-import PendingPost from './views/pending-post';
-import Post from './views/post';
-import Rules from './views/rules';
-import BoardHeader from './components/board-header';
-import FeedCacheContainer from './components/feed-cache-container';
-import PostForm from './components/post-form';
-import BoardBlotter from './components/board-blotter';
-import BoardsBar from './components/boards-bar';
+import ModQueueView from './views/mod-queue/mod-queue';
+import NotAllowed from './views/not-allowed/not-allowed';
+import NotFound from './views/not-found/not-found';
+import Pass from './views/pass/pass';
+import PendingPost from './views/pending-post/pending-post';
+import Post from './views/post/post';
+import Rules from './views/rules/rules';
+import BoardHeader from './components/board-header/board-header';
+import FeedCacheContainer from './components/feed-cache-container/feed-cache-container';
+import PostForm from './components/post-form/post-form';
+import BoardBlotter from './components/board-blotter/board-blotter';
+import BoardsBar from './components/boards-bar/boards-bar';
 import ExternalQuoteStatus from './components/external-quote-status/external-quote-status';
 
 const AccountDataEditor = lazy(() => import('./views/account-data-editor'));
@@ -189,6 +190,7 @@ const BoardLayout = () => {
 
 const GlobalLayout = () => {
   useTheme();
+  useSuspendOffscreenMediaPlayback();
 
   const {
     activeCid,
