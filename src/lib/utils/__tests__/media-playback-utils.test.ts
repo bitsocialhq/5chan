@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { observeOffscreenMediaPlayback } from '../media-playback-utils';
+import { observeOffscreenMediaPlayback, restoreSuspendedMediaPlayback } from '../media-playback-utils';
 
 class MockIntersectionObserver {
   static instances: MockIntersectionObserver[] = [];
@@ -65,6 +65,8 @@ describe('media-playback-utils', () => {
     vi.useFakeTimers();
     vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
     MockIntersectionObserver.instances = [];
+    vi.stubGlobal('innerHeight', 600);
+    vi.stubGlobal('innerWidth', 800);
   });
 
   afterEach(() => {
@@ -94,6 +96,55 @@ describe('media-playback-utils', () => {
     await vi.advanceTimersByTimeAsync(1);
 
     expect(pauseMock).toHaveBeenCalledTimes(1);
+    expect(iframe.getAttribute('src')).toBe('about:blank');
+    expect(srcdocIframe.getAttribute('srcdoc')).toBeNull();
+
+    observer.trigger(container, true);
+
+    expect(iframe.getAttribute('src')).toBe('https://player.example.com/embed');
+    expect(srcdocIframe.getAttribute('srcdoc')).toBe('<p>embedded player</p>');
+
+    cleanup();
+    root.remove();
+  });
+
+  it('leaves offscreen iframe embeds suspended during visible-only restore until they intersect', async () => {
+    const root = document.createElement('div');
+    const { container, iframe, srcdocIframe, video } = createExpandedMedia();
+    vi.spyOn(video, 'pause').mockImplementation(() => {});
+    vi.spyOn(iframe, 'getBoundingClientRect').mockReturnValue({
+      bottom: 900,
+      height: 300,
+      left: 0,
+      right: 400,
+      top: 600,
+      width: 400,
+      x: 0,
+      y: 600,
+      toJSON: () => '',
+    });
+    vi.spyOn(srcdocIframe, 'getBoundingClientRect').mockReturnValue({
+      bottom: 900,
+      height: 300,
+      left: 0,
+      right: 400,
+      top: 600,
+      width: 400,
+      x: 0,
+      y: 600,
+      toJSON: () => '',
+    });
+    root.append(container);
+    document.body.append(root);
+
+    const cleanup = observeOffscreenMediaPlayback(root);
+    const observer = MockIntersectionObserver.instances[0];
+
+    observer.trigger(container, false);
+    await vi.advanceTimersByTimeAsync(1000);
+
+    restoreSuspendedMediaPlayback(container, { visibleOnly: true });
+
     expect(iframe.getAttribute('src')).toBe('about:blank');
     expect(srcdocIframe.getAttribute('srcdoc')).toBeNull();
 

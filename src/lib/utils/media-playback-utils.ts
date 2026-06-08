@@ -21,7 +21,19 @@ interface OffscreenMediaPlaybackOptions {
   selector?: string;
 }
 
+interface RestoreSuspendedMediaPlaybackOptions {
+  visibleOnly?: boolean;
+}
+
 const suspendedIframes = new WeakMap<HTMLIFrameElement, SuspendedIframeState>();
+
+const isElementInViewport = (element: Element): boolean => {
+  const rect = element.getBoundingClientRect();
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+
+  return rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.right > 0 && rect.top < viewportHeight && rect.left < viewportWidth;
+};
 
 export const suspendMediaPlayback = (container: ParentNode | null): SuspendedMediaPlaybackStats => {
   const stats = {
@@ -63,12 +75,16 @@ export const suspendMediaPlayback = (container: ParentNode | null): SuspendedMed
   return stats;
 };
 
-export const restoreSuspendedMediaPlayback = (container: ParentNode | null) => {
+export const restoreSuspendedMediaPlayback = (container: ParentNode | null, options: RestoreSuspendedMediaPlaybackOptions = {}) => {
   if (!container) {
     return;
   }
 
   for (const iframe of container.querySelectorAll<HTMLIFrameElement>('iframe')) {
+    if (options.visibleOnly && !isElementInViewport(iframe)) {
+      continue;
+    }
+
     const suspendedState = suspendedIframes.get(iframe);
     if (!suspendedState) {
       continue;

@@ -48,7 +48,7 @@ const CachedFeedWrapper = ({ feed, isVisible }: CachedFeedWrapperProps) => {
   useEffect(() => {
     const container = containerRef.current;
     if (isVisible) {
-      restoreSuspendedMediaPlayback(container);
+      restoreSuspendedMediaPlayback(container, { visibleOnly: true });
       return;
     }
 

@@ -31,6 +31,7 @@ vi.mock('../../../views/board/board', () => ({
 }));
 
 let container: HTMLDivElement;
+let iframeRectSpy: ReturnType<typeof vi.spyOn>;
 let latestPathname = '';
 let pauseSpy: ReturnType<typeof vi.spyOn>;
 let root: Root;
@@ -59,6 +60,17 @@ const flushEffects = async () => {
 describe('FeedCacheContainer', () => {
   beforeEach(() => {
     useFeedCacheStore.getState().clearFeeds();
+    iframeRectSpy = vi.spyOn(window.HTMLIFrameElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      bottom: 240,
+      height: 240,
+      left: 0,
+      right: 320,
+      top: 0,
+      width: 320,
+      x: 0,
+      y: 0,
+      toJSON: () => '',
+    });
     pauseSpy = vi.spyOn(window.HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
     latestPathname = '';
     container = document.createElement('div');
@@ -70,6 +82,7 @@ describe('FeedCacheContainer', () => {
     act(() => root.unmount());
     container.remove();
     useFeedCacheStore.getState().clearFeeds();
+    iframeRectSpy.mockRestore();
     pauseSpy.mockRestore();
   });
 
