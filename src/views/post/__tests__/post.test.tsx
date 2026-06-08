@@ -27,6 +27,7 @@ type TestComment = {
   reason?: string;
   replyCount?: number;
   replies?: unknown[];
+  refresh?: () => Promise<void>;
   state?: string;
   communityAddress?: string;
   timestamp?: number;
@@ -59,6 +60,7 @@ const testState = vi.hoisted(() => ({
     },
   } as { roles?: Record<string, unknown> },
   useCommentCalls: [] as Array<{ commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string } }>,
+  evictThreadRefreshCachesMock: vi.fn(),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -130,7 +132,7 @@ vi.mock('../../../components/error-display/error-display', () => ({
   default: ({ error }: { error?: Error }) => createElement('div', { 'data-testid': 'error-display' }, error?.message || 'no-error'),
 }));
 
-vi.mock('../../../components/footer', () => ({
+vi.mock('../../../components/footer/footer', () => ({
   PageFooterDesktop: ({ firstRow, styleRow }: { firstRow: React.ReactNode; styleRow: React.ReactNode }) =>
     createElement('div', { 'data-testid': 'page-footer-desktop' }, firstRow, styleRow),
   ThreadFooterFirstRow: ({
@@ -158,7 +160,7 @@ vi.mock('../../../components/footer', () => ({
   ThreadFooterStyleRow: () => createElement('div', { 'data-testid': 'thread-footer-style-row' }, 'thread-footer-style-row'),
 }));
 
-vi.mock('../../../components/post-desktop', () => ({
+vi.mock('../../../components/post-desktop/post-desktop', () => ({
   default: ({
     post,
     roles,
@@ -185,7 +187,7 @@ vi.mock('../../../components/post-desktop', () => ({
     ),
 }));
 
-vi.mock('../../../components/post-mobile', () => ({
+vi.mock('../../../components/post-mobile/post-mobile', () => ({
   default: ({
     post,
     roles,
@@ -210,6 +212,10 @@ vi.mock('../../../components/post-mobile', () => ({
       createElement('div', { 'data-post-info-cid': post?.cid }),
       `${post?.cid || 'missing'}:${targetReplyCid || 'none'}:${Object.keys(roles || {}).length}`,
     ),
+}));
+
+vi.mock('../../../lib/utils/thread-refresh-cache-utils', () => ({
+  evictThreadRefreshCaches: testState.evictThreadRefreshCachesMock,
 }));
 
 let container: HTMLDivElement;
@@ -254,6 +260,8 @@ describe('Post', () => {
     testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.repliesByCommentCid = {};
     testState.useCommentCalls = [];
+    testState.evictThreadRefreshCachesMock.mockReset();
+    testState.evictThreadRefreshCachesMock.mockResolvedValue(undefined);
     useThreadLiveUpdatesStore.getState().resetState();
     testState.community = {
       error: undefined,
@@ -736,5 +744,53 @@ describe('Post', () => {
         }),
       ]),
     );
+  });
+
+  it('evicts stale thread caches before refreshing a manual thread update', async () => {
+    const events: string[] = [];
+    const refreshReply = vi.fn(async () => {
+      events.push('refresh-reply');
+    });
+    const refreshPost = vi.fn(async () => {
+      events.push('refresh-post');
+    });
+    testState.evictThreadRefreshCachesMock.mockImplementation(async () => {
+      events.push('evict-cache');
+    });
+    testState.commentsByCid = {
+      'reply-cid': {
+        cid: 'reply-cid',
+        communityAddress: 'music-posting.eth',
+        parentCid: 'root-cid',
+        postCid: 'root-cid',
+        refresh: refreshReply,
+      },
+      'root-cid': {
+        cid: 'root-cid',
+        communityAddress: 'music-posting.eth',
+        number: 31,
+        postCid: 'root-cid',
+        refresh: refreshPost,
+        replyCount: 0,
+        title: 'Root thread',
+      },
+    };
+
+    await renderPostPage('/mu/thread/reply-cid');
+
+    await act(async () => {
+      useThreadLiveUpdatesStore.getState().requestUpdate();
+    });
+    await flushEffects();
+
+    expect(testState.evictThreadRefreshCachesMock).toHaveBeenCalledWith([testState.commentsByCid['reply-cid'], testState.commentsByCid['root-cid']]);
+    expect(events[0]).toBe('evict-cache');
+    expect(refreshReply).toHaveBeenCalledTimes(1);
+    expect(refreshPost).toHaveBeenCalledTimes(1);
+    expect(useThreadLiveUpdatesStore.getState()).toMatchObject({
+      isUpdating: false,
+      repliesResetRequestId: 1,
+      updateRequestId: 1,
+    });
   });
 });

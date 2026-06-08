@@ -34,12 +34,12 @@ import { getPretextItemSizeFromElement, resolveFeedVirtualizationMode } from '..
 import { isFlashDirectory, isFlashDirectoryCode } from '../../lib/flash-tags';
 import ErrorDisplay from '../../components/error-display/error-display';
 import FlashBoardTable from '../../components/flash-board-table/flash-board-table';
-import LoadingEllipsis from '../../components/loading-ellipsis';
-import BoardPagination from '../../components/board-pagination';
+import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
+import BoardPagination from '../../components/board-pagination/board-pagination';
 import { CatalogButton } from '../../components/board-buttons/board-buttons';
-import { PageFooterDesktop, PageFooterMobile } from '../../components/footer';
-import { ModEmptyState } from '../../components/mod-empty-state';
-import { Post } from '../post';
+import { PageFooterDesktop, PageFooterMobile } from '../../components/footer/footer';
+import ModEmptyState from '../../components/mod-empty-state/mod-empty-state';
+import { Post } from '../post/post';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
 const RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS = 60 * 60;
@@ -236,7 +236,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     timeFilterSeconds: multiboardTimeFilterSeconds,
     expandTimeWindow,
   });
-  const shouldProbeSuggestionFeeds = isVisible && isMultiboardView && typeof currentTimeFilterSeconds === 'number';
+  const shouldProbeSuggestionFeeds = isVisible && isMultiboardView && typeof currentTimeFilterSeconds === 'number' && feedState === 'succeeded' && !hasMore;
   const shouldProbeWeeklyFeed = shouldProbeSuggestionFeeds && currentTimeFilterSeconds < WEEK_IN_SECONDS;
   const shouldProbeMonthlyFeed = shouldProbeSuggestionFeeds && currentTimeFilterSeconds < MONTH_IN_SECONDS;
   const shouldProbeYearlyFeed = shouldProbeSuggestionFeeds && currentTimeFilterSeconds < YEAR_IN_SECONDS;
@@ -392,8 +392,8 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     [effectiveInfiniteScroll, combinedFeed, guiPostsPerPage, maxGuiPages],
   );
   const moreThreadsSuggestion = useMemo(
-    () => (isMultiboardView ? getTimeFilterSuggestion(feed.length, weeklyFeed.length, monthlyFeed.length, yearlyFeed.length, currentTimeFilterSeconds) : null),
-    [currentTimeFilterSeconds, feed.length, isMultiboardView, monthlyFeed.length, weeklyFeed.length, yearlyFeed.length],
+    () => (shouldProbeSuggestionFeeds ? getTimeFilterSuggestion(feed.length, weeklyFeed.length, monthlyFeed.length, yearlyFeed.length, currentTimeFilterSeconds) : null),
+    [currentTimeFilterSeconds, feed.length, monthlyFeed.length, shouldProbeSuggestionFeeds, weeklyFeed.length, yearlyFeed.length],
   );
   const moreThreadsSuggestionPathname = isInAllView ? '/all' : isInSubscriptionsView ? '/subs' : isInModView ? '/mod' : null;
   const registerComments = usePostNumberStore((state) => state.registerComments);

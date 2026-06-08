@@ -13,10 +13,11 @@ import { areSameBoardAddress, isDirectoryBoard } from '../../lib/utils/route-uti
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import ErrorDisplay from '../../components/error-display/error-display';
-import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer';
-import PostDesktop from '../../components/post-desktop';
-import PostMobile from '../../components/post-mobile';
+import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer/footer';
+import PostDesktop from '../../components/post-desktop/post-desktop';
+import PostMobile from '../../components/post-mobile/post-mobile';
 import { getRequestedThreadTopCid, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
+import { evictThreadRefreshCaches } from '../../lib/utils/thread-refresh-cache-utils';
 import { REPLIES_PER_PAGE } from '../../lib/constants';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import type { QueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
@@ -300,6 +301,7 @@ const PostPage = () => {
   const consumedThreadTopScrollRef = useRef<string | null>(null);
   const previousThreadCidRef = useRef<string>(undefined);
   const lastProcessedUpdateRequestIdRef = useRef(0);
+  const threadRefreshCommentsRef = useRef<Array<CommentWithRefresh | undefined>>([]);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -315,6 +317,7 @@ const PostPage = () => {
   // if the comment is a reply, return the post comment instead, then the reply will be highlighted in the thread
   const postComment = useCommentWithFeedCache({ commentCid: comment?.postCid, autoUpdate: autoUpdateEnabled, community: communityIdentifier });
   const post = useMemo(() => (comment?.parentCid ? mergeCommentFallback(postComment, comment) : comment), [comment, postComment]);
+  threadRefreshCommentsRef.current = [comment, post];
   const requestedThreadTopCid = getRequestedThreadTopCid(routeState);
 
   const { error } = post || {};
@@ -419,7 +422,15 @@ const PostPage = () => {
     let cancelled = false;
     startUpdate();
 
-    void Promise.allSettled(Array.from(refreshByCid.values(), (refresh) => refresh())).then((results) => {
+    void (async () => {
+      try {
+        await evictThreadRefreshCaches(threadRefreshCommentsRef.current);
+      } catch (cacheError) {
+        console.error('Failed to clear stale thread cache before refresh:', cacheError);
+      }
+
+      return Promise.allSettled(Array.from(refreshByCid.values(), (refresh) => refresh()));
+    })().then((results) => {
       if (cancelled) return;
 
       const hasSuccessfulRefresh = results.some((result) => result.status === 'fulfilled');
