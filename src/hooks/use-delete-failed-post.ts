@@ -79,8 +79,12 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
   const navigate = useNavigate();
   const abandonPublishRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const abandonCurrentPublish = useCallback(async () => {
+    // Abandoning the republish challenge ends the retry. Clear the flag first so PendingPost resumes its
+    // normal abandoned-challenge handling (back to the board) instead of staying stuck on an empty row.
+    setIsRetryRedirectPending(false);
+    endRetry();
     await abandonPublishRef.current?.();
-  }, []);
+  }, [endRetry]);
 
   const canDeleteFailedPost = post?.state === 'failed' && typeof post?.index === 'number';
   const retryPublishOptions = useMemo(() => getFailedPostRetryPublishOptions(post), [post]);
@@ -114,8 +118,10 @@ const useDeleteFailedPost = (post?: FailedPost, deleteRedirectPath?: string) => 
     }
 
     setIsRetryRedirectPending(false);
-    endRetry();
+    // Navigate to the new pending row before clearing the retry flag so PendingPost never observes a
+    // committed "old index + no retry flag + no addressable post" state that would bounce to the board.
     navigate(`/pending/${retryPostIndex}`, { replace: true });
+    endRetry();
   }, [endRetry, isRetryRedirectPending, navigate, retryPostIndex]);
 
   const onDeleteFailedPost = useCallback(() => {

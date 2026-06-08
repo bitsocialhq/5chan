@@ -229,4 +229,19 @@ describe('useDeleteFailedPost', () => {
 
     expect(testState.abandonPublishMock).toHaveBeenCalledTimes(1);
   });
+
+  it('clears the mid-retry flag when the republish challenge is abandoned', async () => {
+    useFailedPostRetryStore.setState({ retryingAccountCommentIndex: failedPost.index });
+
+    await act(async () => {
+      await testState.lastPublishOptions?.onChallenge('captcha', 'nonce');
+    });
+
+    await act(async () => {
+      await useChallengesStore.getState().abandonCurrentChallenge();
+    });
+
+    expect(testState.abandonPublishMock).toHaveBeenCalledTimes(1);
+    expect(useFailedPostRetryStore.getState().retryingAccountCommentIndex).toBeNull();
+  });
 });
