@@ -406,5 +406,6 @@
   "not_a_file": "geen bestand",
   "tor_author_flag_label": "Deze gebruiker zit op Tor",
   "copy_share_link": "Delen link kopiëren",
-  "directory_submit_board": "Dien je board in"
+  "directory_submit_board": "Dien je board in",
+  "all_subtitle": "Het Forum met de hoogste score van elke directory"
 }

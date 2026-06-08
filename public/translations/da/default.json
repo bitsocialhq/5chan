@@ -406,5 +406,6 @@
   "not_a_file": "ikke en fil",
   "tor_author_flag_label": "Denne bruger er på Tor",
   "copy_share_link": "Kopier delingslinkk",
-  "directory_submit_board": "Indsend dit board"
+  "directory_submit_board": "Indsend dit board",
+  "all_subtitle": "Forummet med højeste pointtal fra hvert katalog"
 }

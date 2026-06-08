@@ -406,5 +406,6 @@
   "not_a_file": "ليس ملفًا",
   "tor_author_flag_label": "هذا المستخدم يستخدم Tor",
   "copy_share_link": "نسخ رابط المشاركة",
-  "directory_submit_board": "أرسل لوحتك"
+  "directory_submit_board": "أرسل لوحتك",
+  "all_subtitle": "المنتدى الأعلى تصنيفاً من كل دليل"
 }

@@ -406,5 +406,6 @@
   "not_a_file": "לא קובץ",
   "tor_author_flag_label": "המשתמש הזה נמצא ב-Tor",
   "copy_share_link": "העתק קישור שיתוף",
-  "directory_submit_board": "שלח את הבורד שלך"
+  "directory_submit_board": "שלח את הבורד שלך",
+  "all_subtitle": "הפורום בעל הציון הגבוה ביותר מכל ספריה"
 }

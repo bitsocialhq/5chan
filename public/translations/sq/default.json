@@ -406,5 +406,6 @@
   "not_a_file": "nuk është skedar",
   "tor_author_flag_label": "Ky përdorues është në Tor",
   "copy_share_link": "Kopjo lidhjen e ndarjes",
-  "directory_submit_board": "Dërgo bordin tënd"
+  "directory_submit_board": "Dërgo bordin tënd",
+  "all_subtitle": "Forumi me pikëzimin më të lartë nga secila drejtori"
 }

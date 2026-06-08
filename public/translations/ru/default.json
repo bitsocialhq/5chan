@@ -406,5 +406,6 @@
   "not_a_file": "не файл",
   "tor_author_flag_label": "Этот пользователь находится в Tor",
   "copy_share_link": "Копировать ссылку для общего доступа",
-  "directory_submit_board": "Отправить свою доску"
+  "directory_submit_board": "Отправить свою доску",
+  "all_subtitle": "Форум с наивысшим рейтингом из каждого каталога"
 }

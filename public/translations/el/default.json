@@ -406,5 +406,6 @@
   "not_a_file": "δεν είναι αρχείο",
   "tor_author_flag_label": "Αυτός ο χρήστης είναι στο Tor",
   "copy_share_link": "Αντιγραφή ενός συνδέσμου",
-  "directory_submit_board": "Υπόβαλε το board σου"
+  "directory_submit_board": "Υπόβαλε το board σου",
+  "all_subtitle": "Το Φόρουμ με την υψηλότερη βαθμολογία από κάθε κατάλογο"
 }
