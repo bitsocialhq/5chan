@@ -22,7 +22,7 @@ describe('comment-flags', () => {
 
     expect(flags.map((flag) => flag.key)).toEqual(['country:de', 'pol:AC', 'pony:AJ']);
     expect(flags[1]).toMatchObject({ label: 'Anarcho-Capitalist', x: 0, y: 0 });
-    expect(flags[2]).toMatchObject({ label: 'Applejack', x: 80, y: 0 });
+    expect(flags[2]).toMatchObject({ label: 'Applejack', x: 48, y: 0 });
   });
 
   it('labels the xx country flag as Tor traffic', () => {
