@@ -406,5 +406,6 @@
   "not_a_file": "فایل نیست",
   "tor_author_flag_label": "این کاربر روی Tor است",
   "copy_share_link": "کپی کردن لینک اشتراک",
-  "directory_submit_board": "برد خود را ارسال کنید"
+  "directory_submit_board": "برد خود را ارسال کنید",
+  "all_subtitle": "تالار بالاترین امتیاز از هر دایرکتوری"
 }

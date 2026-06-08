@@ -406,5 +406,6 @@
   "not_a_file": "bukan file",
   "tor_author_flag_label": "Pengguna ini ada di Tor",
   "copy_share_link": "Salin tautan bagian",
-  "directory_submit_board": "Kirim board Anda"
+  "directory_submit_board": "Kirim board Anda",
+  "all_subtitle": "Forum dengan skor tertinggi dari setiap direktori"
 }

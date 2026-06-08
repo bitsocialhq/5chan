@@ -406,5 +406,6 @@
   "not_a_file": "không phải tệp",
   "tor_author_flag_label": "Người dùng này đang ở trên Tor",
   "copy_share_link": "Sao chép liên kết chia sẻ",
-  "directory_submit_board": "Gửi bảng của bạn"
+  "directory_submit_board": "Gửi bảng của bạn",
+  "all_subtitle": "Diễn đàn có điểm cao nhất từ mỗi thư mục"
 }

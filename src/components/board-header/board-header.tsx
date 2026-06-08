@@ -83,7 +83,7 @@ const BoardHeader = () => {
         ? '/mod/ - Boards You Moderate'
         : defaultCommunity?.title || stableCommunity?.title;
   const subtitle = isInAllView
-    ? ''
+    ? t('all_subtitle')
     : isInSubscriptionsView
       ? subscriptionsSubtitle
       : isInModView
@@ -124,9 +124,9 @@ const BoardHeader = () => {
           >
             {subtitle}
           </button>
-        ) : isInDirectoryListView ? (
+        ) : isInDirectoryListView || isInAllView ? (
           <span>{subtitle}</span>
-        ) : !isInAllView && !isInModView && subtitle ? (
+        ) : !isInModView && subtitle ? (
           <span title={t('board_address_tooltip')}>{subtitle}</span>
         ) : (
           subtitle

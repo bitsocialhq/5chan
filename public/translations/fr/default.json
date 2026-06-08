@@ -406,5 +406,6 @@
   "not_a_file": "pas un fichier",
   "tor_author_flag_label": "Cet utilisateur est sur Tor",
   "copy_share_link": "Copier le lien de partage",
-  "directory_submit_board": "Soumettez votre board"
+  "directory_submit_board": "Soumettez votre board",
+  "all_subtitle": "Le forum de plus haute note de chaque répertoire"
 }

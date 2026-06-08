@@ -406,5 +406,6 @@
   "not_a_file": "ファイルではありません",
   "tor_author_flag_label": "このユーザーはTorを使用しています",
   "copy_share_link": "シェアリンクをコピー",
-  "directory_submit_board": "掲示板を提出する"
+  "directory_submit_board": "掲示板を提出する",
+  "all_subtitle": "各ディレクトリから最もスコアの高い掲示板"
 }

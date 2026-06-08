@@ -406,5 +406,6 @@
   "not_a_file": "hindi file",
   "tor_author_flag_label": "Ang user na ito ay nasa Tor",
   "copy_share_link": "Kopyahin ang link sa pagbabahagi",
-  "directory_submit_board": "Isumite ang board mo"
+  "directory_submit_board": "Isumite ang board mo",
+  "all_subtitle": "Ang pinakamataas na nakakuha ng puntos na Board mula sa bawat direktoryo"
 }

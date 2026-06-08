@@ -169,6 +169,7 @@ describe('BoardHeader', () => {
     expect(container.textContent).toContain('/all/ - All 5chan Directories');
     expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
     expect(container.textContent).not.toContain('subscriptions_subtitle');
+    expect(container.textContent).toContain('all_subtitle');
   });
 
   it('renders a clickable subscriptions subtitle that navigates to subscription settings', async () => {

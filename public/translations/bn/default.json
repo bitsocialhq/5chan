@@ -406,5 +406,6 @@
   "not_a_file": "ফাইল নয়",
   "tor_author_flag_label": "এই ব্যবহারকারী Tor ব্যবহার করছেন",
   "copy_share_link": "শেয়ার লিংক কপি করুন",
-  "directory_submit_board": "আপনার বোর্ড জমা দিন"
+  "directory_submit_board": "আপনার বোর্ড জমা দিন",
+  "all_subtitle": "প্রতিটি ডিরেক্টরি থেকে সর্বোচ্চ স্কোর করা বোর্ড"
 }
