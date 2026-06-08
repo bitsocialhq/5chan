@@ -6,6 +6,7 @@ import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
+import useFailedPostRetryStore from '../../stores/use-failed-post-retry-store';
 import { Post } from '../post';
 
 type PendingAccountComment = {
@@ -56,6 +57,8 @@ const PendingPost = () => {
   const postBoardPath = postCommunityAddress ? getBoardPath(postCommunityAddress, directories) : undefined;
   const pendingBoardPath = postBoardPath || routeBoardPath;
   const hasActiveChallenge = useChallengesStore((state) => state.challenges.length > 0);
+  const retryingAccountCommentIndex = useFailedPostRetryStore((state) => state.retryingAccountCommentIndex);
+  const isRetryingThisPendingPost = retryingAccountCommentIndex !== null && retryingAccountCommentIndex === normalizedAccountCommentIndex;
   const lastPendingBoardRef = useRef<{ accountCommentIndex: number; boardPath: string } | null>(null);
 
   useEffect(() => window.scrollTo(0, 0), []);
@@ -74,13 +77,18 @@ const PendingPost = () => {
       hasPendingAccountCommentIndex(accountComments, normalizedAccountCommentIndex));
 
   useEffect(() => {
+    // A retry deletes this pending row before republishing, briefly invalidating the index. Stay put;
+    // useDeleteFailedPost redirects to the new pending row once the republished comment is created.
+    if (isRetryingThisPendingPost) {
+      return;
+    }
     if (!isValidAccountCommentIndex) {
       const lastPendingBoard = lastPendingBoardRef.current;
       const abandonedBoardPath =
         !hasActiveChallenge && lastPendingBoard && lastPendingBoard.accountCommentIndex === normalizedAccountCommentIndex ? lastPendingBoard.boardPath : undefined;
       navigate(abandonedBoardPath ? `/${abandonedBoardPath}` : '/not-found', { replace: true });
     }
-  }, [hasActiveChallenge, isValidAccountCommentIndex, navigate, normalizedAccountCommentIndex]);
+  }, [hasActiveChallenge, isRetryingThisPendingPost, isValidAccountCommentIndex, navigate, normalizedAccountCommentIndex]);
 
   useEffect(() => {
     if (post?.cid && postBoardPath) {
@@ -89,7 +97,7 @@ const PendingPost = () => {
   }, [post?.cid, postBoardPath, navigate]);
 
   useEffect(() => {
-    if (hasAddressablePost || !isValidAccountCommentIndex) {
+    if (isRetryingThisPendingPost || hasAddressablePost || !isValidAccountCommentIndex) {
       return;
     }
 
@@ -99,7 +107,7 @@ const PendingPost = () => {
     if (abandonedBoardPath) {
       navigate(`/${abandonedBoardPath}`, { replace: true });
     }
-  }, [hasActiveChallenge, hasAddressablePost, isValidAccountCommentIndex, navigate, normalizedAccountCommentIndex]);
+  }, [hasActiveChallenge, hasAddressablePost, isRetryingThisPendingPost, isValidAccountCommentIndex, navigate, normalizedAccountCommentIndex]);
 
   return <Post post={post} />;
 };

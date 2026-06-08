@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useDeleteFailedPost, { getFailedPostRetryPublishOptions } from '../use-delete-failed-post';
 import useChallengesStore from '../../stores/use-challenges-store';
+import useFailedPostRetryStore from '../../stores/use-failed-post-retry-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -97,6 +98,7 @@ describe('useDeleteFailedPost', () => {
     testState.publishIndex = undefined;
     vi.stubGlobal('alert', testState.alertMock);
     useChallengesStore.setState({ challenges: [] });
+    useFailedPostRetryStore.setState({ retryingAccountCommentIndex: null });
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -168,6 +170,39 @@ describe('useDeleteFailedPost', () => {
     expect(testState.navigateMock).toHaveBeenCalledWith('/pending/12', { replace: true });
   });
 
+  it('flags the failed row as mid-retry while republishing and clears it after the redirect', async () => {
+    let flaggedIndexDuringPublish: number | null = null;
+    testState.publishCommentMock.mockImplementationOnce(async () => {
+      flaggedIndexDuringPublish = useFailedPostRetryStore.getState().retryingAccountCommentIndex;
+      testState.publishIndex = 12;
+    });
+
+    await act(async () => {
+      await latestValue.onRetryFailedPost();
+    });
+
+    // The pending view reads this flag to avoid redirecting away during the delete/republish gap.
+    expect(flaggedIndexDuringPublish).toBe(failedPost.index);
+
+    renderHook();
+    await flushEffects();
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/pending/12', { replace: true });
+    expect(useFailedPostRetryStore.getState().retryingAccountCommentIndex).toBeNull();
+  });
+
+  it('clears the mid-retry flag when republishing throws', async () => {
+    testState.publishCommentMock.mockImplementationOnce(async () => {
+      throw new Error('offline');
+    });
+
+    await act(async () => {
+      await latestValue.onRetryFailedPost();
+    });
+
+    expect(useFailedPostRetryStore.getState().retryingAccountCommentIndex).toBeNull();
+  });
+
   it('redirects after deleting a failed post when a redirect path is provided', async () => {
     renderHook(failedPost, '/mu');
 
@@ -193,5 +228,20 @@ describe('useDeleteFailedPost', () => {
     });
 
     expect(testState.abandonPublishMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears the mid-retry flag when the republish challenge is abandoned', async () => {
+    useFailedPostRetryStore.setState({ retryingAccountCommentIndex: failedPost.index });
+
+    await act(async () => {
+      await testState.lastPublishOptions?.onChallenge('captcha', 'nonce');
+    });
+
+    await act(async () => {
+      await useChallengesStore.getState().abandonCurrentChallenge();
+    });
+
+    expect(testState.abandonPublishMock).toHaveBeenCalledTimes(1);
+    expect(useFailedPostRetryStore.getState().retryingAccountCommentIndex).toBeNull();
   });
 });
