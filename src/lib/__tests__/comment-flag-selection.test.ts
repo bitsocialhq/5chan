@@ -126,17 +126,18 @@ describe('comment-flag-selection', () => {
     expect(getCommentFlagRequestFromSelection('none')).toBeUndefined();
   });
 
-  it('publishes selected flags as signed comment flairs and challenge answers', () => {
+  it('publishes geographic flags as challenge-backed comment flairs', () => {
     expect(getCommentFlagPublishOptionsFromSelection('country:auto')).toEqual({
       challengeRequest: {
         challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },
       flairs: [{ type: 'country', code: 'auto', text: 'flag:country:auto' }],
     });
+  });
+
+  it('publishes board-choice flags as regular comment flairs without a challenge request', () => {
     expect(getCommentFlagPublishOptionsFromSelection('pony:AJ')).toEqual({
-      challengeRequest: {
-        challengeAnswers: ['bitsocial-flags:5chan:flag:pony:AJ'],
-      },
+      challengeRequest: undefined,
       flairs: [{ type: 'pony', code: 'AJ', text: 'flag:pony:AJ' }],
     });
   });

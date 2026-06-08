@@ -133,9 +133,12 @@ export const getCommentFlagPublishOptionsFromSelection = (value: string | undefi
   const flag = getCommentFlagRequestFromSelection(value);
   return flag
     ? {
-        challengeRequest: {
-          challengeAnswers: [`${FLAG_CHALLENGE_ANSWER_PREFIX}${flag.text}`],
-        },
+        challengeRequest:
+          flag.type === 'country'
+            ? {
+                challengeAnswers: [`${FLAG_CHALLENGE_ANSWER_PREFIX}${flag.text}`],
+              }
+            : undefined,
         flairs: [flag],
       }
     : {
