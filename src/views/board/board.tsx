@@ -34,12 +34,12 @@ import { getPretextItemSizeFromElement, resolveFeedVirtualizationMode } from '..
 import { isFlashDirectory, isFlashDirectoryCode } from '../../lib/flash-tags';
 import ErrorDisplay from '../../components/error-display/error-display';
 import FlashBoardTable from '../../components/flash-board-table/flash-board-table';
-import LoadingEllipsis from '../../components/loading-ellipsis';
-import BoardPagination from '../../components/board-pagination';
+import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
+import BoardPagination from '../../components/board-pagination/board-pagination';
 import { CatalogButton } from '../../components/board-buttons/board-buttons';
-import { PageFooterDesktop, PageFooterMobile } from '../../components/footer';
-import { ModEmptyState } from '../../components/mod-empty-state';
-import { Post } from '../post';
+import { PageFooterDesktop, PageFooterMobile } from '../../components/footer/footer';
+import ModEmptyState from '../../components/mod-empty-state/mod-empty-state';
+import { Post } from '../post/post';
 
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
 const RECENT_ACCOUNT_COMMENT_WINDOW_SECONDS = 60 * 60;

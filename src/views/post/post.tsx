@@ -13,9 +13,9 @@ import { areSameBoardAddress, isDirectoryBoard } from '../../lib/utils/route-uti
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import ErrorDisplay from '../../components/error-display/error-display';
-import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer';
-import PostDesktop from '../../components/post-desktop';
-import PostMobile from '../../components/post-mobile';
+import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer/footer';
+import PostDesktop from '../../components/post-desktop/post-desktop';
+import PostMobile from '../../components/post-mobile/post-mobile';
 import { getRequestedThreadTopCid, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import { evictThreadRefreshCaches } from '../../lib/utils/thread-refresh-cache-utils';
 import { REPLIES_PER_PAGE } from '../../lib/constants';

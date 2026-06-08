@@ -11,22 +11,27 @@ const getReplyPageSortTypes = (comment: Comment): string[] => {
   return [...new Set([...Object.keys(pageCids), ...Object.keys(pages)])];
 };
 
-const getFirstPersistedReplyPageCid = (comment: Comment, sortType: string): string | undefined => {
-  const preloadedPage = comment.replies?.pages?.[sortType];
-  if (preloadedPage?.comments) {
-    return preloadedPage.nextCid;
-  }
-  return comment.replies?.pageCids?.[sortType];
+const getPersistedReplyPageStartCids = (comment: Comment, sortType: string): string[] => {
+  const pageCids = new Set<string>();
+  const firstPageCid = comment.replies?.pageCids?.[sortType];
+  const preloadedNextCid = comment.replies?.pages?.[sortType]?.nextCid;
+
+  if (typeof firstPageCid === 'string') pageCids.add(firstPageCid);
+  if (typeof preloadedNextCid === 'string') pageCids.add(preloadedNextCid);
+
+  return [...pageCids];
 };
 
 const collectReplyPageCids = (comment: Comment, repliesPages: RepliesPages): string[] => {
   const pageCids = new Set<string>();
 
   for (const sortType of getReplyPageSortTypes(comment)) {
-    let pageCid = getFirstPersistedReplyPageCid(comment, sortType);
-    while (pageCid && !pageCids.has(pageCid)) {
-      pageCids.add(pageCid);
-      pageCid = repliesPages[pageCid]?.nextCid;
+    for (const startPageCid of getPersistedReplyPageStartCids(comment, sortType)) {
+      let pageCid: string | undefined = startPageCid;
+      while (pageCid && !pageCids.has(pageCid)) {
+        pageCids.add(pageCid);
+        pageCid = repliesPages[pageCid]?.nextCid;
+      }
     }
   }
 

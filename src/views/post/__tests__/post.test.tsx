@@ -132,7 +132,7 @@ vi.mock('../../../components/error-display/error-display', () => ({
   default: ({ error }: { error?: Error }) => createElement('div', { 'data-testid': 'error-display' }, error?.message || 'no-error'),
 }));
 
-vi.mock('../../../components/footer', () => ({
+vi.mock('../../../components/footer/footer', () => ({
   PageFooterDesktop: ({ firstRow, styleRow }: { firstRow: React.ReactNode; styleRow: React.ReactNode }) =>
     createElement('div', { 'data-testid': 'page-footer-desktop' }, firstRow, styleRow),
   ThreadFooterFirstRow: ({
@@ -160,7 +160,7 @@ vi.mock('../../../components/footer', () => ({
   ThreadFooterStyleRow: () => createElement('div', { 'data-testid': 'thread-footer-style-row' }, 'thread-footer-style-row'),
 }));
 
-vi.mock('../../../components/post-desktop', () => ({
+vi.mock('../../../components/post-desktop/post-desktop', () => ({
   default: ({
     post,
     roles,
@@ -187,7 +187,7 @@ vi.mock('../../../components/post-desktop', () => ({
     ),
 }));
 
-vi.mock('../../../components/post-mobile', () => ({
+vi.mock('../../../components/post-mobile/post-mobile', () => ({
   default: ({
     post,
     roles,

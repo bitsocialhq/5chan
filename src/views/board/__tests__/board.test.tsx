@@ -270,11 +270,11 @@ vi.mock('../../../components/error-display/error-display', () => ({
   default: ({ error }: { error?: Error }) => createElement('div', { 'data-testid': 'error-display' }, error?.message || 'no-error'),
 }));
 
-vi.mock('../../../components/loading-ellipsis', () => ({
+vi.mock('../../../components/loading-ellipsis/loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('div', { 'data-testid': 'loading-ellipsis' }, string),
 }));
 
-vi.mock('../../../components/board-pagination', () => ({
+vi.mock('../../../components/board-pagination/board-pagination', () => ({
   default: ({ basePath, currentPage, totalPages }: { basePath: string; currentPage: number; totalPages: number }) =>
     createElement('div', { 'data-testid': 'board-pagination' }, `${basePath}:${currentPage}:${totalPages}`),
 }));
@@ -283,12 +283,12 @@ vi.mock('../../../components/board-buttons/board-buttons', () => ({
   CatalogButton: ({ address }: { address?: string }) => createElement('div', { 'data-testid': 'catalog-button' }, address || 'catalog'),
 }));
 
-vi.mock('../../../components/footer', () => ({
+vi.mock('../../../components/footer/footer', () => ({
   PageFooterDesktop: ({ firstRow }: { firstRow: React.ReactNode }) => createElement('div', { 'data-testid': 'footer-desktop' }, firstRow),
   PageFooterMobile: ({ children }: { children: React.ReactNode }) => createElement('div', { 'data-testid': 'footer-mobile' }, children),
 }));
 
-vi.mock('../../post', () => ({
+vi.mock('../../post/post', () => ({
   Post: ({ post }: { post?: TestComment }) => createElement('div', { 'data-testid': 'post' }, post?.cid || post?.content || 'missing-post'),
 }));
 

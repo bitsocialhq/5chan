@@ -51,12 +51,14 @@ describe('thread-refresh-cache-utils', () => {
         'reply-a': { cid: 'reply-a' },
         'reply-b': { cid: 'reply-b' },
         'reply-c': { cid: 'reply-c' },
+        'reply-d': { cid: 'reply-d' },
         unrelated: { cid: 'unrelated' },
       },
       repliesPages: {
         'page-old-1': { comments: [{ cid: 'reply-a' }], nextCid: 'page-old-2' },
         'page-old-2': { comments: [{ cid: 'reply-b' }] },
-        'page-new-1': { comments: [{ cid: 'reply-c' }] },
+        'page-old-inline-next': { comments: [{ cid: 'reply-c' }] },
+        'page-empty-1': { comments: [{ cid: 'reply-d' }] },
         unrelated: { comments: [{ cid: 'unrelated' }] },
       },
     };
@@ -69,11 +71,15 @@ describe('thread-refresh-cache-utils', () => {
         replies: {
           pageCids: {
             old: 'page-old-1',
+            empty: 'page-empty-1',
           },
           pages: {
-            new: {
+            old: {
               comments: [{ cid: 'inline-reply' }],
-              nextCid: 'page-new-1',
+              nextCid: 'page-old-inline-next',
+            },
+            empty: {
+              comments: [],
             },
           },
         },
@@ -86,8 +92,13 @@ describe('thread-refresh-cache-utils', () => {
 
     expect(testState.commentsRemoveItemMock).toHaveBeenCalledOnce();
     expect(testState.commentsRemoveItemMock).toHaveBeenCalledWith('thread-cid');
-    expect(testState.repliesPagesRemoveItemMock).toHaveBeenCalledTimes(3);
-    expect(testState.repliesPagesRemoveItemMock.mock.calls.map(([pageCid]) => pageCid).sort()).toEqual(['page-new-1', 'page-old-1', 'page-old-2']);
+    expect(testState.repliesPagesRemoveItemMock).toHaveBeenCalledTimes(4);
+    expect(testState.repliesPagesRemoveItemMock.mock.calls.map(([pageCid]) => pageCid).sort()).toEqual([
+      'page-empty-1',
+      'page-old-1',
+      'page-old-2',
+      'page-old-inline-next',
+    ]);
     expect(testState.repliesPagesState.repliesPages).toEqual({
       unrelated: { comments: [{ cid: 'unrelated' }] },
     });
