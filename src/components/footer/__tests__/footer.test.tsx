@@ -38,6 +38,7 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
+  useAccountComments: () => ({ accountComments: [] }),
   useComment: ({ commentCid, community }: { commentCid?: string; community?: { name?: string; publicKey?: string } }) => {
     testState.useCommentCalls.push({ commentCid, community });
     return testState.post;

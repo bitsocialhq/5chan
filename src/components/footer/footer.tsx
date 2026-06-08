@@ -19,6 +19,7 @@ import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
+import useOptimisticReplyCount from '../../hooks/use-optimistic-reply-count';
 import { usePostPageNumber } from '../../hooks/use-post-page-number';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
@@ -250,7 +251,7 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, is
   const communityIdentifier = useCommunityIdentifier(communityAddress);
 
   const post = useComment({ commentCid: postCid, autoUpdate: autoUpdateEnabled, community: communityIdentifier });
-  const { replyCount } = post || {};
+  const replyCount = useOptimisticReplyCount(post);
   const linkCount = useCountLinksInReplies(post);
   const directoryEntry = useDirectoryByAddress(communityAddress);
   const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;

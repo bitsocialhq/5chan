@@ -21,6 +21,7 @@ import useModQueueStore from '../../stores/use-mod-queue-store';
 import useFeedViewSettingsStore from '../../stores/use-feed-view-settings-store';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
+import useOptimisticReplyCount from '../../hooks/use-optimistic-reply-count';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useTimeFilter from '../../hooks/use-time-filter';
 import CatalogFilters from '../catalog-filters';
@@ -654,7 +655,8 @@ export const PostPageStats = () => {
   const post = useComment({ commentCid: postCid, autoUpdate: autoUpdateEnabled, community: communityIdentifier });
 
   const archived = isCommentArchived(post);
-  const { closed, pinned, replyCount } = post || {};
+  const { closed, pinned } = post || {};
+  const replyCount = useOptimisticReplyCount(post);
   const linkCount = useCountLinksInReplies(post);
   const directoryEntry = useDirectoryByAddress(communityAddress);
   const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
