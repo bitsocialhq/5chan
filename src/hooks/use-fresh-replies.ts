@@ -10,29 +10,63 @@ const useFreshReplies = (replies: Comment[] = []) => {
     () => Array.from(new Set(replies.map((reply) => reply?.index).filter((replyIndex): replyIndex is number => typeof replyIndex === 'number'))),
     [replies],
   );
+  const replyCidsWithoutIndices = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          replies
+            .map((reply) => (typeof reply?.index === 'number' ? undefined : reply?.cid))
+            .filter((replyCid): replyCid is string => typeof replyCid === 'string' && replyCid.length > 0),
+        ),
+      ),
+    [replies],
+  );
   const accountCommentLookupOptions = useMemo(() => (replyIndices.length > 0 ? { commentIndices: replyIndices } : EMPTY_ACCOUNT_COMMENT_LOOKUP), [replyIndices]);
-  const { accountComments } = useAccountComments(accountCommentLookupOptions);
+  const accountCommentCidLookupOptions = useMemo(() => {
+    if (replyCidsWithoutIndices.length === 0) {
+      return EMPTY_ACCOUNT_COMMENT_LOOKUP;
+    }
+
+    const replyCidSet = new Set(replyCidsWithoutIndices);
+    return {
+      filter: (accountComment: Comment) => typeof accountComment?.cid === 'string' && replyCidSet.has(accountComment.cid),
+    };
+  }, [replyCidsWithoutIndices]);
+  const { accountComments: accountCommentsByIndexList } = useAccountComments(accountCommentLookupOptions);
+  const { accountComments: accountCommentsByCidList } = useAccountComments(accountCommentCidLookupOptions);
 
   return useMemo(() => {
     if (!replies.length) {
       return replies;
     }
 
-    if (!accountComments?.length) {
+    if (!accountCommentsByIndexList?.length && !accountCommentsByCidList?.length) {
       return sortRepliesForDisplay(replies);
     }
 
     const accountCommentsByIndex = new Map<number, Comment>();
-    for (const accountComment of accountComments) {
+    for (const accountComment of accountCommentsByIndexList) {
       if (typeof accountComment?.index === 'number') {
         accountCommentsByIndex.set(accountComment.index, accountComment);
+      }
+    }
+    const accountCommentsByCidMap = new Map<string, Comment>();
+    for (const accountComment of accountCommentsByCidList) {
+      if (typeof accountComment?.cid === 'string') {
+        accountCommentsByCidMap.set(accountComment.cid, accountComment);
       }
     }
 
     let hasFreshReplies = false;
     const nextReplies = replies.map((reply) => {
       if (typeof reply?.index !== 'number') {
-        return reply;
+        const freshReply = typeof reply?.cid === 'string' ? accountCommentsByCidMap.get(reply.cid) : undefined;
+        if (!freshReply) {
+          return reply;
+        }
+
+        hasFreshReplies = true;
+        return freshReply;
       }
 
       const freshReply = accountCommentsByIndex.get(reply.index);
@@ -65,7 +99,7 @@ const useFreshReplies = (replies: Comment[] = []) => {
     });
 
     return sortRepliesForDisplay(hasDuplicateReplyIndices ? dedupedReplies : nextReplies);
-  }, [accountComments, replies]);
+  }, [accountCommentsByCidList, accountCommentsByIndexList, replies]);
 };
 
 export default useFreshReplies;

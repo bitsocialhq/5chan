@@ -47,8 +47,10 @@ type TestComment = {
 
 const testState = vi.hoisted(() => ({
   addChallengeMock: vi.fn(),
+  accountCommentsByCid: {} as Record<string, TestComment | undefined>,
   hasMoreReplies: false,
   openReplyModalMock: vi.fn(),
+  pseudonymityMode: 'none',
   replyComments: [] as Array<TestComment | undefined>,
   setResetFunctionMock: vi.fn(),
   virtuosoProps: [] as Array<{ defaultItemHeight?: number; heightEstimates?: number[]; itemSize?: unknown }>,
@@ -82,8 +84,8 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  useAccount: () => ({ author: { address: '0xviewer' } }),
-  useAccountComment: () => undefined,
+  useAccount: () => ({ id: 'viewer-account', author: { address: '0xviewer' } }),
+  useAccountComment: (options?: { commentCid?: string }) => (options?.commentCid ? testState.accountCommentsByCid[options.commentCid] : undefined),
   useEditedComment: () => ({ editedComment: undefined }),
   usePublishCommentModeration: () => ({
     error: undefined,
@@ -137,7 +139,12 @@ vi.mock('react-virtuoso', () => ({
 }));
 
 vi.mock('../../lib/get-short-address', () => ({
-  default: (value?: string) => (value ? value.slice(0, 4) : ''),
+  default: (value?: string) => {
+    if (!value) return '';
+    if (value.includes('.')) return value;
+    if (value.length < 20) return '';
+    return value.slice(8, 20);
+  },
 }));
 
 vi.mock('../../views/post/post.module.css', () => ({
@@ -247,14 +254,14 @@ vi.mock('../../hooks/use-current-time', () => ({
 }));
 
 vi.mock('../../hooks/use-board-pseudonymity-mode', () => ({
-  useBoardPseudonymityMode: () => 'none',
+  useBoardPseudonymityMode: () => testState.pseudonymityMode,
 }));
 
-vi.mock('../comment-content', () => ({
+vi.mock('../comment-content/comment-content', () => ({
   default: ({ comment }: { comment?: TestComment }) => createElement('div', { 'data-testid': 'comment-content' }, comment?.cid ?? 'missing'),
 }));
 
-vi.mock('../comment-media', () => ({
+vi.mock('../comment-media/comment-media', () => ({
   default: () => createElement('div', { 'data-testid': 'comment-media' }, 'media'),
 }));
 
@@ -266,24 +273,24 @@ vi.mock('../failed-publish-notice', () => ({
   default: () => createElement('div', { 'data-testid': 'failed-publish-notice' }, 'failed-publish-notice'),
 }));
 
-vi.mock('../embed', () => ({
+vi.mock('../embed/embed-utils', () => ({
   canEmbed: () => false,
 }));
 
-vi.mock('../loading-ellipsis', () => ({
+vi.mock('../loading-ellipsis/loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('div', { 'data-testid': 'loading-ellipsis' }, string),
 }));
 
-vi.mock('../post-desktop/post-menu-desktop', () => ({
+vi.mock('../post-desktop/post-menu-desktop/post-menu-desktop', () => ({
   default: ({ postMenu }: { postMenu: { communityAddress?: string } }) =>
     createElement('div', { 'data-testid': 'post-menu-desktop' }, postMenu.communityAddress ?? 'missing'),
 }));
 
-vi.mock('../reply-quote-preview', () => ({
+vi.mock('../reply-quote-preview/reply-quote-preview', () => ({
   default: ({ backlinkReply }: { backlinkReply?: TestComment }) => createElement('div', { 'data-testid': 'reply-quote-preview' }, backlinkReply?.cid ?? 'missing'),
 }));
 
-vi.mock('../tooltip', () => ({
+vi.mock('../tooltip/tooltip', () => ({
   default: ({ children }: { children?: React.ReactNode }) => createElement(React.Fragment, {}, children),
 }));
 
@@ -371,7 +378,7 @@ vi.mock('../../hooks/use-delete-failed-post', () => ({
   }),
 }));
 
-vi.mock('../post-mobile/post-menu-mobile', () => ({
+vi.mock('../post-mobile/post-menu-mobile/post-menu-mobile', () => ({
   default: ({ postMenu }: { postMenu: { communityAddress?: string } }) =>
     createElement('div', { 'data-testid': 'post-menu-mobile' }, postMenu.communityAddress ?? 'missing'),
 }));
@@ -449,7 +456,9 @@ const makeLegacyThreadWithoutReplies = (): TestComment => ({
 describe('post community address compatibility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    testState.accountCommentsByCid = {};
     testState.hasMoreReplies = false;
+    testState.pseudonymityMode = 'none';
     testState.replyComments = [];
     testState.virtuosoProps = [];
 
@@ -503,6 +512,58 @@ describe('post community address compatibility', () => {
     expect(container.textContent).toContain('Anonymous');
     expect(container.textContent).toContain('## 5chan Dev');
     expect(container.querySelector('.capcodeAdminIcon')).toBeTruthy();
+  });
+
+  it('falls back to author shortAddress when the full author address cannot be shortened', async () => {
+    testState.pseudonymityMode = 'per-post';
+    const post = {
+      ...makeLegacyThreadWithoutReplies(),
+      author: { address: 'short-address', shortAddress: 'B2mAZojE' },
+    };
+
+    await renderWithRoute(createElement(PostDesktop, { post } as any), '/mu/thread/post-1');
+    expect(container.textContent).toContain('ID: B2mAZojE');
+
+    await renderWithRoute(createElement(PostMobile, { post } as any), '/mu/thread/post-1');
+    expect(container.textContent).toContain('ID: B2mAZojE');
+  });
+
+  it('uses safe account reply data by cid when a reply has no index', async () => {
+    testState.pseudonymityMode = 'per-post';
+    const post = makeLegacyThread();
+    const reply = post.replies?.pages?.new?.comments?.[0];
+    if (!reply?.cid) {
+      throw new Error('missing fixture reply');
+    }
+    reply.index = undefined;
+    reply.author = {};
+    testState.accountCommentsByCid[reply.cid] = {
+      ...reply,
+      author: { shortAddress: 'ReplyKid9' },
+    };
+
+    await renderWithRoute(createElement(PostDesktop, { post, showAllReplies: true }), '/mu/thread/post-1');
+    expect(container.textContent).toContain('ID: ReplyKid');
+
+    await renderWithRoute(createElement(PostMobile, { post, showAllReplies: true }), '/mu/thread/post-1');
+    expect(container.textContent).toContain('ID: ReplyKid');
+  });
+
+  it('falls back to the reply cid when published reply author metadata is missing', async () => {
+    testState.pseudonymityMode = 'per-post';
+    const post = makeLegacyThread();
+    const reply = post.replies?.pages?.new?.comments?.[0];
+    if (!reply) {
+      throw new Error('missing fixture reply');
+    }
+    reply.cid = 'Qmb4NxbRDVVJF7w9QtwXuY94jqGAAx7Thx3JPuofDVPKY1';
+    reply.author = {};
+
+    await renderWithRoute(createElement(PostDesktop, { post, showAllReplies: true }), '/mu/thread/post-1');
+    expect(container.textContent).toContain('ID: Qmb4NxbR');
+
+    await renderWithRoute(createElement(PostMobile, { post, showAllReplies: true }), '/mu/thread/post-1');
+    expect(container.textContent).toContain('ID: Qmb4NxbR');
   });
 
   it('forwards Pretext-backed reply estimates into Virtuoso for desktop and mobile thread views', async () => {

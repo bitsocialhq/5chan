@@ -27,13 +27,14 @@ describe('getThreadPostCountsByAuthor', () => {
     expect(counts.get('author-b')).toBe(2);
   });
 
-  it('skips comments missing a cid or short address', () => {
+  it('uses cid fallback for comments without author metadata', () => {
     const counts = getThreadPostCountsByAuthor(
       { cid: 'post-1', author: { shortAddress: 'author-a' } } as any,
       [{ cid: 'reply-1' }, { author: { shortAddress: 'author-b' } }] as any[],
     );
 
     expect(counts.get('author-a')).toBe(1);
+    expect(counts.get('reply-1')).toBe(1);
     expect(counts.has('author-b')).toBe(false);
   });
 });

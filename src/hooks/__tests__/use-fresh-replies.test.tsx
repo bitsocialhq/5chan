@@ -18,27 +18,26 @@ type TestComment = {
 
 const testState = vi.hoisted(() => ({
   accountComments: [] as TestComment[],
-  accountCommentsCalls: [] as Array<{ commentIndices?: number[] } | undefined>,
+  accountCommentsCalls: [] as Array<{ commentIndices?: number[]; filter?: (comment: TestComment) => boolean } | undefined>,
   replies: [] as TestComment[],
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  useAccountComments: (options?: { commentIndices?: number[] }) => {
+  useAccountComments: (options?: { commentIndices?: number[]; filter?: (comment: TestComment) => boolean }) => {
     testState.accountCommentsCalls.push(options);
 
     if (!options?.commentIndices?.length) {
-      return {
-        accountComments: testState.accountComments,
-      };
+      const accountComments = options?.filter ? testState.accountComments.filter(options.filter) : testState.accountComments;
+      return { accountComments };
     }
 
     const normalizedCommentIndices = options.commentIndices.filter((commentIndex) => Number.isInteger(commentIndex) && commentIndex >= 0);
 
-    return {
-      accountComments: normalizedCommentIndices
-        .map((commentIndex) => testState.accountComments.find((accountComment) => accountComment.index === commentIndex))
-        .filter(Boolean),
-    };
+    const accountComments = normalizedCommentIndices
+      .map((commentIndex) => testState.accountComments.find((accountComment) => accountComment.index === commentIndex))
+      .filter(Boolean);
+
+    return { accountComments };
   },
 }));
 
@@ -144,6 +143,38 @@ describe('useFreshReplies', () => {
     expect(latestValue).toHaveLength(1);
     expect(latestValue[0]).toBe(testState.accountComments[0] as never);
     expect(testState.accountCommentsCalls).toContainEqual({ commentIndices: [0] });
+  });
+
+  it('replaces unindexed replies with account comments matched by cid', () => {
+    testState.replies = [
+      {
+        cid: 'reply-cid',
+        content: 'stale reply',
+        communityAddress: 'music.eth',
+      },
+      {
+        cid: 'network-reply-cid',
+        content: 'network reply',
+        communityAddress: 'music.eth',
+      },
+    ];
+    testState.accountComments = [
+      {
+        cid: 'reply-cid',
+        content: 'fresh reply',
+        index: 5,
+        number: 27,
+        communityAddress: 'music.eth',
+      },
+    ];
+
+    renderHook();
+
+    expect(latestValue[0]).toBe(testState.accountComments[0] as never);
+    expect(latestValue[0]?.number).toBe(27);
+    expect(latestValue[1]).toBe(testState.replies[1] as never);
+    expect(testState.accountCommentsCalls).toContainEqual({ commentIndices: [-1] });
+    expect(testState.accountCommentsCalls).toContainEqual({ filter: expect.any(Function) });
   });
 
   it('orders replies by final post number after a pending reply is approved', () => {
