@@ -111,6 +111,7 @@ vi.mock('../lib/snow', () => ({
 vi.mock('../lib/utils/preload-utils', () => ({
   preloadReplyModal: vi.fn(),
   preloadThemeAssets: vi.fn(),
+  resolveAssetUrl: (path: string) => path,
 }));
 
 function makeNamedComponent(name: string) {
@@ -149,29 +150,29 @@ const MockSettingsModal = () => {
   );
 };
 
-vi.mock('../components/board-buttons', () => ({
+vi.mock('../components/board-buttons/board-buttons', () => ({
   DesktopBoardButtons: makeNamedComponent('desktop-board-buttons'),
   MobileAllFeedFilter: makeNamedComponent('mobile-all-feed-filter'),
   MobileBoardButtons: makeNamedComponent('mobile-board-buttons'),
 }));
 
-vi.mock('../components/board-header', () => ({
+vi.mock('../components/board-header/board-header', () => ({
   default: makeNamedComponent('board-header'),
 }));
 
-vi.mock('../components/feed-cache-container', () => ({
+vi.mock('../components/feed-cache-container/feed-cache-container', () => ({
   default: makeNamedComponent('feed-cache-container'),
 }));
 
-vi.mock('../components/post-form', () => ({
+vi.mock('../components/post-form/post-form', () => ({
   default: MockPostForm,
 }));
 
-vi.mock('../components/board-blotter', () => ({
+vi.mock('../components/board-blotter/board-blotter', () => ({
   default: makeNamedComponent('board-blotter'),
 }));
 
-vi.mock('../components/boards-bar', () => ({
+vi.mock('../components/boards-bar/boards-bar', () => ({
   default: MockBoardsBar,
 }));
 
@@ -179,7 +180,7 @@ vi.mock('../views/board', () => ({
   default: makeNamedComponent('board-view'),
 }));
 
-vi.mock('../views/blotter', () => ({
+vi.mock('../views/blotter/blotter', () => ({
   default: makeNamedComponent('blotter-view'),
 }));
 
@@ -187,39 +188,39 @@ vi.mock('../views/catalog', () => ({
   default: makeNamedComponent('catalog-view'),
 }));
 
-vi.mock('../views/faq', () => ({
+vi.mock('../views/faq/faq', () => ({
   default: makeNamedComponent('faq-view'),
 }));
 
-vi.mock('../views/home', () => ({
+vi.mock('../views/home/home', () => ({
   default: makeNamedComponent('home-view'),
 }));
 
-vi.mock('../views/mod-queue', () => ({
+vi.mock('../views/mod-queue/mod-queue', () => ({
   default: makeNamedComponent('mod-queue-view'),
 }));
 
-vi.mock('../views/not-allowed', () => ({
+vi.mock('../views/not-allowed/not-allowed', () => ({
   default: makeNamedComponent('not-allowed-view'),
 }));
 
-vi.mock('../views/not-found', () => ({
+vi.mock('../views/not-found/not-found', () => ({
   default: makeNamedComponent('not-found-view'),
 }));
 
-vi.mock('../views/pass', () => ({
+vi.mock('../views/pass/pass', () => ({
   default: makeNamedComponent('pass-view'),
 }));
 
-vi.mock('../views/pending-post', () => ({
+vi.mock('../views/pending-post/pending-post', () => ({
   default: makeNamedComponent('pending-post-view'),
 }));
 
-vi.mock('../views/post', () => ({
+vi.mock('../views/post/post', () => ({
   default: makeNamedComponent('post-view'),
 }));
 
-vi.mock('../views/rules', () => ({
+vi.mock('../views/rules/rules', () => ({
   default: makeNamedComponent('rules-view'),
 }));
 

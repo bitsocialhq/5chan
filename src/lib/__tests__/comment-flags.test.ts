@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getCommentFlagFlairs, getAuthorFlagFlairs, getAuthorFlagViewModels, TOR_AUTHOR_FLAG_LABEL_KEY } from '../comment-flags';
+import { getBoardFlagDefinition } from '../board-flags';
 
 describe('comment-flags', () => {
   it('parses the pkc-js challenge flair example for country flags', () => {
@@ -21,8 +22,13 @@ describe('comment-flags', () => {
     const flags = getAuthorFlagViewModels([{ text: 'flag:country:DE' }, { text: 'flag:pol:AC' }, { text: 'flag:pony:AJ' }], 1000);
 
     expect(flags.map((flag) => flag.key)).toEqual(['country:de', 'pol:AC', 'pony:AJ']);
-    expect(flags[1]).toMatchObject({ label: 'Anarcho-Capitalist', x: 0, y: 0 });
-    expect(flags[2]).toMatchObject({ label: 'Applejack', x: 48, y: 0 });
+
+    // Pin the human-readable labels here, but derive the sprite coords from the board-flags source of
+    // truth so this test can't drift when the sheet is remapped (board-flags.test.ts pins the values).
+    const politicalFlag = getBoardFlagDefinition('pol', 'AC');
+    const ponyFlag = getBoardFlagDefinition('pony', 'AJ');
+    expect(flags[1]).toMatchObject({ label: 'Anarcho-Capitalist', x: politicalFlag?.x, y: politicalFlag?.y });
+    expect(flags[2]).toMatchObject({ label: 'Applejack', x: ponyFlag?.x, y: ponyFlag?.y });
   });
 
   it('labels the xx country flag as Tor traffic', () => {
