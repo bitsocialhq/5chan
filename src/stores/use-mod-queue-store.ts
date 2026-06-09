@@ -11,12 +11,10 @@ interface ModQueueState {
   alertThresholdUnit: AlertThresholdUnit;
   dismissedCommentCids: string[];
   queuedCommentHistory: QueuedCommentSnapshot[];
-  selectedBoardFilter: string | null;
   viewMode: ModQueueViewMode;
   dismissCommentFromQueue: (cid: string) => void;
   rememberCommentsInQueue: (comments: QueuedCommentSnapshot[]) => void;
   setAlertThreshold: (value: number, unit: AlertThresholdUnit) => void;
-  setSelectedBoardFilter: (boardAddress: string | null) => void;
   setViewMode: (viewMode: ModQueueViewMode) => void;
   // Helper to get threshold in seconds for calculations
   getAlertThresholdSeconds: () => number;
@@ -34,10 +32,7 @@ interface OldPersistedState {
 }
 
 // Type for persisted data (without methods)
-type PersistedModQueueData = Pick<
-  ModQueueState,
-  'alertThresholdValue' | 'alertThresholdUnit' | 'dismissedCommentCids' | 'queuedCommentHistory' | 'selectedBoardFilter' | 'viewMode'
->;
+type PersistedModQueueData = Pick<ModQueueState, 'alertThresholdValue' | 'alertThresholdUnit' | 'dismissedCommentCids' | 'queuedCommentHistory' | 'viewMode'>;
 
 const useModQueueStore = create<ModQueueState>()(
   persist(
@@ -69,10 +64,8 @@ const useModQueueStore = create<ModQueueState>()(
 
           return { queuedCommentHistory: [...rememberedByCid.values()].slice(0, MAX_QUEUE_HISTORY_COMMENTS) };
         }),
-      selectedBoardFilter: null,
       viewMode: 'feed',
       setAlertThreshold: (value, unit) => set({ alertThresholdValue: value, alertThresholdUnit: unit }),
-      setSelectedBoardFilter: (boardAddress) => set({ selectedBoardFilter: boardAddress }),
       setViewMode: (viewMode) => set({ viewMode }),
       getAlertThresholdSeconds: () => {
         const { alertThresholdValue, alertThresholdUnit } = get();
@@ -81,7 +74,7 @@ const useModQueueStore = create<ModQueueState>()(
     }),
     {
       name: 'mod-queue-storage',
-      version: 2,
+      version: 3,
       // Migrate old alertThresholdHours format to new alertThresholdValue/alertThresholdUnit format
       migrate: (persistedState, version): ModQueueState => {
         const state = persistedState as OldPersistedState;
@@ -91,7 +84,6 @@ const useModQueueStore = create<ModQueueState>()(
             alertThresholdUnit: 'hours' as AlertThresholdUnit,
             dismissedCommentCids: state.dismissedCommentCids ?? [],
             queuedCommentHistory: state.queuedCommentHistory ?? [],
-            selectedBoardFilter: state.selectedBoardFilter ?? null,
             viewMode: state.viewMode ?? 'feed',
           };
           // Zustand will merge this with the store definition (which includes methods)
@@ -103,7 +95,6 @@ const useModQueueStore = create<ModQueueState>()(
           alertThresholdUnit: state.alertThresholdUnit ?? 'hours',
           dismissedCommentCids: state.dismissedCommentCids ?? [],
           queuedCommentHistory: state.queuedCommentHistory ?? [],
-          selectedBoardFilter: state.selectedBoardFilter ?? null,
           viewMode: state.viewMode ?? 'feed',
         };
         return current as ModQueueState;
@@ -113,7 +104,6 @@ const useModQueueStore = create<ModQueueState>()(
         alertThresholdUnit: state.alertThresholdUnit,
         dismissedCommentCids: state.dismissedCommentCids,
         queuedCommentHistory: state.queuedCommentHistory,
-        selectedBoardFilter: state.selectedBoardFilter,
         viewMode: state.viewMode,
       }),
     },
