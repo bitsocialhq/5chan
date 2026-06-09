@@ -6,7 +6,7 @@ import { Comment, setAccount, useAccount, useEditedComment } from '@bitsocial/bi
 import getShortAddress from '../../lib/get-short-address';
 import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
 import { getDisplayMediaInfoType, getLinkMediaInfo, getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
-import { getExpiringMediaLinkAlert } from '../../lib/utils/media-link-validation-utils';
+import { getExpiringMediaLinkAlert, getPublishFileDisplayName, isPublishFileMediaLink, isPublishFileMediaType } from '../../lib/utils/media-link-validation-utils';
 import {
   type DiceRoll,
   type FortuneEntry,
@@ -21,7 +21,7 @@ import {
   isPostOptionsValidationError,
 } from '../../lib/utils/post-options-utils';
 import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
-import { getPublishURLFilename, isValidPublishURL, isValidURL } from '../../lib/utils/url-utils';
+import { isValidPublishURL, isValidURL } from '../../lib/utils/url-utils';
 import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getBoardPath } from '../../lib/utils/route-utils';
@@ -46,8 +46,8 @@ import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
-import LoadingEllipsis from '../loading-ellipsis';
-import OekakiDrawingControls from '../oekaki-drawing-controls';
+import LoadingEllipsis from '../loading-ellipsis/loading-ellipsis';
+import OekakiDrawingControls from '../oekaki-drawing-controls/oekaki-drawing-controls';
 import PostOptionsErrorMessage from '../post-options-error-message/post-options-error-message';
 import styles from './post-form.module.css';
 import capitalize from 'lodash/capitalize';
@@ -55,22 +55,17 @@ import debounce from 'lodash/debounce';
 
 const FILE_LINK_PLACEHOLDER = 'https://website.com/image.jpg';
 const POST_FORM_FILE_DISPLAY_MAX_LENGTH = 28;
-const POST_FORM_FILE_MEDIA_TYPES = new Set(['gif', 'image', 'video']);
 
 const mergeFlairs = (...flairGroups: Array<Comment['flairs'] | undefined>): Comment['flairs'] | undefined => {
   const flairs = flairGroups.flatMap((group) => (Array.isArray(group) ? group : []));
   return flairs.length > 0 ? flairs : undefined;
 };
 
-const getPostFormFileDisplayLabel = (url: string, uploadedFileName: string | null | undefined, noFileLabel: string): string => {
-  const raw = getPublishURLFilename(url) || uploadedFileName;
+const getPostFormFileDisplayLabel = (url: string, uploadedFileName: string | null | undefined, noFileLabel: string, requireFile: boolean): string => {
+  const raw = getPublishFileDisplayName(url, uploadedFileName, requireFile);
   if (!raw) return noFileLabel;
   return truncateWithEllipsisInMiddle(raw, POST_FORM_FILE_DISPLAY_MAX_LENGTH);
 };
-
-const isPostFormFileMediaType = (type: string | undefined): boolean => Boolean(type && POST_FORM_FILE_MEDIA_TYPES.has(type));
-
-const isPostFormFileMediaLink = (link: string): boolean => isPostFormFileMediaType(getLinkMediaInfo(link)?.type);
 
 const getPublishLinkOptions = (link: string, includeCurrentLink: boolean): Partial<Pick<Comment, 'link'>> => {
   const twimgPublishUrl = getTwimgMediaFilePublishUrl(link);
@@ -87,7 +82,7 @@ export const LinkTypePreviewer = ({ link, requireFile = false }: { link: string;
   let type = mediaInfo?.type;
   const { status: gifFrameStatus } = useFetchGifFirstFrame(type === 'gif' ? mediaInfo?.url : undefined);
 
-  if (requireFile && isValidURL(link) && !isPostFormFileMediaType(type)) {
+  if (requireFile && isValidURL(link) && !isPublishFileMediaType(type)) {
     return <span className={styles.linkTypeError}>{t('not_a_file')}</span>;
   }
 
@@ -400,8 +395,8 @@ const PostFormFields = ({
             isUploading={isUploading}
             showUploadControls={showUploadControls}
           />
-          <span title={getPublishURLFilename(url) || uploadedFileName || undefined}>
-            {isUploading ? <LoadingEllipsis string={t('uploading')} /> : getPostFormFileDisplayLabel(url, uploadedFileName, t('no_file_chosen'))}
+          <span title={getPublishFileDisplayName(url, uploadedFileName, requirePostLinkIsMedia) || undefined}>
+            {isUploading ? <LoadingEllipsis string={t('uploading')} /> : getPostFormFileDisplayLabel(url, uploadedFileName, t('no_file_chosen'), requirePostLinkIsMedia)}
           </span>
         </td>
       </tr>
@@ -653,7 +648,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       setFormError(`${t('error')}: ${t('invalid_url_alert')}`);
       return;
     }
-    if (currentUrl && requirePostLinkIsMedia && !isPostFormFileMediaLink(currentUrl)) {
+    if (currentUrl && requirePostLinkIsMedia && !isPublishFileMediaLink(currentUrl)) {
       setFormError(`${t('error')}: ${t('link_not_image_or_video_alert')}`);
       return;
     }
@@ -781,7 +776,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       setFormError(`${t('error')}: ${t('invalid_url_alert')}`);
       return;
     }
-    if (currentUrl && requirePostLinkIsMedia && !isPostFormFileMediaLink(currentUrl)) {
+    if (currentUrl && requirePostLinkIsMedia && !isPublishFileMediaLink(currentUrl)) {
       setFormError(`${t('error')}: ${t('link_not_image_or_video_alert')}`);
       return;
     }
