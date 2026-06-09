@@ -6,7 +6,13 @@ import { Comment, setAccount, useAccount, useEditedComment } from '@bitsocial/bi
 import getShortAddress from '../../lib/get-short-address';
 import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
 import { getDisplayMediaInfoType, getLinkMediaInfo, getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
-import { getExpiringMediaLinkAlert, getPublishFileDisplayName, isPublishFileMediaLink, isPublishFileMediaType } from '../../lib/utils/media-link-validation-utils';
+import {
+  getExpiringMediaLinkAlert,
+  getPublishFileDisplayName,
+  getPublishLinkOptions,
+  isPublishFileMediaLink,
+  isPublishFileMediaType,
+} from '../../lib/utils/media-link-validation-utils';
 import {
   type DiceRoll,
   type FortuneEntry,
@@ -65,15 +71,6 @@ const getPostFormFileDisplayLabel = (url: string, uploadedFileName: string | nul
   const raw = getPublishFileDisplayName(url, uploadedFileName, requireFile);
   if (!raw) return noFileLabel;
   return truncateWithEllipsisInMiddle(raw, POST_FORM_FILE_DISPLAY_MAX_LENGTH);
-};
-
-const getPublishLinkOptions = (link: string, includeCurrentLink: boolean): Partial<Pick<Comment, 'link'>> => {
-  const twimgPublishUrl = getTwimgMediaFilePublishUrl(link);
-  if (twimgPublishUrl) {
-    return { link: twimgPublishUrl };
-  }
-
-  return includeCurrentLink && link ? { link } : {};
 };
 
 export const LinkTypePreviewer = ({ link, requireFile = false }: { link: string; requireFile?: boolean }) => {
@@ -161,6 +158,7 @@ interface PostFormFieldsProps {
   handleContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleContentValueChange: (content: string, options?: string) => void;
   handleLinkChange: (link: string) => void;
+  handleLinkBlur: () => void;
   handleOptionsChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   disableLinkInput: boolean;
   setPublishPostOptions: (opts: Record<string, unknown>) => void;
@@ -213,6 +211,7 @@ const PostFormFields = ({
   handleContentChange,
   handleContentValueChange,
   handleLinkChange,
+  handleLinkBlur,
   handleOptionsChange,
   disableLinkInput,
   setPublishPostOptions,
@@ -376,6 +375,7 @@ const PostFormFields = ({
           onChange={(e) => {
             handleLinkChange(e.target.value);
           }}
+          onBlur={handleLinkBlur}
         />
         <span className={styles.linkType}> {url && <LinkTypePreviewer link={url} requireFile={requirePostLinkIsMedia} />}</span>
       </td>
@@ -826,6 +826,20 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     }
   };
 
+  // Normalize pbs.twimg.com `?format=` media links to their `.jpg`/`.png` form once the field
+  // loses focus, so the conversion that happens at publish time is visible in the input. Done on
+  // blur (not per keystroke) to avoid rewriting the URL while it is still being typed or pasted.
+  const handleLinkBlur = () => {
+    const currentValue = urlRef.current?.value ?? '';
+    const twimgPublishUrl = getTwimgMediaFilePublishUrl(currentValue);
+    if (twimgPublishUrl && twimgPublishUrl !== currentValue) {
+      if (urlRef.current) {
+        urlRef.current.value = twimgPublishUrl;
+      }
+      setLinkValue(twimgPublishUrl);
+    }
+  };
+
   useEffect(() => {
     if (typeof replyIndex === 'number') {
       const nonokoRedirectPath = nonokoRedirectPathRef.current;
@@ -895,6 +909,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             handleContentChange={handleContentChange}
             handleContentValueChange={handleContentValueChange}
             handleLinkChange={handleLinkChange}
+            handleLinkBlur={handleLinkBlur}
             handleOptionsChange={handleOptionsChange}
             disableLinkInput={isUploading || youtubeThumbnailConversionCountdown !== null}
             setPublishPostOptions={setPublishPostOptions}

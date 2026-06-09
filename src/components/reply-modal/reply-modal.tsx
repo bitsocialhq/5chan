@@ -3,7 +3,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
-import { getExpiringMediaLinkAlert, getPublishFileDisplayName } from '../../lib/utils/media-link-validation-utils';
+import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions } from '../../lib/utils/media-link-validation-utils';
+import { getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory } from '../../lib/comment-flag-selection';
 import {
   type DiceRoll,
@@ -185,7 +186,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
     setError(null);
     nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
-    publishReply({ content: publishContent, ...(appliedYouTubeConversion ? { link: currentUrl } : {}), ...flagPublishOptions });
+    publishReply({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...flagPublishOptions });
   };
 
   useEffect(() => {
@@ -431,6 +432,19 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     }
   };
 
+  // Mirror the inline post form: normalize twimg `?format=` links to their `.jpg`/`.png` form once
+  // the field loses focus, so the conversion that happens at publish time is visible in the input.
+  const handleLinkBlur = () => {
+    const currentValue = urlRef.current?.value ?? '';
+    const twimgPublishUrl = getTwimgMediaFilePublishUrl(currentValue);
+    if (twimgPublishUrl && twimgPublishUrl !== currentValue) {
+      if (urlRef.current) {
+        urlRef.current.value = twimgPublishUrl;
+      }
+      setLinkValue(twimgPublishUrl);
+    }
+  };
+
   useEffect(() => {
     const canInsertQuote = showReplyModal && quoteInsertRequestId !== 0 && !!textRef.current;
 
@@ -601,6 +615,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             onChange={(e) => {
               handleLinkChange(e.target.value);
             }}
+            onBlur={handleLinkBlur}
           />
         </div>
         {showOekakiControls && (

@@ -31,21 +31,28 @@ registerRoute(
   }),
 );
 
-registerRoute(
-  ({ request, url }) =>
-    url.origin === self.location.origin &&
-    (runtimeAssetDestinations.has(request.destination) || runtimeAssetPathPrefixes.some((prefix) => url.pathname.startsWith(prefix))),
-  new StaleWhileRevalidate({
-    cacheName: 'runtime-static-assets',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 200,
-        maxAgeSeconds: 60 * 60 * 24 * 30,
-        purgeOnQuotaError: true,
-      }),
-    ],
-  }),
-);
+// Runtime-cache hashed build assets, but only in production. In dev the service worker
+// would otherwise serve stale first-party `/src` modules through stale-while-revalidate:
+// dev modules have no content hash, so the cached copy keeps being served after edits and
+// code changes silently appear not to take effect. Production assets are content-hashed,
+// so caching them stays safe.
+if (import.meta.env.PROD) {
+  registerRoute(
+    ({ request, url }) =>
+      url.origin === self.location.origin &&
+      (runtimeAssetDestinations.has(request.destination) || runtimeAssetPathPrefixes.some((prefix) => url.pathname.startsWith(prefix))),
+    new StaleWhileRevalidate({
+      cacheName: 'runtime-static-assets',
+      plugins: [
+        new ExpirationPlugin({
+          maxEntries: 200,
+          maxAgeSeconds: 60 * 60 * 24 * 30,
+          purgeOnQuotaError: true,
+        }),
+      ],
+    }),
+  );
+}
 
 // Standard SW lifecycle methods
 self.skipWaiting();
