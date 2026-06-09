@@ -52,6 +52,7 @@ import PostForm from './components/post-form/post-form';
 import BoardBlotter from './components/board-blotter/board-blotter';
 import BoardsBar from './components/boards-bar/boards-bar';
 import ExternalQuoteStatus from './components/external-quote-status/external-quote-status';
+import ModEmptyState from './components/mod-empty-state/mod-empty-state';
 
 const AccountDataEditor = lazy(() => import('./views/account-data-editor'));
 const BoardsBarEditModal = lazy(() => import('./components/boards-bar-edit-modal'));
@@ -265,7 +266,7 @@ const ModQueueRoute = () => {
   }
 
   if (!boardIdentifier) {
-    return accountCommunityAddresses.length > 0 ? <ModQueueView /> : <Navigate to='/not-allowed' replace />;
+    return accountCommunityAddresses.length > 0 ? <ModQueueView /> : <ModEmptyState />;
   }
 
   // Wait for board role metadata before enforcing access to avoid false redirects during initial load.

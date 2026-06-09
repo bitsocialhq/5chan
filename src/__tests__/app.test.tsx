@@ -114,6 +114,13 @@ vi.mock('../lib/utils/preload-utils', () => ({
   resolveAssetUrl: (path: string) => path,
 }));
 
+vi.mock('react-i18next', () => ({
+  Trans: ({ components, i18nKey }: { components?: Record<number, React.ReactNode>; i18nKey: string }) => createElement(React.Fragment, {}, i18nKey, components?.[1]),
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}));
+
 function makeNamedComponent(name: string) {
   return () => createElement('div', { 'data-testid': name }, name);
 }
@@ -473,7 +480,7 @@ describe('App', () => {
     expect(container.querySelector('[data-testid="not-found-view"]')).toBeTruthy();
   });
 
-  it('allows the global mod queue only when the account moderates at least one board', async () => {
+  it('shows the mod empty state from the global mod queue when the account moderates no boards', async () => {
     testState.accountCommunityAddresses = ['music-posting.eth'];
     await renderApp('/mod/queue');
 
@@ -486,8 +493,12 @@ describe('App', () => {
     testState.accountCommunityAddresses = [];
     await renderApp('/mod/queue');
 
-    expect(latestLocation).toBe('/not-allowed');
-    expect(container.querySelector('[data-testid="not-allowed-view"]')).toBeTruthy();
+    expect(latestLocation).toBe('/mod/queue');
+    expect(container.textContent).toContain('not_mod_of_any_board');
+    expect(container.textContent).toContain('go_to_settings_to_import_mod_account');
+    expect(container.querySelector('output')?.className).toContain('modEmptyState');
+    expect(container.querySelector('output a')?.getAttribute('href')).toBe('/mod/settings#account-settings');
+    expect(container.querySelector('[data-testid="not-allowed-view"]')).toBeNull();
   });
 
   it('renders board archive routes and hides board form/buttons on that dedicated page', async () => {
