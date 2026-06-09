@@ -771,6 +771,39 @@ describe('PostForm', () => {
     expect(testState.publishedPostOptions?.link).toBe(publishLink);
   });
 
+  it('rewrites known twimg query-format links to their path-extension form when the link field loses focus', async () => {
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const select = table.querySelector('select') as HTMLSelectElement;
+    const linkInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[3];
+
+    await dispatchChange(select, 'music-posting.eth');
+
+    const blurLinkInput = async () => {
+      await act(async () => {
+        linkInput.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+      });
+    };
+
+    // A twimg `?format=jpg` link becomes its `.jpg` form once the field loses focus.
+    await dispatchInput(linkInput, 'https://pbs.twimg.com/media/HJxnhNKWMAAhqFU?format=jpg&name=medium');
+    expect(linkInput.value).toBe('https://pbs.twimg.com/media/HJxnhNKWMAAhqFU?format=jpg&name=medium');
+    await blurLinkInput();
+    expect(linkInput.value).toBe('https://pbs.twimg.com/media/HJxnhNKWMAAhqFU.jpg');
+
+    // The detected format is preserved (png stays png).
+    await dispatchInput(linkInput, 'https://pbs.twimg.com/media/ZZZ9?format=png&name=orig');
+    await blurLinkInput();
+    expect(linkInput.value).toBe('https://pbs.twimg.com/media/ZZZ9.png');
+
+    // Non-twimg links are left untouched.
+    await dispatchInput(linkInput, 'https://example.com/photo?format=jpg&name=large');
+    await blurLinkInput();
+    expect(linkInput.value).toBe('https://example.com/photo?format=jpg&name=large');
+  });
+
   it('shows Oekaki draw controls only on the /i/ board form', async () => {
     testState.directories.push({
       address: 'oekaki-posting.bso',

@@ -678,6 +678,41 @@ describe('ReplyModal', () => {
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
   });
 
+  it('publishes twimg query-format reply links with a path extension', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = 'reply body';
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+
+    // The publish path normalizes the raw `?format=` link even without blurring the field.
+    await dispatchInput(linkInput, 'https://pbs.twimg.com/media/HKUAehoXUAAXkMb?format=jpg&name=4096x4096');
+    expect(linkInput.value).toBe('https://pbs.twimg.com/media/HKUAehoXUAAXkMb?format=jpg&name=4096x4096');
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ link: 'https://pbs.twimg.com/media/HKUAehoXUAAXkMb.jpg' }));
+  });
+
+  it('rewrites twimg query-format reply links to their path-extension form on blur', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = 'reply body';
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+
+    await dispatchInput(linkInput, 'https://pbs.twimg.com/media/HKUAehoXUAAXkMb?format=jpg&name=4096x4096');
+    expect(linkInput.value).toBe('https://pbs.twimg.com/media/HKUAehoXUAAXkMb?format=jpg&name=4096x4096');
+
+    await act(async () => {
+      linkInput.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    });
+
+    expect(linkInput.value).toBe('https://pbs.twimg.com/media/HKUAehoXUAAXkMb.jpg');
+  });
+
   it('moves YouTube links into reply content and publishes the thumbnail link on media-only boards', async () => {
     const youtubeLink = 'https://youtu.be/reply123';
     const thumbnailLink = 'https://img.youtube.com/vi/reply123/0.jpg';
