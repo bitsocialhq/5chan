@@ -41,7 +41,7 @@
     "react-ace": "14.0.1",
     "react-dom": "19.2.7",
     "react-i18next": "16.6.6",
-    "react-router-dom": "6.30.2",
+    "react-router-dom": "6.30.4",
     "react-router-hash-link": "2.4.3",
     "react-virtuoso": "4.18.5",
     "tcp-port-used": "1.0.2",
