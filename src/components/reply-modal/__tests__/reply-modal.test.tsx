@@ -223,7 +223,7 @@ vi.mock('../../../hooks/use-file-upload', () => ({
   },
 }));
 
-vi.mock('../../loading-ellipsis', () => ({
+vi.mock('../../loading-ellipsis/loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('span', { 'data-testid': 'loading-ellipsis' }, string),
 }));
 
@@ -1019,6 +1019,21 @@ describe('ReplyModal', () => {
     expect(linkInput?.getAttribute('placeholder')).toBe('https://website.com/image.jpg');
     expect(container.textContent).not.toContain('warning');
     expect(container.textContent).not.toContain('Spoiler?');
+  });
+
+  it('only shows pasted link filenames after media-only links are confirmed as files', async () => {
+    await renderReplyModal('/all/thread/post-1');
+
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+
+    await dispatchInput(linkInput, 'https://imgur.com/8EJ2T76');
+
+    expect(container.textContent).toContain('no_file_chosen');
+    expect(container.textContent).not.toContain('8EJ2T76');
+
+    await dispatchInput(linkInput, 'https://imgur.com/8EJ2T76.jpg');
+
+    expect(container.textContent).toContain('8EJ2T76.jpg');
   });
 
   it('positions the draggable modal with left/top styles instead of a transform layer', async () => {

@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
-import { getExpiringMediaLinkAlert } from '../../lib/utils/media-link-validation-utils';
+import { getExpiringMediaLinkAlert, getPublishFileDisplayName } from '../../lib/utils/media-link-validation-utils';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory } from '../../lib/comment-flag-selection';
 import {
   type DiceRoll,
@@ -17,7 +17,7 @@ import {
   hasNonokoOption,
   isPostOptionsValidationError,
 } from '../../lib/utils/post-options-utils';
-import { getPublishURLFilename, isValidPublishURL } from '../../lib/utils/url-utils';
+import { isValidPublishURL } from '../../lib/utils/url-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
 import { isAllView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
@@ -35,8 +35,8 @@ import { useCommunityField } from '../../hooks/use-stable-community';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
 import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
-import LoadingEllipsis from '../loading-ellipsis';
-import OekakiDrawingControls from '../oekaki-drawing-controls';
+import LoadingEllipsis from '../loading-ellipsis/loading-ellipsis';
+import OekakiDrawingControls from '../oekaki-drawing-controls/oekaki-drawing-controls';
 import PostOptionsErrorMessage from '../post-options-error-message/post-options-error-message';
 import styles from './reply-modal.module.css';
 import capitalize from 'lodash/capitalize';
@@ -498,7 +498,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode, isWebRuntime());
-  const displayedFileName = getPublishURLFilename(url) || uploadedFileName;
+  const displayedFileName = getPublishFileDisplayName(url, uploadedFileName, requirePostLinkIsMedia);
   const youtubeThumbnailConversionNotice =
     youtubeThumbnailConversionCountdown !== null ? t('youtube_thumbnail_link_conversion_notice', { count: youtubeThumbnailConversionCountdown }) : null;
 

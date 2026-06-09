@@ -309,7 +309,7 @@ vi.mock('../../../hooks/use-file-upload', () => ({
   },
 }));
 
-vi.mock('../../loading-ellipsis', () => ({
+vi.mock('../../loading-ellipsis/loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('span', { 'data-testid': 'loading-ellipsis' }, string),
 }));
 
@@ -331,19 +331,26 @@ vi.mock('../../../lib/utils/media-utils', () => {
   return {
     getDisplayMediaInfoType: (type: string, t: (key: string) => string) => t(type),
     getLinkMediaInfo: (link: string) => {
+      const path = (() => {
+        try {
+          return new URL(link).pathname;
+        } catch {
+          return link;
+        }
+      })();
       if (getTwimgMediaFilePublishUrl(link)) {
         return { type: 'image', url: link };
       }
-      if (link.endsWith('.gif')) {
+      if (path.endsWith('.gif')) {
         return { type: 'gif', url: link };
       }
-      if (link.endsWith('.jpg') || link.endsWith('.jpeg') || link.endsWith('.png')) {
+      if (path.endsWith('.jpg') || path.endsWith('.jpeg') || path.endsWith('.png')) {
         return { type: 'image', url: link };
       }
-      if (link.endsWith('.mp4')) {
+      if (path.endsWith('.mp4')) {
         return { type: 'video', url: link };
       }
-      if (link.endsWith('.mp3')) {
+      if (path.endsWith('.mp3')) {
         return { type: 'audio', url: link };
       }
       if (link.includes('youtube.com')) {
@@ -1304,6 +1311,23 @@ describe('PostForm', () => {
     await dispatchInput(linkInput as HTMLInputElement, 'https://example.com/images/file%20name.jpg?size=large');
 
     expect(table?.textContent).toContain('file name.jpg');
+  });
+
+  it('does not show a pasted non-file path segment next to the upload button', async () => {
+    testState.uploadedFileName = null;
+
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table');
+    const textInputs = table?.querySelectorAll<HTMLInputElement>('input[type="text"]') || [];
+    const linkInput = textInputs[3];
+
+    await dispatchInput(linkInput as HTMLInputElement, 'https://imgur.com/8EJ2T76');
+
+    expect(table?.textContent).toContain('not_a_file');
+    expect(table?.textContent).toContain('no_file_chosen');
+    expect(table?.textContent).not.toContain('8EJ2T76');
   });
 
   it('shows the rules and FAQ prompt at the bottom of the form with a board-specific rules link', async () => {
