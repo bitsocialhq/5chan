@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { Link, MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ModQueueView from '../mod-queue';
 
@@ -31,7 +31,6 @@ const testState = vi.hoisted(() => ({
   queuedCommentHistory: [] as TestComment[],
   rememberCommentsInQueueMock: vi.fn(),
   resetMock: vi.fn(),
-  selectedBoardFilter: null as string | null,
   setResetFunctionMock: vi.fn(),
   viewMode: 'compact' as 'compact' | 'feed',
 }));
@@ -42,8 +41,6 @@ const getModQueueState = () => ({
   getAlertThresholdSeconds: () => 6 * 60 * 60,
   queuedCommentHistory: testState.queuedCommentHistory,
   rememberCommentsInQueue: testState.rememberCommentsInQueueMock,
-  selectedBoardFilter: testState.selectedBoardFilter,
-  setSelectedBoardFilter: vi.fn(),
   setViewMode: vi.fn(),
   viewMode: testState.viewMode,
 });
@@ -161,6 +158,13 @@ vi.mock('../../../hooks/use-current-time', () => ({
 }));
 
 vi.mock('../../../hooks/use-directories', () => ({
+  findDirectoryByAddress: (directories: typeof testState.directories, address: string) =>
+    directories.find((directory) =>
+      [directory.address, directory.directoryCode, directory.title].some(
+        (value) => typeof value === 'string' && value.replace(/(\.bso|\.eth)$/, '') === address.replace(/(\.bso|\.eth)$/, ''),
+      ),
+    ),
+  normalizeBoardAddress: (address: string) => address.replace(/(\.bso|\.eth)$/, ''),
   useDirectories: () => testState.directories,
 }));
 
@@ -176,17 +180,17 @@ vi.mock('../../../components/error-display/error-display', () => ({
   default: ({ error }: { error?: Error }) => createElement('div', { 'data-testid': 'error-display' }, error?.message || 'error'),
 }));
 
-vi.mock('../../../components/footer', () => ({
+vi.mock('../../../components/footer/footer', () => ({
   PageFooterDesktop: ({ firstRow }: { firstRow: React.ReactNode }) => createElement('div', { 'data-testid': 'footer-desktop' }, firstRow),
   PageFooterMobile: ({ children }: { children: React.ReactNode }) => createElement('div', { 'data-testid': 'footer-mobile' }, children),
   StyleOnlyFooterFirstRow: () => createElement('div', { 'data-testid': 'style-footer-row' }),
 }));
 
-vi.mock('../../../components/loading-ellipsis', () => ({
+vi.mock('../../../components/loading-ellipsis/loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('div', { 'data-testid': 'loading-ellipsis' }, string),
 }));
 
-vi.mock('../../../components/tooltip', () => ({
+vi.mock('../../../components/tooltip/tooltip', () => ({
   default: ({ children }: { children: React.ReactNode }) => createElement(React.Fragment, {}, children),
 }));
 
@@ -208,6 +212,16 @@ vi.mock('../../post/post', () => ({
 let container: HTMLDivElement;
 let root: Root;
 
+const ModQueueWithLeaveButton = () => {
+  const navigate = useNavigate();
+  return createElement(
+    React.Fragment,
+    {},
+    createElement('button', { type: 'button', 'data-testid': 'leave-route', onClick: () => navigate('/other') }, 'leave'),
+    createElement(ModQueueView),
+  );
+};
+
 const renderModQueue = async () => {
   await act(async () => {
     root.render(
@@ -220,15 +234,36 @@ const renderModQueue = async () => {
   });
 };
 
+const renderModQueueWithOtherRoute = async () => {
+  await act(async () => {
+    root.render(
+      createElement(
+        MemoryRouter,
+        { initialEntries: ['/mod/queue'] },
+        createElement(
+          Routes,
+          {},
+          createElement(Route, { path: '/mod/queue', element: createElement(ModQueueWithLeaveButton) }),
+          createElement(Route, {
+            path: '/other',
+            element: createElement('div', {}, createElement(Link, { to: '/mod/queue' }, 'queue'), createElement('span', {}, 'other route')),
+          }),
+        ),
+      ),
+    );
+  });
+};
+
 describe('ModQueueView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    testState.accountCommunityAddresses = ['music-posting.eth'];
+    testState.directories = [{ address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' }];
     testState.dismissedCommentCids = [];
     testState.feed = [];
     testState.hasMore = false;
     testState.isMobile = false;
     testState.queuedCommentHistory = [];
-    testState.selectedBoardFilter = null;
     testState.viewMode = 'compact';
 
     container = document.createElement('div');
@@ -263,6 +298,58 @@ describe('ModQueueView', () => {
     expect(text).toContain('excerpt');
     expect(text).toContain('queue_is_empty');
     expect(text.indexOf('No.')).toBeLessThan(text.indexOf('queue_is_empty'));
+  });
+
+  it('resets the board summary selection to all after leaving and returning to the route', async () => {
+    testState.accountCommunityAddresses = ['music-posting.eth', 'sports-posting.eth'];
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'sports-posting.eth', directoryCode: 'sp', title: '/sp/ - Sports' },
+    ];
+    testState.feed = [
+      {
+        cid: 'music-pending',
+        communityAddress: 'music-posting.eth',
+        content: 'music pending body',
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+      {
+        cid: 'sports-pending',
+        communityAddress: 'sports-posting.eth',
+        content: 'sports pending body',
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueueWithOtherRoute();
+
+    const musicButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent?.includes('mu'));
+    expect(musicButton).toBeTruthy();
+
+    await act(async () => {
+      musicButton?.click();
+    });
+
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent?.includes('mu'))?.className).toContain(
+      'boardSummaryLinkSelected',
+    );
+
+    await act(async () => {
+      container.querySelector<HTMLButtonElement>('[data-testid="leave-route"]')?.click();
+    });
+    expect(container.textContent).toContain('other route');
+
+    await act(async () => {
+      container.querySelector<HTMLAnchorElement>('a[href="/mod/queue"]')?.click();
+    });
+
+    const allButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent?.includes('all'));
+    expect(allButton?.className).toContain('boardSummaryLinkSelected');
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent?.includes('mu'))?.className).not.toContain(
+      'boardSummaryLinkSelected',
+    );
   });
 
   it('opens a full floating post preview from a compact excerpt hover', async () => {

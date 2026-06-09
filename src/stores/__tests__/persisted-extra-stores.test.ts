@@ -95,9 +95,9 @@ describe('persisted extra stores', () => {
       alertThresholdUnit: 'hours',
       dismissedCommentCids: [],
       queuedCommentHistory: [],
-      selectedBoardFilter: 'music.eth',
       viewMode: 'feed',
     });
+    expect(useModQueueStore.getState()).not.toHaveProperty('selectedBoardFilter');
     expect(useModQueueStore.getState().getAlertThresholdSeconds()).toBe(10_800);
 
     useModQueueStore.getState().setAlertThreshold(15, 'minutes');
@@ -105,7 +105,6 @@ describe('persisted extra stores', () => {
     useModQueueStore.getState().dismissCommentFromQueue('approved-cid');
     useModQueueStore.getState().rememberCommentsInQueue([{ cid: 'approved-cid', approved: true, content: 'approved body' }]);
     useModQueueStore.getState().rememberCommentsInQueue([{ cid: 'rejected-cid', approved: false, content: 'rejected body' }]);
-    useModQueueStore.getState().setSelectedBoardFilter('tech.eth');
     useModQueueStore.getState().setViewMode('compact');
 
     expect(useModQueueStore.getState()).toMatchObject({
@@ -116,9 +115,9 @@ describe('persisted extra stores', () => {
         { cid: 'rejected-cid', approved: false, content: 'rejected body' },
         { cid: 'approved-cid', approved: true, content: 'approved body' },
       ],
-      selectedBoardFilter: 'tech.eth',
       viewMode: 'compact',
     });
+    expect(localStorage.getItem('mod-queue-storage')).not.toContain('selectedBoardFilter');
     expect(useModQueueStore.getState().getAlertThresholdSeconds()).toBe(900);
   });
 

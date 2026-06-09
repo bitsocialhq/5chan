@@ -9,7 +9,7 @@ import { Virtuoso } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
 import postStyles from '../post/post.module.css';
 import useModQueueStore from '../../stores/use-mod-queue-store';
-import LoadingEllipsis from '../../components/loading-ellipsis';
+import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display/error-display';
 import { useFeedStateString } from '../../hooks/use-state-string';
 import { getCommunityAddress, getBoardPath, areSameBoardAddress } from '../../lib/utils/route-utils';
@@ -40,7 +40,7 @@ import {
   getVisibleQueuedCommentHistory,
   shouldKeepQueuedCommentHistory,
 } from '../../lib/utils/mod-queue-utils';
-import Tooltip from '../../components/tooltip';
+import Tooltip from '../../components/tooltip/tooltip';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use-community-identifiers';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useCurrentTime } from '../../hooks/use-current-time';
@@ -48,7 +48,7 @@ import { Post } from '../post/post';
 import { canAccessBoardModQueue, hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import capitalize from 'lodash/capitalize';
 import lowerCase from 'lodash/lowerCase';
-import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '../../components/footer';
+import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '../../components/footer/footer';
 import footerStyles from '../../components/footer/footer.module.css';
 import { useModeratedCommunityAddresses } from '../../hooks/use-moderated-community-addresses';
 
@@ -263,15 +263,7 @@ const ModQueueExcerptPreviewLink = ({ comment, excerpt, postUrl, postUrlState }:
           {excerpt}
         </Link>
       ) : (
-        <span
-          title={excerpt}
-          ref={setReferenceNode}
-          tabIndex={0}
-          onMouseEnter={openPreview}
-          onFocus={openPreview}
-          onMouseLeave={closePreview}
-          onBlur={closePreview}
-        >
+        <span title={excerpt} ref={setReferenceNode} tabIndex={0} onMouseEnter={openPreview} onFocus={openPreview} onMouseLeave={closePreview} onBlur={closePreview}>
           {excerpt}
         </span>
       )}
@@ -687,6 +679,8 @@ interface ModQueueBoardSummaryProps {
   feed: Comment[];
   directories: DirectoryCommunity[];
   accountCommunityAddresses: string[];
+  selectedBoardFilter: string | null;
+  setSelectedBoardFilter: (boardAddress: string | null) => void;
 }
 
 const ModQueueBoardCount = ({ normal, urgent }: { normal: number; urgent: number }) => {
@@ -710,10 +704,8 @@ const ModQueueBoardCount = ({ normal, urgent }: { normal: number; urgent: number
   );
 };
 
-const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses }: ModQueueBoardSummaryProps) => {
+const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses, selectedBoardFilter, setSelectedBoardFilter }: ModQueueBoardSummaryProps) => {
   const { t } = useTranslation();
-  const selectedBoardFilter = useModQueueStore((state) => state.selectedBoardFilter);
-  const setSelectedBoardFilter = useModQueueStore((state) => state.setSelectedBoardFilter);
   const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const currentTime = useCurrentTime();
   const alertThresholdSeconds = getAlertThresholdSeconds();
@@ -936,7 +928,7 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
 const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProps) => {
   const { t } = useTranslation();
   const params = useParams();
-  const selectedBoardFilter = useModQueueStore((state) => state.selectedBoardFilter);
+  const [selectedBoardFilter, setSelectedBoardFilter] = useState<string | null>(null);
   const viewMode = useModQueueStore((state) => state.viewMode);
   const dismissedCommentCids = useModQueueStore((state) => state.dismissedCommentCids);
   const queuedCommentHistory = useModQueueStore((state) => state.queuedCommentHistory);
@@ -1098,7 +1090,13 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
         {!resolvedAddress && (
           <div className={styles.controls}>
             <div className={styles.controlsLeft}>
-              <ModQueueBoardSummary feed={feed} directories={directories} accountCommunityAddresses={accountCommunityAddresses} />
+              <ModQueueBoardSummary
+                feed={feed}
+                directories={directories}
+                accountCommunityAddresses={accountCommunityAddresses}
+                selectedBoardFilter={selectedBoardFilter}
+                setSelectedBoardFilter={setSelectedBoardFilter}
+              />
             </div>
           </div>
         )}
