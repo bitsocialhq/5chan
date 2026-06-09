@@ -18,6 +18,7 @@ const testState = vi.hoisted(() => ({
   } as Record<string, any>,
   challenges: [] as Array<{ challenge: any; id: number }>,
   commentsByCid: {} as Record<string, { author?: { shortAddress?: string } }>,
+  isMobile: false,
   publicationPreview: 'preview body',
   publicationType: 'post',
   removeChallengeMock: vi.fn(),
@@ -55,7 +56,7 @@ vi.mock('../../../lib/utils/challenge-utils', () => ({
 }));
 
 vi.mock('../../../hooks/use-is-mobile', () => ({
-  default: () => false,
+  default: () => testState.isMobile,
 }));
 
 vi.mock('../../../hooks/use-theme', () => ({
@@ -162,6 +163,7 @@ describe('ChallengeModal', () => {
         },
       },
     };
+    testState.isMobile = false;
     testState.publicationPreview = 'preview body';
     testState.publicationType = 'post';
     testState.removeChallengeMock.mockReset();
@@ -224,6 +226,27 @@ describe('ChallengeModal', () => {
 
     expect(publication.publishChallengeAnswers).toHaveBeenCalledWith(['4']);
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
+  });
+
+  it('centers the mobile modal from the viewport instead of its static position', async () => {
+    testState.isMobile = true;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 667 });
+    testState.publicationType = 'reply';
+    testState.challenges = [
+      createStoredChallenge({
+        challenge: 'https://spamblocker.bitsocial.net/api/v1/iframe/session-123',
+        type: 'url/iframe',
+      }),
+    ];
+
+    await renderModal();
+
+    const dialog = container.querySelector<HTMLElement>('[role="dialog"]');
+    expect(container.textContent).toContain('wants to open spamblocker.bitsocial.net.');
+    expect(dialog?.style.left).toBe('50%');
+    expect(dialog?.style.top).toBe('0px');
+    expect(dialog?.style.transform).toBe('translate3d(-50%, 134px, 0)');
   });
 
   it('redacts generated fortune BBCode from challenge publication details', async () => {

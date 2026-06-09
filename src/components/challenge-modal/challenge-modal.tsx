@@ -481,8 +481,8 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
   if (publication?.parentCid) extraTitleParts.push(parentAddress ? `reply ${parentAddress}` : 'reply');
   if (publicationContent && publicationType !== 'vote') extraTitleParts.push(publicationContent);
 
-  const mobileX = isIframeVisible ? 5 : window.innerWidth / 2 - 150;
   const mobileY = isIframeVisible ? Math.max(10, (window.innerHeight - 600) / 2) : window.innerHeight / 2 - 200;
+  const mobileTransform = isIframeVisible ? `translate3d(5px, ${Math.round(mobileY)}px, 0)` : `translate3d(-50%, ${Math.round(mobileY)}px, 0)`;
   const displayCommunityAddress = getDisplayCommunityAddress(shortCommunityAddress, communityAddress) || t('board');
   const iframeConfirmMessage = stripLegacyIframeConfirmDetails(
     t('iframe_challenge_confirm', {
@@ -524,9 +524,9 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
       aria-modal='true'
       aria-labelledby='challenge-modal-title'
       style={{
-        transform: isMobile
-          ? `translate3d(${Math.round(mobileX)}px, ${Math.round(mobileY)}px, 0)`
-          : `translate3d(${Math.round(initialPosition.x)}px, ${Math.round(initialPosition.y)}px, 0)`,
+        top: 0,
+        left: isMobile && !isIframeVisible ? '50%' : 0,
+        transform: isMobile ? mobileTransform : `translate3d(${Math.round(initialPosition.x)}px, ${Math.round(initialPosition.y)}px, 0)`,
         touchAction: 'none',
       }}
     >
