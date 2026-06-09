@@ -25,17 +25,17 @@ import useScrollToReply from '../../hooks/use-scroll-to-reply';
 import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import { useCurrentTime } from '../../hooks/use-current-time';
 import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
-import CommentContent from '../comment-content';
-import CommentMedia from '../comment-media';
+import CommentContent from '../comment-content/comment-content';
+import CommentMedia from '../comment-media/comment-media';
 import EditMenu from '../edit-menu/edit-menu';
 import FailedPublishNotice from '../failed-publish-notice';
-import { canEmbed } from '../embed';
-import LoadingEllipsis from '../loading-ellipsis';
+import { canEmbed } from '../embed/embed-utils';
+import LoadingEllipsis from '../loading-ellipsis/loading-ellipsis';
 import PostAuthorFlags from '../post-author-flags';
 import PostFlashTag from '../post-flash-tag';
-import PostMenuDesktop from './post-menu-desktop';
-import ReplyQuotePreview from '../reply-quote-preview';
-import Tooltip from '../tooltip';
+import PostMenuDesktop from './post-menu-desktop/post-menu-desktop';
+import ReplyQuotePreview from '../reply-quote-preview/reply-quote-preview';
+import Tooltip from '../tooltip/tooltip';
 import TimeAgoTooltip from '../time-ago-tooltip';
 import { PostProps } from '../../views/post/post';
 import { create } from 'zustand';
@@ -69,6 +69,7 @@ import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../l
 import useDeleteFailedPost from '../../hooks/use-delete-failed-post';
 import { getThreadPostCountsByAuthor } from '../../lib/utils/author-post-counts';
 import { withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
+import { getCommentUserID } from '../../lib/utils/comment-user-id-utils';
 import { getFeedPostHeightEstimate, getReplyHeightEstimates, reportReplyHeightAuditSample } from '../../lib/utils/pretext-height-estimates';
 import { getAuthorBadge } from '../../lib/utils/author-display-utils';
 import { hasCommentFlagsForDirectory } from '../../lib/comment-flag-selection';
@@ -233,7 +234,7 @@ const PostInfo = ({
   const archived = isCommentArchived(post);
   const purged = post?.commentModeration?.purged;
   const title = post?.title?.trim();
-  const { address, shortAddress } = author || {};
+  const { address } = author || {};
   const displayName = author?.displayName?.trim();
   const authorBadge = getAuthorBadge({ address, role: roles?.[address]?.role });
   const hasFailedState = state === 'failed';
@@ -268,7 +269,7 @@ const PostInfo = ({
   const alertThresholdSeconds = getAlertThresholdSeconds();
   const isOverThreshold = isAwaitingApproval && timeWaiting > alertThresholdSeconds;
 
-  const userID = address ? getShortAddress(address) : shortAddress;
+  const userID = getCommentUserID(post);
   const userIDBackgroundColor = hashStringToColor(userID);
   const userIDTextColor = getTextColorForBackground(userIDBackgroundColor);
 
@@ -277,11 +278,11 @@ const PostInfo = ({
 
   const handleUserAddressClick = useAuthorAddressClick();
   const numberOfPostsByAuthor = (() => {
-    if (!showUserID || deleted || removed || purged || !shortAddress || !postCid) {
+    if (!showUserID || deleted || removed || purged || !userID || !postCid) {
       return 0;
     }
 
-    return Math.max(postsByAuthorInThread?.get(shortAddress) ?? 0, 1);
+    return Math.max(postsByAuthorInThread?.get(userID) ?? 0, 1);
   })();
 
   const { hidden } = useHide({ cid: cid || '' });
@@ -756,10 +757,12 @@ const Reply = ({
   disableDeferredLayout,
 }: PostProps & { directRepliesByParentCid?: Map<string, Comment[]>; postsByAuthorInThread?: Map<string, number>; disableDeferredLayout?: boolean }) => {
   const accountReply = useSafeAccountComment({
+    commentCid: reply?.cid,
     commentIndex: typeof reply?.index === 'number' ? reply.index : undefined,
   });
   const hasReplyIndex = typeof reply?.index === 'number';
-  let post = hasReplyIndex && accountReply?.index === reply.index ? accountReply : reply;
+  const isAccountReply = (hasReplyIndex && accountReply?.index === reply.index) || (!!reply?.cid && accountReply?.cid === reply.cid);
+  let post = isAccountReply ? accountReply : reply;
   // handle pending mod or author edit
   const { editedComment } = useEditedComment({ comment: post });
   if (editedComment) {
@@ -767,7 +770,8 @@ const Reply = ({
   }
   post = withResolvedCommentCommunityAddress(post);
 
-  const { author, cid, deleted, link, linkHeight, linkWidth, postCid, reason, removed, spoiler, communityAddress, thumbnailUrl, parentCid } = post || {};
+  const { cid, deleted, link, linkHeight, linkWidth, postCid, reason, removed, spoiler, communityAddress, thumbnailUrl, parentCid } = post || {};
+  const userID = getCommentUserID(post);
   const purged = post?.commentModeration?.purged;
   const directories = useDirectories();
   const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
@@ -797,7 +801,7 @@ const Reply = ({
   return (
     <div className={`${styles.replyDesktop} ${disableDeferredLayout ? styles.pretextVirtualizedReply : ''}`}>
       <div className={styles.sideArrows}>{'>>'}</div>
-      <div className={`${styles.reply} ${isRouteLinkToReply && styles.highlight}`} data-cid={cid} data-author-address={author?.shortAddress} data-post-cid={postCid}>
+      <div className={`${styles.reply} ${isRouteLinkToReply && styles.highlight}`} data-cid={cid} data-author-address={userID} data-post-cid={postCid}>
         <PostInfo
           post={post}
           postReplyCount={postReplyCount}
@@ -852,7 +856,8 @@ const PostDesktop = ({
 }: PostProps) => {
   const { t } = useTranslation();
   const resolvedPost = withResolvedCommentCommunityAddress(post);
-  const { author, cid, content, deleted, link, linkHeight, linkWidth, postCid, removed, spoiler, state, communityAddress, thumbnailUrl, parentCid } = resolvedPost || {};
+  const { cid, content, deleted, link, linkHeight, linkWidth, postCid, removed, spoiler, state, communityAddress, thumbnailUrl, parentCid } = resolvedPost || {};
+  const userID = getCommentUserID(resolvedPost);
   const purged = resolvedPost?.commentModeration?.purged;
   const params = useParams();
   const location = useLocation();
@@ -1159,7 +1164,7 @@ const PostDesktop = ({
         <div
           data-thread-container-cid={cid}
           data-cid={cid}
-          data-author-address={author?.shortAddress}
+          data-author-address={userID}
           data-post-cid={postCid}
           className={`${styles.opContainer} ${shouldShowSnow() && hasThumbnail ? styles.xmasHatWrapper : ''}`}
         >
