@@ -671,8 +671,14 @@
   font-weight: 700;
 }
 
+.failedPublishActions {
+  display: block;
+  margin-top: 5px;
+}
+
 .failedDeletePostAction {
   font-weight: 400;
+  white-space: nowrap;
 }
 
 .failedDeletePostBracket {
