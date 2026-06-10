@@ -39,6 +39,19 @@
   background-image: var(--close-button-background-image);
 }
 
+.texButton {
+  all: unset;
+  float: left;
+  cursor: pointer;
+  padding: 0 4px;
+  color: inherit;
+  font-weight: inherit;
+}
+
+.texButton sub {
+  pointer-events: none;
+}
+
 .container input[type="text"], .container textarea, .container select:not(.flagSelector) {
   border: var(--reply-modal-field-input-border, revert);
   font-family: var(--post-form-field-font-family, revert);

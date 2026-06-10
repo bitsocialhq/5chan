@@ -34,6 +34,7 @@ import { getBoardPath } from '../../lib/utils/route-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
 import { FLASH_TAG_OPTIONS, getFlashTagPublishOptionsForDirectoryCode, isFlashDirectoryCode, type FlashTagOption } from '../../lib/flash-tags';
+import { isMathDirectoryCode } from '../../lib/math-tags';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories } from '../../hooks/use-directories';
 import { useDirectoryEntry } from '../../hooks/use-directory-entry';
@@ -54,6 +55,7 @@ import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
 import LoadingEllipsis from '../loading-ellipsis/loading-ellipsis';
 import OekakiDrawingControls from '../oekaki-drawing-controls/oekaki-drawing-controls';
+import TexLogo from '../tex-logo/tex-logo';
 import PostOptionsErrorMessage from '../post-options-error-message/post-options-error-message';
 import styles from './post-form.module.css';
 import capitalize from 'lodash/capitalize';
@@ -181,6 +183,7 @@ interface PostFormFieldsProps {
   flashTagOptions: FlashTagOption[];
   showFlashTagSelector: boolean;
   showFlashUploadPrompt: boolean;
+  showMathTagsPrompt: boolean;
   showBbcodeToolbar: boolean;
   onBbcodePreviewToggle: () => void;
   onPublishReply: () => void;
@@ -233,6 +236,7 @@ const PostFormFields = ({
   flashTagOptions,
   showFlashTagSelector,
   showFlashUploadPrompt,
+  showMathTagsPrompt,
   showBbcodeToolbar,
   onBbcodePreviewToggle,
   onPublishReply,
@@ -495,6 +499,19 @@ const PostFormFields = ({
               />
             </li>
           )}
+          {showMathTagsPrompt && (
+            <>
+              <li>
+                <Trans
+                  i18nKey='post_form_math_tags_prompt'
+                  components={{
+                    tex: <TexLogo />,
+                  }}
+                />
+              </li>
+              <li>{t('post_form_math_right_click_prompt')}</li>
+            </>
+          )}
           {showOekakiControls && isWebRuntime() ? <li>{OEKAKI_WEB_WARNING_TEXT}</li> : null}
         </ul>
       </td>
@@ -556,6 +573,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
   const showFlashUploadPrompt = isFlashDirectoryCode(postOptionsDirectoryCode);
   const showFlashTagSelector = showFlashUploadPrompt && !isInPostView;
+  const showMathTagsPrompt = isMathDirectoryCode(postOptionsDirectoryCode) || isMathDirectoryCode(directoryEntry?.directoryCode);
 
   const accountCommunityAddresses = useAccountCommunityAddresses();
   const accountAddress = account?.author?.address;
@@ -939,6 +957,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             flashTagOptions={FLASH_TAG_OPTIONS}
             showFlashTagSelector={showFlashTagSelector}
             showFlashUploadPrompt={showFlashUploadPrompt}
+            showMathTagsPrompt={showMathTagsPrompt}
             showBbcodeToolbar={showBbcodeToolbar}
             onBbcodePreviewToggle={handleBbcodePreviewToggle}
             onPublishReply={onPublishReply}

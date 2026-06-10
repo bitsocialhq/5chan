@@ -426,5 +426,11 @@
   "tor_author_flag_label": "This user is on Tor",
   "copy_share_link": "Copy share link",
   "directory_submit_board": "Submit Your Board",
-  "all_subtitle": "The highest-scoring board from each directory"
+  "all_subtitle": "The highest-scoring board from each directory",
+  "post_form_math_tags_prompt": "Use <tex>TeX</tex> with [math] tags for inline and [eqn] tags for block equations.",
+  "post_form_math_right_click_prompt": "Right-click equations to view the source.",
+  "tex_preview_title": "<tex>TeX</tex> Preview",
+  "tex_preview_protip": "Use [math][/math] tags for inline, and [eqn][/eqn] tags for block equations.",
+  "tex_preview_input_label": "TeX source",
+  "preview_tex_equations": "Preview TeX equations"
 }
