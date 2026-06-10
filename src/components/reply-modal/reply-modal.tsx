@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -125,6 +125,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
   const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
   const [showTexPreview, setShowTexPreview] = useState(false);
+  const closeTexPreview = useCallback(() => setShowTexPreview(false), []);
 
   const checkContentLengthRef = useRef(
     debounce((content: string, t: TFunction, options: string, directoryCode: string | undefined) => {
@@ -711,7 +712,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     showReplyModal && (
       <>
         {modalContent}
-        {showTexPreview && <TexPreviewModal closeModal={() => setShowTexPreview(false)} />}
+        {showTexPreview && <TexPreviewModal closeModal={closeTexPreview} />}
       </>
     )
   );

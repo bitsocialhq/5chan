@@ -407,5 +407,11 @@
   "tor_author_flag_label": "ఈ వినియోగదారు Tor లో ఉన్నారు",
   "copy_share_link": "భాగస్వామ్య లింక్‌ను కాపీ చేయండి",
   "directory_submit_board": "మీ బోర్డును సమర్పించండి",
-  "all_subtitle": "ప్రతిదిరెక్టరీ నుండి అత్యధిక స్కోర్ చేసిన ఫోరం"
+  "all_subtitle": "ప్రతిదిరెక్టరీ నుండి అత్యధిక స్కోర్ చేసిన ఫోరం",
+  "tex_preview_protip": "ఇన్‌లైన్ సమీకరణాల కోసం [math][/math] ట్యాగ్‌లను ఉపయోగించండి, మరియు బ్లాక్ సమీకరణాల కోసం [eqn][/eqn] ట్యాగ్‌లను ఉపయోగించండి.",
+  "post_form_math_tags_prompt": "[math] ట్యాగ్‌లతో ఇన్‌లైన్ సమీకరణాల కోసం మరియు [eqn] ట్యాగ్‌లతో బ్లాక్ సమీకరణాల కోసం <tex>TeX</tex>ని ఉపయోగించండి.",
+  "post_form_math_right_click_prompt": "సమీకరణాలపై కుడి-క్లిక్ చేసి మూలాన్ని చూడండి.",
+  "tex_preview_title": "<tex>TeX</tex> ప్రీవ్యూ",
+  "tex_preview_input_label": "TeX మూలం",
+  "preview_tex_equations": "TeX సమీకరణల ప్రిన్ట్‌కు"
 }

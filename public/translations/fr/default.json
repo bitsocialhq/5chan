@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Cet utilisateur est sur Tor",
   "copy_share_link": "Copier le lien de partage",
   "directory_submit_board": "Soumettez votre board",
-  "all_subtitle": "Le forum de plus haute note de chaque répertoire"
+  "all_subtitle": "Le forum de plus haute note de chaque répertoire",
+  "tex_preview_protip": "Utilisez les balises [math][/math] pour les équations en ligne et les balises [eqn][/eqn] pour les équations en bloc.",
+  "post_form_math_tags_prompt": "Utilisez <tex>TeX</tex> avec les balises [math] pour les équations en ligne et les balises [eqn] pour les équations de bloc.",
+  "post_form_math_right_click_prompt": "Cliquez avec le bouton droit sur les équations pour voir la source.",
+  "tex_preview_title": "<tex>TeX</tex> Aperçu",
+  "tex_preview_input_label": "TeX source",
+  "preview_tex_equations": "Aperçu des équations TeX"
 }

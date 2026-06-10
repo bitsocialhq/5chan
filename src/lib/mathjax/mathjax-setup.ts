@@ -7,6 +7,7 @@ import 'mathjax-full/components/src/startup/lib/startup.js';
 import 'mathjax-full/components/src/core/core.js';
 import 'mathjax-full/components/src/input/tex-base/tex-base.js';
 import 'mathjax-full/components/src/input/tex/extensions/ams/ams.js';
+import 'mathjax-full/components/src/input/tex/extensions/configmacros/configmacros.js';
 import 'mathjax-full/components/src/input/tex/extensions/noerrors/noerrors.js';
 import 'mathjax-full/components/src/input/tex/extensions/noundefined/noundefined.js';
 import 'mathjax-full/components/src/output/chtml/chtml.js';

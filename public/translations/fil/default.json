@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Ang user na ito ay nasa Tor",
   "copy_share_link": "Kopyahin ang link sa pagbabahagi",
   "directory_submit_board": "Isumite ang board mo",
-  "all_subtitle": "Ang pinakamataas na nakakuha ng puntos na Board mula sa bawat direktoryo"
+  "all_subtitle": "Ang pinakamataas na nakakuha ng puntos na Board mula sa bawat direktoryo",
+  "tex_preview_protip": "Gamitin ang [math][/math] tags para sa inline equations, at [eqn][/eqn] tags para sa block equations.",
+  "post_form_math_tags_prompt": "Gumamit ng <tex>TeX</tex> na may [math] tags para sa inline at [eqn] tags para sa block equations.",
+  "post_form_math_right_click_prompt": "I-right-click ang mga equation upang makita ang source.",
+  "tex_preview_title": "<tex>TeX</tex> Pagpapakita",
+  "tex_preview_input_label": "TeX pinagmulan",
+  "preview_tex_equations": "Magpakita ng preview ng TeX equations"
 }

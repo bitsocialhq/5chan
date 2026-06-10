@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
-import { typesetMathElement } from '../../lib/mathjax/mathjax-typeset';
+import { preloadMathJax, typesetMathElement } from '../../lib/mathjax/mathjax-typeset';
 import TexLogo from '../tex-logo/tex-logo';
 import styles from './tex-preview-modal.module.css';
 
@@ -23,7 +23,10 @@ const TexPreviewModal = ({ closeModal }: { closeModal: () => void }) => {
     }, TYPESET_DEBOUNCE_MS);
   };
 
+  // Start fetching the MathJax chunk as soon as the preview opens (like 4chan), so the first
+  // typeset is not delayed behind the download.
   useEffect(() => {
+    preloadMathJax();
     return () => window.clearTimeout(typesetTimeoutRef.current);
   }, []);
 

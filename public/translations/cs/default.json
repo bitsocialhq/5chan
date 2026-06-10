@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Tento uživatel je na síti Tor",
   "copy_share_link": "Kopírovat odkaz pro sdílení",
   "directory_submit_board": "Odeslat svou nástěnku",
-  "all_subtitle": "Fórum s nejvyšším skóre z každého adresáře"
+  "all_subtitle": "Fórum s nejvyšším skóre z každého adresáře",
+  "tex_preview_protip": "Použijte značky [math][/math] pro vložené rovnice a značky [eqn][/eqn] pro blokové rovnice.",
+  "post_form_math_tags_prompt": "Použijte <tex>TeX</tex> s tagy [math] pro vložené rovnice a tagy [eqn] pro blokové rovnice.",
+  "post_form_math_right_click_prompt": "Kliknutím pravým tlačítkem na rovnice zobrazíte zdroj.",
+  "tex_preview_title": "<tex>TeX</tex> Náhled",
+  "tex_preview_input_label": "TeX zdroj",
+  "preview_tex_equations": "Náhled TeX rovnic"
 }

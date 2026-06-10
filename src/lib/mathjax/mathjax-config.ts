@@ -11,7 +11,8 @@ const fontURL = new URL('mathjax/woff-v2', document.baseURI).href;
   loader: { load: [] },
   startup: { typeset: false },
   tex: {
-    packages: ['base', 'ams', 'noerrors', 'noundefined'],
+    // configmacros provides the `macros` option used to neuter the disallowed macros below
+    packages: ['base', 'ams', 'noerrors', 'noundefined', 'configmacros'],
     inlineMath: [['[math]', '[/math]']],
     displayMath: [['[eqn]', '[/eqn]']],
     processEscapes: false,

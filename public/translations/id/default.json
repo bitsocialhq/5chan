@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Pengguna ini ada di Tor",
   "copy_share_link": "Salin tautan bagian",
   "directory_submit_board": "Kirim board Anda",
-  "all_subtitle": "Forum dengan skor tertinggi dari setiap direktori"
+  "all_subtitle": "Forum dengan skor tertinggi dari setiap direktori",
+  "tex_preview_protip": "Gunakan tag [math][/math] untuk persamaan sebaris dan tag [eqn][/eqn] untuk persamaan blok.",
+  "post_form_math_tags_prompt": "Gunakan <tex>TeX</tex> dengan tag [math] untuk persamaan sebaris dan tag [eqn] untuk persamaan blok.",
+  "post_form_math_right_click_prompt": "Klik kanan pada persamaan untuk melihat sumbernya.",
+  "tex_preview_title": "<tex>TeX</tex> Pratinjau",
+  "tex_preview_input_label": "TeX sumber",
+  "preview_tex_equations": "Pratinjau persamaan TeX"
 }

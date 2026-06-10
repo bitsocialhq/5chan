@@ -552,7 +552,32 @@ export default defineConfig({
   },
   base: publicBase,
   optimizeDeps: {
-    include: ['ethers', 'assert', 'buffer', 'process', 'util', 'stream-browserify', 'isomorphic-fetch', 'workbox-core', 'workbox-precaching'],
+    include: [
+      'ethers',
+      'assert',
+      'buffer',
+      'process',
+      'util',
+      'stream-browserify',
+      'isomorphic-fetch',
+      'workbox-core',
+      'workbox-precaching',
+      // The lazy MathJax chunk (src/lib/mathjax/mathjax-setup.ts): pre-bundle so the first
+      // equation does not trigger a mid-session "optimized dependencies changed" full reload.
+      'mathjax-full/components/src/startup/lib/startup.js',
+      'mathjax-full/components/src/core/core.js',
+      'mathjax-full/components/src/input/tex-base/tex-base.js',
+      'mathjax-full/components/src/input/tex/extensions/ams/ams.js',
+      'mathjax-full/components/src/input/tex/extensions/configmacros/configmacros.js',
+      'mathjax-full/components/src/input/tex/extensions/noerrors/noerrors.js',
+      'mathjax-full/components/src/input/tex/extensions/noundefined/noundefined.js',
+      'mathjax-full/components/src/output/chtml/chtml.js',
+      'mathjax-full/components/src/output/chtml/fonts/tex/tex.js',
+      'mathjax-full/components/src/ui/safe/safe.js',
+      'mathjax-full/components/src/ui/menu/menu.js',
+      'mathjax-full/components/src/a11y/assistive-mml/assistive-mml.js',
+      'mathjax-full/components/src/startup/startup.js',
+    ],
   },
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),

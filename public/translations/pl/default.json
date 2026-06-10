@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Ten użytkownik jest w sieci Tor",
   "copy_share_link": "Kopiuj link udostępniania",
   "directory_submit_board": "Prześlij swój board",
-  "all_subtitle": "Forum o najwyższej punktacji z każdego katalogu"
+  "all_subtitle": "Forum o najwyższej punktacji z każdego katalogu",
+  "tex_preview_protip": "Użyj tagów [math][/math] dla równań wbudowanych i tagów [eqn][/eqn] dla równań blokowych.",
+  "post_form_math_tags_prompt": "Użyj <tex>TeX</tex> ze znacznikami [math] dla równań wbudowanych i znacznikami [eqn] dla równań blokowych.",
+  "post_form_math_right_click_prompt": "Kliknij prawym przyciskiem myszy na równania, aby wyświetlić kod źródłowy.",
+  "tex_preview_title": "<tex>TeX</tex> Podgląd",
+  "tex_preview_input_label": "TeX źródło",
+  "preview_tex_equations": "Podgląd równań TeX"
 }

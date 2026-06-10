@@ -407,5 +407,11 @@
   "tor_author_flag_label": "हा वापरकर्ता Tor वर आहे",
   "copy_share_link": "शेअर लिंक कॉपी करा",
   "directory_submit_board": "तुमचा बोर्ड सबमिट करा",
-  "all_subtitle": "प्रत्येक डायरेक्टरीमधील सर्वोच्च स्कोर केलेले फोरम"
+  "all_subtitle": "प्रत्येक डायरेक्टरीमधील सर्वोच्च स्कोर केलेले फोरम",
+  "tex_preview_protip": "इनलाइन समीकरणांसाठी [math][/math] टॅग्ज आणि ब्लॉक समीकरणांसाठी [eqn][/eqn] टॅग्ज वापरा.",
+  "post_form_math_tags_prompt": "<tex>TeX</tex> चा वापर [math] टॅग्ज सह इनलाइन समीकरणांसाठी आणि [eqn] टॅग्ज सह ब्लॉक समीकरणांसाठी करा.",
+  "post_form_math_right_click_prompt": "समीकरणांवर उजव्या क्लिकने स्रोत पाहा.",
+  "tex_preview_title": "<tex>TeX</tex> पूर्वावलोकन",
+  "tex_preview_input_label": "TeX स्रोत",
+  "preview_tex_equations": "TeX समीकरणांचे पूर्वावलोकन"
 }

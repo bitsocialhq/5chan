@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Tämä käyttäjä on Torissa",
   "copy_share_link": "Kopioi jakolinkkii",
   "directory_submit_board": "Lähetä boardisi",
-  "all_subtitle": "Korkeimman pistemäärän saanut foorumi jokaisesta hakemistosta"
+  "all_subtitle": "Korkeimman pistemäärän saanut foorumi jokaisesta hakemistosta",
+  "tex_preview_protip": "Käytä [math][/math]-tunnisteita sisäisille yhtälöille ja [eqn][/eqn]-tunnisteita lohkoyhtälöille.",
+  "post_form_math_tags_prompt": "Käytä <tex>TeX</tex>-ohjelmaa [math]-tageilla sisäisille yhtälöille ja [eqn]-tageilla lohkoyhtälöille.",
+  "post_form_math_right_click_prompt": "Napsauta yhtälöitä hiiren oikealla painikkeella nähdäksesi lähteen.",
+  "tex_preview_title": "<tex>TeX</tex> Esikatselu",
+  "tex_preview_input_label": "TeX lähde",
+  "preview_tex_equations": "Esikatsele TeX-yhtälöitä"
 }

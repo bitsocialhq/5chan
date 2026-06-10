@@ -21,6 +21,7 @@ const testState = vi.hoisted(() => ({
     name?: string;
     title?: string;
   }>,
+  typesetCalls: [] as string[],
   embeddableHosts: new Set<string>(),
   cidToNumber: {} as Record<string, number>,
   internalPathByHref: {} as Record<string, string | null>,
@@ -87,6 +88,15 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages', () => 
 
 vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
+}));
+
+vi.mock('../../../lib/mathjax/mathjax-typeset', () => ({
+  typesetMathElement: (_element: HTMLElement, source: string) => {
+    testState.typesetCalls.push(source);
+    return Promise.resolve();
+  },
+  clearMathElement: () => undefined,
+  preloadMathJax: () => undefined,
 }));
 
 vi.mock('../../../lib/utils/media-utils', () => ({
@@ -236,6 +246,7 @@ describe('Markdown', () => {
     vi.clearAllMocks();
     testState.comments = {};
     testState.directories = [{ address: 'music-posting.eth', name: 'music-posting.bso', title: '/mu/ - Music' }];
+    testState.typesetCalls = [];
     testState.embeddableHosts = new Set<string>();
     testState.cidToNumber = {};
     testState.internalPathByHref = {};
@@ -684,5 +695,58 @@ describe('Markdown', () => {
     });
 
     expect(container.querySelector('[data-testid="comment-media"]')).toBeNull();
+  });
+
+  describe('math tags on /sci/', () => {
+    const useSciDirectory = () => {
+      testState.directories = [
+        { address: 'music-posting.eth', name: 'music-posting.bso', title: '/mu/ - Music' },
+        { address: 'science-and-math.eth', directoryCode: 'sci', name: 'science-and-math.bso', title: '/sci/ - Science & Math' },
+      ];
+    };
+
+    it('hands [math] and [eqn] segments to MathJax on /sci/ routes, keeping the delimiters visible', async () => {
+      useSciDirectory();
+
+      await renderMarkdown({ content: 'inline [math]x_1[/math] then\n[eqn]\\int x\\\\dx[/eqn] end' }, '/sci/thread/post-1');
+
+      expect(container.textContent).toContain('[math]x_1[/math]');
+      expect(container.textContent).toContain('[eqn]\\int x\\\\dx[/eqn]');
+      expect(testState.typesetCalls).toEqual(['[math]x_1[/math]', '[eqn]\\int x\\\\dx[/eqn]']);
+    });
+
+    it('keeps multi-line math in a single segment instead of splitting on line breaks', async () => {
+      useSciDirectory();
+
+      await renderMarkdown({ content: '[math]a\\\\\nb[/math]' }, '/sci/thread/post-1');
+
+      expect(testState.typesetCalls).toEqual(['[math]a\\\\\nb[/math]']);
+    });
+
+    it('does not typeset math on non-math boards', async () => {
+      useSciDirectory();
+
+      await renderMarkdown({ content: '[math]x_1[/math]' }, '/mu/thread/post-1');
+
+      expect(container.textContent).toContain('[math]x_1[/math]');
+      expect(testState.typesetCalls).toEqual([]);
+    });
+
+    it('does not typeset math in the catalog, like 4chan teasers', async () => {
+      useSciDirectory();
+
+      await renderMarkdown({ content: '[math]x_1[/math]' }, '/sci/catalog');
+
+      expect(container.textContent).toContain('[math]x_1[/math]');
+      expect(testState.typesetCalls).toEqual([]);
+    });
+
+    it('typesets math for /sci/ posts rendered outside /sci/ routes via their community address', async () => {
+      useSciDirectory();
+
+      await renderMarkdown({ content: '[math]x_1[/math]', communityAddress: 'science-and-math.bso' }, '/all');
+
+      expect(testState.typesetCalls).toEqual(['[math]x_1[/math]']);
+    });
   });
 });

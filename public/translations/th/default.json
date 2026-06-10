@@ -407,5 +407,11 @@
   "tor_author_flag_label": "ผู้ใช้นี้อยู่บน Tor",
   "copy_share_link": "คัดลอกลิงก์แชร์",
   "directory_submit_board": "ส่งบอร์ดของคุณ",
-  "all_subtitle": "กระดานที่ได้คะแนนสูงสุดจากแต่ละไดเรกทอรี่"
+  "all_subtitle": "กระดานที่ได้คะแนนสูงสุดจากแต่ละไดเรกทอรี่",
+  "tex_preview_protip": "ใช้แท็ก [math][/math] สำหรับสมการแบบอินไลน์ และใช้แท็ก [eqn][/eqn] สำหรับสมการแบบบล็อก",
+  "post_form_math_tags_prompt": "ใช้ <tex>TeX</tex> พร้อมกับแท็ก [math] สำหรับสมการแบบอินไลน์ และแท็ก [eqn] สำหรับสมการแบบบล็อก",
+  "post_form_math_right_click_prompt": "คลิกขวาที่สมการเพื่อดูแหล่งที่มา",
+  "tex_preview_title": "<tex>TeX</tex> ตัวอย่าง",
+  "tex_preview_input_label": "TeX แหล่งที่มา",
+  "preview_tex_equations": "ตัวอย่างสมการ TeX"
 }

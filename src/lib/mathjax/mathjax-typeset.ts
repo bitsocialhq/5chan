@@ -28,6 +28,12 @@ const loadMathJax = (): Promise<MathJaxApi | undefined> => {
   return mathJaxPromise;
 };
 
+// Starts fetching the MathJax chunk ahead of the first typeset (e.g. when the TeX Preview modal
+// opens), like 4chan loading MathJax as soon as the preview panel is created.
+export const preloadMathJax = (): void => {
+  loadMathJax();
+};
+
 // Resets the element to the raw TeX source, then typesets it in place. Re-running on the same
 // element is safe (the source reset makes it idempotent), so re-mounts and StrictMode double
 // effects just re-typeset.
