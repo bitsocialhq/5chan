@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -154,7 +154,6 @@ interface PostFormFieldsProps {
   textRef: React.RefObject<HTMLTextAreaElement | null>;
   urlRef: React.Ref<HTMLInputElement>;
   url: string;
-  lengthError: string | null;
   handleContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleContentValueChange: (content: string, options?: string) => void;
   handleLinkChange: (link: string) => void;
@@ -207,7 +206,6 @@ const PostFormFields = ({
   textRef,
   urlRef,
   url,
-  lengthError,
   handleContentChange,
   handleContentValueChange,
   handleLinkChange,
@@ -336,7 +334,6 @@ const PostFormFields = ({
           hidden={showBbcodeToolbar && isBbcodePreviewing}
           onChange={handleContentChange}
         />
-        {lengthError && <div className={styles.error}>{lengthError}</div>}
       </td>
     </tr>
     {flagOptions.length > 0 && (
@@ -503,6 +500,16 @@ const PostFormFields = ({
       </td>
     </tr>
   </>
+);
+
+const PostFormErrorRow = ({ ariaLive, children }: { ariaLive?: 'polite'; children: ReactNode }) => (
+  <tr className={styles.formErrorRow}>
+    <td colSpan={2}>
+      <div className={`${styles.error} ${styles.formError}`} aria-live={ariaLive}>
+        {children}
+      </div>
+    </td>
+  </tr>
 );
 
 const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid: string }) => {
@@ -905,7 +912,6 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             textRef={textRef}
             urlRef={urlRef}
             url={url}
-            lengthError={lengthError}
             handleContentChange={handleContentChange}
             handleContentValueChange={handleContentValueChange}
             handleLinkChange={handleLinkChange}
@@ -943,19 +949,20 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             disableReplyPublish={isResolvingExternalQuotes}
           />
         </tbody>
+        <tfoot>
+          {moderationPostingWarning ? <PostFormErrorRow>{moderationPostingWarning}</PostFormErrorRow> : null}
+          {lengthError ? <PostFormErrorRow>{lengthError}</PostFormErrorRow> : null}
+          {youtubeThumbnailConversionCountdown !== null ? (
+            <PostFormErrorRow ariaLive='polite'>{t('youtube_thumbnail_link_conversion_notice', { count: youtubeThumbnailConversionCountdown })}</PostFormErrorRow>
+          ) : formError ? (
+            <PostFormErrorRow>
+              {isPostOptionsValidationError(formError) ? <PostOptionsErrorMessage error={formError} directories={directories} /> : formError}
+            </PostFormErrorRow>
+          ) : null}
+          {publishPostError ? <PostFormErrorRow>{publishPostError}</PostFormErrorRow> : null}
+          {publishReplyError ? <PostFormErrorRow>{publishReplyError}</PostFormErrorRow> : null}
+        </tfoot>
       </table>
-      {moderationPostingWarning ? <div className={`${styles.error} ${styles.formError}`}>{moderationPostingWarning}</div> : null}
-      {youtubeThumbnailConversionCountdown !== null ? (
-        <div className={`${styles.error} ${styles.formError}`} aria-live='polite'>
-          {t('youtube_thumbnail_link_conversion_notice', { count: youtubeThumbnailConversionCountdown })}
-        </div>
-      ) : formError ? (
-        <div className={`${styles.error} ${styles.formError}`}>
-          {isPostOptionsValidationError(formError) ? <PostOptionsErrorMessage error={formError} directories={directories} /> : formError}
-        </div>
-      ) : null}
-      {publishPostError && <div className={`${styles.error} ${styles.formError}`}>{publishPostError}</div>}
-      {publishReplyError && <div className={`${styles.error} ${styles.formError}`}>{publishReplyError}</div>}
       {publishReplyStateMessage && <div className={styles.status}>{publishReplyStateMessage}</div>}
     </>
   );

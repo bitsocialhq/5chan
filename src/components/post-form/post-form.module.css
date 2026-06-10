@@ -236,9 +236,15 @@
 }
 
 .error {
+  display: block;
+  margin: 3px 0 0;
+  padding: 3px 5px;
+  background-color: #e62020;
+  color: #fff;
+  font-family: monospace;
+  font-size: 13px;
   font-weight: bold;
-  padding: 5px;
-  color: red;
+  line-height: normal;
 }
 
 .error a,
@@ -248,8 +254,20 @@
 }
 
 .formError {
-  margin: 8px 0;
-  padding: 6px 5px;
+  box-sizing: border-box;
+  width: 468px;
+  max-width: calc(100vw - 2px);
+  text-align: start;
+}
+
+.postFormTable .formErrorRow td {
+  width: auto;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  color: inherit;
+  font-weight: normal;
+  text-transform: none;
 }
 
 .status {

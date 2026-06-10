@@ -627,6 +627,9 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
     expect(globalThis.alert).not.toHaveBeenCalled();
     expect(container.textContent).toContain('error: empty_comment_alert');
+    expect(table?.querySelector('tbody tr.rules')?.textContent).toContain('Please read the Rules and FAQ before posting.');
+    expect(table?.querySelector('tfoot')?.textContent).toContain('error: empty_comment_alert');
+    expect(table?.querySelector('tbody')?.nextElementSibling).toBe(table?.querySelector('tfoot'));
 
     const textInputs = table?.querySelectorAll<HTMLInputElement>('input[type="text"]') || [];
     const nameInput = textInputs[0];
@@ -710,8 +713,9 @@ describe('PostForm', () => {
       expect(linkInput.disabled).toBe(true);
       expect(container.textContent).toContain('youtube_thumbnail_link_conversion_notice');
       expect(container.textContent).toContain('3');
-      expect(table.textContent).not.toContain('youtube_thumbnail_link_conversion_notice');
+      expect(table.textContent).toContain('youtube_thumbnail_link_conversion_notice');
       expect(getConversionNotice()?.className).toContain('formError');
+      expect(getConversionNotice()?.closest('tfoot')).toBeTruthy();
 
       await act(async () => {
         vi.advanceTimersByTime(1000);
@@ -1059,6 +1063,7 @@ describe('PostForm', () => {
     const delayedOptionsError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'Unsupported options: x, y, z.');
     expect(delayedOptionsError?.className).toContain('error');
     expect(delayedOptionsError?.className).toContain('formError');
+    expect(delayedOptionsError?.closest('tfoot')).toBeTruthy();
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'fortune body');
     await clickByText(table as HTMLTableElement, 'post');
@@ -1096,6 +1101,7 @@ describe('PostForm', () => {
 
     expect(testState.publishPostOptions.content).toBe(longContent);
     expect(container.textContent).toContain('comment_field_too_long');
+    expect(table.querySelector('tfoot')?.textContent).toContain('comment_field_too_long');
     expect(container.textContent).not.toContain('[fortune color=');
     expect(testState.publishPostMock).not.toHaveBeenCalled();
   });
@@ -1253,6 +1259,7 @@ describe('PostForm', () => {
     const moderatorWarning = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'warning: posting as moderator');
     expect(moderatorWarning?.className).toContain('error');
     expect(moderatorWarning?.className).toContain('formError');
+    expect(moderatorWarning?.closest('tfoot')).toBeTruthy();
     expect(table?.textContent).not.toContain('Mod editor');
     expect(table?.textContent).not.toContain('mods only');
     expect(table?.querySelector('button[aria-label="Quote"]')).toBeNull();
