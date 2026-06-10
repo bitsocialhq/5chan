@@ -1,5 +1,9 @@
 import { downloadIpfsClients } from './electron/before-pack.js';
 
+// Sign and notarize the mac app only when Apple credentials are present (CI release
+// builds); local builds without the certificate stay unsigned and keep working.
+const shouldSignMac = process.platform === 'darwin' && !!process.env.APPLE_ID && !!process.env.APPLE_APP_SPECIFIC_PASSWORD && !!process.env.APPLE_TEAM_ID;
+
 const config = {
   packagerConfig: {
     name: '5chan',
@@ -43,6 +47,22 @@ const config = {
       /node_modules\/\.bin/,
       /node_modules\/\.cache/,
     ],
+
+    ...(shouldSignMac && {
+      osxSign: {
+        // identity is auto-discovered from the keychain (the only Developer ID
+        // Application identity present, both locally and in the CI temp keychain)
+        optionsForFile: () => ({
+          hardenedRuntime: true,
+          entitlements: './electron/entitlements.plist',
+        }),
+      },
+      osxNotarize: {
+        appleId: process.env.APPLE_ID,
+        appleIdPassword: process.env.APPLE_APP_SPECIFIC_PASSWORD,
+        teamId: process.env.APPLE_TEAM_ID,
+      },
+    }),
   },
 
   rebuildConfig: {
