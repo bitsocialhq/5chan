@@ -1389,7 +1389,20 @@ describe('PostForm', () => {
     expect(promptRow?.className).toBe('rules');
     expect(promptRow?.querySelector('ul')?.className).toBe('rules');
     expect(links.map((link) => link.textContent)).toEqual(['Rules', 'FAQ']);
-    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/rules/mu', '/faq']);
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/rules#mu', '/faq']);
+  });
+
+  it('uses the plain rules page link for custom boards without a directory hash', async () => {
+    testState.resolvedCommunityAddress = 'custom-board.bso';
+
+    await renderPostForm('/custom-board.bso');
+    await clickByText(container, 'start_new_thread');
+
+    const promptRow = Array.from(container.querySelectorAll('tr')).find((row) => row.textContent === 'Please read the Rules and FAQ before posting.');
+    const links = Array.from(promptRow?.querySelectorAll('a') || []);
+
+    expect(links.map((link) => link.textContent)).toEqual(['Rules', 'FAQ']);
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/rules', '/faq']);
   });
 
   it('shortens long pasted file-link filenames next to the upload button', async () => {

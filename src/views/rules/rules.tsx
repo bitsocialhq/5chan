@@ -1,12 +1,12 @@
 import { Fragment, useEffect, useRef, useState, FormEvent } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
-import { Footer, HomeLogo } from '../home';
+import { Footer, HomeLogo } from '../home/home';
 import { useDirectories, useDirectoryDefaults, DirectoryCommunity, DirectoryDefaultsData } from '../../hooks/use-directories';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
-import { getCommunityAddress, getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
-import Markdown from '../../components/markdown';
-import LoadingEllipsis from '../../components/loading-ellipsis';
+import { getCommunityAddress, isDirectoryRoute } from '../../lib/utils/route-utils';
+import Markdown from '../../components/markdown/markdown';
+import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
 import useStateString from '../../hooks/use-state-string';
 import styles from './rules.module.css';
 import { useTranslation } from 'react-i18next';
@@ -59,13 +59,16 @@ const groupDirectoriesByCategory = (directories: DirectoryCommunity[], defaults:
     }))
     .filter((group) => group.communities.length > 0);
 
-// Resolve a /rules/:boardIdentifier segment (directory code or board address) to a directory code.
-const resolveDirectoryCode = (identifier: string, directories: DirectoryCommunity[]): string | null => {
-  if (isDirectoryRoute(identifier, directories)) {
-    return identifier;
+const getRulesHashCode = (hash: string): string => {
+  if (!hash) {
+    return '';
   }
-  const code = getBoardPath(getCommunityAddress(identifier, directories), directories);
-  return isDirectoryRoute(code, directories) ? code : null;
+  const rawHash = hash.startsWith('#') ? hash.slice(1) : hash;
+  try {
+    return decodeURIComponent(rawHash);
+  } catch {
+    return rawHash;
+  }
 };
 
 // A single directory's rules (h3 title + ordered rules), anchored by code for deep-link scrolling.
@@ -109,7 +112,7 @@ const CategoryRulesBox = ({ group, defaults }: { group: CategoryGroup; defaults:
   </div>
 );
 
-// Quick-jump nav (left column) grouped by category; clicking a directory insta-scrolls to its rules via /rules/:code.
+// Quick-jump nav (left column) grouped by category; clicking a directory insta-scrolls to its rules via /rules#code.
 const DirectoryNav = ({ groups }: { groups: CategoryGroup[] }) => (
   <div className={`${styles.box} ${styles.selectorBox}`}>
     <div className={styles.boxBar}>
@@ -129,7 +132,7 @@ const DirectoryNav = ({ groups }: { groups: CategoryGroup[] }) => (
                   const code = getDirectoryCode(community);
                   return (
                     <li key={community.address}>
-                      <Link to={`/rules/${code}`}>{getBoardName(community.title) || getDirectoryDisplayTitle(community)}</Link>
+                      <Link to={`/rules#${code}`}>{getBoardName(community.title) || getDirectoryDisplayTitle(community)}</Link>
                     </li>
                   );
                 })}
@@ -233,11 +236,12 @@ const LoadBoardRules = ({ onLoad, onClear, isLoaded }: { onLoad: (address: strin
 };
 
 const Rules = () => {
-  const { boardIdentifier } = useParams();
+  const { hash } = useLocation();
   const directories = useDirectories();
   const directoryDefaults = useDirectoryDefaults();
   const [loadedAddress, setLoadedAddress] = useState('');
   const scrolledForRef = useRef<string | null>(null);
+  const hashCode = getRulesHashCode(hash);
 
   // Order directories alphabetically by directory code (e.g. /3/, /a/, /aco/...), like 4chan, not by title.
   const directoriesWithCode = directories.filter((community) => getDirectoryCode(community)).toSorted((a, b) => getDirectoryCode(a).localeCompare(getDirectoryCode(b)));
@@ -253,24 +257,23 @@ const Rules = () => {
 
   useEffect(() => {
     setLoadedAddress('');
-    if (!boardIdentifier) {
-      scrolledForRef.current = null;
+    scrolledForRef.current = null;
+    if (!hashCode) {
       window.scrollTo(0, 0);
     }
-  }, [boardIdentifier]);
+  }, [hashCode]);
 
-  // Deep-link: /rules/:code insta-scrolls to that directory's rules once the matching section is rendered.
+  // Deep-link: /rules#code insta-scrolls to a known directory's rules once the matching section is rendered.
   useEffect(() => {
-    if (!boardIdentifier || scrolledForRef.current === boardIdentifier) {
+    if (!hashCode || scrolledForRef.current === hashCode || !isDirectoryRoute(hashCode, directories)) {
       return;
     }
-    const code = resolveDirectoryCode(boardIdentifier, directories);
-    const element = code ? document.getElementById(code) : null;
+    const element = document.getElementById(hashCode);
     if (element) {
       element.scrollIntoView();
-      scrolledForRef.current = boardIdentifier;
+      scrolledForRef.current = hashCode;
     }
-  }, [boardIdentifier, directories]);
+  }, [hashCode, directories]);
 
   return (
     <div className={styles.wrapper}>

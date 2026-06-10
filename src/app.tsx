@@ -292,7 +292,8 @@ const App = () => {
           <Route path='/' element={<Home />} />
           <Route path='/faq' element={<Faq />} />
           <Route path='/pass' element={<Pass />} />
-          <Route path='/rules/:boardIdentifier?' element={<Rules />} />
+          <Route path='/rules' element={<Rules />} />
+          <Route path='/rules/*' element={<Navigate to='/not-found' replace />} />
           <Route path='/blotter' element={<Blotter />} />
           <Route
             path='/settings/account-data'
