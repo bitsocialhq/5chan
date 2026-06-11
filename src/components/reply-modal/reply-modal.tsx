@@ -42,6 +42,8 @@ import OekakiDrawingControls from '../oekaki-drawing-controls/oekaki-drawing-con
 import PostOptionsErrorMessage from '../post-options-error-message/post-options-error-message';
 import TexLogo from '../tex-logo/tex-logo';
 import TexPreviewModal from '../tex-preview-modal/tex-preview-modal';
+import Tooltip from '../tooltip/tooltip';
+import { preloadMathJax } from '../../lib/mathjax/mathjax-typeset';
 import styles from './reply-modal.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
@@ -545,18 +547,20 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     >
       <div id='reply-modal-title' className={`replyModalHandle ${styles.title}`} {...(!isMobile ? bind() : {})}>
         {showTexButton && !isMobile && (
-          <button
-            type='button'
-            className={styles.texButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowTexPreview(true);
-            }}
-            title={t('preview_tex_equations')}
-            aria-label={t('preview_tex_equations')}
-          >
-            <TexLogo />
-          </button>
+          <Tooltip content={t('preview_tex_equations')} className={styles.texButtonTooltip}>
+            <button
+              type='button'
+              className={styles.texButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                preloadMathJax();
+                setShowTexPreview(true);
+              }}
+              aria-label={t('preview_tex_equations')}
+            >
+              <TexLogo />
+            </button>
+          </Tooltip>
         )}
         {t('reply_to_no', { no: threadNumber ?? '?' })}
         <button

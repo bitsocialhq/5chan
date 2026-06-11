@@ -39,16 +39,38 @@
   background-image: var(--close-button-background-image);
 }
 
+.texButtonTooltip {
+  float: left;
+  display: block;
+  height: 18px;
+  line-height: 18px;
+  margin: 0 0 0 3px;
+}
+
 .texButton {
   all: unset;
-  float: left;
+  display: block;
   cursor: pointer;
-  padding: 0 4px;
-  color: inherit;
-  font-weight: inherit;
+  color: var(--button-desktop-text-color);
+  font-size: 10.6667px;
+  font-weight: 700;
+  line-height: 18px;
+  text-decoration: none;
+}
+
+.texButton:hover,
+.texButton:focus-visible {
+  color: var(--button-desktop-text-color-hover);
+  text-decoration: none;
+}
+
+.texButton:focus-visible {
+  outline: 1px dotted currentColor;
+  outline-offset: 1px;
 }
 
 .texButton sub {
+  font-size: 80%;
   pointer-events: none;
 }
 

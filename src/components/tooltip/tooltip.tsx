@@ -5,10 +5,11 @@ import styles from './tooltip.module.css';
 interface TooltipProps {
   content: ReactNode;
   children: ReactNode;
+  className?: string;
   showTooltip?: boolean;
 }
 
-const Tooltip = ({ content, children, showTooltip = true }: TooltipProps) => {
+const Tooltip = ({ content, children, className, showTooltip = true }: TooltipProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const { refs, floatingStyles, context } = useFloating({
@@ -28,7 +29,7 @@ const Tooltip = ({ content, children, showTooltip = true }: TooltipProps) => {
 
   return (
     <>
-      <span ref={refs.setReference} {...getReferenceProps()}>
+      <span className={className} ref={refs.setReference} {...getReferenceProps()}>
         {children}
       </span>
       {showTooltip && (

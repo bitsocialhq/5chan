@@ -227,6 +227,11 @@ vi.mock('../../loading-ellipsis/loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('span', { 'data-testid': 'loading-ellipsis' }, string),
 }));
 
+vi.mock('../../../lib/mathjax/mathjax-typeset', () => ({
+  preloadMathJax: () => undefined,
+  typesetMathElement: () => Promise.resolve(),
+}));
+
 vi.mock('lodash/debounce', () => ({
   default: <T extends (...args: any[]) => void>(fn: T, wait = 0) => {
     let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -512,6 +517,30 @@ describe('ReplyModal', () => {
     await renderReplyModal('/i/thread/post-1', 'oekaki-posting.bso');
 
     expect(container.textContent).not.toContain(OEKAKI_WEB_WARNING_TEXT);
+  });
+
+  it('opens the TeX preview modal from the /sci/ reply modal button', async () => {
+    testState.directoryByAddress['science-and-math.bso'] = {
+      address: 'science-and-math.bso',
+      directoryCode: 'sci',
+      features: {},
+      title: '/sci/ - Science & Math',
+    };
+    testState.communities['science-and-math.bso'] = { address: 'science-and-math.bso' };
+
+    await renderReplyModal('/sci/thread/post-1', 'science-and-math.bso');
+
+    const texButton = container.querySelector<HTMLButtonElement>('button[aria-label="preview_tex_equations"]');
+    expect(texButton?.textContent).toBe('TEX');
+    expect(texButton?.querySelector('sub')?.textContent).toBe('E');
+
+    await act(async () => {
+      texButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const texPreview = container.querySelector('dialog[aria-labelledby="tex-preview-title"]');
+    expect(texPreview).toBeTruthy();
+    expect(texPreview?.textContent).toContain('tex_preview_title');
   });
 
   it('shows a flag selector on flag boards and publishes the default geographic request', async () => {

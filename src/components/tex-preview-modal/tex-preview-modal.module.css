@@ -22,36 +22,52 @@
 
 .panel {
   box-sizing: border-box;
-  position: relative;
-  display: block;
+  position: absolute;
+  display: inline-block;
   width: 600px;
   max-width: calc(100% - 20px);
-  max-height: calc(100vh - 70px);
+  max-height: calc(100vh - 20px);
   overflow: auto;
-  top: 50px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  padding: 0 5px 5px;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 2px;
   background-color: var(--challenge-modal-background-color, rgb(240, 224, 214));
   border: var(--challenge-modal-border, 1px solid rgb(217, 191, 183));
-  color: var(--text-color, rgb(0, 0, 0));
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+  color: var(--body-font-color, rgb(0, 0, 0));
   z-index: 1;
 }
 
 .header {
+  position: relative;
   font-weight: bold;
   font-size: 16px;
-  line-height: 16px;
+  line-height: 14px;
   text-align: center;
-  margin: 5px 0;
-  padding-bottom: 5px;
+  margin: 0 0 5px;
+  padding: 5px 18px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.titleText {
+  display: block;
+}
+
+.texLogo {
+  font-size: 80%;
+  font-weight: 700;
+}
+
+.texLogo sub {
+  font-size: 80%;
 }
 
 .closeIcon {
   all: unset;
-  float: right;
+  position: absolute;
+  top: 0;
+  right: 0;
   cursor: pointer;
   width: 18px;
   height: 18px;

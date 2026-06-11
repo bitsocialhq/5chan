@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
-import { preloadMathJax, typesetMathElement } from '../../lib/mathjax/mathjax-typeset';
+import { typesetMathElement } from '../../lib/mathjax/mathjax-typeset';
 import TexLogo from '../tex-logo/tex-logo';
 import styles from './tex-preview-modal.module.css';
 
@@ -23,13 +23,6 @@ const TexPreviewModal = ({ closeModal }: { closeModal: () => void }) => {
     }, TYPESET_DEBOUNCE_MS);
   };
 
-  // Start fetching the MathJax chunk as soon as the preview opens (like 4chan), so the first
-  // typeset is not delayed behind the download.
-  useEffect(() => {
-    preloadMathJax();
-    return () => window.clearTimeout(typesetTimeoutRef.current);
-  }, []);
-
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -44,22 +37,24 @@ const TexPreviewModal = ({ closeModal }: { closeModal: () => void }) => {
   }, [closeModal]);
 
   return (
-    <div className={styles.overlay} role='dialog' aria-modal='true' aria-labelledby='tex-preview-title'>
+    <div className={styles.overlay}>
       <button type='button' className={styles.overlayButton} aria-label={t('close')} onClick={closeModal} />
-      <div className={styles.panel}>
+      <dialog open className={styles.panel} aria-modal='true' aria-labelledby='tex-preview-title'>
         <div id='tex-preview-title' className={styles.header}>
-          <Trans
-            i18nKey='tex_preview_title'
-            components={{
-              tex: <TexLogo />,
-            }}
-          />
+          <span className={styles.titleText}>
+            <Trans
+              i18nKey='tex_preview_title'
+              components={{
+                tex: <TexLogo className={styles.texLogo} />,
+              }}
+            />
+          </span>
           <button type='button' className={styles.closeIcon} title={t('close')} aria-label={t('close')} onClick={closeModal} />
         </div>
         <div className={styles.protip}>{t('tex_preview_protip')}</div>
         <textarea className={styles.input} aria-label={t('tex_preview_input_label')} spellCheck={false} onChange={handleInputChange} />
         <div className={styles.output} ref={outputRef} />
-      </div>
+      </dialog>
     </div>
   );
 };
