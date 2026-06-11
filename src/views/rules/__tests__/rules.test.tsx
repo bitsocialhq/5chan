@@ -9,7 +9,6 @@ import Rules from '../rules';
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
-  boardIdentifier: undefined as string | undefined,
   communities: {} as Record<string, { rules?: string[]; shortAddress?: string; state?: string; title?: string }>,
   directories: [
     { address: 'anime-posting.eth', title: '/a/ - Anime & Manga' },
@@ -31,16 +30,6 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
-  return {
-    ...actual,
-    useParams: () => ({
-      boardIdentifier: testState.boardIdentifier,
-    }),
-  };
-});
-
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useClientsStates: () => ({
     states: {},
@@ -60,12 +49,12 @@ vi.mock('../../../hooks/use-directories', async () => {
   };
 });
 
-vi.mock('../../home', () => ({
+vi.mock('../../home/home', () => ({
   Footer: () => createElement('div', { 'data-testid': 'footer' }, 'footer'),
   HomeLogo: () => createElement('div', { 'data-testid': 'home-logo' }, 'home-logo'),
 }));
 
-vi.mock('../../../components/markdown', () => ({
+vi.mock('../../../components/markdown/markdown', () => ({
   default: ({ content }: { content: string }) => createElement('div', { 'data-testid': 'markdown' }, content),
 }));
 
@@ -81,9 +70,9 @@ let container: HTMLDivElement;
 let root: Root;
 let scrollIntoViewMock: ReturnType<typeof vi.fn>;
 
-const renderRules = async () => {
+const renderRules = async (initialEntry = '/rules') => {
   await act(async () => {
-    root.render(createElement(MemoryRouter, null, createElement(Rules)));
+    root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(Rules)));
   });
 };
 
@@ -110,7 +99,6 @@ const submitBoardAddress = async (address: string) => {
 describe('Rules', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    testState.boardIdentifier = undefined;
     testState.communities = {};
     testState.directories = [
       { address: 'anime-posting.eth', title: '/a/ - Anime & Manga' },
@@ -141,9 +129,9 @@ describe('Rules', () => {
   it('renders a quick-jump nav link and a rules section for every directory', async () => {
     await renderRules();
 
-    // Quick-jump nav links use the directory name (like 4chan's board list) and point at the per-directory route.
-    expect(container.querySelector('a[href="/rules/a"]')?.textContent).toBe('Anime & Manga');
-    expect(container.querySelector('a[href="/rules/b"]')?.textContent).toBe('Random');
+    // Quick-jump nav links use the directory name (like 4chan's board list) and point at per-directory hash links.
+    expect(container.querySelector('a[href="/rules#a"]')?.textContent).toBe('Anime & Manga');
+    expect(container.querySelector('a[href="/rules#b"]')?.textContent).toBe('Random');
 
     // One anchored rules section per directory.
     expect(container.querySelector('#a')).toBeTruthy();
@@ -162,12 +150,26 @@ describe('Rules', () => {
     expect(container.textContent).not.toContain('Rules for:');
   });
 
-  it('insta-scrolls to a directory section when deep-linked via /rules/:code', async () => {
-    testState.boardIdentifier = 'a';
-
-    await renderRules();
+  it('insta-scrolls to a directory section when deep-linked via /rules#code', async () => {
+    await renderRules('/rules#a');
 
     expect(scrollIntoViewMock).toHaveBeenCalled();
+  });
+
+  it('ignores address hashes instead of resolving them to directory rules or P2P rules', async () => {
+    testState.communities = {
+      'anime-posting.eth': {
+        rules: ['P2P address rules should not render from a hash.'],
+        shortAddress: 'anime-posting.eth',
+        state: 'succeeded',
+      },
+    };
+
+    await renderRules('/rules#anime-posting.eth');
+
+    expect(scrollIntoViewMock).not.toHaveBeenCalled();
+    expect(container.textContent).not.toContain('Rules for: anime-posting.eth');
+    expect(container.textContent).not.toContain('P2P address rules should not render from a hash.');
   });
 
   it('loads a board over P2P when an address is submitted in the loader', async () => {
@@ -186,7 +188,7 @@ describe('Rules', () => {
     expect(container.textContent).toContain('No spamming.');
   });
 
-  it('clears a loaded P2P rules box when navigating to a directory route', async () => {
+  it('clears a loaded P2P rules box when navigating to a directory hash link', async () => {
     testState.communities = {
       'custom-board.eth': {
         rules: ['No spamming.'],
@@ -199,8 +201,10 @@ describe('Rules', () => {
     await submitBoardAddress('custom-board.eth');
     expect(container.textContent).toContain('Rules for: custom-board.eth');
 
-    testState.boardIdentifier = 'a';
-    await renderRules();
+    const link = container.querySelector('a[href="/rules#a"]') as HTMLAnchorElement;
+    await act(async () => {
+      link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
 
     expect(container.textContent).not.toContain('Rules for: custom-board.eth');
     expect(scrollIntoViewMock).toHaveBeenCalled();

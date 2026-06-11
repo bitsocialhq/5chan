@@ -168,7 +168,7 @@ vi.mock('../../../stores/use-post-number-store', () => ({
     }),
 }));
 
-vi.mock('../../comment-media', () => ({
+vi.mock('../../comment-media/comment-media', () => ({
   default: ({
     commentMediaInfo,
     isFloatingEmbed,
@@ -193,11 +193,11 @@ vi.mock('../../comment-media', () => ({
   },
 }));
 
-vi.mock('../../embed', () => ({
+vi.mock('../../embed/embed-utils', () => ({
   canEmbed: (parsedUrl: URL) => testState.embeddableHosts.has(parsedUrl.host),
 }));
 
-vi.mock('../../reply-quote-preview', () => ({
+vi.mock('../../reply-quote-preview/reply-quote-preview', () => ({
   default: ({
     isOP,
     isQuotelinkUnavailable,
@@ -376,14 +376,14 @@ describe('Markdown', () => {
 
   it('renders inline Markdown links for app routes and inert empty hrefs', async () => {
     await renderMarkdown({
-      content: '[Rules](/rules/biz) [AI moderation]( )',
+      content: '[Rules](/rules#biz) [Old rules](/rules/biz) [Address rules](/rules#custom-board.bso) [AI moderation]( )',
     });
 
     const links = Array.from(container.querySelectorAll('a'));
     expect(links).toHaveLength(1);
-    expect(links[0]?.getAttribute('href')).toBe('/rules/biz');
+    expect(links[0]?.getAttribute('href')).toBe('/rules#biz');
     expect(links[0]?.textContent).toBe('Rules');
-    expect(container.textContent).toBe('Rules AI moderation');
+    expect(container.textContent).toBe('Rules Old rules Address rules AI moderation');
   });
 
   it('does not render unsafe inline Markdown hrefs', async () => {

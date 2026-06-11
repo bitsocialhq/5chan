@@ -24,8 +24,8 @@
   text-transform: capitalize;
 }
 
-.desktopNavLinks a,
-.desktopFooterButtons a {
+.desktopNavLinks a:not([class~='button']),
+.desktopFooterButtons a:not([class~='button']) {
   all: unset;
 }
 
@@ -36,7 +36,8 @@
   margin-top: 5px;
 }
 
-.mobileNavLinks button {
+.mobileNavLinks button,
+.mobileNavLinks a[class~='button'] {
   text-transform: capitalize;
   margin: 5px 2px;
 }
@@ -58,7 +59,8 @@
   text-transform: capitalize;
 }
 
-.mobileFooterButtons button {
+.mobileFooterButtons button,
+.mobileFooterButtons a[class~='button'] {
   text-transform: capitalize;
   margin: 5px 2px;
 }

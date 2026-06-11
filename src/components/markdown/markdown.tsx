@@ -5,19 +5,19 @@ import { useDismiss, useFloating, useFocus, useHover, useInteractions, offset, s
 import { getLinkMediaInfo, getHasThumbnail } from '../../lib/utils/media-utils';
 import { isCatalogView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
-import CommentMedia from '../comment-media';
-import CodeBlock from '../code-block';
+import CommentMedia from '../comment-media/comment-media';
+import CodeBlock from '../code-block/code-block';
 import TexMath from '../tex-math/tex-math';
 import styles from './markdown.module.css';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { canEmbed } from '../embed';
+import { canEmbed } from '../embed/embed-utils';
 import { is5chanLink, transform5chanLinkToInternal, isValidCrossboardPattern } from '../../lib/utils/url-utils';
 import { CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX, type ExternalQuoteReference } from '../../lib/utils/external-quote-utils';
 import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import usePostNumberStore, { getCidForPostNumber } from '../../stores/use-post-number-store';
 import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
 import { useComment } from '@bitsocial/bitsocial-react-hooks';
-import ReplyQuotePreview from '../reply-quote-preview';
+import ReplyQuotePreview from '../reply-quote-preview/reply-quote-preview';
 import ExternalNumberQuoteLink from './external-number-quote-link';
 import { findDirectoryByAddress, useDirectories, type DirectoryCommunity } from '../../hooks/use-directories';
 import { getDirectoryCodeForBoardAddress } from '../../lib/utils/directory-list-lookup-utils';
@@ -218,6 +218,7 @@ const COMBINED_REGEX_WITHOUT_SPOILER = new RegExp(
 );
 
 const makeTokenKey = (prefix: string, type: Token['type'], start: number, end: number): string => `${prefix}${type}:${start}:${end}`;
+const RULES_HASH_ROUTE_REGEX = /^\/rules#[A-Za-z0-9_-]+$/;
 
 const isGreentextLine = (line: string): boolean => {
   if (line === '>') return true;
@@ -233,6 +234,10 @@ function normalizeInternalRouteHref(href: string): string {
     return href.slice(1);
   }
   return href;
+}
+
+function isUnsupportedRulesRouteHref(href: string): boolean {
+  return href.startsWith('/rules/') || (href.startsWith('/rules#') && !RULES_HASH_ROUTE_REGEX.test(href));
 }
 
 function splitUrlTrailingText(rawHref: string): { href: string; trailingText: string } {
@@ -477,6 +482,9 @@ const AnchorLink = ({ href, text }: { href: string; text: string }) => {
     const internalPath = transform5chanLinkToInternal(href);
     if (internalPath) {
       const internalRoute = normalizeInternalRouteHref(internalPath);
+      if (isUnsupportedRulesRouteHref(internalRoute)) {
+        return <span>{text}</span>;
+      }
       let displayText: React.ReactNode = text;
       const isAutolinkedUrl = text.startsWith('http');
 
@@ -495,16 +503,21 @@ const AnchorLink = ({ href, text }: { href: string; text: string }) => {
     }
   }
 
+  const normalizedHref = normalizeInternalRouteHref(href);
+  if (isUnsupportedRulesRouteHref(normalizedHref)) {
+    return <span>{text}</span>;
+  }
+
   if (
     href.startsWith('#/') ||
     href.startsWith('/#/') ||
-    href.startsWith('/p/') ||
-    href.match(/^\/p\/[^/]+(\/c\/[^/]+)?$/) ||
-    href.match(/^\/rules\/[^/]+$/) ||
-    href.match(/^\/[^/]+(\/thread\/[^/]+)?$/) ||
-    href.match(/^\/[^/]+\/(catalog|description|rules)(\/settings)?$/)
+    normalizedHref.startsWith('/p/') ||
+    normalizedHref.match(/^\/p\/[^/]+(\/c\/[^/]+)?$/) ||
+    normalizedHref.match(RULES_HASH_ROUTE_REGEX) ||
+    normalizedHref.match(/^\/[^/#]+(\/thread\/[^/]+)?$/) ||
+    normalizedHref.match(/^\/[^/]+\/(catalog|description|rules)(\/settings)?$/)
   ) {
-    return <Link to={normalizeInternalRouteHref(href)}>{text}</Link>;
+    return <Link to={normalizedHref}>{text}</Link>;
   }
 
   return (

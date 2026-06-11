@@ -444,6 +444,22 @@ describe('App', () => {
     expect(container.querySelector('[data-testid="boards-bar"]')).toBeNull();
   });
 
+  it('renders the rules route as a global static page', async () => {
+    await renderApp('/rules#mu');
+
+    expect(latestLocation).toBe('/rules');
+    expect(container.querySelector('[data-testid="rules-view"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="boards-bar"]')).toBeNull();
+  });
+
+  it('rejects legacy rules subpaths instead of treating them as board routes', async () => {
+    await renderApp('/rules/music-posting.eth');
+
+    expect(latestLocation).toBe('/not-found');
+    expect(container.querySelector('[data-testid="not-found-view"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="rules-view"]')).toBeNull();
+  });
+
   it('canonicalizes board address routes to directory codes while preserving query strings', async () => {
     await renderApp('/music-posting.eth/thread/comment-1?focus=1');
 
