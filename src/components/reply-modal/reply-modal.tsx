@@ -357,6 +357,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       checkPostOptionsRef.current.cancel();
       setIsBbcodePreviewing(false);
       setBbcodePreviewContent('');
+      setShowTexPreview(false);
     }
   }, [showReplyModal]);
 
