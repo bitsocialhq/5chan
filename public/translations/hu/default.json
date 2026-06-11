@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Ez a felhasználó a Tor hálózatán van",
   "copy_share_link": "Megosztási hivatkozás másolása",
   "directory_submit_board": "Küldd be a boardodat",
-  "all_subtitle": "A legmagasabb pontszámú Fórum minden könyvtárból"
+  "all_subtitle": "A legmagasabb pontszámú Fórum minden könyvtárból",
+  "tex_preview_protip": "Használja a [math][/math] címkéket beágyazott egyenletekhez és a [eqn][/eqn] címkéket blokk egyenletekhez.",
+  "post_form_math_tags_prompt": "Használjon <tex>TeX</tex>-et [math] címkékkel az inline egyenletekhez és [eqn] címkékkel a blokk egyenletekhez.",
+  "post_form_math_right_click_prompt": "Kattintson a jobb gombbal az egyenletekre a forrás megtekintéséhez.",
+  "tex_preview_title": "<tex>TeX</tex> Előnézet",
+  "tex_preview_input_label": "TeX forrás",
+  "preview_tex_equations": "TeX-egyenletek előnézete"
 }

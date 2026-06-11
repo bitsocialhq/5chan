@@ -7,6 +7,7 @@ import { isCatalogView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import CommentMedia from '../comment-media/comment-media';
 import CodeBlock from '../code-block/code-block';
+import TexMath from '../tex-math/tex-math';
 import styles from './markdown.module.css';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { canEmbed } from '../embed/embed-utils';
@@ -27,6 +28,7 @@ import {
   getMatchingFortuneEntry,
   isFortuneDirectoryCode,
 } from '../../lib/utils/post-options-utils';
+import { HAS_MATH_TAG_REGEX, isMathDirectoryCode, splitMathSegments } from '../../lib/math-tags';
 
 const safeParseUrl = (href: string): URL | null => {
   try {
@@ -812,10 +814,31 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
   const enableCodeTags =
     getDirectoryCodeForIdentifier(getRouteBoardIdentifier(location.pathname), directories) === CODE_DIRECTORY_CODE ||
     getDirectoryCodeForIdentifier(communityAddress, directories) === CODE_DIRECTORY_CODE;
+  // [math]/[eqn] TeX tags are a /sci/ feature (like 4chan). The catalog is excluded, matching
+  // 4chan, where teasers show the raw tags and MathJax only runs on board and thread pages.
+  const enableMathTags =
+    !isInCatalogView &&
+    (isMathDirectoryCode(getDirectoryCodeForIdentifier(getRouteBoardIdentifier(location.pathname), directories)) ||
+      isMathDirectoryCode(getDirectoryCodeForIdentifier(communityAddress, directories)));
 
   const rendered = useMemo(() => {
     const context = { isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers };
     const raw = content || '';
+
+    if (enableMathTags && HAS_MATH_TAG_REGEX.test(raw)) {
+      const elements: React.ReactNode[] = [];
+      splitMathSegments(raw).forEach((segment) => {
+        if (segment.type === 'math') {
+          elements.push(<TexMath key={`math-${segment.start}`} source={segment.value} />);
+          return;
+        }
+        if (!segment.value) return;
+        elements.push(
+          <React.Fragment key={`text-${segment.start}`}>{renderTextLines(normalizeContent(segment.value), context, `${segment.start}:`)}</React.Fragment>,
+        );
+      });
+      return elements;
+    }
 
     if (!enableCodeTags || !HAS_CODE_TAG_REGEX.test(raw)) {
       return renderTextLines(normalizeContent(raw), context, '');
@@ -832,7 +855,7 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
     });
 
     return elements;
-  }, [content, isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers, enableCodeTags]);
+  }, [content, isInCatalogView, postCid, communityAddress, enableFortuneMarkup, enableQstBbcode, parseSpoilers, enableCodeTags, enableMathTags]);
 
   return (
     <span className={styles.markdown}>

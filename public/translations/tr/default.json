@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Bu kullanıcı Tor'da",
   "copy_share_link": "Paylaşma bağlantısını kopyala",
   "directory_submit_board": "Panonu Gönder",
-  "all_subtitle": "Her dizinden en yüksek skorlu Forum"
+  "all_subtitle": "Her dizinden en yüksek skorlu Forum",
+  "tex_preview_protip": "[math][/math] etiketlerini satır içi denklemler için ve [eqn][/eqn] etiketlerini blok denklemler için kullanın.",
+  "post_form_math_tags_prompt": "İnline denklemler için [math] etiketleriyle ve blok denklemler için [eqn] etiketleriyle <tex>TeX</tex> kullanın.",
+  "post_form_math_right_click_prompt": "Denklemlere sağ tıklayarak kaynağını görüntüleyin.",
+  "tex_preview_title": "<tex>TeX</tex> Ön İzleme",
+  "tex_preview_input_label": "TeX kaynak",
+  "preview_tex_equations": "TeX denklemlerini ön izle"
 }

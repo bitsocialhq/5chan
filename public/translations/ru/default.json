@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Этот пользователь находится в Tor",
   "copy_share_link": "Копировать ссылку для общего доступа",
   "directory_submit_board": "Отправить свою доску",
-  "all_subtitle": "Форум с наивысшим рейтингом из каждого каталога"
+  "all_subtitle": "Форум с наивысшим рейтингом из каждого каталога",
+  "tex_preview_protip": "Используйте теги [math][/math] для встроенных уравнений и теги [eqn][/eqn] для блочных уравнений.",
+  "post_form_math_tags_prompt": "Используйте <tex>TeX</tex> с тегами [math] для встроенных уравнений и [eqn] для блочных уравнений.",
+  "post_form_math_right_click_prompt": "Щелкните правой кнопкой мыши на уравнениях, чтобы просмотреть исходный код.",
+  "tex_preview_title": "<tex>TeX</tex> Предпросмотр",
+  "tex_preview_input_label": "TeX источник",
+  "preview_tex_equations": "Предпросмотр уравнений TeX"
 }

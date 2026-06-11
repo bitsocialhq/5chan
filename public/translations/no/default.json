@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Denne brukeren er på Tor",
   "copy_share_link": "Kopier delingslenke",
   "directory_submit_board": "Send inn boardet ditt",
-  "all_subtitle": "Forummet med høyest poengsum fra hver katalog"
+  "all_subtitle": "Forummet med høyest poengsum fra hver katalog",
+  "tex_preview_protip": "Bruk [math][/math]-tagger for innebygde ligninger og [eqn][/eqn]-tagger for blokkligninger.",
+  "post_form_math_tags_prompt": "Bruk <tex>TeX</tex> med [math] tags for inline ligninger og [eqn] tags for blokk ligninger.",
+  "post_form_math_right_click_prompt": "Høyreklikk på ligninger for å se kilden.",
+  "tex_preview_title": "<tex>TeX</tex> Forhåndsvisning",
+  "tex_preview_input_label": "TeX kilde",
+  "preview_tex_equations": "Forhåndsvisning av TeX-ligninger"
 }

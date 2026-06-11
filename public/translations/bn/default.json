@@ -407,5 +407,11 @@
   "tor_author_flag_label": "এই ব্যবহারকারী Tor ব্যবহার করছেন",
   "copy_share_link": "শেয়ার লিংক কপি করুন",
   "directory_submit_board": "আপনার বোর্ড জমা দিন",
-  "all_subtitle": "প্রতিটি ডিরেক্টরি থেকে সর্বোচ্চ স্কোর করা বোর্ড"
+  "all_subtitle": "প্রতিটি ডিরেক্টরি থেকে সর্বোচ্চ স্কোর করা বোর্ড",
+  "tex_preview_protip": "ইনলাইন সমীকরণের জন্য [math][/math] ট্যাগ ব্যবহার করুন, এবং ব্লক সমীকরণের জন্য [eqn][/eqn] ট্যাগ ব্যবহার করুন।",
+  "post_form_math_tags_prompt": "<tex>TeX</tex> ব্যবহার করুন ইনলাইন সমীকরণের জন্য [math] ট্যাগ এবং ব্লক সমীকরণের জন্য [eqn] ট্যাগ সহ।",
+  "post_form_math_right_click_prompt": "সমীকরণ দেখতে ডান-ক্লিক করুন।",
+  "tex_preview_title": "<tex>TeX</tex> প্রিভিউ",
+  "tex_preview_input_label": "TeX উৎস",
+  "preview_tex_equations": "TeX সমীকরণগুলির পূর্বরূপ দেখুন"
 }

@@ -1,0 +1,106 @@
+/* Layout mirrors 4chan's TeX Preview panel: fullscreen dimmed overlay, 600px centered panel,
+   bold bordered header, hint line, 75px monospace input and a live preview area below it. */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.25);
+  font-size: 14px;
+  line-height: 14px;
+}
+
+.overlayButton {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  cursor: default;
+  z-index: 0;
+}
+
+.panel {
+  box-sizing: border-box;
+  position: absolute;
+  display: inline-block;
+  width: 600px;
+  max-width: calc(100% - 20px);
+  max-height: calc(100vh - 20px);
+  overflow: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 2px;
+  background-color: var(--challenge-modal-background-color, rgb(240, 224, 214));
+  border: var(--challenge-modal-border, 1px solid rgb(217, 191, 183));
+  color: var(--body-font-color, rgb(0, 0, 0));
+  z-index: 1;
+}
+
+.header {
+  position: relative;
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 14px;
+  text-align: center;
+  margin: 0 0 5px;
+  padding: 5px 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.titleText {
+  display: block;
+}
+
+.texLogo {
+  font-size: 80%;
+  font-weight: 700;
+}
+
+.texLogo sub {
+  font-size: 80%;
+}
+
+.closeIcon {
+  all: unset;
+  position: absolute;
+  top: 0;
+  right: 0;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  image-rendering: pixelated;
+  background-image: var(--close-button-background-image);
+}
+
+.protip {
+  font-size: 11px;
+  margin: 5px 0;
+  text-align: center;
+}
+
+.input {
+  display: block;
+  box-sizing: border-box;
+  min-width: 100%;
+  max-width: 100%;
+  height: 75px;
+  margin: 0 0 5px;
+  padding: 2px;
+  font-family: monospace;
+  font-size: 13px;
+  border: 1px solid #aaa;
+  outline: none;
+  background-color: var(--post-form-field-input-background-color, rgb(255, 255, 255));
+  color: var(--post-form-field-input-color, rgb(0, 0, 0));
+}
+
+.output {
+  box-sizing: border-box;
+  min-height: 75px;
+  white-space: pre;
+  padding: 0 3px;
+  overflow-x: auto;
+}

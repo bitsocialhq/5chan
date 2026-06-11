@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Dieser Benutzer ist auf Tor",
   "copy_share_link": "Freigabelink kopieren",
   "directory_submit_board": "Reiche dein Board ein",
-  "all_subtitle": "Das höchstbewertete Forum aus jedem Verzeichnis"
+  "all_subtitle": "Das höchstbewertete Forum aus jedem Verzeichnis",
+  "tex_preview_protip": "Verwenden Sie [math][/math]-Tags für Inline-Gleichungen und [eqn][/eqn]-Tags für Block-Gleichungen.",
+  "post_form_math_tags_prompt": "Nutze <tex>TeX</tex> mit [math]-Tags für Inline-Gleichungen und [eqn]-Tags für Block-Gleichungen.",
+  "post_form_math_right_click_prompt": "Rechtsklick auf Gleichungen zum Anzeigen der Quelle.",
+  "tex_preview_title": "<tex>TeX</tex> Vorschau",
+  "tex_preview_input_label": "TeX-Quelle",
+  "preview_tex_equations": "TeX-Gleichungen in der Vorschau anzeigen"
 }

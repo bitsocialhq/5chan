@@ -407,5 +407,11 @@
   "tor_author_flag_label": "این کاربر روی Tor است",
   "copy_share_link": "کپی کردن لینک اشتراک",
   "directory_submit_board": "برد خود را ارسال کنید",
-  "all_subtitle": "تالار بالاترین امتیاز از هر دایرکتوری"
+  "all_subtitle": "تالار بالاترین امتیاز از هر دایرکتوری",
+  "tex_preview_protip": "برای معادلات درون‌خطی از برچسب‌های [math][/math] و برای معادلات بلوکی از برچسب‌های [eqn][/eqn] استفاده کنید.",
+  "post_form_math_tags_prompt": "از <tex>TeX</tex> با برچسب‌های [math] برای معادلات درون‌متنی و برچسب‌های [eqn] برای معادلات بلاکی استفاده کنید.",
+  "post_form_math_right_click_prompt": "برای مشاهده منبع، بر روی معادلات کلیک راست کنید.",
+  "tex_preview_title": "<tex>TeX</tex> پیش‌نمایش",
+  "tex_preview_input_label": "TeX منبع",
+  "preview_tex_equations": "پیش نمایش معادلات TeX"
 }

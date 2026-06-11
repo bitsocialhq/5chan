@@ -407,5 +407,11 @@
   "tor_author_flag_label": "이 사용자는 Tor를 사용 중입니다",
   "copy_share_link": "공유 링크 복사",
   "directory_submit_board": "게시판 제출하기",
-  "all_subtitle": "각 디렉토리의 가장 높은 점수 게시판"
+  "all_subtitle": "각 디렉토리의 가장 높은 점수 게시판",
+  "tex_preview_protip": "[math][/math] 태그를 인라인 방정식에, [eqn][/eqn] 태그를 블록 방정식에 사용하세요.",
+  "post_form_math_tags_prompt": "<tex>TeX</tex>를 인라인 방정식에는 [math] 태그와, 블록 방정식에는 [eqn] 태그와 함께 사용하세요.",
+  "post_form_math_right_click_prompt": "우클릭하여 방정식 소스를 봅니다.",
+  "tex_preview_title": "<tex>TeX</tex> 미리보기",
+  "tex_preview_input_label": "TeX 소스",
+  "preview_tex_equations": "TeX 방정식 미리보기"
 }

@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Deze gebruiker zit op Tor",
   "copy_share_link": "Delen link kopiëren",
   "directory_submit_board": "Dien je board in",
-  "all_subtitle": "Het Forum met de hoogste score van elke directory"
+  "all_subtitle": "Het Forum met de hoogste score van elke directory",
+  "tex_preview_protip": "Gebruik [math][/math]-tags voor inline-vergelijkingen en [eqn][/eqn]-tags voor blok-vergelijkingen.",
+  "post_form_math_tags_prompt": "Gebruik <tex>TeX</tex> met [math] tags voor inline vergelijkingen en [eqn] tags voor blok vergelijkingen.",
+  "post_form_math_right_click_prompt": "Klik met de rechtermuisknop op vergelijkingen om de bron te zien.",
+  "tex_preview_title": "<tex>TeX</tex> Voorbeeld",
+  "tex_preview_input_label": "TeX bron",
+  "preview_tex_equations": "Voorbeeld van TeX-vergelijkingen"
 }

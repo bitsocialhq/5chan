@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Den här användaren är på Tor",
   "copy_share_link": "Kopiera delningslänk",
   "directory_submit_board": "Skicka in ditt board",
-  "all_subtitle": "Forummet med högst poäng från varje katalog"
+  "all_subtitle": "Forummet med högst poäng från varje katalog",
+  "tex_preview_protip": "Använd [math][/math]-taggar för inline-ekvationer och [eqn][/eqn]-taggar för block-ekvationer.",
+  "post_form_math_tags_prompt": "Använd <tex>TeX</tex> med [math] tags för inline ekvationer och [eqn] tags för block ekvationer.",
+  "post_form_math_right_click_prompt": "Högerklicka på ekvationer för att se källan.",
+  "tex_preview_title": "<tex>TeX</tex> Förhandsvisning",
+  "tex_preview_input_label": "TeX källa",
+  "preview_tex_equations": "Förhandsvisning av TeX-ekvationer"
 }

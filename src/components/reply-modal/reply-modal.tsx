@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -19,6 +19,7 @@ import {
   isPostOptionsValidationError,
 } from '../../lib/utils/post-options-utils';
 import { isValidPublishURL } from '../../lib/utils/url-utils';
+import { isMathDirectoryCode } from '../../lib/math-tags';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
 import { isAllView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
@@ -39,6 +40,10 @@ import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import LoadingEllipsis from '../loading-ellipsis/loading-ellipsis';
 import OekakiDrawingControls from '../oekaki-drawing-controls/oekaki-drawing-controls';
 import PostOptionsErrorMessage from '../post-options-error-message/post-options-error-message';
+import TexLogo from '../tex-logo/tex-logo';
+import TexPreviewModal from '../tex-preview-modal/tex-preview-modal';
+import Tooltip from '../tooltip/tooltip';
+import { preloadMathJax } from '../../lib/mathjax/mathjax-typeset';
 import styles from './reply-modal.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
@@ -71,6 +76,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
   const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
   const showOekakiControls = postOptionsDirectoryCode === 'i' || directoryEntry?.directoryCode === 'i';
+  const showTexButton = isMathDirectoryCode(postOptionsDirectoryCode) || isMathDirectoryCode(directoryEntry?.directoryCode);
   const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
   const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
   const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
@@ -120,6 +126,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const [url, setUrl] = useState('');
   const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
   const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
+  const [showTexPreview, setShowTexPreview] = useState(false);
+  const closeTexPreview = useCallback(() => setShowTexPreview(false), []);
 
   const checkContentLengthRef = useRef(
     debounce((content: string, t: TFunction, options: string, directoryCode: string | undefined) => {
@@ -349,6 +357,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       checkPostOptionsRef.current.cancel();
       setIsBbcodePreviewing(false);
       setBbcodePreviewContent('');
+      setShowTexPreview(false);
     }
   }, [showReplyModal]);
 
@@ -538,6 +547,22 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       }}
     >
       <div id='reply-modal-title' className={`replyModalHandle ${styles.title}`} {...(!isMobile ? bind() : {})}>
+        {showTexButton && !isMobile && (
+          <Tooltip content={t('preview_tex_equations')} className={styles.texButtonTooltip}>
+            <button
+              type='button'
+              className={styles.texButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                preloadMathJax();
+                setShowTexPreview(true);
+              }}
+              aria-label={t('preview_tex_equations')}
+            >
+              <TexLogo />
+            </button>
+          </Tooltip>
+        )}
         {t('reply_to_no', { no: threadNumber ?? '?' })}
         <button
           type='button'
@@ -688,7 +713,14 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     </animated.div>
   );
 
-  return showReplyModal && modalContent;
+  return (
+    showReplyModal && (
+      <>
+        {modalContent}
+        {showTexPreview && <TexPreviewModal closeModal={closeTexPreview} />}
+      </>
+    )
+  );
 };
 
 export default ReplyModal;

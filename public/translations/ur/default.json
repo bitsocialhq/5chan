@@ -407,5 +407,11 @@
   "tor_author_flag_label": "یہ صارف Tor پر ہے",
   "copy_share_link": "شیئر لنک کاپی کریں",
   "directory_submit_board": "اپنا بورڈ جمع کرائیں",
-  "all_subtitle": "ہر ڈائریکٹری سے سب سے زیادہ سکور پیغام بورڈ"
+  "all_subtitle": "ہر ڈائریکٹری سے سب سے زیادہ سکور پیغام بورڈ",
+  "tex_preview_protip": "انلائن مساوات کے لیے [math][/math] ٹیگز اور بلاک مساوات کے لیے [eqn][/eqn] ٹیگز استعمال کریں۔",
+  "post_form_math_tags_prompt": "<tex>TeX</tex> کو [math] ٹیگز کے ساتھ انلائن مساوات کے لیے اور [eqn] ٹیگز کے ساتھ بلاک مساوات کے لیے استعمال کریں۔",
+  "post_form_math_right_click_prompt": "مساوات پر دائیں کلک کریں تاکہ منبع دیکھ سکیں۔",
+  "tex_preview_title": "<tex>TeX</tex> پیش نمائش",
+  "tex_preview_input_label": "TeX منبع",
+  "preview_tex_equations": "TeX مساوات کا پیش نمائش دیکھیں"
 }

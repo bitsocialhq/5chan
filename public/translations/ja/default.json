@@ -407,5 +407,11 @@
   "tor_author_flag_label": "このユーザーはTorを使用しています",
   "copy_share_link": "シェアリンクをコピー",
   "directory_submit_board": "掲示板を提出する",
-  "all_subtitle": "各ディレクトリから最もスコアの高い掲示板"
+  "all_subtitle": "各ディレクトリから最もスコアの高い掲示板",
+  "tex_preview_protip": "[math][/math] タグはインライン数式に、[eqn][/eqn] タグはブロック数式に使用してください。",
+  "post_form_math_tags_prompt": "<tex>TeX</tex>をインライン方程式には[math]タグ、ブロック方程式には[eqn]タグと一緒に使用してください。",
+  "post_form_math_right_click_prompt": "方程式を右クリックしてソースを表示します。",
+  "tex_preview_title": "<tex>TeX</tex> プレビュー",
+  "tex_preview_input_label": "TeX ソース",
+  "preview_tex_equations": "TeX方程式のプレビュー"
 }

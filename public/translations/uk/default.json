@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Цей користувач у Tor",
   "copy_share_link": "Копіювати посилання для спільного доступу",
   "directory_submit_board": "Надіслати свою дошку",
-  "all_subtitle": "Форум з найвищим рейтингом з кожного каталогу"
+  "all_subtitle": "Форум з найвищим рейтингом з кожного каталогу",
+  "tex_preview_protip": "Використовуйте теги [math][/math] для вбудованих рівнянь та теги [eqn][/eqn] для блокових рівнянь.",
+  "post_form_math_tags_prompt": "Використовуйте <tex>TeX</tex> з тегами [math] для вбудованих рівнянь та [eqn] для блокових рівнянь.",
+  "post_form_math_right_click_prompt": "Клацніть правою кнопкою миші на рівняння, щоб переглянути вихідний код.",
+  "tex_preview_title": "<tex>TeX</tex> Попередній перегляд",
+  "tex_preview_input_label": "TeX джерело",
+  "preview_tex_equations": "Попередній перегляд рівнянь TeX"
 }

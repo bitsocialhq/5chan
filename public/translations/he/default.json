@@ -407,5 +407,11 @@
   "tor_author_flag_label": "המשתמש הזה נמצא ב-Tor",
   "copy_share_link": "העתק קישור שיתוף",
   "directory_submit_board": "שלח את הבורד שלך",
-  "all_subtitle": "הפורום בעל הציון הגבוה ביותר מכל ספריה"
+  "all_subtitle": "הפורום בעל הציון הגבוה ביותר מכל ספריה",
+  "tex_preview_protip": "השתמש בתגיות [math][/math] לתוך-שורה, והשתמש בתגיות [eqn][/eqn] לתוך-בלוק.",
+  "post_form_math_tags_prompt": "השתמשו ב-<tex>TeX</tex> עם תגי [math] למשוואות בשורה ותגי [eqn] למשוואות בבלוק.",
+  "post_form_math_right_click_prompt": "לחץ לחיצה ימנית על משוואות כדי לצפות בקוד.",
+  "tex_preview_title": "<tex>TeX</tex> תצוגה מקדימה",
+  "tex_preview_input_label": "TeX מקור",
+  "preview_tex_equations": "תצוגה מקדימה של משוואות TeX"
 }

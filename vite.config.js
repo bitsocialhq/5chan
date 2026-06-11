@@ -58,6 +58,8 @@ const baselineAppShellUrls = new Set([
 ]);
 const ruffleRuntimeDirectory = new URL('./node_modules/@ruffle-rs/ruffle/', import.meta.url);
 const ruffleRuntimeFilePattern = /^(?:ruffle\.js|core\.ruffle\.[\da-f]+\.js|[\da-f]+\.wasm)$/;
+const mathjaxFontDirectory = new URL('./node_modules/mathjax-full/es5/output/chtml/fonts/woff-v2/', import.meta.url);
+const mathjaxFontFilePattern = /^MathJax_[\w-]+\.woff$/;
 
 function readGitRef(args) {
   try {
@@ -236,6 +238,47 @@ function ruffleRuntimeAssetsPlugin() {
   };
 }
 
+// MathJax's CHTML output loads its TeX web fonts from <base>/mathjax/woff-v2/ (see
+// src/lib/mathjax/mathjax-config.ts). Like the Ruffle runtime, the fonts are served straight
+// from node_modules in dev and emitted into the build output, so nothing is committed to git.
+function getMathjaxFontFileNames() {
+  return readdirSync(mathjaxFontDirectory).filter((fileName) => mathjaxFontFilePattern.test(fileName));
+}
+
+function mathjaxFontAssetsPlugin() {
+  return {
+    name: 'fivechan-mathjax-font-assets',
+    configureServer(server) {
+      server.middlewares.use('/mathjax/woff-v2/', (req, res, next) => {
+        const fileName = new URL(req.url || '', 'https://example.invalid/').pathname.split('/').pop() || '';
+
+        if (!mathjaxFontFilePattern.test(fileName)) {
+          next();
+          return;
+        }
+
+        try {
+          const source = readFileSync(new URL(fileName, mathjaxFontDirectory));
+          res.setHeader('Content-Type', 'font/woff');
+          res.setHeader('Cache-Control', 'no-cache');
+          res.end(source);
+        } catch {
+          next();
+        }
+      });
+    },
+    generateBundle() {
+      for (const fileName of getMathjaxFontFileNames()) {
+        this.emitFile({
+          type: 'asset',
+          fileName: `mathjax/woff-v2/${fileName}`,
+          source: readFileSync(new URL(fileName, mathjaxFontDirectory)),
+        });
+      }
+    },
+  };
+}
+
 function getVercelContentSecurityPolicy() {
   const vercelConfig = JSON.parse(readFileSync(new URL('./vercel.json', import.meta.url), 'utf8'));
   const cspHeader = vercelConfig.headers
@@ -323,6 +366,7 @@ export default defineConfig({
   plugins: [
     appVersionMetadataPlugin(),
     ruffleRuntimeAssetsPlugin(),
+    mathjaxFontAssetsPlugin(),
     ...react({
       babel: {
         plugins: [
@@ -496,6 +540,9 @@ export default defineConfig({
           if (/[\\/]node_modules[\\/](react-virtuoso)[\\/]/.test(id)) {
             return 'virtuoso';
           }
+          if (/[\\/]node_modules[\\/](mathjax-full|mj-context-menu)[\\/]/.test(id)) {
+            return 'mathjax';
+          }
           if (/[\\/]node_modules[\\/](@floating-ui)[\\/]/.test(id)) {
             return 'floating-ui';
           }
@@ -505,7 +552,32 @@ export default defineConfig({
   },
   base: publicBase,
   optimizeDeps: {
-    include: ['ethers', 'assert', 'buffer', 'process', 'util', 'stream-browserify', 'isomorphic-fetch', 'workbox-core', 'workbox-precaching'],
+    include: [
+      'ethers',
+      'assert',
+      'buffer',
+      'process',
+      'util',
+      'stream-browserify',
+      'isomorphic-fetch',
+      'workbox-core',
+      'workbox-precaching',
+      // The lazy MathJax chunk (src/lib/mathjax/mathjax-setup.ts): pre-bundle so the first
+      // equation does not trigger a mid-session "optimized dependencies changed" full reload.
+      'mathjax-full/components/src/startup/lib/startup.js',
+      'mathjax-full/components/src/core/core.js',
+      'mathjax-full/components/src/input/tex-base/tex-base.js',
+      'mathjax-full/components/src/input/tex/extensions/ams/ams.js',
+      'mathjax-full/components/src/input/tex/extensions/configmacros/configmacros.js',
+      'mathjax-full/components/src/input/tex/extensions/noerrors/noerrors.js',
+      'mathjax-full/components/src/input/tex/extensions/noundefined/noundefined.js',
+      'mathjax-full/components/src/output/chtml/chtml.js',
+      'mathjax-full/components/src/output/chtml/fonts/tex/tex.js',
+      'mathjax-full/components/src/ui/safe/safe.js',
+      'mathjax-full/components/src/ui/menu/menu.js',
+      'mathjax-full/components/src/a11y/assistive-mml/assistive-mml.js',
+      'mathjax-full/components/src/startup/startup.js',
+    ],
   },
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion),

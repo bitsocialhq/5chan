@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Ky përdorues është në Tor",
   "copy_share_link": "Kopjo lidhjen e ndarjes",
   "directory_submit_board": "Dërgo bordin tënd",
-  "all_subtitle": "Forumi me pikëzimin më të lartë nga secila drejtori"
+  "all_subtitle": "Forumi me pikëzimin më të lartë nga secila drejtori",
+  "tex_preview_protip": "Përdorni etiketat [math][/math] për ekuacione inline dhe etiketat [eqn][/eqn] për ekuacione bloku.",
+  "post_form_math_tags_prompt": "Përdorni <tex>TeX</tex> me etiketat [math] për ekuacionet inline dhe etiketat [eqn] për ekuacionet e bllokut.",
+  "post_form_math_right_click_prompt": "Kliko me butonin e djathtë në ekuacione për të parë burimin.",
+  "tex_preview_title": "<tex>TeX</tex> Pamja paraprake",
+  "tex_preview_input_label": "TeX burim",
+  "preview_tex_equations": "Paraqitja paraprakese e ekuacioneve TeX"
 }

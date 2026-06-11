@@ -407,5 +407,11 @@
   "tor_author_flag_label": "Questo utente è su Tor",
   "copy_share_link": "Copia link condiviso",
   "directory_submit_board": "Invia la tua board",
-  "all_subtitle": "Il board con il punteggio più alto da ogni directory"
+  "all_subtitle": "Il board con il punteggio più alto da ogni directory",
+  "tex_preview_protip": "Usa i tag [math][/math] per le equazioni in linea e i tag [eqn][/eqn] per le equazioni di blocco.",
+  "post_form_math_tags_prompt": "Usa <tex>TeX</tex> con tag [math] per le equazioni in linea e tag [eqn] per le equazioni in blocco.",
+  "post_form_math_right_click_prompt": "Fai clic destro sulle equazioni per visualizzare il codice sorgente.",
+  "tex_preview_title": "<tex>TeX</tex> Anteprima",
+  "tex_preview_input_label": "TeX sorgente",
+  "preview_tex_equations": "Anteprima delle equazioni TeX"
 }

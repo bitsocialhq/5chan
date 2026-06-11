@@ -407,5 +407,11 @@
   "tor_author_flag_label": "هذا المستخدم يستخدم Tor",
   "copy_share_link": "نسخ رابط المشاركة",
   "directory_submit_board": "أرسل لوحتك",
-  "all_subtitle": "المنتدى الأعلى تصنيفاً من كل دليل"
+  "all_subtitle": "المنتدى الأعلى تصنيفاً من كل دليل",
+  "tex_preview_protip": "استخدم وسوم [math][/math] للمعادلات المضمّنة، و [eqn][/eqn] للمعادلات الكتلية.",
+  "post_form_math_tags_prompt": "استخدم <tex>TeX</tex> مع علامات [math] للمعادلات المضمنة وعلامات [eqn] للمعادلات الكاملة.",
+  "post_form_math_right_click_prompt": "انقر بزر الماوس الأيمن على المعادلات لعرض المصدر.",
+  "tex_preview_title": "<tex>TeX</tex> معاينة",
+  "tex_preview_input_label": "TeX مصدر",
+  "preview_tex_equations": "معاينة معادلات TeX"
 }
