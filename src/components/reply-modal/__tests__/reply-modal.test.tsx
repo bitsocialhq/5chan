@@ -228,6 +228,7 @@ vi.mock('../../loading-ellipsis/loading-ellipsis', () => ({
 }));
 
 vi.mock('../../../lib/mathjax/mathjax-typeset', () => ({
+  clearMathElement: () => undefined,
   preloadMathJax: () => undefined,
   typesetMathElement: () => Promise.resolve(),
 }));

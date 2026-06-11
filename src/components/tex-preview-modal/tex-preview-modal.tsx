@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation, Trans } from 'react-i18next';
-import { typesetMathElement } from '../../lib/mathjax/mathjax-typeset';
+import { clearMathElement, typesetMathElement } from '../../lib/mathjax/mathjax-typeset';
 import TexLogo from '../tex-logo/tex-logo';
 import styles from './tex-preview-modal.module.css';
 
@@ -35,6 +35,18 @@ const TexPreviewModal = ({ closeModal }: { closeModal: () => void }) => {
     document.addEventListener('keydown', closeOnEscape, true);
     return () => document.removeEventListener('keydown', closeOnEscape, true);
   }, [closeModal]);
+
+  // On close, cancel any pending typeset and drop MathJax's bookkeeping for the preview output,
+  // like TexMath does, so repeated open/close cycles do not accumulate detached math items.
+  useEffect(() => {
+    const output = outputRef.current;
+    return () => {
+      window.clearTimeout(typesetTimeoutRef.current);
+      if (output) {
+        clearMathElement(output);
+      }
+    };
+  }, []);
 
   return (
     <div className={styles.overlay}>
