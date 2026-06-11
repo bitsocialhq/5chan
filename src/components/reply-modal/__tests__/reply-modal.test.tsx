@@ -544,6 +544,33 @@ describe('ReplyModal', () => {
     expect(texPreview?.textContent).toContain('tex_preview_title');
   });
 
+  it('clears TeX button focus after closing the TeX preview with Escape', async () => {
+    testState.directoryByAddress['science-and-math.bso'] = {
+      address: 'science-and-math.bso',
+      directoryCode: 'sci',
+      features: {},
+      title: '/sci/ - Science & Math',
+    };
+    testState.communities['science-and-math.bso'] = { address: 'science-and-math.bso' };
+
+    await renderReplyModal('/sci/thread/post-1', 'science-and-math.bso');
+
+    const texButton = container.querySelector<HTMLButtonElement>('button[aria-label="preview_tex_equations"]');
+    expect(texButton).toBeTruthy();
+
+    await act(async () => {
+      texButton?.focus();
+      texButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(document.activeElement).toBe(texButton);
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key: 'Escape' }));
+    });
+
+    expect(document.activeElement).not.toBe(texButton);
+  });
+
   it('shows a flag selector on flag boards and publishes the default geographic request', async () => {
     await renderReplyModal('/pol/thread/post-1', 'politically-incorrect.bso');
 

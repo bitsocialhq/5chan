@@ -127,7 +127,13 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
   const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
   const [showTexPreview, setShowTexPreview] = useState(false);
-  const closeTexPreview = useCallback(() => setShowTexPreview(false), []);
+  const texButtonRef = useRef<HTMLButtonElement>(null);
+  // Blur in the close handler so the TeX button doesn't keep a lingering focus state
+  // (focus-visible promotion on Escape, focus-triggered tooltip) after the preview closes.
+  const closeTexPreview = useCallback(() => {
+    setShowTexPreview(false);
+    texButtonRef.current?.blur();
+  }, []);
 
   const checkContentLengthRef = useRef(
     debounce((content: string, t: TFunction, options: string, directoryCode: string | undefined) => {
@@ -550,6 +556,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
         {showTexButton && !isMobile && (
           <Tooltip content={t('preview_tex_equations')} className={styles.texButtonTooltip}>
             <button
+              ref={texButtonRef}
               type='button'
               className={styles.texButton}
               onClick={(e) => {

@@ -58,15 +58,9 @@
   text-decoration: none;
 }
 
-.texButton:hover,
-.texButton:focus-visible {
+.texButton:hover {
   color: var(--button-desktop-text-color-hover);
   text-decoration: none;
-}
-
-.texButton:focus-visible {
-  outline: 1px dotted currentColor;
-  outline-offset: 1px;
 }
 
 .texButton sub {
