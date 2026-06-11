@@ -55,6 +55,7 @@
     "zustand": "4.4.3"
   },
   "scripts": {
+    "ai-workflow:check": "node scripts/validate-ai-workflow.mjs",
     "generate:assets": "node scripts/generate-asset-manifest.js",
     "llms:generate": "node scripts/generate-llms-files.mjs",
     "map:generate": "node scripts/generate-world-map-dots.mjs",
