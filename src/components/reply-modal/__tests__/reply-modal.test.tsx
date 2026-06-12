@@ -62,6 +62,7 @@ const testState = vi.hoisted(() => ({
       address: 'music-posting.eth',
     },
   } as Record<string, { address: string }>,
+  fetchMock: vi.fn(),
   showUploadControls: true,
   uploadComplete: undefined as ((url: string) => void) | undefined,
   uploadedFileName: null as string | null,
@@ -452,6 +453,14 @@ describe('ReplyModal', () => {
         address: 'traditional-games.bso',
       },
     };
+    testState.fetchMock.mockReset();
+    testState.fetchMock.mockResolvedValue({
+      headers: {
+        get: (name: string) => (name.toLowerCase() === 'content-length' ? '12345' : null),
+      },
+      ok: true,
+    });
+    vi.stubGlobal('fetch', testState.fetchMock);
     testState.showUploadControls = true;
     testState.uploadComplete = undefined;
     testState.uploadedFileName = null;
@@ -467,6 +476,7 @@ describe('ReplyModal', () => {
     container.remove();
     document.body.style.userSelect = '';
     document.body.style.webkitUserSelect = '';
+    vi.unstubAllGlobals();
   });
 
   it('initializes quoted content, display name, upload controls, and shared offline warning on board routes', async () => {
@@ -772,7 +782,7 @@ describe('ReplyModal', () => {
 
   it('moves YouTube links into reply content and publishes the thumbnail link on media-only boards', async () => {
     const youtubeLink = 'https://youtu.be/reply123';
-    const thumbnailLink = 'https://img.youtube.com/vi/reply123/0.jpg';
+    const thumbnailLink = 'https://img.youtube.com/vi/reply123/maxresdefault.jpg';
     testState.openEmpty = true;
     testState.selectedText = 'reply body';
     testState.directoryByAddress['music-posting.eth'] = {

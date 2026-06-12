@@ -354,7 +354,7 @@ vi.mock('../../../lib/utils/media-utils', () => {
         return { type: 'audio', url: link };
       }
       if (link.includes('youtube.com')) {
-        return { patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/0.jpg', type: 'iframe', url: link };
+        return { patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/maxresdefault.jpg', type: 'iframe', url: link };
       }
       return { type: 'webpage', url: link };
     },
@@ -364,7 +364,17 @@ vi.mock('../../../lib/utils/media-utils', () => {
         const url = new URL(link);
         if (!url.hostname.includes('youtube.com')) return undefined;
         const videoId = url.searchParams.get('v');
-        return videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : undefined;
+        return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : undefined;
+      } catch {
+        return undefined;
+      }
+    },
+    getBestAvailableYouTubeThumbnailUrlFromLink: async (link: string) => {
+      try {
+        const url = new URL(link);
+        if (!url.hostname.includes('youtube.com')) return undefined;
+        const videoId = url.searchParams.get('v');
+        return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : undefined;
       } catch {
         return undefined;
       }
@@ -689,7 +699,7 @@ describe('PostForm', () => {
 
   it('converts YouTube links to thumbnail file links on media-only post forms', async () => {
     const youtubeLink = 'https://www.youtube.com/watch?v=abc123';
-    const thumbnailLink = 'https://img.youtube.com/vi/abc123/0.jpg';
+    const thumbnailLink = 'https://img.youtube.com/vi/abc123/maxresdefault.jpg';
 
     await renderPostForm('/all');
     await clickByText(container, 'start_new_thread');

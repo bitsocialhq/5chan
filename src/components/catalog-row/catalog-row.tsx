@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, type SyntheticEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useParams } from 'react-router-dom';
@@ -16,10 +16,11 @@ import useEditCommentPrivileges from '../../hooks/use-author-privileges';
 import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
+import { useYouTubeThumbnailFallback } from '../../hooks/use-youtube-thumbnail-fallback';
 import useHide from '../../hooks/use-hide';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown } from '../../lib/utils/post-utils';
-import PostMenuDesktop from '../post-desktop/post-menu-desktop';
+import PostMenuDesktop from '../post-desktop/post-menu-desktop/post-menu-desktop';
 import styles from './catalog-row.module.css';
 import capitalize from 'lodash/capitalize';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
@@ -39,11 +40,31 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight,
   void cid;
   const { patternThumbnailUrl, thumbnail, type, url } = commentMediaInfo || {};
   const iframeThumbnail = patternThumbnailUrl || thumbnail;
+  const {
+    handleThumbnailError: handleIframeThumbnailError,
+    handleThumbnailLoad: handleIframeThumbnailLoad,
+    isUnavailable: isIframeThumbnailUnavailable,
+    thumbnailUrl: resolvedIframeThumbnail,
+  } = useYouTubeThumbnailFallback(iframeThumbnail);
   const { frameUrl: gifFrameUrl, status: gifFrameStatus } = useFetchGifFirstFrame(type === 'gif' ? url : undefined);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const handleLoad = () => setIsLoaded(true);
   const handleError = () => setHasError(true);
+  const handleIframeLoad = (event: SyntheticEvent<HTMLImageElement>) => {
+    if (handleIframeThumbnailLoad(event.currentTarget)) {
+      return;
+    }
+
+    handleLoad();
+  };
+  const handleIframeError = () => {
+    if (handleIframeThumbnailError()) {
+      return;
+    }
+
+    handleError();
+  };
   const loadingStyle = { opacity: isLoaded ? 1 : 0 };
 
   const { imageSize } = useCatalogStyleStore();
@@ -96,22 +117,24 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight,
     );
   } else if (type === 'webpage' && !hasError) {
     thumbnailComponent = <img src={thumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
-  } else if (type === 'iframe' && iframeThumbnail && !hasError) {
-    thumbnailComponent = <img src={iframeThumbnail} alt='' onLoad={handleLoad} onError={handleError} style={loadingStyle} width={numericWidth} height={numericHeight} />;
+  } else if (type === 'iframe' && resolvedIframeThumbnail && !hasError) {
+    thumbnailComponent = (
+      <img src={resolvedIframeThumbnail} alt='' onLoad={handleIframeLoad} onError={handleIframeError} style={loadingStyle} width={numericWidth} height={numericHeight} />
+    );
   } else if (type === 'audio') {
     thumbnailComponent = <audio src={url} aria-label='Audio preview' controls />;
   }
 
   return (
     <div
-      className={hasError ? '' : styles.mediaWrapper}
+      className={hasError || isIframeThumbnailUnavailable ? '' : styles.mediaWrapper}
       style={{
         ...CSSProperties,
         ...(matchedFilterColor ? { border: `3px solid ${matchedFilterColor}` } : {}),
       }}
     >
-      {!isLoaded && !hasError && type !== 'video' && type !== 'audio' && <span className={styles.loadingSkeleton} />}
-      {hasError ? <img className={styles.fileDeleted} src='assets/filedeleted-res.gif' alt='' /> : thumbnailComponent}
+      {!isLoaded && !hasError && !isIframeThumbnailUnavailable && type !== 'video' && type !== 'audio' && <span className={styles.loadingSkeleton} />}
+      {hasError || isIframeThumbnailUnavailable ? <img className={styles.fileDeleted} src='assets/filedeleted-res.gif' alt='' /> : thumbnailComponent}
     </div>
   );
 };

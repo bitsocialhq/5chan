@@ -185,7 +185,7 @@ vi.mock('../../../hooks/use-hide', () => ({
   }),
 }));
 
-vi.mock('../../post-desktop/post-menu-desktop', () => ({
+vi.mock('../../post-desktop/post-menu-desktop/post-menu-desktop', () => ({
   default: ({ postMenu }: { postMenu: { cid?: string } }) => createElement('span', { 'data-testid': `post-menu-${postMenu.cid}` }, 'menu'),
 }));
 

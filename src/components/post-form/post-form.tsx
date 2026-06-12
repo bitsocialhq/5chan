@@ -111,8 +111,8 @@ const PostFormActions = ({
   variant: 'reply' | 'post' | 'upload';
   t: TFunction;
   isInPostView: boolean;
-  onPublishReply: () => void;
-  onPublishPost: () => void;
+  onPublishReply: () => void | Promise<void>;
+  onPublishPost: () => void | Promise<void>;
   handleUpload: () => void;
   isUploading: boolean;
   showUploadControls: boolean;
@@ -186,8 +186,8 @@ interface PostFormFieldsProps {
   showMathTagsPrompt: boolean;
   showBbcodeToolbar: boolean;
   onBbcodePreviewToggle: () => void;
-  onPublishReply: () => void;
-  onPublishPost: () => void;
+  onPublishReply: () => void | Promise<void>;
+  onPublishPost: () => void | Promise<void>;
   handleUpload: () => void;
   uploadFile: ReturnType<typeof useFileUpload>['uploadFile'];
   onOekakiClearUploadedUrl: (url: string) => void;
@@ -645,8 +645,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     return params?.boardIdentifier ? `/${params.boardIdentifier}` : null;
   };
 
-  const onPublishPost = () => {
-    const appliedYouTubeConversion = applyPendingConversion();
+  const onPublishPost = async () => {
+    const appliedYouTubeConversion = await applyPendingConversion();
 
     const currentTitle = subjectRef.current?.value.trim() || '';
     const currentContent = textRef.current?.value || '';
@@ -774,8 +774,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     setIsBbcodePreviewing(true);
   };
 
-  const onPublishReply = () => {
-    const appliedYouTubeConversion = applyPendingConversion();
+  const onPublishReply = async () => {
+    const appliedYouTubeConversion = await applyPendingConversion();
 
     const currentUrl = urlRef.current?.value.trim() || '';
     const currentOptions = optionsRef.current?.value || '';

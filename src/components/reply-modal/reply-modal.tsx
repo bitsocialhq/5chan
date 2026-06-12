@@ -157,8 +157,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     }, POST_OPTIONS_VALIDATION_DELAY_MS),
   );
 
-  const onPublishReply = () => {
-    const appliedYouTubeConversion = applyPendingConversion();
+  const onPublishReply = async () => {
+    const appliedYouTubeConversion = await applyPendingConversion();
 
     const currentContent = textRef.current?.value || '';
     const currentUrl = urlRef.current?.value.trim() || '';

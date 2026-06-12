@@ -5,8 +5,10 @@ import { getHostname, parseHttpUrl } from '../../lib/utils/url-utils';
 import useExpandedMediaStore from '../../stores/use-expanded-media-store';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useIsMobile from '../../hooks/use-is-mobile';
+import { useYouTubeThumbnailFallback } from '../../hooks/use-youtube-thumbnail-fallback';
 import styles from './comment-media.module.css';
-import Embed, { canEmbed } from '../embed';
+import Embed from '../embed/embed';
+import { canEmbed } from '../embed/embed-utils';
 import RufflePlayer from './ruffle-player';
 
 interface MediaProps {
@@ -108,8 +110,14 @@ const Thumbnail = ({
   let thumbnailComponent: React.ReactNode = null;
   const thumbnailDimensions = { '--width': displayWidth, '--height': displayHeight } as React.CSSProperties;
   const iframeThumbnail = patternThumbnailUrl || thumbnail;
+  const {
+    handleThumbnailError: handleIframeThumbnailError,
+    handleThumbnailLoad: handleIframeThumbnailLoad,
+    isUnavailable: isIframeThumbnailUnavailable,
+    thumbnailUrl: resolvedIframeThumbnail,
+  } = useYouTubeThumbnailFallback(iframeThumbnail);
   const { frameUrl: gifFrameUrl, status: gifFrameStatus } = gifFrameState;
-  const hasThumbnail = getHasThumbnail(commentMediaInfo, url);
+  const hasThumbnail = getHasThumbnail(commentMediaInfo, url) && !isIframeThumbnailUnavailable;
   const handleOpenMedia = () => setShowThumbnail(false);
 
   if (type === 'gif') {
@@ -137,9 +145,9 @@ const Thumbnail = ({
       </button>
     );
   } else if (type === 'iframe') {
-    thumbnailComponent = iframeThumbnail ? (
+    thumbnailComponent = resolvedIframeThumbnail ? (
       <button type='button' className={styles.mediaToggleButton} aria-label='Open embedded media preview' onClick={handleOpenMedia}>
-        <img src={iframeThumbnail} alt='' />
+        <img src={resolvedIframeThumbnail} alt='' onLoad={(event) => handleIframeThumbnailLoad(event.currentTarget)} onError={() => handleIframeThumbnailError()} />
       </button>
     ) : null;
   } else if (type === 'audio') {
