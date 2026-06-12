@@ -184,7 +184,7 @@ describe('AdvancedSettings', () => {
         pubsubKuboRpcClientsOptions: ['https://pubsub.one.example'],
       },
     });
-    expect(alertSpy).toHaveBeenCalledWith('Options saved, reloading...');
+    expect(alertSpy).toHaveBeenCalledWith('advanced_options_saved_reloading');
     expect(reloadMock).toHaveBeenCalledOnce();
   });
 
@@ -213,13 +213,13 @@ describe('AdvancedSettings', () => {
   it('hides gateway mode settings while browser pure p2p is enabled', async () => {
     await renderSettings(false);
 
-    expect(container.textContent).not.toContain('IPFS gateways:');
-    expect(container.textContent).not.toContain('pubsub providers:');
-    expect(container.textContent).toContain('http routers:');
-    expect(container.textContent).toContain('Full node WebSocket RPC:');
+    expect(container.textContent).not.toContain('advanced_ipfs_gateways');
+    expect(container.textContent).not.toContain('advanced_pubsub_providers');
+    expect(container.textContent).toContain('advanced_http_routers');
+    expect(container.textContent).toContain('advanced_full_node_websocket_rpc');
 
     const nodeRpcInput = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="text"]')).find(
-      (input) => input.placeholder === 'ws://<IP>:<port>/<secretAuthKey>',
+      (input) => input.placeholder === 'advanced_p2p_rpc_placeholder',
     );
     expect(nodeRpcInput).toBeTruthy();
 
@@ -228,8 +228,8 @@ describe('AdvancedSettings', () => {
       checkbox?.click();
     });
 
-    expect(container.textContent).toContain('IPFS gateways:');
-    expect(container.textContent).toContain('pubsub providers:');
+    expect(container.textContent).toContain('advanced_ipfs_gateways');
+    expect(container.textContent).toContain('advanced_pubsub_providers');
   });
 
   it('saves the browser pure p2p toggle through advanced settings', async () => {
@@ -324,10 +324,10 @@ describe('AdvancedSettings', () => {
     await renderSettings(false);
 
     const nodeRpcInput = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="text"]')).find(
-      (input) => input.placeholder === 'ws://<IP>:<port>/<secretAuthKey>',
+      (input) => input.placeholder === 'advanced_p2p_rpc_placeholder',
     );
 
-    expect(container.textContent).toContain('Full node WebSocket RPC:');
+    expect(container.textContent).toContain('advanced_full_node_websocket_rpc');
     expect(nodeRpcInput).toBeTruthy();
     expect(container.querySelector('button')?.textContent).not.toBe('?');
   });
@@ -338,7 +338,7 @@ describe('AdvancedSettings', () => {
     await renderSettings(false);
     await clickButton('save_advanced_settings');
 
-    expect(alertSpy).toHaveBeenCalledWith('Error saving options: boom');
+    expect(alertSpy).toHaveBeenCalledWith('advanced_error_saving_options');
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.objectContaining({ message: 'boom' }));
   });
 
@@ -348,6 +348,6 @@ describe('AdvancedSettings', () => {
     await renderSettings(false);
     await clickButton('save_advanced_settings');
 
-    expect(alertSpy).toHaveBeenCalledWith('Error');
+    expect(alertSpy).toHaveBeenCalledWith('error');
   });
 });
