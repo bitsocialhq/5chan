@@ -16,7 +16,7 @@
     "@capawesome/capacitor-android-edge-to-edge-support": "7.2.2",
     "@chenglou/pretext": "0.0.5",
     "@floating-ui/react": "0.26.1",
-    "@pkcprotocol/pkc-js": "0.0.37",
+    "@pkcprotocol/pkc-js": "0.0.47",
     "@react-spring/web": "10.0.3",
     "@ruffle-rs/ruffle": "0.2.0",
     "@types/node": "20.19.37",
@@ -186,7 +186,7 @@
     "portless": "0.11.1"
   },
   "resolutions": {
-    "@pkcprotocol/pkc-js": "0.0.37",
+    "@pkcprotocol/pkc-js": "0.0.47",
     "follow-redirects": "1.16.0",
     "@libp2p/gossipsub": "15.0.23",
     "@libp2p/kad-dht": "16.2.6",
