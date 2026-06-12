@@ -2245,7 +2245,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electron/notarize@npm:^2.1.0":
+"@electron/notarize@npm:2.5.0":
   version: 2.5.0
   resolution: "@electron/notarize@npm:2.5.0"
   dependencies:
@@ -2253,6 +2253,17 @@ __metadata:
     fs-extra: "npm:^9.0.1"
     promise-retry: "npm:^2.0.1"
   checksum: 10c0/262c6a90db4b18c82abb2a8f5349d1bf19ac34a440fe6c01b8aee302b1c886a79906693e6c3fdba2a4efa23a6519abf2113a882b438f7b6687eb2daed3da2afa
+  languageName: node
+  linkType: hard
+
+"@electron/notarize@patch:@electron/notarize@npm%3A2.5.0#~/.yarn/patches/@electron-notarize-npm-2.5.0-b15dc30c99.patch":
+  version: 2.5.0
+  resolution: "@electron/notarize@patch:@electron/notarize@npm%3A2.5.0#~/.yarn/patches/@electron-notarize-npm-2.5.0-b15dc30c99.patch::version=2.5.0&hash=8c8230"
+  dependencies:
+    debug: "npm:^4.1.1"
+    fs-extra: "npm:^9.0.1"
+    promise-retry: "npm:^2.0.1"
+  checksum: 10c0/241008603a7a89358de9bf157e7d630f67180a2405536694a1a39027ad86ee860b94000da5dd167f9503c8c1fa975dfaae6b8519054c144319bf6909201008d6
   languageName: node
   linkType: hard
 
