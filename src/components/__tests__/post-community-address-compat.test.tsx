@@ -549,7 +549,7 @@ describe('post community address compatibility', () => {
     expect(container.textContent).toContain('ID: ReplyKid');
   });
 
-  it('falls back to the reply cid when published reply author metadata is missing', async () => {
+  it('shows a pending ID while published reply author metadata is missing', async () => {
     testState.pseudonymityMode = 'per-post';
     const post = makeLegacyThread();
     const reply = post.replies?.pages?.new?.comments?.[0];
@@ -560,10 +560,10 @@ describe('post community address compatibility', () => {
     reply.author = {};
 
     await renderWithRoute(createElement(PostDesktop, { post, showAllReplies: true }), '/mu/thread/post-1');
-    expect(container.textContent).toContain('ID: Qmb4NxbR');
+    expect(container.textContent).toContain('ID: Pending');
 
     await renderWithRoute(createElement(PostMobile, { post, showAllReplies: true }), '/mu/thread/post-1');
-    expect(container.textContent).toContain('ID: Qmb4NxbR');
+    expect(container.textContent).toContain('ID: Pending');
   });
 
   it('forwards Pretext-backed reply estimates into Virtuoso for desktop and mobile thread views', async () => {

@@ -321,7 +321,7 @@ const PostInfoAndMedia = ({
                   lowerCase(t('deleted'))
                 ) : purged ? (
                   lowerCase(t('purged'))
-                ) : !cid && pseudonymityMode ? (
+                ) : !userID && pseudonymityMode ? (
                   <span className={styles.pendingCid}>{hasFailedState ? '?' : capitalize(t('pending'))}</span>
                 ) : (
                   <Tooltip
