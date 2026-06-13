@@ -29,6 +29,17 @@ vi.mock('../../../lib/utils/media-utils', () => ({
   getDisplayMediaInfoType: (type: string) => type,
   getHasThumbnail: () => testState.getHasThumbnailResult,
   getMediaDimensions: () => '640x480',
+  getYouTubeThumbnailFallbackUrls: (thumbnailUrl?: string) => {
+    if (!thumbnailUrl?.includes('img.youtube.com/vi/')) return thumbnailUrl ? [thumbnailUrl] : [];
+    const videoId = thumbnailUrl.split('/vi/')[1]?.split('/')[0];
+    return [
+      `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+      `https://img.youtube.com/vi/${videoId}/sddefault.jpg`,
+      `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+      `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+    ];
+  },
+  isMissingYouTubeThumbnailImage: (thumbnailUrl: string, width: number, height: number) => thumbnailUrl.includes('img.youtube.com/vi/') && width === 120 && height === 90,
 }));
 
 vi.mock('../../../lib/utils/url-utils', () => ({
@@ -64,10 +75,13 @@ vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
 }));
 
-vi.mock('../../embed', () => ({
+vi.mock('../../embed/embed', () => ({
   __esModule: true,
-  canEmbed: () => testState.canEmbed,
   default: ({ url }: { url: string }) => createElement('div', { 'data-testid': 'embed' }, url),
+}));
+
+vi.mock('../../embed/embed-utils', () => ({
+  canEmbed: () => testState.canEmbed,
 }));
 
 vi.mock('@ruffle-rs/ruffle', () => ({}));
@@ -298,7 +312,7 @@ describe('CommentMedia', () => {
   it('renders a youtube thumbnail before the embed is opened', async () => {
     await renderMedia({
       commentMediaInfo: {
-        patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/0.jpg',
+        patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/maxresdefault.jpg',
         type: 'iframe',
         url: 'https://www.youtube.com/watch?v=abc123',
       },
@@ -306,8 +320,32 @@ describe('CommentMedia', () => {
       showThumbnail: true,
     });
 
-    expect(container.querySelector('img[src="https://img.youtube.com/vi/abc123/0.jpg"]')).toBeTruthy();
+    expect(container.querySelector('img[src="https://img.youtube.com/vi/abc123/maxresdefault.jpg"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="embed"]')).toBeNull();
+  });
+
+  it('falls back when youtube serves the missing-thumbnail placeholder as a loaded image', async () => {
+    await renderMedia({
+      commentMediaInfo: {
+        patternThumbnailUrl: 'https://img.youtube.com/vi/missing-max/maxresdefault.jpg',
+        type: 'iframe',
+        url: 'https://www.youtube.com/watch?v=missing-max',
+      },
+      setShowThumbnail: setShowThumbnailMock,
+      showThumbnail: true,
+    });
+
+    const image = container.querySelector<HTMLImageElement>('img[src="https://img.youtube.com/vi/missing-max/maxresdefault.jpg"]');
+    expect(image).toBeTruthy();
+    if (!image) throw new Error('Expected youtube thumbnail image to render');
+
+    Object.defineProperty(image, 'naturalWidth', { configurable: true, value: 120 });
+    Object.defineProperty(image, 'naturalHeight', { configurable: true, value: 90 });
+    await act(async () => {
+      image.dispatchEvent(new Event('load', { bubbles: true }));
+    });
+
+    expect(container.querySelector('img[src="https://img.youtube.com/vi/missing-max/sddefault.jpg"]')).toBeTruthy();
   });
 
   it('renders the expanded embed view with a close button on mobile', async () => {

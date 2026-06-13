@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getYouTubeThumbnailUrlFromLink } from '../lib/utils/media-utils';
+import { getBestAvailableYouTubeThumbnailUrlFromLink, getYouTubeThumbnailUrlFromLink } from '../lib/utils/media-utils';
 
 const YOUTUBE_THUMBNAIL_LINK_CONVERSION_DELAY_SECONDS = 3;
 const YOUTUBE_THUMBNAIL_LINK_CONVERSION_INTERVAL_MS = 1000;
@@ -9,7 +9,7 @@ type ElementRef<T extends HTMLElement> = {
 };
 
 interface PendingYouTubeThumbnailLinkConversion {
-  thumbnailLink: string;
+  thumbnailLinkPromise: Promise<string | undefined>;
   youtubeLink: string;
 }
 
@@ -29,13 +29,13 @@ const getContentWithYouTubeLinkAtTop = (content: string, youtubeLink: string): s
 
 const getPendingConversion = (link: string): PendingYouTubeThumbnailLinkConversion | null => {
   const youtubeLink = link.trim();
-  const thumbnailLink = getYouTubeThumbnailUrlFromLink(youtubeLink);
+  const preferredThumbnailLink = getYouTubeThumbnailUrlFromLink(youtubeLink);
 
-  if (!youtubeLink || !thumbnailLink || youtubeLink === thumbnailLink) {
+  if (!youtubeLink || !preferredThumbnailLink || youtubeLink === preferredThumbnailLink) {
     return null;
   }
 
-  return { thumbnailLink, youtubeLink };
+  return { thumbnailLinkPromise: getBestAvailableYouTubeThumbnailUrlFromLink(youtubeLink), youtubeLink };
 };
 
 export const useYouTubeThumbnailLinkConversion = ({ enabled, onContentChange, onLinkChange, textRef, urlRef }: UseYouTubeThumbnailLinkConversionOptions) => {
@@ -56,7 +56,7 @@ export const useYouTubeThumbnailLinkConversion = ({ enabled, onContentChange, on
     setNoticeCountdown(null);
   }, [clearCountdownTimer]);
 
-  const applyPendingConversion = useCallback(() => {
+  const applyPendingConversion = useCallback(async () => {
     if (!enabled) {
       cancelPendingConversion();
       return false;
@@ -65,6 +65,13 @@ export const useYouTubeThumbnailLinkConversion = ({ enabled, onContentChange, on
     const currentLink = urlRef.current?.value.trim() || '';
     const pendingConversion = pendingConversionRef.current ?? getPendingConversion(currentLink);
     if (!pendingConversion || currentLink !== pendingConversion.youtubeLink) {
+      cancelPendingConversion();
+      return false;
+    }
+
+    const thumbnailLink = await pendingConversion.thumbnailLinkPromise;
+    const latestLink = urlRef.current?.value.trim() || '';
+    if (!thumbnailLink || latestLink !== pendingConversion.youtubeLink) {
       cancelPendingConversion();
       return false;
     }
@@ -80,11 +87,11 @@ export const useYouTubeThumbnailLinkConversion = ({ enabled, onContentChange, on
       textRef.current.value = nextContent;
     }
     if (urlRef.current) {
-      urlRef.current.value = pendingConversion.thumbnailLink;
+      urlRef.current.value = thumbnailLink;
     }
 
     onContentChange(nextContent);
-    onLinkChange(pendingConversion.thumbnailLink);
+    onLinkChange(thumbnailLink);
     return true;
   }, [cancelPendingConversion, clearCountdownTimer, enabled, onContentChange, onLinkChange, textRef, urlRef]);
 
@@ -99,7 +106,7 @@ export const useYouTubeThumbnailLinkConversion = ({ enabled, onContentChange, on
         }
 
         if (seconds <= 0) {
-          applyPendingConversion();
+          void applyPendingConversion();
           return;
         }
 

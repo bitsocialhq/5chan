@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
-import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions } from '../../lib/utils/media-link-validation-utils';
+import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions, isPublishFileMediaLink } from '../../lib/utils/media-link-validation-utils';
 import { getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory } from '../../lib/comment-flag-selection';
 import {
@@ -33,6 +33,7 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import { useYouTubeThumbnailLinkConversion } from '../../hooks/use-youtube-thumbnail-link-conversion';
+import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
@@ -127,6 +128,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
   const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
   const [showTexPreview, setShowTexPreview] = useState(false);
+  const { isPublishSubmissionInFlight, runPublishSubmission } = usePublishSubmissionGuard();
   const texButtonRef = useRef<HTMLButtonElement>(null);
   // Blur in the close handler so the TeX button doesn't keep a lingering focus state
   // (focus-visible promotion on Escape, focus-triggered tooltip) after the preview closes.
@@ -157,51 +159,56 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     }, POST_OPTIONS_VALIDATION_DELAY_MS),
   );
 
-  const onPublishReply = () => {
-    const appliedYouTubeConversion = applyPendingConversion();
+  const onPublishReply = () =>
+    runPublishSubmission(async () => {
+      const appliedYouTubeConversion = await applyPendingConversion();
 
-    const currentContent = textRef.current?.value || '';
-    const currentUrl = urlRef.current?.value.trim() || '';
-    const currentOptions = optionsRef.current?.value || '';
-    const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
-    const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+      const currentContent = textRef.current?.value || '';
+      const currentUrl = urlRef.current?.value.trim() || '';
+      const currentOptions = optionsRef.current?.value || '';
+      const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
+      const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
 
-    checkContentLengthRef.current.cancel();
-    checkPostOptionsRef.current.cancel();
-    setLengthError(null);
-    nonokoRedirectPathRef.current = null;
+      checkContentLengthRef.current.cancel();
+      checkPostOptionsRef.current.cancel();
+      setLengthError(null);
+      nonokoRedirectPathRef.current = null;
 
-    if (currentOptionsError) {
-      setError(currentOptionsError);
-      return;
-    }
+      if (currentOptionsError) {
+        setError(currentOptionsError);
+        return;
+      }
 
-    if (!publishContent.trim() && !currentUrl) {
-      setError(t('error') + ': ' + t('empty_comment_alert'));
-      return;
-    }
+      if (!publishContent.trim() && !currentUrl) {
+        setError(t('error') + ': ' + t('empty_comment_alert'));
+        return;
+      }
 
-    if (currentUrl && !isValidPublishURL(currentUrl)) {
-      setError(t('error') + ': ' + t('invalid_url_alert'));
-      return;
-    }
-    const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
-    if (expiringMediaLinkAlert) {
-      setError(expiringMediaLinkAlert);
-      return;
-    }
+      if (currentUrl && !isValidPublishURL(currentUrl)) {
+        setError(t('error') + ': ' + t('invalid_url_alert'));
+        return;
+      }
+      if (currentUrl && requirePostLinkIsMedia && !isPublishFileMediaLink(currentUrl)) {
+        setError(t('error') + ': ' + t('link_not_image_or_video_alert'));
+        return;
+      }
+      const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
+      if (expiringMediaLinkAlert) {
+        setError(expiringMediaLinkAlert);
+        return;
+      }
 
-    if (publishContent.trim().length > 2000) {
-      setError(t('error') + ': ' + t('field_too_long'));
-      return;
-    }
+      if (publishContent.trim().length > 2000) {
+        setError(t('error') + ': ' + t('field_too_long'));
+        return;
+      }
 
-    const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
+      const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
 
-    setError(null);
-    nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
-    publishReply({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...flagPublishOptions });
-  };
+      setError(null);
+      nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
+      await publishReply({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...flagPublishOptions });
+    });
 
   useEffect(() => {
     if (typeof replyIndex === 'number') {
@@ -698,7 +705,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
               ]
             </span>
           )}
-          <button className={styles.publishButton} disabled={isResolvingExternalQuotes} type='button' onClick={onPublishReply}>
+          <button className={styles.publishButton} disabled={isResolvingExternalQuotes || isPublishSubmissionInFlight} type='button' onClick={onPublishReply}>
             {t('post')}
           </button>
         </div>
