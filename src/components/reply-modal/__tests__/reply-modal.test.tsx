@@ -828,6 +828,36 @@ describe('ReplyModal', () => {
     });
   });
 
+  it('rejects unresolved YouTube links on media-only reply modal boards', async () => {
+    const youtubeLink = 'https://youtu.be/replymissing';
+    testState.fetchMock.mockResolvedValue({
+      headers: {
+        get: () => null,
+      },
+      ok: false,
+    });
+    testState.openEmpty = true;
+    testState.selectedText = 'reply body';
+    testState.directoryByAddress['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { requirePostLinkIsMedia: true },
+      title: '/mu/ - Music',
+    };
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+
+    await dispatchInput(linkInput, youtubeLink);
+    await clickButtonByText('post');
+    await flushEffects(8);
+
+    expect(testState.fetchMock).toHaveBeenCalled();
+    expect(container.textContent).toContain('error: link_not_image_or_video_alert');
+    expect(linkInput.value).toBe(youtubeLink);
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+  });
+
   it('ignores duplicate reply clicks while youtube thumbnail resolution is pending', async () => {
     const youtubeLink = 'https://youtu.be/replyslow';
     const thumbnailLink = 'https://img.youtube.com/vi/replyslow/maxresdefault.jpg';

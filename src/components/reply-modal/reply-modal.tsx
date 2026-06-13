@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
-import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions } from '../../lib/utils/media-link-validation-utils';
+import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions, isPublishFileMediaLink } from '../../lib/utils/media-link-validation-utils';
 import { getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory } from '../../lib/comment-flag-selection';
 import {
@@ -33,6 +33,7 @@ import usePublishReply from '../../hooks/use-publish-reply';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useFileUpload } from '../../hooks/use-file-upload';
 import { useYouTubeThumbnailLinkConversion } from '../../hooks/use-youtube-thumbnail-link-conversion';
+import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
@@ -111,7 +112,6 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const fortuneEntryRef = useRef<FortuneEntry | null>(null);
   const diceRollRef = useRef<DiceRoll | null>(null);
   const nonokoRedirectPathRef = useRef<string | null>(null);
-  const publishSubmissionInFlightRef = useRef(false);
   const lastSelectionStartRef = useRef(0);
   const lastSelectionEndRef = useRef(0);
   const initializedReplyContentKeyRef = useRef('');
@@ -128,7 +128,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
   const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
   const [showTexPreview, setShowTexPreview] = useState(false);
-  const [isPublishSubmissionInFlight, setIsPublishSubmissionInFlight] = useState(false);
+  const { isPublishSubmissionInFlight, runPublishSubmission } = usePublishSubmissionGuard();
   const texButtonRef = useRef<HTMLButtonElement>(null);
   // Blur in the close handler so the TeX button doesn't keep a lingering focus state
   // (focus-visible promotion on Escape, focus-triggered tooltip) after the preview closes.
@@ -159,22 +159,6 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     }, POST_OPTIONS_VALIDATION_DELAY_MS),
   );
 
-  const runPublishSubmission = async (publish: () => Promise<void>) => {
-    if (publishSubmissionInFlightRef.current) {
-      return;
-    }
-
-    publishSubmissionInFlightRef.current = true;
-    setIsPublishSubmissionInFlight(true);
-
-    try {
-      await publish();
-    } finally {
-      publishSubmissionInFlightRef.current = false;
-      setIsPublishSubmissionInFlight(false);
-    }
-  };
-
   const onPublishReply = () =>
     runPublishSubmission(async () => {
       const appliedYouTubeConversion = await applyPendingConversion();
@@ -202,6 +186,10 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
       if (currentUrl && !isValidPublishURL(currentUrl)) {
         setError(t('error') + ': ' + t('invalid_url_alert'));
+        return;
+      }
+      if (currentUrl && requirePostLinkIsMedia && !isPublishFileMediaLink(currentUrl)) {
+        setError(t('error') + ': ' + t('link_not_image_or_video_alert'));
         return;
       }
       const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;

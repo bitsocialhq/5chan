@@ -44,6 +44,7 @@ import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-
 import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import { useYouTubeThumbnailLinkConversion } from '../../hooks/use-youtube-thumbnail-link-conversion';
+import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard';
 import usePublishPost from '../../hooks/use-publish-post';
 import usePublishReply from '../../hooks/use-publish-reply';
 import { useFileUpload } from '../../hooks/use-file-upload';
@@ -595,8 +596,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const [formError, setFormError] = useState<string | PostOptionsValidationError | null>(null);
   const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
   const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
-  const [isPublishSubmissionInFlight, setIsPublishSubmissionInFlight] = useState(false);
-  const publishSubmissionInFlightRef = useRef(false);
+  const { isPublishSubmissionInFlight, runPublishSubmission } = usePublishSubmissionGuard();
 
   const checkContentLength = useRef(
     debounce((content: string, t: TFunction, options: string, directoryCode: string | undefined) => {
@@ -652,22 +652,6 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     }
 
     return params?.boardIdentifier ? `/${params.boardIdentifier}` : null;
-  };
-
-  const runPublishSubmission = async (publish: () => Promise<void>) => {
-    if (publishSubmissionInFlightRef.current) {
-      return;
-    }
-
-    publishSubmissionInFlightRef.current = true;
-    setIsPublishSubmissionInFlight(true);
-
-    try {
-      await publish();
-    } finally {
-      publishSubmissionInFlightRef.current = false;
-      setIsPublishSubmissionInFlight(false);
-    }
   };
 
   const onPublishPost = () =>

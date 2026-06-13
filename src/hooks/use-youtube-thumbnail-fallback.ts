@@ -24,12 +24,8 @@ export const useYouTubeThumbnailFallback = (thumbnailUrl: string | undefined) =>
       return true;
     }
 
-    if (fallbackUrls.length > 1) {
-      setState({ index, sourceUrl: thumbnailUrl, unavailable: true });
-      return true;
-    }
-
-    return false;
+    setState({ index, sourceUrl: thumbnailUrl, unavailable: true });
+    return true;
   }, [fallbackUrls, index, thumbnailUrl]);
 
   const handleThumbnailLoad = useCallback(
