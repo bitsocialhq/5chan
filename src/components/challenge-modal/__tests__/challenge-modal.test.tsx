@@ -49,11 +49,15 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.commentsByCid[commentCid] : undefined),
 }));
 
-vi.mock('../../../lib/utils/challenge-utils', () => ({
-  getPublicationPreview: () => testState.publicationPreview,
-  getPublicationType: () => testState.publicationType,
-  getVotePreview: () => testState.votePreview,
-}));
+vi.mock('../../../lib/utils/challenge-utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../lib/utils/challenge-utils')>();
+  return {
+    ...actual,
+    getPublicationPreview: () => testState.publicationPreview,
+    getPublicationType: () => testState.publicationType,
+    getVotePreview: () => testState.votePreview,
+  };
+});
 
 vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
@@ -224,7 +228,7 @@ describe('ChallengeModal', () => {
       input?.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
     });
 
-    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith(['4']);
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: ['4'] });
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 
@@ -310,7 +314,7 @@ describe('ChallengeModal', () => {
     await dispatchInput(container.querySelector<HTMLInputElement>('input[placeholder*="TYPE THE ANSWER HERE"]') as HTMLInputElement, 'step two');
     await clickButton('submit');
 
-    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith(['step one', 'step two']);
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: ['step one', 'step two'] });
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 
@@ -369,7 +373,7 @@ describe('ChallengeModal', () => {
     expect(doneButton?.getAttribute('aria-label')).toBe('Finish challenge');
 
     await clickButton('Finish Challenge');
-    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith(['']);
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: [''] });
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 
@@ -481,7 +485,7 @@ describe('ChallengeModal', () => {
       );
     });
 
-    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith(['']);
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: [''] });
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 
@@ -538,7 +542,7 @@ describe('ChallengeModal', () => {
       );
     });
 
-    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith(['', '']);
+    expect(publication.publishChallengeAnswers).toHaveBeenCalledWith({ challengeAnswers: ['', ''] });
     expect(testState.removeChallengeMock).toHaveBeenCalledOnce();
   });
 

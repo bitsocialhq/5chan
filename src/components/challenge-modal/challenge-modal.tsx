@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Challenge as ChallengeType, useAccount, useComment } from '@bitsocial/bitsocial-react-hooks';
-import { getPublicationPreview, getPublicationType, getVotePreview } from '../../lib/utils/challenge-utils';
+import { getPublicationPreview, getPublicationType, getVotePreview, publishPublicationChallengeAnswers } from '../../lib/utils/challenge-utils';
 import { stripGeneratedFortuneMarkup } from '../../lib/utils/post-options-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useChallengesStore from '../../stores/use-challenges-store';
@@ -39,6 +39,10 @@ const ImageChallenge = ({ challenge }: { challenge: string }) =>
   ) : (
     <div className={styles.challengeMedia}>Invalid image challenge</div>
   );
+
+const logPublishChallengeAnswersError = (error: unknown) => {
+  console.error('Failed to publish challenge answers:', error);
+};
 
 const isLocalIframeHostname = (hostname: string) => hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname.endsWith('.localhost');
 
@@ -391,7 +395,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
 
   const onSubmit = () => {
     if (!publication) return;
-    publication.publishChallengeAnswers(answers);
+    void publishPublicationChallengeAnswers(publication, answers).catch(logPublishChallengeAnswersError);
     setAnswers([]);
     closeModal();
   };
@@ -413,7 +417,7 @@ const Challenge = ({ challenge, closeModal, abandonModal }: ChallengeProps) => {
         return;
       }
 
-      publication.publishChallengeAnswers(updatedAnswers);
+      void publishPublicationChallengeAnswers(publication, updatedAnswers).catch(logPublishChallengeAnswersError);
       setAnswers([]);
       closeModal();
     },

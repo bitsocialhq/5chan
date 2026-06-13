@@ -13,17 +13,26 @@ const resolveBoardIdentifier = (communityAddress: unknown): string => {
   return boardPath === communityAddress ? communityAddress : `/${boardPath}/`;
 };
 
-export type ChallengePublication = Partial<Comment> & {
+type ChallengeAnswersInput = string[] | { challengeAnswers?: string[] };
+
+export type ChallengePublication = Partial<Omit<Comment, 'publishChallengeAnswers'>> & {
   author?: unknown;
   commentCid?: string;
   communityAddress?: string;
   content?: string;
   link?: string;
   parentCid?: string;
+  publishChallengeAnswers?: (challengeAnswers?: ChallengeAnswersInput) => Promise<void> | void;
   shortCommunityAddress?: string;
   subplebbitAddress?: string;
   title?: string;
   vote?: number;
+};
+
+export const publishPublicationChallengeAnswers = async (publication: ChallengePublication | undefined, challengeAnswers: string[]) => {
+  const publishChallengeAnswers = publication?.publishChallengeAnswers;
+  if (typeof publishChallengeAnswers !== 'function') return;
+  await publishChallengeAnswers.call(publication, { challengeAnswers });
 };
 
 export const redactGeneratedFortuneFromPublication = <T>(publication: T): T => {
