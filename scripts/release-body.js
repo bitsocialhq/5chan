@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version adds share links, /g/ code formatting, directory board submissions, progressive homepage stats, and fixes quote previews, expanded images, moderation approval details, and comment moderation edits.';
+  'This release ships signed and notarized macOS desktop apps, adds a scientific math (TeX) preview button when replying, shows board subtitles on the All view, and improves YouTube thumbnails alongside moderation queue, challenge modal, and media playback fixes.';
 
 const releaseBody = `${oneLinerDescription}
 

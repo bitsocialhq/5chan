@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.2",
+      "kind": "release",
+      "timestamp": 1781352000,
+      "message": "v0.9.2: Signed macOS app, scientific math preview in replies",
+      "version": "0.9.2"
+    },
+    {
       "id": "release-0.9.1",
       "kind": "release",
       "timestamp": 1780833600,
