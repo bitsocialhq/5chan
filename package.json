@@ -229,6 +229,8 @@
     "tar": "7.5.11",
     "yauzl": "3.2.1",
     "serialize-javascript": "7.0.5",
+    "esbuild": "0.28.1",
+    "esbuild@npm:^0.25.0": "0.28.1",
     "shell-quote": "1.8.4",
     "@tootallnate/once": "3.0.1",
     "rollup": "2.80.0",
