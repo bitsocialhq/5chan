@@ -4,6 +4,7 @@ const testState = vi.hoisted(() => ({
   cachedThumbnails: new Map<string, string>(),
   canEmbedHosts: new Set<string>(),
   capacitorHttpGetMock: vi.fn(),
+  capacitorHttpRequestMock: vi.fn(),
   consoleErrorMock: vi.fn(),
   fetchMock: vi.fn(),
   isNativePlatform: false,
@@ -34,6 +35,7 @@ vi.mock('@capacitor/core', () => ({
   },
   CapacitorHttp: {
     get: (options: unknown) => testState.capacitorHttpGetMock(options),
+    request: (options: unknown) => testState.capacitorHttpRequestMock(options),
   },
 }));
 
@@ -89,6 +91,13 @@ const createHeadResponse = (ok: boolean, contentLength = '12345') => ({
   ok,
 });
 
+const createNativeHeadResponse = (status: number, contentLength = '12345') => ({
+  headers: {
+    'Content-Length': contentLength,
+  },
+  status,
+});
+
 describe('media-utils', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
@@ -103,6 +112,7 @@ describe('media-utils', () => {
     });
     testState.fetchMock.mockReset();
     testState.capacitorHttpGetMock.mockReset();
+    testState.capacitorHttpRequestMock.mockReset();
     vi.stubGlobal('fetch', testState.fetchMock);
     clearMemoizedCache(getHasThumbnail);
     clearMemoizedCache(getLinkMediaInfo);
@@ -150,8 +160,13 @@ describe('media-utils', () => {
       'https://img.youtube.com/vi/abc123/hqdefault.jpg',
     ]);
     expect(getYouTubeThumbnailFallbackUrls('https://i3.ytimg.com/vi/abc123/maxresdefault.jpg')).toEqual([
-      'https://img.youtube.com/vi/abc123/maxresdefault.jpg',
+      'https://i3.ytimg.com/vi/abc123/maxresdefault.jpg',
       'https://img.youtube.com/vi/abc123/sddefault.jpg',
+      'https://img.youtube.com/vi/abc123/mqdefault.jpg',
+      'https://img.youtube.com/vi/abc123/hqdefault.jpg',
+    ]);
+    expect(getYouTubeThumbnailFallbackUrls('https://i3.ytimg.com/vi/abc123/sddefault.jpg')).toEqual([
+      'https://i3.ytimg.com/vi/abc123/sddefault.jpg',
       'https://img.youtube.com/vi/abc123/mqdefault.jpg',
       'https://img.youtube.com/vi/abc123/hqdefault.jpg',
     ]);
@@ -172,6 +187,32 @@ describe('media-utils', () => {
     expect(testState.fetchMock).toHaveBeenNthCalledWith(1, 'https://img.youtube.com/vi/resolve123/maxresdefault.jpg', expect.objectContaining({ method: 'HEAD' }));
     expect(testState.fetchMock).toHaveBeenNthCalledWith(2, 'https://img.youtube.com/vi/resolve123/sddefault.jpg', expect.objectContaining({ method: 'HEAD' }));
     expect(testState.fetchMock).toHaveBeenNthCalledWith(3, 'https://img.youtube.com/vi/resolve123/mqdefault.jpg', expect.objectContaining({ method: 'HEAD' }));
+  });
+
+  it('uses native http requests when resolving youtube thumbnails in native builds', async () => {
+    testState.isNativePlatform = true;
+    testState.capacitorHttpRequestMock.mockResolvedValueOnce(createNativeHeadResponse(404, '1097')).mockResolvedValueOnce(createNativeHeadResponse(200, '8765'));
+
+    await expect(getBestAvailableYouTubeThumbnailUrlFromLink('https://www.youtube.com/watch?v=native123')).resolves.toBe(
+      'https://img.youtube.com/vi/native123/sddefault.jpg',
+    );
+    expect(testState.fetchMock).not.toHaveBeenCalled();
+    expect(testState.capacitorHttpRequestMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        connectTimeout: 3000,
+        method: 'HEAD',
+        readTimeout: 3000,
+        url: 'https://img.youtube.com/vi/native123/maxresdefault.jpg',
+      }),
+    );
+    expect(testState.capacitorHttpRequestMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        method: 'HEAD',
+        url: 'https://img.youtube.com/vi/native123/sddefault.jpg',
+      }),
+    );
   });
 
   it('returns no youtube thumbnail when every candidate is unavailable', async () => {

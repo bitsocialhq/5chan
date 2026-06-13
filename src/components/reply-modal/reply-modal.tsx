@@ -111,6 +111,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const fortuneEntryRef = useRef<FortuneEntry | null>(null);
   const diceRollRef = useRef<DiceRoll | null>(null);
   const nonokoRedirectPathRef = useRef<string | null>(null);
+  const publishSubmissionInFlightRef = useRef(false);
   const lastSelectionStartRef = useRef(0);
   const lastSelectionEndRef = useRef(0);
   const initializedReplyContentKeyRef = useRef('');
@@ -127,6 +128,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
   const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
   const [showTexPreview, setShowTexPreview] = useState(false);
+  const [isPublishSubmissionInFlight, setIsPublishSubmissionInFlight] = useState(false);
   const texButtonRef = useRef<HTMLButtonElement>(null);
   // Blur in the close handler so the TeX button doesn't keep a lingering focus state
   // (focus-visible promotion on Escape, focus-triggered tooltip) after the preview closes.
@@ -157,51 +159,68 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     }, POST_OPTIONS_VALIDATION_DELAY_MS),
   );
 
-  const onPublishReply = async () => {
-    const appliedYouTubeConversion = await applyPendingConversion();
-
-    const currentContent = textRef.current?.value || '';
-    const currentUrl = urlRef.current?.value.trim() || '';
-    const currentOptions = optionsRef.current?.value || '';
-    const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
-    const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
-
-    checkContentLengthRef.current.cancel();
-    checkPostOptionsRef.current.cancel();
-    setLengthError(null);
-    nonokoRedirectPathRef.current = null;
-
-    if (currentOptionsError) {
-      setError(currentOptionsError);
+  const runPublishSubmission = async (publish: () => Promise<void>) => {
+    if (publishSubmissionInFlightRef.current) {
       return;
     }
 
-    if (!publishContent.trim() && !currentUrl) {
-      setError(t('error') + ': ' + t('empty_comment_alert'));
-      return;
-    }
+    publishSubmissionInFlightRef.current = true;
+    setIsPublishSubmissionInFlight(true);
 
-    if (currentUrl && !isValidPublishURL(currentUrl)) {
-      setError(t('error') + ': ' + t('invalid_url_alert'));
-      return;
+    try {
+      await publish();
+    } finally {
+      publishSubmissionInFlightRef.current = false;
+      setIsPublishSubmissionInFlight(false);
     }
-    const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
-    if (expiringMediaLinkAlert) {
-      setError(expiringMediaLinkAlert);
-      return;
-    }
-
-    if (publishContent.trim().length > 2000) {
-      setError(t('error') + ': ' + t('field_too_long'));
-      return;
-    }
-
-    const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
-
-    setError(null);
-    nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
-    publishReply({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...flagPublishOptions });
   };
+
+  const onPublishReply = () =>
+    runPublishSubmission(async () => {
+      const appliedYouTubeConversion = await applyPendingConversion();
+
+      const currentContent = textRef.current?.value || '';
+      const currentUrl = urlRef.current?.value.trim() || '';
+      const currentOptions = optionsRef.current?.value || '';
+      const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
+      const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+
+      checkContentLengthRef.current.cancel();
+      checkPostOptionsRef.current.cancel();
+      setLengthError(null);
+      nonokoRedirectPathRef.current = null;
+
+      if (currentOptionsError) {
+        setError(currentOptionsError);
+        return;
+      }
+
+      if (!publishContent.trim() && !currentUrl) {
+        setError(t('error') + ': ' + t('empty_comment_alert'));
+        return;
+      }
+
+      if (currentUrl && !isValidPublishURL(currentUrl)) {
+        setError(t('error') + ': ' + t('invalid_url_alert'));
+        return;
+      }
+      const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
+      if (expiringMediaLinkAlert) {
+        setError(expiringMediaLinkAlert);
+        return;
+      }
+
+      if (publishContent.trim().length > 2000) {
+        setError(t('error') + ': ' + t('field_too_long'));
+        return;
+      }
+
+      const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
+
+      setError(null);
+      nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
+      await publishReply({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...flagPublishOptions });
+    });
 
   useEffect(() => {
     if (typeof replyIndex === 'number') {
@@ -698,7 +717,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
               ]
             </span>
           )}
-          <button className={styles.publishButton} disabled={isResolvingExternalQuotes} type='button' onClick={onPublishReply}>
+          <button className={styles.publishButton} disabled={isResolvingExternalQuotes || isPublishSubmissionInFlight} type='button' onClick={onPublishReply}>
             {t('post')}
           </button>
         </div>

@@ -73,6 +73,11 @@ const YOUTUBE_MISSING_THUMBNAIL_WIDTH = 120;
 const YOUTUBE_THUMBNAIL_RESOLUTION_TIMEOUT_MS = 3000;
 const youtubeThumbnailResolutionPromises = new Map<string, Promise<string | undefined>>();
 
+const getHeaderValue = (headers: Record<string, string>, headerName: string): string | undefined => {
+  const matchingHeader = Object.entries(headers).find(([name]) => name.toLowerCase() === headerName);
+  return matchingHeader?.[1];
+};
+
 const getYouTubeThumbnailUrlFromVideoId = (videoId: string, filename: (typeof YOUTUBE_THUMBNAIL_FILENAMES)[number]): string => {
   return `https://img.youtube.com/vi/${videoId}/${filename}`;
 };
@@ -112,7 +117,15 @@ export const getYouTubeThumbnailFallbackUrls = (thumbnailUrl: string | undefined
 
   const parsedUrl = parseHttpUrl(thumbnailUrl);
   const videoId = parsedUrl ? getYouTubeThumbnailVideoId(parsedUrl) : undefined;
-  return videoId ? YOUTUBE_THUMBNAIL_FILENAMES.map((filename) => getYouTubeThumbnailUrlFromVideoId(videoId, filename)) : [thumbnailUrl];
+  if (!videoId) {
+    return [thumbnailUrl];
+  }
+
+  const currentFilename = parsedUrl?.pathname.split('/').filter(Boolean)[2];
+  const startIndex = YOUTUBE_THUMBNAIL_FILENAMES.findIndex((filename) => filename === currentFilename);
+  const filenames = startIndex >= 0 ? YOUTUBE_THUMBNAIL_FILENAMES.slice(startIndex) : YOUTUBE_THUMBNAIL_FILENAMES;
+
+  return filenames.map((filename) => (filename === currentFilename ? thumbnailUrl : getYouTubeThumbnailUrlFromVideoId(videoId, filename)));
 };
 
 export const isMissingYouTubeThumbnailImage = (thumbnailUrl: string, width: number, height: number): boolean => {
@@ -129,6 +142,21 @@ export const getYouTubeThumbnailUrlFromLink = (link: string): string | undefined
 };
 
 const isAvailableYouTubeThumbnailUrl = async (thumbnailUrl: string): Promise<boolean> => {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const response = await CapacitorHttp.request({
+        url: thumbnailUrl,
+        method: 'HEAD',
+        readTimeout: YOUTUBE_THUMBNAIL_RESOLUTION_TIMEOUT_MS,
+        connectTimeout: YOUTUBE_THUMBNAIL_RESOLUTION_TIMEOUT_MS,
+      });
+
+      return response.status >= 200 && response.status < 300 && getHeaderValue(response.headers, 'content-length') !== YOUTUBE_MISSING_THUMBNAIL_CONTENT_LENGTH;
+    } catch {
+      return false;
+    }
+  }
+
   if (typeof fetch !== 'function') {
     return false;
   }

@@ -16,6 +16,7 @@ const testState = vi.hoisted(() => ({
     subscriptions: ['music-posting.eth'],
   },
   accountComment: undefined as { communityAddress?: string } | undefined,
+  bestAvailableYouTubeThumbnailMock: undefined as undefined | ((link: string) => Promise<string | undefined>),
   accountCommunityAddresses: ['mod.eth'] as string[],
   comments: {} as Record<string, { commentModeration?: { archived?: boolean }; deleted?: boolean; locked?: boolean; postCid?: string; removed?: boolean }>,
   directories: [
@@ -370,6 +371,10 @@ vi.mock('../../../lib/utils/media-utils', () => {
       }
     },
     getBestAvailableYouTubeThumbnailUrlFromLink: async (link: string) => {
+      if (testState.bestAvailableYouTubeThumbnailMock) {
+        return testState.bestAvailableYouTubeThumbnailMock(link);
+      }
+
       try {
         const url = new URL(link);
         if (!url.hostname.includes('youtube.com')) return undefined;
@@ -526,6 +531,7 @@ describe('PostForm', () => {
       subscriptions: ['music-posting.eth'],
     };
     testState.accountComment = undefined;
+    testState.bestAvailableYouTubeThumbnailMock = undefined;
     testState.accountCommunityAddresses = ['mod.eth'];
     testState.comments = {};
     testState.directories = [
@@ -757,6 +763,47 @@ describe('PostForm', () => {
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.publishedPostOptions?.link).toBe(thumbnailLink);
     expect(testState.publishedPostOptions?.content).toBe(youtubeLink);
+  });
+
+  it('ignores duplicate post clicks while youtube thumbnail resolution is pending', async () => {
+    const youtubeLink = 'https://www.youtube.com/watch?v=slow123';
+    const thumbnailLink = 'https://img.youtube.com/vi/slow123/maxresdefault.jpg';
+    let resolveThumbnail: (thumbnailLink: string) => void = () => {};
+    const thumbnailPromise = new Promise<string | undefined>((resolve) => {
+      resolveThumbnail = resolve;
+    });
+    const resolverMock = vi.fn(() => thumbnailPromise);
+    testState.bestAvailableYouTubeThumbnailMock = resolverMock;
+
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const select = table.querySelector('select') as HTMLSelectElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const linkInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[3];
+    const postButton = Array.from(table.querySelectorAll('button')).find((button) => button.textContent === 'post') as HTMLButtonElement;
+
+    await dispatchChange(select, 'music-posting.eth');
+    await dispatchInput(textarea, 'Video body');
+    await dispatchInput(linkInput, youtubeLink);
+
+    await clickByText(table, 'post');
+    expect(postButton.disabled).toBe(true);
+
+    await clickByText(table, 'post');
+    expect(resolverMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveThumbnail(thumbnailLink);
+      await thumbnailPromise;
+      await Promise.resolve();
+    });
+
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishedPostOptions?.link).toBe(thumbnailLink);
+    expect(testState.publishedPostOptions?.content).toBe(`${youtubeLink}\nVideo body`);
   });
 
   it('publishes known twimg query-format post links with a path extension without editing the field', async () => {

@@ -104,6 +104,7 @@ const PostFormActions = ({
   onPublishReply,
   onPublishPost,
   handleUpload,
+  isPublishSubmissionInFlight,
   isUploading,
   showUploadControls,
 }: {
@@ -114,19 +115,20 @@ const PostFormActions = ({
   onPublishReply: () => void | Promise<void>;
   onPublishPost: () => void | Promise<void>;
   handleUpload: () => void;
+  isPublishSubmissionInFlight: boolean;
   isUploading: boolean;
   showUploadControls: boolean;
 }) => {
   if (variant === 'reply' && isInPostView) {
     return (
-      <button type='button' onClick={onPublishReply} disabled={disableReplyPublish || isUploading}>
+      <button type='button' onClick={onPublishReply} disabled={disableReplyPublish || isPublishSubmissionInFlight || isUploading}>
         {t('post')}
       </button>
     );
   }
   if (variant === 'post' && !isInPostView) {
     return (
-      <button type='button' onClick={onPublishPost}>
+      <button type='button' onClick={onPublishPost} disabled={isPublishSubmissionInFlight}>
         {t('post')}
       </button>
     );
@@ -191,6 +193,7 @@ interface PostFormFieldsProps {
   handleUpload: () => void;
   uploadFile: ReturnType<typeof useFileUpload>['uploadFile'];
   onOekakiClearUploadedUrl: (url: string) => void;
+  isPublishSubmissionInFlight: boolean;
   disableReplyPublish: boolean;
 }
 
@@ -244,6 +247,7 @@ const PostFormFields = ({
   handleUpload,
   uploadFile,
   onOekakiClearUploadedUrl,
+  isPublishSubmissionInFlight,
   disableReplyPublish,
 }: PostFormFieldsProps) => (
   <>
@@ -273,6 +277,7 @@ const PostFormFields = ({
           onPublishPost={onPublishPost}
           handleUpload={handleUpload}
           disableReplyPublish={disableReplyPublish}
+          isPublishSubmissionInFlight={isPublishSubmissionInFlight}
           isUploading={isUploading}
           showUploadControls={showUploadControls}
         />
@@ -304,6 +309,7 @@ const PostFormFields = ({
             onPublishPost={onPublishPost}
             handleUpload={handleUpload}
             disableReplyPublish={disableReplyPublish}
+            isPublishSubmissionInFlight={isPublishSubmissionInFlight}
             isUploading={isUploading}
             showUploadControls={showUploadControls}
           />
@@ -393,6 +399,7 @@ const PostFormFields = ({
             onPublishPost={onPublishPost}
             handleUpload={handleUpload}
             disableReplyPublish={disableReplyPublish}
+            isPublishSubmissionInFlight={isPublishSubmissionInFlight}
             isUploading={isUploading}
             showUploadControls={showUploadControls}
           />
@@ -588,6 +595,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const [formError, setFormError] = useState<string | PostOptionsValidationError | null>(null);
   const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
   const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
+  const [isPublishSubmissionInFlight, setIsPublishSubmissionInFlight] = useState(false);
+  const publishSubmissionInFlightRef = useRef(false);
 
   const checkContentLength = useRef(
     debounce((content: string, t: TFunction, options: string, directoryCode: string | undefined) => {
@@ -645,66 +654,83 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     return params?.boardIdentifier ? `/${params.boardIdentifier}` : null;
   };
 
-  const onPublishPost = async () => {
-    const appliedYouTubeConversion = await applyPendingConversion();
-
-    const currentTitle = subjectRef.current?.value.trim() || '';
-    const currentContent = textRef.current?.value || '';
-    const currentUrl = urlRef.current?.value.trim() || '';
-    const currentOptions = optionsRef.current?.value || '';
-    const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
-    const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
-
-    checkContentLength.cancel();
-    checkPostOptions.cancel();
-    setLengthError(null);
-    setFormError(null);
-    nonokoRedirectPathRef.current = null;
-
-    if (currentOptionsError) {
-      setFormError(currentOptionsError);
+  const runPublishSubmission = async (publish: () => Promise<void>) => {
+    if (publishSubmissionInFlightRef.current) {
       return;
     }
 
-    if (!currentTitle && !publishContent.trim() && !currentUrl) {
-      setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
-      return;
-    }
-    if (currentUrl && !isValidPublishURL(currentUrl)) {
-      setFormError(`${t('error')}: ${t('invalid_url_alert')}`);
-      return;
-    }
-    if (currentUrl && requirePostLinkIsMedia && !isPublishFileMediaLink(currentUrl)) {
-      setFormError(`${t('error')}: ${t('link_not_image_or_video_alert')}`);
-      return;
-    }
-    const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
-    if (expiringMediaLinkAlert) {
-      setFormError(expiringMediaLinkAlert);
-      return;
-    }
+    publishSubmissionInFlightRef.current = true;
+    setIsPublishSubmissionInFlight(true);
 
-    if (publishContent.trim().length > 2000) {
-      setFormError(`${t('error')}: ${t('field_too_long')}`);
-      return;
+    try {
+      await publish();
+    } finally {
+      publishSubmissionInFlightRef.current = false;
+      setIsPublishSubmissionInFlight(false);
     }
-
-    if ((isInAllView || isInSubscriptionsView || isInModView) && !publishPostOptions.communityAddress) {
-      setFormError(`${t('error')}: ${t('no_board_selected_warning')}`);
-      return;
-    }
-
-    const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
-    const flashTagPublishOptions = getFlashTagPublishOptionsForDirectoryCode(postOptionsDirectoryCode, flashTagRef.current?.value);
-    const flairs = mergeFlairs(flagPublishOptions.flairs, flashTagPublishOptions.flairs);
-    const publishOptions = {
-      ...flagPublishOptions,
-      ...(flairs ? { flairs } : {}),
-    };
-
-    nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-    publishPost({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...publishOptions });
   };
+
+  const onPublishPost = () =>
+    runPublishSubmission(async () => {
+      const appliedYouTubeConversion = await applyPendingConversion();
+
+      const currentTitle = subjectRef.current?.value.trim() || '';
+      const currentContent = textRef.current?.value || '';
+      const currentUrl = urlRef.current?.value.trim() || '';
+      const currentOptions = optionsRef.current?.value || '';
+      const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
+      const publishContent = getContentWithOptions(currentContent, currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+
+      checkContentLength.cancel();
+      checkPostOptions.cancel();
+      setLengthError(null);
+      setFormError(null);
+      nonokoRedirectPathRef.current = null;
+
+      if (currentOptionsError) {
+        setFormError(currentOptionsError);
+        return;
+      }
+
+      if (!currentTitle && !publishContent.trim() && !currentUrl) {
+        setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
+        return;
+      }
+      if (currentUrl && !isValidPublishURL(currentUrl)) {
+        setFormError(`${t('error')}: ${t('invalid_url_alert')}`);
+        return;
+      }
+      if (currentUrl && requirePostLinkIsMedia && !isPublishFileMediaLink(currentUrl)) {
+        setFormError(`${t('error')}: ${t('link_not_image_or_video_alert')}`);
+        return;
+      }
+      const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
+      if (expiringMediaLinkAlert) {
+        setFormError(expiringMediaLinkAlert);
+        return;
+      }
+
+      if (publishContent.trim().length > 2000) {
+        setFormError(`${t('error')}: ${t('field_too_long')}`);
+        return;
+      }
+
+      if ((isInAllView || isInSubscriptionsView || isInModView) && !publishPostOptions.communityAddress) {
+        setFormError(`${t('error')}: ${t('no_board_selected_warning')}`);
+        return;
+      }
+
+      const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
+      const flashTagPublishOptions = getFlashTagPublishOptionsForDirectoryCode(postOptionsDirectoryCode, flashTagRef.current?.value);
+      const flairs = mergeFlairs(flagPublishOptions.flairs, flashTagPublishOptions.flairs);
+      const publishOptions = {
+        ...flagPublishOptions,
+        ...(flairs ? { flairs } : {}),
+      };
+
+      nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
+      publishPost({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...publishOptions });
+    });
 
   // redirect to pending page when pending comment is created
   const navigate = useNavigate();
@@ -774,54 +800,55 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     setIsBbcodePreviewing(true);
   };
 
-  const onPublishReply = async () => {
-    const appliedYouTubeConversion = await applyPendingConversion();
+  const onPublishReply = () =>
+    runPublishSubmission(async () => {
+      const appliedYouTubeConversion = await applyPendingConversion();
 
-    const currentUrl = urlRef.current?.value.trim() || '';
-    const currentOptions = optionsRef.current?.value || '';
-    const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
-    const publishContent = getContentWithOptions(textRef.current?.value || '', currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
+      const currentUrl = urlRef.current?.value.trim() || '';
+      const currentOptions = optionsRef.current?.value || '';
+      const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
+      const publishContent = getContentWithOptions(textRef.current?.value || '', currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
 
-    checkContentLength.cancel();
-    checkPostOptions.cancel();
-    setLengthError(null);
-    setFormError(null);
-    nonokoRedirectPathRef.current = null;
+      checkContentLength.cancel();
+      checkPostOptions.cancel();
+      setLengthError(null);
+      setFormError(null);
+      nonokoRedirectPathRef.current = null;
 
-    if (currentOptionsError) {
-      setFormError(currentOptionsError);
-      return;
-    }
+      if (currentOptionsError) {
+        setFormError(currentOptionsError);
+        return;
+      }
 
-    if (!publishContent.trim() && !currentUrl) {
-      setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
-      return;
-    }
+      if (!publishContent.trim() && !currentUrl) {
+        setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
+        return;
+      }
 
-    if (currentUrl && !isValidPublishURL(currentUrl)) {
-      setFormError(`${t('error')}: ${t('invalid_url_alert')}`);
-      return;
-    }
-    if (currentUrl && requirePostLinkIsMedia && !isPublishFileMediaLink(currentUrl)) {
-      setFormError(`${t('error')}: ${t('link_not_image_or_video_alert')}`);
-      return;
-    }
-    const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
-    if (expiringMediaLinkAlert) {
-      setFormError(expiringMediaLinkAlert);
-      return;
-    }
+      if (currentUrl && !isValidPublishURL(currentUrl)) {
+        setFormError(`${t('error')}: ${t('invalid_url_alert')}`);
+        return;
+      }
+      if (currentUrl && requirePostLinkIsMedia && !isPublishFileMediaLink(currentUrl)) {
+        setFormError(`${t('error')}: ${t('link_not_image_or_video_alert')}`);
+        return;
+      }
+      const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
+      if (expiringMediaLinkAlert) {
+        setFormError(expiringMediaLinkAlert);
+        return;
+      }
 
-    if (publishContent.trim().length > 2000) {
-      setFormError(`${t('error')}: ${t('field_too_long')}`);
-      return;
-    }
+      if (publishContent.trim().length > 2000) {
+        setFormError(`${t('error')}: ${t('field_too_long')}`);
+        return;
+      }
 
-    const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
+      const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
 
-    nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-    publishReply({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...flagPublishOptions });
-  };
+      nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
+      await publishReply({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...flagPublishOptions });
+    });
 
   const setLinkValue = (nextUrl: string) => {
     setUrl(nextUrl);
@@ -966,6 +993,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             handleUpload={handleUpload}
             uploadFile={uploadFile}
             onOekakiClearUploadedUrl={handleOekakiClearUploadedUrl}
+            isPublishSubmissionInFlight={isPublishSubmissionInFlight}
             disableReplyPublish={isResolvingExternalQuotes}
           />
         </tbody>

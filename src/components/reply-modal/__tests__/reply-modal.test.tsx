@@ -191,22 +191,32 @@ vi.mock('../../../hooks/use-stable-community', () => ({
     selector(communityAddress ? { roles: testState.rolesByCommunity[communityAddress] } : undefined),
 }));
 
-vi.mock('../../../hooks/use-publish-reply', () => ({
-  default: () => ({
-    isResolvingExternalQuotes: testState.isResolvingExternalQuotes,
-    publishReply: (options?: Record<string, unknown>) => {
-      if (options) {
-        testState.setPublishReplyOptionsMock(options);
-      }
-      return testState.publishReplyMock(options);
+vi.mock('../../../hooks/use-publish-reply', async () => {
+  const React = await vi.importActual<typeof import('react')>('react');
+
+  return {
+    default: () => {
+      const [, forceUpdate] = React.useReducer((value: number) => value + 1, 0);
+
+      return {
+        isResolvingExternalQuotes: testState.isResolvingExternalQuotes,
+        publishReply: (options?: Record<string, unknown>) => {
+          if (options) {
+            testState.setPublishReplyOptionsMock(options);
+          }
+          const result = testState.publishReplyMock(options);
+          forceUpdate();
+          return result;
+        },
+        publishReplyError: testState.publishReplyError,
+        publishReplyStateMessage: testState.publishReplyStateMessage,
+        replyIndex: testState.replyIndex,
+        resetPublishReplyOptions: testState.resetPublishReplyOptionsMock,
+        setPublishReplyOptions: (options: Record<string, unknown>) => testState.setPublishReplyOptionsMock(options),
+      };
     },
-    publishReplyError: testState.publishReplyError,
-    publishReplyStateMessage: testState.publishReplyStateMessage,
-    replyIndex: testState.replyIndex,
-    resetPublishReplyOptions: testState.resetPublishReplyOptionsMock,
-    setPublishReplyOptions: (options: Record<string, unknown>) => testState.setPublishReplyOptionsMock(options),
-  }),
-}));
+  };
+});
 
 vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
@@ -818,6 +828,54 @@ describe('ReplyModal', () => {
     });
   });
 
+  it('ignores duplicate reply clicks while youtube thumbnail resolution is pending', async () => {
+    const youtubeLink = 'https://youtu.be/replyslow';
+    const thumbnailLink = 'https://img.youtube.com/vi/replyslow/maxresdefault.jpg';
+    let resolveFetch: (response: unknown) => void = () => {};
+    const fetchPromise = new Promise((resolve) => {
+      resolveFetch = resolve;
+    });
+    testState.fetchMock.mockReturnValue(fetchPromise);
+    testState.openEmpty = true;
+    testState.selectedText = 'reply body';
+    testState.directoryByAddress['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { requirePostLinkIsMedia: true },
+      title: '/mu/ - Music',
+    };
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+    const postButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'post') as HTMLButtonElement;
+
+    await dispatchInput(linkInput, youtubeLink);
+
+    await clickButtonByText('post');
+    expect(postButton.disabled).toBe(true);
+
+    await clickButtonByText('post');
+    expect(testState.fetchMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveFetch({
+        headers: {
+          get: (name: string) => (name.toLowerCase() === 'content-length' ? '12345' : null),
+        },
+        ok: true,
+      });
+      await fetchPromise;
+      await Promise.resolve();
+    });
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: `${youtubeLink}\nreply body`,
+      link: thumbnailLink,
+    });
+  });
+
   it('validates unsupported options and keeps fortune output out of preview state until reply publish', async () => {
     const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.25);
     testState.openEmpty = true;
@@ -1075,6 +1133,7 @@ describe('ReplyModal', () => {
     await dispatchInput(optionsInput, 'nonoko');
     await dispatchInput(textarea as HTMLTextAreaElement, 'reply body');
     await clickButtonByText('post');
+    await flushEffects();
     await rerenderReplyModal('/mu/thread/post-1');
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
