@@ -5,6 +5,7 @@
 
 * **archive:** preserve button link text color on desktop ([b0193b3](https://github.com/bitsocialnet/5chan/commit/b0193b34beec9993d4ca3cedc259ac2e9bd88460))
 * **challenge-modal:** center mobile modal in viewport ([2e58961](https://github.com/bitsocialnet/5chan/commit/2e58961cf1d32fa303c042809309172add45eb51))
+* **challenge-modal:** publish challenge answers with pkc object schema ([591aaa7](https://github.com/bitsocialnet/5chan/commit/591aaa729))
 * **deps:** bump react-router-dom to 6.30.4 ([ee5aa78](https://github.com/bitsocialnet/5chan/commit/ee5aa7845edcd66b4bde7d6b09a6018bf40b9974)), closes [#276](https://github.com/bitsocialnet/5chan/issues/276)
 * **deps:** resolve shell-quote critical dependabot alert ([fa7cab0](https://github.com/bitsocialnet/5chan/commit/fa7cab069999c745595d2d50bd4f9c920047963d))
 * **failed-publish:** keep bracket actions on one line ([9de2e6a](https://github.com/bitsocialnet/5chan/commit/9de2e6a8510d4ec6647ff13ce99bd9e8c22b197a))

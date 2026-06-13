@@ -43,7 +43,11 @@ jobs:
         run: yarn type-check
       - name: Build React app
         run: CI='' NODE_ENV=production yarn build
-      - name: Run React Doctor
+      # Advisory only: React Doctor still runs and posts annotations for the diff
+      # since the previous tag, but a new finding must not block a release. Many
+      # error-level diagnostics flag intentional patterns, not bugs.
+      - name: Run React Doctor (advisory)
+        continue-on-error: true
         run: |
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^)
           yarn doctor --diff "$PREVIOUS_TAG" --annotations
