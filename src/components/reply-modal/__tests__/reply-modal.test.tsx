@@ -62,6 +62,7 @@ const testState = vi.hoisted(() => ({
       address: 'music-posting.eth',
     },
   } as Record<string, { address: string }>,
+  fetchMock: vi.fn(),
   showUploadControls: true,
   uploadComplete: undefined as ((url: string) => void) | undefined,
   uploadedFileName: null as string | null,
@@ -190,22 +191,32 @@ vi.mock('../../../hooks/use-stable-community', () => ({
     selector(communityAddress ? { roles: testState.rolesByCommunity[communityAddress] } : undefined),
 }));
 
-vi.mock('../../../hooks/use-publish-reply', () => ({
-  default: () => ({
-    isResolvingExternalQuotes: testState.isResolvingExternalQuotes,
-    publishReply: (options?: Record<string, unknown>) => {
-      if (options) {
-        testState.setPublishReplyOptionsMock(options);
-      }
-      return testState.publishReplyMock(options);
+vi.mock('../../../hooks/use-publish-reply', async () => {
+  const React = await vi.importActual<typeof import('react')>('react');
+
+  return {
+    default: () => {
+      const [, forceUpdate] = React.useReducer((value: number) => value + 1, 0);
+
+      return {
+        isResolvingExternalQuotes: testState.isResolvingExternalQuotes,
+        publishReply: (options?: Record<string, unknown>) => {
+          if (options) {
+            testState.setPublishReplyOptionsMock(options);
+          }
+          const result = testState.publishReplyMock(options);
+          forceUpdate();
+          return result;
+        },
+        publishReplyError: testState.publishReplyError,
+        publishReplyStateMessage: testState.publishReplyStateMessage,
+        replyIndex: testState.replyIndex,
+        resetPublishReplyOptions: testState.resetPublishReplyOptionsMock,
+        setPublishReplyOptions: (options: Record<string, unknown>) => testState.setPublishReplyOptionsMock(options),
+      };
     },
-    publishReplyError: testState.publishReplyError,
-    publishReplyStateMessage: testState.publishReplyStateMessage,
-    replyIndex: testState.replyIndex,
-    resetPublishReplyOptions: testState.resetPublishReplyOptionsMock,
-    setPublishReplyOptions: (options: Record<string, unknown>) => testState.setPublishReplyOptionsMock(options),
-  }),
-}));
+  };
+});
 
 vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
@@ -452,6 +463,14 @@ describe('ReplyModal', () => {
         address: 'traditional-games.bso',
       },
     };
+    testState.fetchMock.mockReset();
+    testState.fetchMock.mockResolvedValue({
+      headers: {
+        get: (name: string) => (name.toLowerCase() === 'content-length' ? '12345' : null),
+      },
+      ok: true,
+    });
+    vi.stubGlobal('fetch', testState.fetchMock);
     testState.showUploadControls = true;
     testState.uploadComplete = undefined;
     testState.uploadedFileName = null;
@@ -467,6 +486,7 @@ describe('ReplyModal', () => {
     container.remove();
     document.body.style.userSelect = '';
     document.body.style.webkitUserSelect = '';
+    vi.unstubAllGlobals();
   });
 
   it('initializes quoted content, display name, upload controls, and shared offline warning on board routes', async () => {
@@ -772,7 +792,7 @@ describe('ReplyModal', () => {
 
   it('moves YouTube links into reply content and publishes the thumbnail link on media-only boards', async () => {
     const youtubeLink = 'https://youtu.be/reply123';
-    const thumbnailLink = 'https://img.youtube.com/vi/reply123/0.jpg';
+    const thumbnailLink = 'https://img.youtube.com/vi/reply123/maxresdefault.jpg';
     testState.openEmpty = true;
     testState.selectedText = 'reply body';
     testState.directoryByAddress['music-posting.eth'] = {
@@ -802,6 +822,84 @@ describe('ReplyModal', () => {
 
     expect(linkInput.value).toBe(thumbnailLink);
     expect(textarea.value).toBe(`${youtubeLink}\nreply body`);
+    expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      content: `${youtubeLink}\nreply body`,
+      link: thumbnailLink,
+    });
+  });
+
+  it('rejects unresolved YouTube links on media-only reply modal boards', async () => {
+    const youtubeLink = 'https://youtu.be/replymissing';
+    testState.fetchMock.mockResolvedValue({
+      headers: {
+        get: () => null,
+      },
+      ok: false,
+    });
+    testState.openEmpty = true;
+    testState.selectedText = 'reply body';
+    testState.directoryByAddress['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { requirePostLinkIsMedia: true },
+      title: '/mu/ - Music',
+    };
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+
+    await dispatchInput(linkInput, youtubeLink);
+    await clickButtonByText('post');
+    await flushEffects(8);
+
+    expect(testState.fetchMock).toHaveBeenCalled();
+    expect(container.textContent).toContain('error: link_not_image_or_video_alert');
+    expect(linkInput.value).toBe(youtubeLink);
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+  });
+
+  it('ignores duplicate reply clicks while youtube thumbnail resolution is pending', async () => {
+    const youtubeLink = 'https://youtu.be/replyslow';
+    const thumbnailLink = 'https://img.youtube.com/vi/replyslow/maxresdefault.jpg';
+    let resolveFetch: (response: unknown) => void = () => {};
+    const fetchPromise = new Promise((resolve) => {
+      resolveFetch = resolve;
+    });
+    testState.fetchMock.mockReturnValue(fetchPromise);
+    testState.openEmpty = true;
+    testState.selectedText = 'reply body';
+    testState.directoryByAddress['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { requirePostLinkIsMedia: true },
+      title: '/mu/ - Music',
+    };
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+    const postButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'post') as HTMLButtonElement;
+
+    await dispatchInput(linkInput, youtubeLink);
+
+    await clickButtonByText('post');
+    expect(postButton.disabled).toBe(true);
+
+    await clickButtonByText('post');
+    expect(testState.fetchMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveFetch({
+        headers: {
+          get: (name: string) => (name.toLowerCase() === 'content-length' ? '12345' : null),
+        },
+        ok: true,
+      });
+      await fetchPromise;
+      await Promise.resolve();
+    });
+
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
       content: `${youtubeLink}\nreply body`,
       link: thumbnailLink,
@@ -1065,6 +1163,7 @@ describe('ReplyModal', () => {
     await dispatchInput(optionsInput, 'nonoko');
     await dispatchInput(textarea as HTMLTextAreaElement, 'reply body');
     await clickButtonByText('post');
+    await flushEffects();
     await rerenderReplyModal('/mu/thread/post-1');
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);

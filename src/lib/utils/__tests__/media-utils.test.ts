@@ -4,6 +4,7 @@ const testState = vi.hoisted(() => ({
   cachedThumbnails: new Map<string, string>(),
   canEmbedHosts: new Set<string>(),
   capacitorHttpGetMock: vi.fn(),
+  capacitorHttpRequestMock: vi.fn(),
   consoleErrorMock: vi.fn(),
   fetchMock: vi.fn(),
   isNativePlatform: false,
@@ -34,10 +35,12 @@ vi.mock('@capacitor/core', () => ({
   },
   CapacitorHttp: {
     get: (options: unknown) => testState.capacitorHttpGetMock(options),
+    request: (options: unknown) => testState.capacitorHttpRequestMock(options),
   },
 }));
 
 import {
+  getBestAvailableYouTubeThumbnailUrlFromLink,
   fetchWebpageThumbnailIfNeeded,
   getCommentMediaInfo,
   getDisplayMediaInfoType,
@@ -47,7 +50,10 @@ import {
   getPostMediaTypeLabel,
   getTwimgMediaFilePublishUrl,
   getYouTubeEmbedPostMediaFileLink,
+  getYouTubeThumbnailCandidateUrlsFromLink,
+  getYouTubeThumbnailFallbackUrls,
   getYouTubeThumbnailUrlFromLink,
+  isMissingYouTubeThumbnailImage,
 } from '../media-utils';
 
 const clearMemoizedCache = (fn: unknown) => {
@@ -78,6 +84,20 @@ const createFetchResponse = (html: string, ok = true) => {
   };
 };
 
+const createHeadResponse = (ok: boolean, contentLength = '12345') => ({
+  headers: {
+    get: (name: string) => (name.toLowerCase() === 'content-length' ? contentLength : null),
+  },
+  ok,
+});
+
+const createNativeHeadResponse = (status: number, contentLength = '12345') => ({
+  headers: {
+    'Content-Length': contentLength,
+  },
+  status,
+});
+
 describe('media-utils', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
@@ -92,6 +112,7 @@ describe('media-utils', () => {
     });
     testState.fetchMock.mockReset();
     testState.capacitorHttpGetMock.mockReset();
+    testState.capacitorHttpRequestMock.mockReset();
     vi.stubGlobal('fetch', testState.fetchMock);
     clearMemoizedCache(getHasThumbnail);
     clearMemoizedCache(getLinkMediaInfo);
@@ -119,16 +140,85 @@ describe('media-utils', () => {
 
   it('uses the youtube thumbnail url for post media file links and labels', () => {
     const mediaInfo = {
-      patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/0.jpg',
+      patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/maxresdefault.jpg',
       type: 'iframe',
       url: 'https://www.youtube.com/watch?v=abc123',
     };
 
-    expect(getYouTubeEmbedPostMediaFileLink(mediaInfo)).toBe('https://img.youtube.com/vi/abc123/0.jpg');
+    expect(getYouTubeEmbedPostMediaFileLink(mediaInfo)).toBe('https://img.youtube.com/vi/abc123/maxresdefault.jpg');
     expect(getPostMediaTypeLabel(mediaInfo, 'iframe', (key) => key)).toBe('youtube_video');
     expect(getYouTubeEmbedPostMediaFileLink({ type: 'iframe', url: 'https://streamable.com/clip123' })).toBeUndefined();
-    expect(getYouTubeThumbnailUrlFromLink('https://youtu.be/short123')).toBe('https://img.youtube.com/vi/short123/0.jpg');
+    expect(getYouTubeThumbnailUrlFromLink('https://youtu.be/short123')).toBe('https://img.youtube.com/vi/short123/maxresdefault.jpg');
     expect(getYouTubeThumbnailUrlFromLink('https://example.com/watch?v=not-youtube')).toBeUndefined();
+  });
+
+  it('builds youtube thumbnail candidates and detects the served missing-thumbnail placeholder', () => {
+    expect(getYouTubeThumbnailCandidateUrlsFromLink('https://www.youtube.com/watch?v=abc123')).toEqual([
+      'https://img.youtube.com/vi/abc123/maxresdefault.jpg',
+      'https://img.youtube.com/vi/abc123/sddefault.jpg',
+      'https://img.youtube.com/vi/abc123/mqdefault.jpg',
+      'https://img.youtube.com/vi/abc123/hqdefault.jpg',
+    ]);
+    expect(getYouTubeThumbnailFallbackUrls('https://i3.ytimg.com/vi/abc123/maxresdefault.jpg')).toEqual([
+      'https://i3.ytimg.com/vi/abc123/maxresdefault.jpg',
+      'https://img.youtube.com/vi/abc123/sddefault.jpg',
+      'https://img.youtube.com/vi/abc123/mqdefault.jpg',
+      'https://img.youtube.com/vi/abc123/hqdefault.jpg',
+    ]);
+    expect(getYouTubeThumbnailFallbackUrls('https://i3.ytimg.com/vi/abc123/sddefault.jpg')).toEqual([
+      'https://i3.ytimg.com/vi/abc123/sddefault.jpg',
+      'https://img.youtube.com/vi/abc123/mqdefault.jpg',
+      'https://img.youtube.com/vi/abc123/hqdefault.jpg',
+    ]);
+    expect(isMissingYouTubeThumbnailImage('https://i3.ytimg.com/vi/abc123/maxresdefault.jpg', 120, 90)).toBe(true);
+    expect(isMissingYouTubeThumbnailImage('https://i3.ytimg.com/vi/abc123/maxresdefault.jpg', 1280, 720)).toBe(false);
+    expect(isMissingYouTubeThumbnailImage('https://example.com/thumb.jpg', 120, 90)).toBe(false);
+  });
+
+  it('resolves the best available youtube thumbnail without accepting the failed placeholder response', async () => {
+    testState.fetchMock
+      .mockResolvedValueOnce(createHeadResponse(false, '1097'))
+      .mockResolvedValueOnce(createHeadResponse(true, '1097'))
+      .mockResolvedValueOnce(createHeadResponse(true, '8710'));
+
+    await expect(getBestAvailableYouTubeThumbnailUrlFromLink('https://www.youtube.com/watch?v=resolve123')).resolves.toBe(
+      'https://img.youtube.com/vi/resolve123/mqdefault.jpg',
+    );
+    expect(testState.fetchMock).toHaveBeenNthCalledWith(1, 'https://img.youtube.com/vi/resolve123/maxresdefault.jpg', expect.objectContaining({ method: 'HEAD' }));
+    expect(testState.fetchMock).toHaveBeenNthCalledWith(2, 'https://img.youtube.com/vi/resolve123/sddefault.jpg', expect.objectContaining({ method: 'HEAD' }));
+    expect(testState.fetchMock).toHaveBeenNthCalledWith(3, 'https://img.youtube.com/vi/resolve123/mqdefault.jpg', expect.objectContaining({ method: 'HEAD' }));
+  });
+
+  it('uses native http requests when resolving youtube thumbnails in native builds', async () => {
+    testState.isNativePlatform = true;
+    testState.capacitorHttpRequestMock.mockResolvedValueOnce(createNativeHeadResponse(404, '1097')).mockResolvedValueOnce(createNativeHeadResponse(200, '8765'));
+
+    await expect(getBestAvailableYouTubeThumbnailUrlFromLink('https://www.youtube.com/watch?v=native123')).resolves.toBe(
+      'https://img.youtube.com/vi/native123/sddefault.jpg',
+    );
+    expect(testState.fetchMock).not.toHaveBeenCalled();
+    expect(testState.capacitorHttpRequestMock).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        connectTimeout: 3000,
+        method: 'HEAD',
+        readTimeout: 3000,
+        url: 'https://img.youtube.com/vi/native123/maxresdefault.jpg',
+      }),
+    );
+    expect(testState.capacitorHttpRequestMock).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        method: 'HEAD',
+        url: 'https://img.youtube.com/vi/native123/sddefault.jpg',
+      }),
+    );
+  });
+
+  it('returns no youtube thumbnail when every candidate is unavailable', async () => {
+    testState.fetchMock.mockResolvedValue(createHeadResponse(false, '1097'));
+
+    await expect(getBestAvailableYouTubeThumbnailUrlFromLink('https://www.youtube.com/watch?v=missing123')).resolves.toBeUndefined();
   });
 
   it('recognizes which media types expose thumbnails', () => {
@@ -141,7 +231,7 @@ describe('media-utils', () => {
     expect(getHasThumbnail({ thumbnail: 'https://example.com/thumb.png', type: 'webpage', url: 'https://example.com' }, 'https://example.com')).toBe(true);
     expect(
       getHasThumbnail(
-        { patternThumbnailUrl: 'https://img.youtube.com/vi/abc/0.jpg', type: 'iframe', url: 'https://www.youtube.com/watch?v=abc' },
+        { patternThumbnailUrl: 'https://img.youtube.com/vi/abc/maxresdefault.jpg', type: 'iframe', url: 'https://www.youtube.com/watch?v=abc' },
         'https://www.youtube.com/watch?v=abc',
       ),
     ).toBe(true);
@@ -171,7 +261,7 @@ describe('media-utils', () => {
     expect(getLinkMediaInfo('https://example.com/file.swf')).toMatchObject({ type: 'swf' });
     expect(getLinkMediaInfo('https://example.com/path')).toMatchObject({ type: 'webpage' });
     expect(getLinkMediaInfo('https://www.youtube.com/watch?v=abc123')).toEqual({
-      patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/0.jpg',
+      patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/maxresdefault.jpg',
       type: 'iframe',
       url: 'https://www.youtube.com/watch?v=abc123',
     });
@@ -181,13 +271,13 @@ describe('media-utils', () => {
       url: 'https://streamable.com/clip123',
     });
     expect(getLinkMediaInfo('https://yt.example/watch?v=yt123')).toEqual({
-      patternThumbnailUrl: 'https://img.youtube.com/vi/yt123/0.jpg',
+      patternThumbnailUrl: 'https://img.youtube.com/vi/yt123/maxresdefault.jpg',
       type: 'iframe',
       url: 'https://yt.example/watch?v=yt123',
     });
     testState.canEmbedHosts = new Set(['yewtu.be']);
     expect(getLinkMediaInfo('https://yewtu.be/invidious123')).toEqual({
-      patternThumbnailUrl: 'https://img.youtube.com/vi/invidious123/0.jpg',
+      patternThumbnailUrl: 'https://img.youtube.com/vi/invidious123/maxresdefault.jpg',
       type: 'iframe',
       url: 'https://yewtu.be/invidious123',
     });
@@ -237,7 +327,7 @@ describe('media-utils', () => {
     expect(getCommentMediaInfo('https://www.youtube.com/watch?v=abc123', '', 800, 450)).toEqual({
       linkHeight: 450,
       linkWidth: 800,
-      patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/0.jpg',
+      patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/maxresdefault.jpg',
       thumbnail: undefined,
       type: 'iframe',
       url: 'https://www.youtube.com/watch?v=abc123',

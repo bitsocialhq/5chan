@@ -643,7 +643,7 @@ describe('Markdown', () => {
     testState.embeddableHosts = new Set(['www.youtube.com']);
     testState.mediaInfoByHref = {
       'https://www.youtube.com/watch?v=abc123': {
-        patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/0.jpg',
+        patternThumbnailUrl: 'https://img.youtube.com/vi/abc123/maxresdefault.jpg',
         type: 'iframe',
         url: 'https://www.youtube.com/watch?v=abc123',
       },

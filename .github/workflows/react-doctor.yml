@@ -1,7 +1,7 @@
 # React Doctor PR review.
-# Reports only issues this PR INTRODUCES (diffed against the merge-base) as inline
-# review comments + a sticky summary. It reads doctor.config.jsonc, so the
-# React-Compiler rules we don't enforce stay suppressed (see that file and
+# Reports only issues this PR INTRODUCES (diffed against the base branch) as
+# GitHub annotations. It reads doctor.config.jsonc, so the React-Compiler rules
+# we don't enforce stay suppressed (see that file and
 # docs/agent-playbooks/known-surprises.md). We do NOT chase the aggregate score.
 name: React Doctor
 
@@ -25,4 +25,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # so React Doctor can diff against the merge-base for new-vs-existing
-      - uses: millionco/react-doctor@v1
+      - name: Setup Node.js v22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Run React Doctor on changed files
+        run: yarn doctor --verbose --scope changed --base "origin/${{ github.base_ref }}" --annotations --blocking error
