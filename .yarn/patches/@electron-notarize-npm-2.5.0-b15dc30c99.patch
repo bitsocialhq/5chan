@@ -1,0 +1,21 @@
+diff --git a/lib/check-signature.js b/lib/check-signature.js
+index 324568af71bcc4372c9f959131ecd24122848c86..12f07a866e2c2b049abc222d2c11145b60f0fd72 100644
+--- a/lib/check-signature.js
++++ b/lib/check-signature.js
+@@ -41,14 +41,14 @@ const spawn_1 = require("./spawn");
+ const debug_1 = __importDefault(require("debug"));
+ const d = (0, debug_1.default)('electron-notarize');
+ const codesignDisplay = (opts) => __awaiter(void 0, void 0, void 0, function* () {
+-    const result = yield (0, spawn_1.spawn)('codesign', ['-dv', '-vvvv', '--deep', path.basename(opts.appPath)], {
++    const result = yield (0, spawn_1.spawn)('codesign', ['-dv', '-vvvv', '--deep', `./${path.basename(opts.appPath)}`], {
+         cwd: path.dirname(opts.appPath),
+     });
+     return result;
+ });
+ const codesign = (opts) => __awaiter(void 0, void 0, void 0, function* () {
+     d('attempting to check codesign of app:', opts.appPath);
+-    const result = yield (0, spawn_1.spawn)('codesign', ['-vvv', '--deep', '--strict', path.basename(opts.appPath)], {
++    const result = yield (0, spawn_1.spawn)('codesign', ['-vvv', '--deep', '--strict', `./${path.basename(opts.appPath)}`], {
+         cwd: path.dirname(opts.appPath),
+     });
+     return result;

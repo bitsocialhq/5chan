@@ -242,7 +242,8 @@
     "yaml@npm:^1.10.0": "1.10.3",
     "yaml@npm:^1.10.2": "1.10.3",
     "yaml@npm:^2.8.2": "2.8.3",
-    "use-sync-external-store": "1.6.0"
+    "use-sync-external-store": "1.6.0",
+    "@electron/notarize@npm:^2.1.0": "patch:@electron/notarize@npm%3A2.5.0#~/.yarn/patches/@electron-notarize-npm-2.5.0-b15dc30c99.patch"
   },
   "main": "electron/main.js",
   "lint-staged": {
