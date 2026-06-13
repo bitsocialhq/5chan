@@ -52,6 +52,7 @@ const getPubsubRpcClientsOptions = (protocolOptions?: AccountProtocolOptions) =>
 const getRpcSettingsDataPath = (rpcSettings?: RpcSettingsShape) => rpcSettings?.pkcOptions?.dataPath ?? '';
 
 const IPFSGatewaysSettings = ({ ipfsGatewayUrlsRef, mediaIpfsGatewayUrlRef }: SettingsProps) => {
+  const { t } = useTranslation();
   const account = useAccount() as AccountShape | undefined;
   const protocolOptions = getProtocolOptions(account);
   const { ipfsGatewayUrls } = protocolOptions || {};
@@ -64,7 +65,7 @@ const IPFSGatewaysSettings = ({ ipfsGatewayUrlsRef, mediaIpfsGatewayUrlRef }: Se
     <div className={styles.ipfsGatewaysSettings}>
       <div className={styles.ipfsGatewaysSetting}>
         <textarea
-          aria-label='IPFS gateway URLs'
+          aria-label={t('advanced_ipfs_gateway_urls_aria')}
           defaultValue={ipfsGatewayUrlsDefaultValue}
           ref={ipfsGatewayUrlsRef}
           disabled={isConnectedToRpc}
@@ -74,11 +75,11 @@ const IPFSGatewaysSettings = ({ ipfsGatewayUrlsRef, mediaIpfsGatewayUrlRef }: Se
           rows={ipfsGatewayUrls?.length || 1}
         />
       </div>
-      <span className={styles.settingTip}>media IPFS gateway</span>
+      <span className={styles.settingTip}>{t('advanced_media_ipfs_gateway')}</span>
       <div>
         <input
           type='text'
-          aria-label='Media IPFS gateway URL'
+          aria-label={t('advanced_media_ipfs_gateway_url_aria')}
           defaultValue={mediaIpfsGatewayUrl}
           ref={mediaIpfsGatewayUrlRef}
           disabled={isConnectedToRpc}
@@ -92,6 +93,7 @@ const IPFSGatewaysSettings = ({ ipfsGatewayUrlsRef, mediaIpfsGatewayUrlRef }: Se
 };
 
 const PubsubProvidersSettings = ({ pubsubProvidersRef }: SettingsProps) => {
+  const { t } = useTranslation();
   const account = useAccount() as AccountShape | undefined;
   const protocolOptions = getProtocolOptions(account);
   const pubsubKuboRpcClientsOptions = getPubsubRpcClientsOptions(protocolOptions);
@@ -102,7 +104,7 @@ const PubsubProvidersSettings = ({ pubsubProvidersRef }: SettingsProps) => {
   return (
     <div className={styles.pubsubProvidersSettings}>
       <textarea
-        aria-label='Pubsub providers'
+        aria-label={t('advanced_pubsub_providers_aria')}
         defaultValue={pubsubProvidersDefaultValue}
         ref={pubsubProvidersRef}
         disabled={isConnectedToRpc}
@@ -117,6 +119,7 @@ const PubsubProvidersSettings = ({ pubsubProvidersRef }: SettingsProps) => {
 };
 
 const HttpRoutersSettings = ({ httpRoutersRef }: SettingsProps) => {
+  const { t } = useTranslation();
   const account = useAccount() as AccountShape | undefined;
   const protocolOptions = getProtocolOptions(account);
   const { httpRoutersOptions } = protocolOptions || {};
@@ -127,7 +130,7 @@ const HttpRoutersSettings = ({ httpRoutersRef }: SettingsProps) => {
   return (
     <div className={styles.httpRoutersSettings}>
       <textarea
-        aria-label='HTTP routers'
+        aria-label={t('advanced_http_routers_aria')}
         defaultValue={httpRoutersDefaultValue}
         ref={httpRoutersRef}
         disabled={isConnectedToRpc}
@@ -142,16 +145,17 @@ const HttpRoutersSettings = ({ httpRoutersRef }: SettingsProps) => {
 };
 
 const BlockchainProvidersSettings = ({ ethRpcRef }: SettingsProps) => {
+  const { t } = useTranslation();
   const account = useAccount() as AccountShape | undefined;
   const chainProviders = getChainProviders(account);
   const ethRpcDefaultValue = chainProviders?.['eth']?.urls?.join('\n');
 
   return (
     <div className={styles.blockchainProvidersSettings}>
-      <span className={styles.settingTip}>Ethereum RPC, for .eth domains</span>
+      <span className={styles.settingTip}>{t('advanced_ethereum_rpc_bso_domains')}</span>
       <div>
         <textarea
-          aria-label='Ethereum RPC URLs'
+          aria-label={t('advanced_ethereum_rpc_urls_aria')}
           defaultValue={ethRpcDefaultValue}
           ref={ethRpcRef}
           autoCorrect='off'
@@ -165,6 +169,7 @@ const BlockchainProvidersSettings = ({ ethRpcRef }: SettingsProps) => {
 };
 
 const P2pRPCSettings = ({ p2pRpcRef }: SettingsProps) => {
+  const { t } = useTranslation();
   const account = useAccount() as AccountShape | undefined;
   const protocolOptions = getProtocolOptions(account);
   const pkcRpcClientsOptions = getNodeRpcClientsOptions(protocolOptions);
@@ -173,9 +178,9 @@ const P2pRPCSettings = ({ p2pRpcRef }: SettingsProps) => {
     <div className={styles.p2pRPCSettings}>
       <input
         type='text'
-        aria-label='P2P RPC clients'
+        aria-label={t('advanced_p2p_rpc_clients_aria')}
         defaultValue={pkcRpcClientsOptions}
-        placeholder='ws://<IP>:<port>/<secretAuthKey>'
+        placeholder={t('advanced_p2p_rpc_placeholder')}
         ref={p2pRpcRef}
         autoCorrect='off'
         autoCapitalize='off'
@@ -186,6 +191,7 @@ const P2pRPCSettings = ({ p2pRpcRef }: SettingsProps) => {
 };
 
 const P2pDataPathSettings = ({ p2pDataPathRef }: SettingsProps) => {
+  const { t } = useTranslation();
   const pkcRpc = usePkcRpcSettings();
   const { pkcRpcSettings } = pkcRpc || {};
   const isConnectedToRpc = pkcRpc?.state === 'connected';
@@ -199,7 +205,7 @@ const P2pDataPathSettings = ({ p2pDataPathRef }: SettingsProps) => {
           autoCapitalize='off'
           spellCheck='false'
           type='text'
-          aria-label='P2P data path'
+          aria-label={t('advanced_p2p_data_path_aria')}
           defaultValue={path}
           disabled={!isConnectedToRpc}
           ref={p2pDataPathRef}
@@ -220,7 +226,7 @@ const PureP2PBrowserSettings = ({ onPureP2PBrowserChange, pureP2PBrowserEnabled,
         <input
           className={styles.pureP2PCheckbox}
           type='checkbox'
-          aria-label='Pure P2P browser mode'
+          aria-label={t('advanced_pure_p2p_browser_aria')}
           checked={isChecked}
           ref={pureP2PBrowserRef}
           onChange={(event) => onPureP2PBrowserChange?.(event.currentTarget.checked)}
@@ -318,14 +324,14 @@ const AdvancedSettings = () => {
         pkcOptions,
       });
       if (pureP2PBrowserPreference !== undefined) setPureP2PBrowserPreference(pureP2PBrowserPreference);
-      alert('Options saved, reloading...');
+      alert(t('advanced_options_saved_reloading'));
       window.location.reload();
     } catch (e) {
       if (e instanceof Error) {
-        alert('Error saving options: ' + e.message);
+        alert(t('advanced_error_saving_options', { message: e.message }));
         console.log(e);
       } else {
-        alert('Error');
+        alert(t('error'));
       }
     }
   };
@@ -335,13 +341,13 @@ const AdvancedSettings = () => {
       {shouldShowGatewayModeSettings ? (
         <>
           <div className={styles.category}>
-            <span className={styles.categoryTitle}>IPFS gateways:</span>
+            <span className={styles.categoryTitle}>{t('advanced_ipfs_gateways')}</span>
             <span className={styles.categorySettings}>
               <IPFSGatewaysSettings ipfsGatewayUrlsRef={ipfsGatewayUrlsRef} mediaIpfsGatewayUrlRef={mediaIpfsGatewayUrlRef} />
             </span>
           </div>
           <div className={styles.category}>
-            <span className={styles.categoryTitle}>pubsub providers:</span>
+            <span className={styles.categoryTitle}>{t('advanced_pubsub_providers')}</span>
             <span className={styles.categorySettings}>
               <PubsubProvidersSettings pubsubProvidersRef={pubsubProvidersRef} />
             </span>
@@ -349,28 +355,28 @@ const AdvancedSettings = () => {
         </>
       ) : null}
       <div className={styles.category}>
-        <span className={styles.categoryTitle}>http routers:</span>
+        <span className={styles.categoryTitle}>{t('advanced_http_routers')}</span>
         <span className={styles.categorySettings}>
           <HttpRoutersSettings httpRoutersRef={httpRoutersRef} />
         </span>
       </div>
       <div className={styles.category}>
         <span className={styles.categoryTitle} style={{ marginBottom: '-5px' }}>
-          blockchain providers:
+          {t('advanced_blockchain_providers')}
         </span>
         <span className={styles.categorySettings}>
           <BlockchainProvidersSettings ethRpcRef={ethRpcRef} />
         </span>
       </div>
       <div className={styles.category}>
-        <span className={styles.categoryTitle}>Full node WebSocket RPC:</span>
+        <span className={styles.categoryTitle}>{t('advanced_full_node_websocket_rpc')}</span>
         <span className={styles.categorySettings}>
           <P2pRPCSettings p2pRpcRef={p2pRpcRef} />
         </span>
       </div>
       {isElectron && (
         <div className={styles.category}>
-          <span className={styles.categoryTitle}>p2p data path:</span>
+          <span className={styles.categoryTitle}>{t('advanced_p2p_data_path')}</span>
           <span className={styles.categorySettings}>
             <P2pDataPathSettings p2pDataPathRef={p2pDataPathRef} />
           </span>
