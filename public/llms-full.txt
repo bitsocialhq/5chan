@@ -1182,6 +1182,45 @@ Avoid GitHub MCP and browser MCP servers for this project because they add signi
 Source: https://github.com/bitsocialnet/5chan/blob/master/CHANGELOG.md
 
 ```markdown
+## [0.9.2](https://github.com/bitsocialnet/5chan/compare/v0.9.1...v0.9.2) (2026-06-13)
+
+
+### Bug Fixes
+
+* **archive:** preserve button link text color on desktop ([b0193b3](https://github.com/bitsocialnet/5chan/commit/b0193b34beec9993d4ca3cedc259ac2e9bd88460))
+* **challenge-modal:** center mobile modal in viewport ([2e58961](https://github.com/bitsocialnet/5chan/commit/2e58961cf1d32fa303c042809309172add45eb51))
+* **challenge-modal:** publish challenge answers with pkc object schema ([591aaa7](https://github.com/bitsocialnet/5chan/commit/591aaa729))
+* **deps:** bump react-router-dom to 6.30.4 ([ee5aa78](https://github.com/bitsocialnet/5chan/commit/ee5aa7845edcd66b4bde7d6b09a6018bf40b9974)), closes [#276](https://github.com/bitsocialnet/5chan/issues/276)
+* **deps:** resolve shell-quote critical dependabot alert ([fa7cab0](https://github.com/bitsocialnet/5chan/commit/fa7cab069999c745595d2d50bd4f9c920047963d))
+* **failed-publish:** keep bracket actions on one line ([9de2e6a](https://github.com/bitsocialnet/5chan/commit/9de2e6a8510d4ec6647ff13ce99bd9e8c22b197a))
+* **flags:** limit challenge requests to country flags ([32dbabb](https://github.com/bitsocialnet/5chan/commit/32dbabb7c73052adf56b71686662abd95f35d1cc))
+* **flags:** map pony flags to sprite sheet coordinates ([cbdd4ed](https://github.com/bitsocialnet/5chan/commit/cbdd4edf7b875198c59a3a8bf95442f1482bd3bc))
+* **media playback:** stop hidden and offscreen media ([#1164](https://github.com/bitsocialnet/5chan/issues/1164)) ([245d316](https://github.com/bitsocialnet/5chan/commit/245d3164c34a8dc55dd11f2ffed92b74a089e2ba))
+* **mod queue:** reset board filter on navigation ([#1166](https://github.com/bitsocialnet/5chan/issues/1166)) ([a3ff6b2](https://github.com/bitsocialnet/5chan/commit/a3ff6b2e334eb9e9af4b140a4c2be325cf7791cd))
+* **mod-queue:** show empty state instead of not-allowed redirect ([4308d26](https://github.com/bitsocialnet/5chan/commit/4308d26cf0120024efce857c0037e35964da4b86))
+* **pending-post:** keep retrying failed posts on the pending route ([#1161](https://github.com/bitsocialnet/5chan/issues/1161)) ([bd12b47](https://github.com/bitsocialnet/5chan/commit/bd12b47db61ed76ec56320057a85f5f5630b88b7))
+* **post ids:** avoid cid fallback for poster identity ([cdb1d13](https://github.com/bitsocialnet/5chan/commit/cdb1d13bef6e369108e0abc344ed8bcc8746eadd))
+* **post ids:** fall back to comment cid for missing ids ([#1167](https://github.com/bitsocialnet/5chan/issues/1167)) ([c0f1a77](https://github.com/bitsocialnet/5chan/commit/c0f1a77958a344b2d5b83a1fd8ebb3a271cf8b39))
+* **post-form:** convert twimg query-format links in the reply modal ([#1168](https://github.com/bitsocialnet/5chan/issues/1168)) ([2f938d5](https://github.com/bitsocialnet/5chan/commit/2f938d59ae5778c3569feb1cc34f7128af4a4ed2))
+* **post-form:** hide filename for non-file media links ([27558de](https://github.com/bitsocialnet/5chan/commit/27558ded182c38695e1ed9c3b2bc81328c31233e))
+* **post-form:** style errors like 4chan and move into tfoot ([f3d59c3](https://github.com/bitsocialnet/5chan/commit/f3d59c3345103d87797d81d752be41300c623206))
+* **reply-modal:** blur TeX button when preview closes ([8456295](https://github.com/bitsocialnet/5chan/commit/8456295eee0ddbb1f1663a127252d4f31acb1f75))
+* resolve open Dependabot security alerts ([43b160b](https://github.com/bitsocialnet/5chan/commit/43b160b1fcfe54e3f2aa769f8207d0d9697d2d9a))
+* **rules:** use hash links for directory deep links ([e9c729a](https://github.com/bitsocialnet/5chan/commit/e9c729a9e3bfe852fe0c88b856b10fbdba3dc9a4))
+* **thread update:** refresh stale reply caches ([#1160](https://github.com/bitsocialnet/5chan/issues/1160)) ([c2b222c](https://github.com/bitsocialnet/5chan/commit/c2b222c4d50ce10e74f135a8f3afbb758b78e33f))
+* **thread:** show optimistic reply count after publishing own reply ([#1162](https://github.com/bitsocialnet/5chan/issues/1162)) ([182ff0e](https://github.com/bitsocialnet/5chan/commit/182ff0eadc9568fb06a9ac6ee24ec214c41ce7b0))
+* **youtube thumbnails:** prefer best available image ([6cb28b0](https://github.com/bitsocialnet/5chan/commit/6cb28b0e4f03505a59ade1585ff96d2b1bcf5beb))
+
+
+### Features
+
+* **board-header:** show subtitle on /all view ([dcc47c7](https://github.com/bitsocialnet/5chan/commit/dcc47c7bbdbef6f1a93613d4c62c90e7656dc098))
+* **electron:** sign and notarize mac release builds ([#1171](https://github.com/bitsocialnet/5chan/issues/1171)) ([85b782e](https://github.com/bitsocialnet/5chan/commit/85b782e9349cd8683a350db44b731744c30af17f)), closes [electron/notarize#245](https://github.com/electron/notarize/issues/245)
+* **reply modal:** add sci tex preview button ([#1170](https://github.com/bitsocialnet/5chan/issues/1170)) ([17c63bb](https://github.com/bitsocialnet/5chan/commit/17c63bb2e6187901265b13b56126c724e7acac0a))
+* **settings:** internationalize advanced settings and update RPC label to .bso ([6d9b5ff](https://github.com/bitsocialnet/5chan/commit/6d9b5ff3ce465c53370d12f6763a65bb90202848))
+
+
+
 ## [0.9.1](https://github.com/bitsocialnet/5chan/compare/v0.9.0...v0.9.1) (2026-06-07)
 
 
