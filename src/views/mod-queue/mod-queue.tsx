@@ -1311,7 +1311,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     setResetFunction(reset);
   }, [reset, setResetFunction]);
 
-  const footerError = !hasVisibleComments && feed.length === 0 && communityError?.message ? communityError : null;
+  const footerError = feed.length === 0 && communityError?.message ? communityError : null;
   const virtuosoFooterContext = useMemo(
     () => ({
       error: footerError,

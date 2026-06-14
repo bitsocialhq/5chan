@@ -9,6 +9,7 @@ import ModQueueView from '../mod-queue';
 const act = (React as { act?: (callback: () => void | Promise<void>) => void | Promise<void> }).act as (callback: () => void | Promise<void>) => void | Promise<void>;
 
 type TestComment = {
+  approved?: boolean;
   cid: string;
   content?: string;
   communityAddress?: string;
@@ -21,6 +22,7 @@ const testState = vi.hoisted(() => ({
   account: { author: { address: '0x123' }, id: 'account' },
   accountCommunityAddresses: ['music-posting.eth'],
   addChallengeMock: vi.fn(),
+  communityError: null as Error | null,
   directories: [{ address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' }],
   dismissedCommentCids: [] as string[],
   feed: [] as TestComment[],
@@ -60,6 +62,7 @@ vi.mock('react-i18next', () => ({
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
   useCommunity: () => ({
+    error: testState.communityError,
     roles: {
       '0x123': { role: 'moderator' },
     },
@@ -256,6 +259,7 @@ describe('ModQueueView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.accountCommunityAddresses = ['music-posting.eth'];
+    testState.communityError = null;
     testState.directories = [{ address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' }];
     testState.dismissedCommentCids = [];
     testState.feed = [];
@@ -319,6 +323,28 @@ describe('ModQueueView', () => {
 
     const loadingTexts = Array.from(container.querySelectorAll('[data-testid="loading-ellipsis"]')).map((element) => element.textContent);
     expect(container.textContent).toContain('pending reply body');
+    expect(loadingTexts).toContain('looking_for_more_posts');
+  });
+
+  it('keeps the footer error visible when local queue history is shown while the live feed is empty', async () => {
+    testState.communityError = new Error('community unavailable');
+    testState.hasMore = true;
+    testState.queuedCommentHistory = [
+      {
+        approved: true,
+        cid: 'approved-history',
+        communityAddress: 'music-posting.eth',
+        content: 'recently approved body',
+        pendingApproval: false,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    const loadingTexts = Array.from(container.querySelectorAll('[data-testid="loading-ellipsis"]')).map((element) => element.textContent);
+    expect(container.textContent).toContain('recently approved body');
+    expect(container.querySelector('[data-testid="error-display"]')?.textContent).toBe('community unavailable');
     expect(loadingTexts).toContain('looking_for_more_posts');
   });
 
