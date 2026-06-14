@@ -9,6 +9,7 @@ import ModQueueView from '../mod-queue';
 const act = (React as { act?: (callback: () => void | Promise<void>) => void | Promise<void> }).act as (callback: () => void | Promise<void>) => void | Promise<void>;
 
 type TestComment = {
+  approved?: boolean;
   cid: string;
   content?: string;
   communityAddress?: string;
@@ -21,6 +22,7 @@ const testState = vi.hoisted(() => ({
   account: { author: { address: '0x123' }, id: 'account' },
   accountCommunityAddresses: ['music-posting.eth'],
   addChallengeMock: vi.fn(),
+  communityError: null as Error | null,
   directories: [{ address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' }],
   dismissedCommentCids: [] as string[],
   feed: [] as TestComment[],
@@ -60,6 +62,7 @@ vi.mock('react-i18next', () => ({
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
   useCommunity: () => ({
+    error: testState.communityError,
     roles: {
       '0x123': { role: 'moderator' },
     },
@@ -115,10 +118,12 @@ vi.mock('@floating-ui/react', () => ({
 vi.mock('react-virtuoso', () => ({
   Virtuoso: ({
     components,
+    context,
     data = [],
     itemContent,
   }: {
-    components?: { Footer?: React.ComponentType };
+    components?: { Footer?: React.ComponentType<{ context?: unknown }> };
+    context?: unknown;
     data?: TestComment[];
     itemContent: (index: number, item: TestComment) => React.ReactNode;
   }) =>
@@ -126,7 +131,7 @@ vi.mock('react-virtuoso', () => ({
       'div',
       { 'data-testid': 'virtuoso' },
       data.map((item, index) => createElement(React.Fragment, { key: item.cid }, itemContent(index, item))),
-      components?.Footer ? createElement(components.Footer) : null,
+      components?.Footer ? createElement(components.Footer, { context }) : null,
     ),
 }));
 
@@ -170,10 +175,6 @@ vi.mock('../../../hooks/use-directories', () => ({
 
 vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
-}));
-
-vi.mock('../../../hooks/use-state-string', () => ({
-  useFeedStateString: () => 'loading_mod_queue',
 }));
 
 vi.mock('../../../components/error-display/error-display', () => ({
@@ -258,6 +259,7 @@ describe('ModQueueView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.accountCommunityAddresses = ['music-posting.eth'];
+    testState.communityError = null;
     testState.directories = [{ address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' }];
     testState.dismissedCommentCids = [];
     testState.feed = [];
@@ -278,14 +280,83 @@ describe('ModQueueView', () => {
     container.remove();
   });
 
-  it('keeps the compact table hidden while an empty mod queue is still loading', async () => {
+  it('keeps the compact table visible with the empty state while an empty mod queue continues loading', async () => {
     testState.hasMore = true;
 
     await renderModQueue();
 
-    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_mod_queue');
-    expect(container.textContent).not.toContain('No.');
-    expect(container.textContent).not.toContain('queue_is_empty');
+    const text = container.textContent ?? '';
+    expect(text).toContain('No.');
+    expect(text).toContain('excerpt');
+    expect(text).toContain('queue_is_empty');
+    expect(text.indexOf('No.')).toBeLessThan(text.indexOf('queue_is_empty'));
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+  });
+
+  it('does not render a loading footer for an empty all-boards mod queue', async () => {
+    testState.accountCommunityAddresses = ['music-posting.eth', 'tech-posting.eth'];
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.hasMore = true;
+
+    await renderModQueue();
+
+    expect(container.textContent).toContain('queue_is_empty');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+  });
+
+  it('keeps the empty queue state quiet when background community metadata fails', async () => {
+    testState.communityError = new Error('community unavailable');
+    testState.hasMore = true;
+
+    await renderModQueue();
+
+    expect(container.textContent).toContain('queue_is_empty');
+    expect(container.querySelector('[data-testid="error-display"]')).toBeNull();
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+  });
+
+  it('shows a generic continuing load state after a queue item appears', async () => {
+    testState.hasMore = true;
+    testState.feed = [
+      {
+        cid: 'pending-reply',
+        communityAddress: 'music-posting.eth',
+        content: 'pending reply body',
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    const loadingTexts = Array.from(container.querySelectorAll('[data-testid="loading-ellipsis"]')).map((element) => element.textContent);
+    expect(container.textContent).toContain('pending reply body');
+    expect(loadingTexts).toContain('looking_for_more_posts');
+  });
+
+  it('keeps the footer error visible when local queue history is shown while the live feed is empty', async () => {
+    testState.communityError = new Error('community unavailable');
+    testState.hasMore = true;
+    testState.queuedCommentHistory = [
+      {
+        approved: true,
+        cid: 'approved-history',
+        communityAddress: 'music-posting.eth',
+        content: 'recently approved body',
+        pendingApproval: false,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    const loadingTexts = Array.from(container.querySelectorAll('[data-testid="loading-ellipsis"]')).map((element) => element.textContent);
+    expect(container.textContent).toContain('recently approved body');
+    expect(container.querySelector('[data-testid="error-display"]')?.textContent).toBe('community unavailable');
+    expect(loadingTexts).toContain('looking_for_more_posts');
   });
 
   it('keeps the compact table visible and renders the empty state under its header after loading', async () => {

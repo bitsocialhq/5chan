@@ -5,13 +5,12 @@ import { useParams, Link } from 'react-router-dom';
 import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useCommunity, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import useAccountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js';
 import { useFloating, offset, shift, size, flip, autoUpdate } from '@floating-ui/react';
-import { Virtuoso } from 'react-virtuoso';
+import { Virtuoso, type Components } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
 import postStyles from '../post/post.module.css';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
 import ErrorDisplay from '../../components/error-display/error-display';
-import { useFeedStateString } from '../../hooks/use-state-string';
 import { getCommunityAddress, getBoardPath, areSameBoardAddress } from '../../lib/utils/route-utils';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import getShortAddress from '../../lib/get-short-address';
@@ -119,24 +118,84 @@ interface ModQueueViewProps {
   boardIdentifier?: string; // If provided, shows queue for single board
 }
 
+const getAddressListKey = (addresses: string[]) => addresses.join('\0');
+const getAddressListFromKey = (key: string) => (key ? key.split('\0') : []);
+const EMPTY_COMMENTS: Comment[] = [];
+const MOD_QUEUE_VIRTUOSO_INCREASE_VIEWPORT_BY = { bottom: 600, top: 600 };
+const NOOP_LOAD_MORE = () => undefined;
+
 interface ModQueueFooterProps {
   hasMore: boolean;
-  communityAddresses: string[];
+  loadingStateString: string;
 }
 
 // Defined outside ModQueueView to preserve component identity across renders (Virtuoso optimization)
-// The useFeedStateString hook is called here instead of in ModQueueView to isolate re-renders
-// caused by backend IPFS state changes to just this footer component
-const ModQueueFooter = ({ hasMore, communityAddresses }: ModQueueFooterProps) => {
-  const { t } = useTranslation();
-  const loadingStateString = useFeedStateString(communityAddresses) || t('loading');
-
+const ModQueueFooter = memo(({ hasMore, loadingStateString }: ModQueueFooterProps) => {
   return hasMore ? (
     <div className={styles.footer}>
       <LoadingEllipsis string={loadingStateString} />
     </div>
   ) : null;
+});
+ModQueueFooter.displayName = 'ModQueueFooter';
+
+const ModQueueContinuingFooter = memo(({ hasMore }: { hasMore: boolean }) => {
+  const { t } = useTranslation();
+
+  return <ModQueueFooter hasMore={hasMore} loadingStateString={t('looking_for_more_posts')} />;
+});
+ModQueueContinuingFooter.displayName = 'ModQueueContinuingFooter';
+
+interface ModQueueVirtuosoFooterContext {
+  error: Error | null;
+  hasMore: boolean;
+}
+
+const ModQueueVirtuosoFooter = memo(({ context }: { context?: ModQueueVirtuosoFooterContext }) => {
+  if (!context) {
+    return null;
+  }
+
+  return (
+    <>
+      {context.error && (
+        <div className={styles.error}>
+          <ErrorDisplay error={context.error} />
+        </div>
+      )}
+      <ModQueueContinuingFooter hasMore={context.hasMore} />
+    </>
+  );
+});
+ModQueueVirtuosoFooter.displayName = 'ModQueueVirtuosoFooter';
+
+const MOD_QUEUE_VIRTUOSO_COMPONENTS: Components<Comment, ModQueueVirtuosoFooterContext> = {
+  Footer: ModQueueVirtuosoFooter,
 };
+
+const ModQueuePageFooter = memo(() => {
+  const { t } = useTranslation();
+  const reset = useFeedResetStore((state) => state.reset);
+
+  return (
+    <>
+      <PageFooterDesktop firstRow={<StyleOnlyFooterFirstRow />} />
+      <PageFooterMobile>
+        <div>
+          <div className={footerStyles.mobileFooterButtons}>
+            <button type='button' className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
+              {t('top')}
+            </button>
+            <button type='button' className='button' onClick={() => reset?.()}>
+              {t('refresh')}
+            </button>
+          </div>
+        </div>
+      </PageFooterMobile>
+    </>
+  );
+});
+ModQueuePageFooter.displayName = 'ModQueuePageFooter';
 
 interface ModQueueRowProps {
   comment: Comment;
@@ -654,7 +713,7 @@ const ModQueueCard = memo(({ comment, showBoard = false, boardPath, boardDisplay
 });
 ModQueueCard.displayName = 'ModQueueCard';
 
-const ModQueueFeedPost = ({ comment }: { comment: Comment }) => {
+const ModQueueFeedPost = memo(({ comment }: { comment: Comment }) => {
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
   const { status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove } = useModQueueActions(comment);
@@ -673,7 +732,8 @@ const ModQueueFeedPost = ({ comment }: { comment: Comment }) => {
       onRemoveFromModQueue={handleRemove}
     />
   );
-};
+});
+ModQueueFeedPost.displayName = 'ModQueueFeedPost';
 
 interface ModQueueBoardSummaryProps {
   feed: Comment[];
@@ -704,7 +764,7 @@ const ModQueueBoardCount = ({ normal, urgent }: { normal: number; urgent: number
   );
 };
 
-const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses, selectedBoardFilter, setSelectedBoardFilter }: ModQueueBoardSummaryProps) => {
+const ModQueueBoardSummary = memo(({ feed, directories, accountCommunityAddresses, selectedBoardFilter, setSelectedBoardFilter }: ModQueueBoardSummaryProps) => {
   const { t } = useTranslation();
   const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const currentTime = useCurrentTime();
@@ -795,7 +855,206 @@ const ModQueueBoardSummary = ({ feed, directories, accountCommunityAddresses, se
       })}
     </span>
   );
-};
+});
+ModQueueBoardSummary.displayName = 'ModQueueBoardSummary';
+
+interface ModQueueContentProps {
+  accountCommunityAddresses: string[];
+  addressToPathMap: Map<string, string>;
+  boardSummaryFeed: Comment[];
+  compactCardItemContent: (index: number, comment: Comment) => React.ReactNode;
+  compactRowItemContent: (index: number, comment: Comment) => React.ReactNode;
+  communityError: Error | null | undefined;
+  directories: DirectoryCommunity[];
+  feedLength: number;
+  feedPostItemContent: (index: number, comment: Comment) => React.ReactNode;
+  filteredFeed: Comment[];
+  hasMore: boolean;
+  isMobile: boolean;
+  isQueueEmpty: boolean;
+  loadMore: () => void;
+  resolvedAddress: string | undefined;
+  selectedBoardFilter: string | null;
+  setSelectedBoardFilter: React.Dispatch<React.SetStateAction<string | null>>;
+  showBoardColumn: boolean;
+  viewMode: 'compact' | 'feed';
+  virtuosoFooterContext: ModQueueVirtuosoFooterContext | null;
+}
+
+const ModQueueContent = memo(
+  ({
+    accountCommunityAddresses,
+    addressToPathMap,
+    boardSummaryFeed,
+    compactCardItemContent,
+    compactRowItemContent,
+    communityError,
+    directories,
+    feedLength,
+    feedPostItemContent,
+    filteredFeed,
+    hasMore,
+    isMobile,
+    isQueueEmpty,
+    loadMore,
+    resolvedAddress,
+    selectedBoardFilter,
+    setSelectedBoardFilter,
+    showBoardColumn,
+    viewMode,
+    virtuosoFooterContext,
+  }: ModQueueContentProps) => {
+    const { t } = useTranslation();
+
+    return (
+      <>
+        <div className={styles.container}>
+          {!resolvedAddress && (
+            <div className={styles.controls}>
+              <div className={styles.controlsLeft}>
+                <ModQueueBoardSummary
+                  feed={boardSummaryFeed}
+                  directories={directories}
+                  accountCommunityAddresses={accountCommunityAddresses}
+                  selectedBoardFilter={selectedBoardFilter}
+                  setSelectedBoardFilter={setSelectedBoardFilter}
+                />
+              </div>
+            </div>
+          )}
+
+          {viewMode === 'compact' && !isMobile && (
+            <>
+              <div className={styles.tableHeader}>
+                <div className={styles.numberHeader}>No.</div>
+                {!resolvedAddress && <div className={styles.boardHeader}>{t('board')}</div>}
+                <div className={styles.excerptHeader}>{t('excerpt')}</div>
+                <div className={styles.timeHeader}>{t('submitted')}</div>
+                <div className={styles.typeHeader}>{t('type')}</div>
+                <div className={styles.imageHeader}>{t('image')}</div>
+                <div className={styles.actionsHeader}>{t('actions')}</div>
+              </div>
+
+              {isQueueEmpty ? (
+                <div className={`${styles.empty} ${styles.emptyTableRow}`}>{t('queue_is_empty')}</div>
+              ) : hasMore ? (
+                <Virtuoso
+                  useWindowScroll
+                  data={filteredFeed}
+                  totalCount={filteredFeed.length}
+                  endReached={loadMore}
+                  increaseViewportBy={MOD_QUEUE_VIRTUOSO_INCREASE_VIEWPORT_BY}
+                  itemContent={compactRowItemContent}
+                  components={MOD_QUEUE_VIRTUOSO_COMPONENTS}
+                  context={virtuosoFooterContext ?? undefined}
+                />
+              ) : (
+                <>
+                  {filteredFeed.map((comment, index) => {
+                    const commentCommunityAddress = getCommentCommunityAddress(comment);
+                    const path =
+                      addressToPathMap.get(commentCommunityAddress || '') ?? (commentCommunityAddress ? getBoardPath(commentCommunityAddress, directories) : undefined);
+                    return (
+                      <ModQueueRow
+                        key={comment.cid}
+                        comment={comment}
+                        isOdd={index % 2 === 0}
+                        showBoard={showBoardColumn}
+                        boardPath={path}
+                        boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
+                      />
+                    );
+                  })}
+                  {communityError?.message && feedLength === 0 && (
+                    <div className={styles.error}>
+                      <ErrorDisplay error={communityError} />
+                    </div>
+                  )}
+                  <ModQueueContinuingFooter hasMore={hasMore} />
+                </>
+              )}
+            </>
+          )}
+
+          {viewMode === 'compact' && isMobile && (
+            <>
+              {isQueueEmpty ? (
+                <div className={styles.empty}>{t('queue_is_empty')}</div>
+              ) : hasMore ? (
+                <Virtuoso
+                  useWindowScroll
+                  data={filteredFeed}
+                  totalCount={filteredFeed.length}
+                  endReached={loadMore}
+                  increaseViewportBy={MOD_QUEUE_VIRTUOSO_INCREASE_VIEWPORT_BY}
+                  itemContent={compactCardItemContent}
+                  components={MOD_QUEUE_VIRTUOSO_COMPONENTS}
+                  context={virtuosoFooterContext ?? undefined}
+                />
+              ) : (
+                <>
+                  {filteredFeed.map((comment) => {
+                    const commentCommunityAddress = getCommentCommunityAddress(comment);
+                    const path =
+                      addressToPathMap.get(commentCommunityAddress || '') ?? (commentCommunityAddress ? getBoardPath(commentCommunityAddress, directories) : undefined);
+                    return (
+                      <ModQueueCard
+                        key={comment.cid}
+                        comment={comment}
+                        showBoard={showBoardColumn}
+                        boardPath={path}
+                        boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
+                      />
+                    );
+                  })}
+                  {communityError?.message && feedLength === 0 && (
+                    <div className={styles.error}>
+                      <ErrorDisplay error={communityError} />
+                    </div>
+                  )}
+                  <ModQueueContinuingFooter hasMore={hasMore} />
+                </>
+              )}
+            </>
+          )}
+
+          {viewMode === 'feed' && (
+            <>
+              {isQueueEmpty ? (
+                <div className={styles.empty}>{t('queue_is_empty')}</div>
+              ) : hasMore ? (
+                <Virtuoso
+                  useWindowScroll
+                  data={filteredFeed}
+                  totalCount={filteredFeed.length}
+                  endReached={loadMore}
+                  increaseViewportBy={MOD_QUEUE_VIRTUOSO_INCREASE_VIEWPORT_BY}
+                  itemContent={feedPostItemContent}
+                  components={MOD_QUEUE_VIRTUOSO_COMPONENTS}
+                  context={virtuosoFooterContext ?? undefined}
+                />
+              ) : (
+                <>
+                  {filteredFeed.map((comment) => (
+                    <ModQueueFeedPost key={comment.cid} comment={comment} />
+                  ))}
+                  {communityError?.message && feedLength === 0 && (
+                    <div className={styles.error}>
+                      <ErrorDisplay error={communityError} />
+                    </div>
+                  )}
+                  <ModQueueContinuingFooter hasMore={hasMore} />
+                </>
+              )}
+            </>
+          )}
+        </div>
+        <ModQueuePageFooter />
+      </>
+    );
+  },
+);
+ModQueueContent.displayName = 'ModQueueContent';
 
 interface ModQueueButtonProps {
   boardIdentifier?: string;
@@ -862,7 +1121,9 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
 
   const account = useAccount();
   const accountAddress = account?.author?.address;
-  const accountCommunityAddresses = useModeratedCommunityAddresses();
+  const rawAccountCommunityAddresses = useModeratedCommunityAddresses();
+  const accountCommunityAddressesKey = getAddressListKey(rawAccountCommunityAddresses);
+  const accountCommunityAddresses = useMemo(() => getAddressListFromKey(accountCommunityAddressesKey), [accountCommunityAddressesKey]);
 
   const directories = useDirectories();
 
@@ -926,7 +1187,6 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
 };
 
 const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProps) => {
-  const { t } = useTranslation();
   const params = useParams();
   const [selectedBoardFilter, setSelectedBoardFilter] = useState<string | null>(null);
   const viewMode = useModQueueStore((state) => state.viewMode);
@@ -935,7 +1195,9 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   const rememberCommentsInQueue = useModQueueStore((state) => state.rememberCommentsInQueue);
   const isMobile = useIsMobile();
 
-  const accountCommunityAddresses = useModeratedCommunityAddresses();
+  const rawAccountCommunityAddresses = useModeratedCommunityAddresses();
+  const accountCommunityAddressesKey = getAddressListKey(rawAccountCommunityAddresses);
+  const accountCommunityAddresses = useMemo(() => getAddressListFromKey(accountCommunityAddressesKey), [accountCommunityAddressesKey]);
 
   const directories = useDirectories();
 
@@ -948,10 +1210,11 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     return undefined;
   }, [boardIdentifier, directories]);
 
-  const communityAddresses = useMemo(() => {
-    if (resolvedAddress) return [resolvedAddress];
-    return accountCommunityAddresses;
-  }, [resolvedAddress, accountCommunityAddresses]);
+  const communityAddressesKey = resolvedAddress ?? accountCommunityAddressesKey;
+  const communityAddresses = useMemo(
+    () => (resolvedAddress ? [resolvedAddress] : getAddressListFromKey(communityAddressesKey)),
+    [resolvedAddress, communityAddressesKey],
+  );
   const communities = useCommunityIdentifiers(communityAddresses);
 
   const communityAddress = communityAddresses[0];
@@ -997,6 +1260,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     () => filterVisibleModQueueFeed(feedWithHistory, selectedBoardFilter, dismissedCommentCidSet, selectedBoardFilterAddresses),
     [feedWithHistory, selectedBoardFilter, dismissedCommentCidSet, selectedBoardFilterAddresses],
   );
+  const hasVisibleComments = filteredFeed.length > 0;
 
   const addressToPathMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -1040,198 +1304,53 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     },
     [addressToPathMap, showBoardColumn, directories],
   );
+  const feedPostItemContent = useCallback((_index: number, comment: Comment) => <ModQueueFeedPost key={comment.cid} comment={comment} />, []);
 
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
   useEffect(() => {
     setResetFunction(reset);
   }, [reset, setResetFunction]);
 
-  // Memoize footer components object to preserve identity across renders (Virtuoso optimization)
-  // Note: useFeedStateString is called inside ModQueueFooter to isolate re-renders from backend state changes
-  const footerComponents = useMemo(
+  const footerError = feed.length === 0 && communityError?.message ? communityError : null;
+  const virtuosoFooterContext = useMemo(
     () => ({
-      Footer: () => (
-        <>
-          {communityError?.message && feed.length === 0 && (
-            <div className={styles.error}>
-              <ErrorDisplay error={communityError} />
-            </div>
-          )}
-          <ModQueueFooter hasMore={hasMore} communityAddresses={communityAddresses} />
-        </>
-      ),
+      error: footerError,
+      hasMore,
     }),
-    [hasMore, communityAddresses, communityError, feed.length],
+    [footerError, hasMore],
   );
-
-  const pageFooter = (
-    <>
-      <PageFooterDesktop firstRow={<StyleOnlyFooterFirstRow />} />
-      <PageFooterMobile>
-        <div>
-          <div className={footerStyles.mobileFooterButtons}>
-            <button type='button' className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
-              {t('top')}
-            </button>
-            <button type='button' className='button' onClick={() => reset?.()}>
-              {t('refresh')}
-            </button>
-          </div>
-        </div>
-      </PageFooterMobile>
-    </>
-  );
-  const isInitialFeedLoading = filteredFeed.length === 0 && hasMore;
-  const isQueueEmpty = filteredFeed.length === 0 && !hasMore;
+  const isQueueEmpty = !hasVisibleComments;
+  const boardSummaryFeed = feed.length > 0 ? feed : EMPTY_COMMENTS;
+  const visibleFilteredFeed = isQueueEmpty ? EMPTY_COMMENTS : filteredFeed;
+  const visibleHasMore = isQueueEmpty ? false : hasMore;
+  const visibleLoadMore = isQueueEmpty ? NOOP_LOAD_MORE : loadMore;
+  const visibleCommunityError = isQueueEmpty ? null : communityError;
+  const visibleFeedLength = isQueueEmpty ? 0 : feed.length;
+  const visibleVirtuosoFooterContext = isQueueEmpty ? null : virtuosoFooterContext;
 
   return (
-    <>
-      <div className={styles.container}>
-        {!resolvedAddress && (
-          <div className={styles.controls}>
-            <div className={styles.controlsLeft}>
-              <ModQueueBoardSummary
-                feed={feed}
-                directories={directories}
-                accountCommunityAddresses={accountCommunityAddresses}
-                selectedBoardFilter={selectedBoardFilter}
-                setSelectedBoardFilter={setSelectedBoardFilter}
-              />
-            </div>
-          </div>
-        )}
-
-        {isInitialFeedLoading ? (
-          <ModQueueFooter hasMore={hasMore} communityAddresses={communityAddresses} />
-        ) : (
-          <>
-            {viewMode === 'compact' && !isMobile && (
-              <>
-                <div className={styles.tableHeader}>
-                  <div className={styles.numberHeader}>No.</div>
-                  {!resolvedAddress && <div className={styles.boardHeader}>{t('board')}</div>}
-                  <div className={styles.excerptHeader}>{t('excerpt')}</div>
-                  <div className={styles.timeHeader}>{t('submitted')}</div>
-                  <div className={styles.typeHeader}>{t('type')}</div>
-                  <div className={styles.imageHeader}>{t('image')}</div>
-                  <div className={styles.actionsHeader}>{t('actions')}</div>
-                </div>
-
-                {isQueueEmpty ? (
-                  <div className={`${styles.empty} ${styles.emptyTableRow}`}>{t('queue_is_empty')}</div>
-                ) : hasMore ? (
-                  <Virtuoso
-                    useWindowScroll
-                    data={filteredFeed}
-                    totalCount={filteredFeed.length}
-                    endReached={loadMore}
-                    increaseViewportBy={{ bottom: 600, top: 600 }}
-                    itemContent={compactRowItemContent}
-                    components={footerComponents}
-                  />
-                ) : (
-                  <>
-                    {filteredFeed.map((comment, index) => {
-                      const commentCommunityAddress = getCommentCommunityAddress(comment);
-                      const path =
-                        addressToPathMap.get(commentCommunityAddress || '') ?? (commentCommunityAddress ? getBoardPath(commentCommunityAddress, directories) : undefined);
-                      return (
-                        <ModQueueRow
-                          key={comment.cid}
-                          comment={comment}
-                          isOdd={index % 2 === 0}
-                          showBoard={showBoardColumn}
-                          boardPath={path}
-                          boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
-                        />
-                      );
-                    })}
-                    {communityError?.message && feed.length === 0 && (
-                      <div className={styles.error}>
-                        <ErrorDisplay error={communityError} />
-                      </div>
-                    )}
-                    <ModQueueFooter hasMore={hasMore} communityAddresses={communityAddresses} />
-                  </>
-                )}
-              </>
-            )}
-
-            {viewMode === 'compact' && isMobile && (
-              <>
-                {isQueueEmpty ? (
-                  <div className={styles.empty}>{t('queue_is_empty')}</div>
-                ) : hasMore ? (
-                  <Virtuoso
-                    useWindowScroll
-                    data={filteredFeed}
-                    totalCount={filteredFeed.length}
-                    endReached={loadMore}
-                    increaseViewportBy={{ bottom: 600, top: 600 }}
-                    itemContent={compactCardItemContent}
-                    components={footerComponents}
-                  />
-                ) : (
-                  <>
-                    {filteredFeed.map((comment) => {
-                      const commentCommunityAddress = getCommentCommunityAddress(comment);
-                      const path =
-                        addressToPathMap.get(commentCommunityAddress || '') ?? (commentCommunityAddress ? getBoardPath(commentCommunityAddress, directories) : undefined);
-                      return (
-                        <ModQueueCard
-                          key={comment.cid}
-                          comment={comment}
-                          showBoard={showBoardColumn}
-                          boardPath={path}
-                          boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
-                        />
-                      );
-                    })}
-                    {communityError?.message && feed.length === 0 && (
-                      <div className={styles.error}>
-                        <ErrorDisplay error={communityError} />
-                      </div>
-                    )}
-                    <ModQueueFooter hasMore={hasMore} communityAddresses={communityAddresses} />
-                  </>
-                )}
-              </>
-            )}
-
-            {viewMode === 'feed' && (
-              <>
-                {isQueueEmpty ? (
-                  <div className={styles.empty}>{t('queue_is_empty')}</div>
-                ) : hasMore ? (
-                  <Virtuoso
-                    useWindowScroll
-                    data={filteredFeed}
-                    totalCount={filteredFeed.length}
-                    endReached={loadMore}
-                    increaseViewportBy={{ bottom: 600, top: 600 }}
-                    itemContent={(_index, comment) => <ModQueueFeedPost key={comment.cid} comment={comment} />}
-                    components={footerComponents}
-                  />
-                ) : (
-                  <>
-                    {filteredFeed.map((comment) => (
-                      <ModQueueFeedPost key={comment.cid} comment={comment} />
-                    ))}
-                    {communityError?.message && feed.length === 0 && (
-                      <div className={styles.error}>
-                        <ErrorDisplay error={communityError} />
-                      </div>
-                    )}
-                    <ModQueueFooter hasMore={hasMore} communityAddresses={communityAddresses} />
-                  </>
-                )}
-              </>
-            )}
-          </>
-        )}
-      </div>
-      {pageFooter}
-    </>
+    <ModQueueContent
+      accountCommunityAddresses={accountCommunityAddresses}
+      addressToPathMap={addressToPathMap}
+      boardSummaryFeed={boardSummaryFeed}
+      compactCardItemContent={compactCardItemContent}
+      compactRowItemContent={compactRowItemContent}
+      communityError={visibleCommunityError}
+      directories={directories}
+      feedLength={visibleFeedLength}
+      feedPostItemContent={feedPostItemContent}
+      filteredFeed={visibleFilteredFeed}
+      hasMore={visibleHasMore}
+      isMobile={isMobile}
+      isQueueEmpty={isQueueEmpty}
+      loadMore={visibleLoadMore}
+      resolvedAddress={resolvedAddress}
+      selectedBoardFilter={selectedBoardFilter}
+      setSelectedBoardFilter={setSelectedBoardFilter}
+      showBoardColumn={showBoardColumn}
+      viewMode={viewMode}
+      virtuosoFooterContext={visibleVirtuosoFooterContext}
+    />
   );
 };
 
