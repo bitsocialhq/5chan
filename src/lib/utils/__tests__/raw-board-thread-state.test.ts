@@ -60,4 +60,36 @@ describe('getRawBoardThreadState', () => {
       }).isFullyLoaded,
     ).toBe(true);
   });
+
+  it('walks stored board pages without importing side-effectful stores', () => {
+    const community = {
+      posts: {
+        pageCids: {
+          active: 'page-1',
+        },
+      },
+    } as Community;
+
+    const communitiesPages = {
+      'page-1': {
+        comments: [rootThread('thread-1'), { cid: 'reply-1', parentCid: 'thread-1' } as Comment],
+        nextCid: 'page-2',
+      },
+      'page-2': {
+        comments: [rootThread('thread-2')],
+      },
+    } as CommunitiesPages;
+
+    expect(
+      getRawBoardThreadState({
+        accountId: 'account-1',
+        communitiesPages,
+        community,
+        sortType: 'active',
+      }),
+    ).toMatchObject({
+      isFullyLoaded: true,
+      rootThreadCids: new Set(['thread-1', 'thread-2']),
+    });
+  });
 });

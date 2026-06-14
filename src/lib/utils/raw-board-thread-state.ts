@@ -1,5 +1,4 @@
-import type { Comment, CommunitiesPages, Community } from '@bitsocial/bitsocial-react-hooks';
-import { getCommunityFirstPageCid, getCommunityPages } from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
+import type { Comment, CommunitiesPages, Community, CommunityPage } from '@bitsocial/bitsocial-react-hooks';
 
 export type RawBoardThreadState = {
   isFullyLoaded: boolean;
@@ -19,8 +18,43 @@ const addRootThreadCids = (cids: Set<string>, comments: readonly Comment[] | und
   }
 };
 
+const getPostsFirstPageCid = (community: Community, sortType: 'active' | 'new') => {
+  const preloadedPage = community.posts?.pages?.[sortType];
+  if (preloadedPage?.comments) {
+    return preloadedPage.nextCid;
+  }
+
+  return community.posts?.pageCids?.[sortType];
+};
+
+const getPostsPages = (community: Community, sortType: 'active' | 'new', communitiesPages: CommunitiesPages): CommunityPage[] => {
+  const pages: CommunityPage[] = [];
+  const firstPageCid = getPostsFirstPageCid(community, sortType);
+
+  if (!firstPageCid) {
+    return pages;
+  }
+
+  const firstPage = communitiesPages[firstPageCid];
+  if (!firstPage) {
+    return pages;
+  }
+
+  pages.push(firstPage);
+
+  while (true) {
+    const nextCid = pages[pages.length - 1]?.nextCid;
+    const nextPage = nextCid && communitiesPages[nextCid];
+
+    if (!nextPage) {
+      return pages;
+    }
+
+    pages.push(nextPage);
+  }
+};
+
 export const getRawBoardThreadState = ({
-  accountId,
   communitiesPages,
   community,
   sortType,
@@ -38,8 +72,8 @@ export const getRawBoardThreadState = ({
   const preloadedSortPage = community.posts?.pages?.[sortType];
   addRootThreadCids(rootThreadCids, preloadedSortPage?.comments);
 
-  const firstPageCid = getCommunityFirstPageCid(community, sortType, 'posts');
-  const pages = firstPageCid ? getCommunityPages(community, sortType, communitiesPages, 'posts', accountId) : [];
+  const firstPageCid = getPostsFirstPageCid(community, sortType);
+  const pages = firstPageCid ? getPostsPages(community, sortType, communitiesPages) : [];
   for (const page of pages) {
     addRootThreadCids(rootThreadCids, page?.comments);
   }
