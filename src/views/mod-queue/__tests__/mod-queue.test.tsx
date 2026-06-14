@@ -307,6 +307,17 @@ describe('ModQueueView', () => {
     expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
   });
 
+  it('keeps the empty queue state quiet when background community metadata fails', async () => {
+    testState.communityError = new Error('community unavailable');
+    testState.hasMore = true;
+
+    await renderModQueue();
+
+    expect(container.textContent).toContain('queue_is_empty');
+    expect(container.querySelector('[data-testid="error-display"]')).toBeNull();
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+  });
+
   it('shows a generic continuing load state after a queue item appears', async () => {
     testState.hasMore = true;
     testState.feed = [
