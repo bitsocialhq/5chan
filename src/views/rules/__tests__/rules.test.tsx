@@ -156,6 +156,23 @@ describe('Rules', () => {
     expect(scrollIntoViewMock).toHaveBeenCalled();
   });
 
+  it('re-scrolls an active directory hash when directory data refreshes', async () => {
+    await renderRules('/rules#b');
+    expect(scrollIntoViewMock).toHaveBeenCalledTimes(1);
+
+    testState.directories = [{ address: 'animals-posting.eth', title: '/an/ - Animals & Nature', directoryCode: 'an' }, ...testState.directories];
+    testState.directoryDefaults = {
+      directories: {
+        ...testState.directoryDefaults.directories,
+        an: { directoryCode: 'an', title: '/an/ - Animals & Nature', rules: ['Keep animal posts on topic.'] },
+      },
+    };
+
+    await renderRules('/rules#b');
+
+    expect(scrollIntoViewMock).toHaveBeenCalledTimes(2);
+  });
+
   it('ignores address hashes instead of resolving them to directory rules or P2P rules', async () => {
     testState.communities = {
       'anime-posting.eth': {

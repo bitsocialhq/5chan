@@ -95,8 +95,18 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js', () => ({
-  default: (selector: (state: { accountsEditsSummaries: Record<string, Record<string, unknown>>; activeAccountId: string }) => unknown) =>
-    selector({ accountsEditsSummaries: { account: {} }, activeAccountId: 'account' }),
+  default: (
+    selector: (state: {
+      accounts: Record<string, typeof testState.account>;
+      accountsEditsSummaries: Record<string, Record<string, unknown>>;
+      activeAccountId: string;
+    }) => unknown,
+  ) =>
+    selector({
+      accounts: { account: testState.account },
+      accountsEditsSummaries: { account: {} },
+      activeAccountId: 'account',
+    }),
 }));
 
 vi.mock('@floating-ui/react', () => ({
@@ -150,6 +160,8 @@ vi.mock('../../../stores/use-challenges-store', () => {
 });
 
 vi.mock('../../../hooks/use-account-community-addresses', () => ({
+  areStringArraysEqual: (previous: readonly string[] | undefined, next: readonly string[] | undefined) =>
+    previous === next || (!!previous && !!next && previous.length === next.length && previous.every((value, index) => value === next[index])),
   useAccountCommunityAddresses: () => testState.accountCommunityAddresses,
 }));
 

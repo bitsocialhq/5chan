@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState, FormEvent } from 'react';
+import { Fragment, useEffect, useState, FormEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { Footer, HomeLogo } from '../home/home';
@@ -240,7 +240,6 @@ const Rules = () => {
   const directories = useDirectories();
   const directoryDefaults = useDirectoryDefaults();
   const [loadedAddress, setLoadedAddress] = useState('');
-  const scrolledForRef = useRef<string | null>(null);
   const hashCode = getRulesHashCode(hash);
 
   // Order directories alphabetically by directory code (e.g. /3/, /a/, /aco/...), like 4chan, not by title.
@@ -257,7 +256,6 @@ const Rules = () => {
 
   useEffect(() => {
     setLoadedAddress('');
-    scrolledForRef.current = null;
     if (!hashCode) {
       window.scrollTo(0, 0);
     }
@@ -265,13 +263,12 @@ const Rules = () => {
 
   // Deep-link: /rules#code insta-scrolls to a known directory's rules once the matching section is rendered.
   useEffect(() => {
-    if (!hashCode || scrolledForRef.current === hashCode || !isDirectoryRoute(hashCode, directories)) {
+    if (!hashCode || !isDirectoryRoute(hashCode, directories)) {
       return;
     }
     const element = document.getElementById(hashCode);
     if (element) {
       element.scrollIntoView();
-      scrolledForRef.current = hashCode;
     }
   }, [hashCode, directories]);
 
