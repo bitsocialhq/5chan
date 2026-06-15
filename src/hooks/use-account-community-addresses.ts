@@ -12,9 +12,12 @@ type AccountsStoreState = {
 
 const EMPTY_ACCOUNT_COMMUNITY_ADDRESSES: string[] = [];
 
-const areStringArraysEqual = (previous: string[], next: string[]) => {
+export const areStringArraysEqual = (previous: readonly string[] | undefined, next: readonly string[] | undefined) => {
   if (previous === next) {
     return true;
+  }
+  if (!previous || !next) {
+    return previous === next;
   }
   if (previous.length !== next.length) {
     return false;

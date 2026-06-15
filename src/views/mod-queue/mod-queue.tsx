@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useCommunity, useAccount } from '@bitsocial/bitsocial-react-hooks';
+import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useCommunity, useCommunities } from '@bitsocial/bitsocial-react-hooks';
 import useAccountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js';
 import { useFloating, offset, shift, size, flip, autoUpdate } from '@floating-ui/react';
 import { Virtuoso, type Components } from 'react-virtuoso';
@@ -49,7 +49,7 @@ import capitalize from 'lodash/capitalize';
 import lowerCase from 'lodash/lowerCase';
 import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '../../components/footer/footer';
 import footerStyles from '../../components/footer/footer.module.css';
-import { useModeratedCommunityAddresses } from '../../hooks/use-moderated-community-addresses';
+import { useModeratedCommunityAddressInputs, useModeratedCommunityAddressesForInputs } from '../../hooks/use-moderated-community-addresses';
 
 /** Path for display: directory code, or full address if has TLD, or shortened for long IPNS keys (no dot) */
 const getBoardDisplayPath = (address: string, path: string): string => {
@@ -123,6 +123,12 @@ const getAddressListFromKey = (key: string) => (key ? key.split('\0') : []);
 const EMPTY_COMMENTS: Comment[] = [];
 const MOD_QUEUE_VIRTUOSO_INCREASE_VIEWPORT_BY = { bottom: 600, top: 600 };
 const NOOP_LOAD_MORE = () => undefined;
+
+const ModQueueCommunityMetadataLoader = memo(({ candidateCommunityAddresses }: { candidateCommunityAddresses: string[] }) => {
+  const candidateCommunities = useCommunityIdentifiers(candidateCommunityAddresses);
+  useCommunities(candidateCommunities.length > 0 ? { communities: candidateCommunities } : undefined);
+  return null;
+});
 
 interface ModQueueFooterProps {
   hasMore: boolean;
@@ -1119,9 +1125,9 @@ const ModQueueButtonContent = ({ feed, alertThresholdSeconds, boardIdentifier, i
 export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProps) => {
   const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
 
-  const account = useAccount();
-  const accountAddress = account?.author?.address;
-  const rawAccountCommunityAddresses = useModeratedCommunityAddresses();
+  const moderatedCommunityAddressInputs = useModeratedCommunityAddressInputs();
+  const accountAddress = moderatedCommunityAddressInputs.accountAddress;
+  const rawAccountCommunityAddresses = useModeratedCommunityAddressesForInputs(moderatedCommunityAddressInputs);
   const accountCommunityAddressesKey = getAddressListKey(rawAccountCommunityAddresses);
   const accountCommunityAddresses = useMemo(() => getAddressListFromKey(accountCommunityAddressesKey), [accountCommunityAddressesKey]);
 
@@ -1175,15 +1181,21 @@ export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProp
     [feedCommunities],
   );
   const { feed } = useFeed(feedOptions);
+  const metadataLoader = <ModQueueCommunityMetadataLoader candidateCommunityAddresses={moderatedCommunityAddressInputs.candidateCommunityAddresses} />;
 
   if (!shouldFetch || communityAddresses.length === 0) {
-    return null;
+    return metadataLoader;
   }
 
   const alertThresholdSeconds = getAlertThresholdSeconds();
   // Remount when switching boards so memoized counts reset cleanly.
   const contentKey = communityAddresses.join(',');
-  return <ModQueueButtonContent key={contentKey} feed={feed} alertThresholdSeconds={alertThresholdSeconds} boardIdentifier={boardIdentifier} isMobile={isMobile} />;
+  return (
+    <>
+      {metadataLoader}
+      <ModQueueButtonContent key={contentKey} feed={feed} alertThresholdSeconds={alertThresholdSeconds} boardIdentifier={boardIdentifier} isMobile={isMobile} />
+    </>
+  );
 };
 
 const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProps) => {
@@ -1195,7 +1207,8 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   const rememberCommentsInQueue = useModQueueStore((state) => state.rememberCommentsInQueue);
   const isMobile = useIsMobile();
 
-  const rawAccountCommunityAddresses = useModeratedCommunityAddresses();
+  const moderatedCommunityAddressInputs = useModeratedCommunityAddressInputs();
+  const rawAccountCommunityAddresses = useModeratedCommunityAddressesForInputs(moderatedCommunityAddressInputs);
   const accountCommunityAddressesKey = getAddressListKey(rawAccountCommunityAddresses);
   const accountCommunityAddresses = useMemo(() => getAddressListFromKey(accountCommunityAddressesKey), [accountCommunityAddressesKey]);
 
@@ -1329,28 +1342,31 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   const visibleVirtuosoFooterContext = isQueueEmpty ? null : virtuosoFooterContext;
 
   return (
-    <ModQueueContent
-      accountCommunityAddresses={accountCommunityAddresses}
-      addressToPathMap={addressToPathMap}
-      boardSummaryFeed={boardSummaryFeed}
-      compactCardItemContent={compactCardItemContent}
-      compactRowItemContent={compactRowItemContent}
-      communityError={visibleCommunityError}
-      directories={directories}
-      feedLength={visibleFeedLength}
-      feedPostItemContent={feedPostItemContent}
-      filteredFeed={visibleFilteredFeed}
-      hasMore={visibleHasMore}
-      isMobile={isMobile}
-      isQueueEmpty={isQueueEmpty}
-      loadMore={visibleLoadMore}
-      resolvedAddress={resolvedAddress}
-      selectedBoardFilter={selectedBoardFilter}
-      setSelectedBoardFilter={setSelectedBoardFilter}
-      showBoardColumn={showBoardColumn}
-      viewMode={viewMode}
-      virtuosoFooterContext={visibleVirtuosoFooterContext}
-    />
+    <>
+      <ModQueueCommunityMetadataLoader candidateCommunityAddresses={moderatedCommunityAddressInputs.candidateCommunityAddresses} />
+      <ModQueueContent
+        accountCommunityAddresses={accountCommunityAddresses}
+        addressToPathMap={addressToPathMap}
+        boardSummaryFeed={boardSummaryFeed}
+        compactCardItemContent={compactCardItemContent}
+        compactRowItemContent={compactRowItemContent}
+        communityError={visibleCommunityError}
+        directories={directories}
+        feedLength={visibleFeedLength}
+        feedPostItemContent={feedPostItemContent}
+        filteredFeed={visibleFilteredFeed}
+        hasMore={visibleHasMore}
+        isMobile={isMobile}
+        isQueueEmpty={isQueueEmpty}
+        loadMore={visibleLoadMore}
+        resolvedAddress={resolvedAddress}
+        selectedBoardFilter={selectedBoardFilter}
+        setSelectedBoardFilter={setSelectedBoardFilter}
+        showBoardColumn={showBoardColumn}
+        viewMode={viewMode}
+        virtuosoFooterContext={visibleVirtuosoFooterContext}
+      />
+    </>
   );
 };
 

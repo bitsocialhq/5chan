@@ -9,6 +9,7 @@ import { useBoardFeedPageSize } from '../use-board-feed-page-size';
 import { useBoardPseudonymityMode } from '../use-board-pseudonymity-mode';
 import useCountLinksInReplies from '../use-count-links-in-replies';
 import { useFilteredDirectoryAddresses } from '../use-filtered-directory-addresses';
+import { useModeratedCommunityAddressInputs, useModeratedCommunityAddressesForInputs } from '../use-moderated-community-addresses';
 import useAllFeedFilterStore from '../../stores/use-all-feed-filter-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -17,6 +18,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 const testState = vi.hoisted(() => ({
   account: undefined as unknown,
   accountCommunities: {} as Record<string, unknown>,
+  liveCommunities: {} as Record<string, unknown>,
   directories: [] as Array<{ address: string; nsfw?: boolean }>,
   directoryLookup: {} as Record<string, unknown>,
   flattenedReplies: [] as unknown[],
@@ -35,13 +37,14 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
 
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js', () => ({
   default: (
-    selector: (state: { activeAccountId?: string; accounts: Record<string, { communities?: typeof testState.accountCommunities }> }) => unknown,
+    selector: (state: { activeAccountId?: string; accounts: Record<string, Record<string, unknown> & { communities?: typeof testState.accountCommunities }> }) => unknown,
     equalityFn?: (previous: unknown, next: unknown) => boolean,
   ) => {
     const nextValue = selector({
       activeAccountId: 'active',
       accounts: {
         active: {
+          ...(testState.account as Record<string, unknown> | undefined),
           communities: testState.accountCommunities,
         },
       },
@@ -57,6 +60,27 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js', () => 
   },
 }));
 
+const communitiesStoreSelectorCache = vi.hoisted(() => ({
+  hasValue: false,
+  value: undefined as unknown,
+}));
+
+vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/communities', () => ({
+  default: (selector: (state: { communities: Record<string, unknown> }) => unknown, equalityFn?: (previous: unknown, next: unknown) => boolean) => {
+    const nextValue = selector({
+      communities: testState.liveCommunities,
+    });
+
+    if (communitiesStoreSelectorCache.hasValue && equalityFn?.(communitiesStoreSelectorCache.value, nextValue)) {
+      return communitiesStoreSelectorCache.value;
+    }
+
+    communitiesStoreSelectorCache.hasValue = true;
+    communitiesStoreSelectorCache.value = nextValue;
+    return nextValue;
+  },
+}));
+
 vi.mock('@bitsocial/bitsocial-react-hooks/dist/lib/community-address.js', () => ({
   getEquivalentCommunityAddressGroupKey: (address: string) => (address.endsWith('.eth') ? address.slice(0, -4) + '.bso' : address),
   pickPreferredEquivalentCommunityAddress: (addresses: string[]) => addresses.find((address) => address.endsWith('.bso')) || addresses[0],
@@ -67,6 +91,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/lib/utils', () => ({
 }));
 
 vi.mock('../use-directories', () => ({
+  normalizeBoardAddress: (address: string | undefined) => address?.toLowerCase() ?? '',
   useDirectories: () => testState.directories,
   useDirectoryByAddress: (address: string | undefined) => (address ? testState.directoryLookup[address] : undefined),
 }));
@@ -110,12 +135,15 @@ describe('selector hooks', () => {
     vi.clearAllMocks();
     testState.account = undefined;
     testState.accountCommunities = {};
+    testState.liveCommunities = {};
     testState.directories = [];
     testState.directoryLookup = {};
     testState.flattenedReplies = [];
     testState.communitySnapshot = undefined;
     accountsStoreSelectorCache.hasValue = false;
     accountsStoreSelectorCache.value = undefined;
+    communitiesStoreSelectorCache.hasValue = false;
+    communitiesStoreSelectorCache.value = undefined;
     useAllFeedFilterStore.getState().setFilter('all');
 
     container = document.createElement('div');
@@ -164,6 +192,65 @@ describe('selector hooks', () => {
     const addressesWithNewBoard = rerenderHookValue(() => useAccountCommunityAddresses());
     expect(addressesWithNewBoard).not.toBe(initialAddresses);
     expect(addressesWithNewBoard).toEqual(['biz.eth', 'music.eth', 'tech.eth']);
+  });
+
+  it('keeps moderated board address identity stable when transient community state changes', () => {
+    testState.account = {
+      author: { address: '0xme' },
+      subscriptions: ['sub.eth'],
+    };
+    testState.accountCommunities = {
+      'owned.eth': { address: 'owned.eth', state: 'updating' },
+    };
+    testState.directories = [{ address: 'dir.eth' }, { address: 'sub.eth' }];
+    testState.liveCommunities = {
+      'dir.eth': {
+        address: 'dir.eth',
+        state: 'fetching-ipns',
+        roles: { '0xme': { role: 'moderator' } },
+      },
+      'sub.eth': {
+        address: 'sub.eth',
+        state: 'fetching-ipns',
+        roles: { '0xme': { role: 'member' } },
+      },
+    };
+
+    const useModeratedAddresses = () => {
+      const inputs = useModeratedCommunityAddressInputs();
+      return useModeratedCommunityAddressesForInputs(inputs);
+    };
+
+    const initialAddresses = rerenderHookValue(useModeratedAddresses);
+    expect(initialAddresses).toEqual(['owned.eth', 'dir.eth']);
+
+    testState.liveCommunities = {
+      'dir.eth': {
+        address: 'dir.eth',
+        state: 'succeeded',
+        roles: { '0xme': { role: 'moderator' } },
+      },
+      'sub.eth': {
+        address: 'sub.eth',
+        state: 'succeeded',
+        roles: { '0xme': { role: 'member' } },
+      },
+    };
+
+    expect(rerenderHookValue(useModeratedAddresses)).toBe(initialAddresses);
+
+    testState.liveCommunities = {
+      ...testState.liveCommunities,
+      'sub.eth': {
+        address: 'sub.eth',
+        state: 'succeeded',
+        roles: { '0xme': { role: 'admin' } },
+      },
+    };
+
+    const addressesWithNewRole = rerenderHookValue(useModeratedAddresses);
+    expect(addressesWithNewRole).not.toBe(initialAddresses);
+    expect(addressesWithNewRole).toEqual(['owned.eth', 'dir.eth', 'sub.eth']);
   });
 
   it('computes moderator privileges and whether the current account authored the comment', () => {
