@@ -88,7 +88,7 @@ describe('p2p-runtime', () => {
 
     expect(getBrowserPureP2PAccountOptions(account)).toMatchObject({
       libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
-      ipfsGatewayUrls: undefined,
+      ipfsGatewayUrls: [],
       pkcRpcClientsOptions: undefined,
     });
     expect(getBrowserGatewayAccountOptions(account)).toMatchObject({

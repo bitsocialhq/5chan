@@ -252,10 +252,10 @@ describe('AdvancedSettings', () => {
       expect.objectContaining({
         pkcOptions: expect.objectContaining({
           httpRoutersOptions: ['https://router.old.example'],
-          ipfsGatewayUrls: undefined,
+          ipfsGatewayUrls: [],
           libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
           pkcRpcClientsOptions: undefined,
-          pubsubKuboRpcClientsOptions: undefined,
+          pubsubKuboRpcClientsOptions: [],
         }),
       }),
     );
