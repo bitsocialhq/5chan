@@ -2,10 +2,10 @@ export const PURE_P2P_BROWSER_SETTING_KEY = '5chan:pure-p2p-browser-enabled';
 
 export const P2P_BROWSER_PKC_OPTIONS = {
   libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
-  ipfsGatewayUrls: undefined,
+  ipfsGatewayUrls: [],
   kuboRpcClientsOptions: undefined,
   pubsubHttpClientsOptions: undefined,
-  pubsubKuboRpcClientsOptions: undefined,
+  pubsubKuboRpcClientsOptions: [],
   httpRoutersOptions: ['https://peers.pleb.bot', 'https://peers.forumindex.com'],
 };
 
@@ -29,6 +29,8 @@ type P2PBrowserConfigWindow = {
 export const getBrowserPureP2PPkcOptions = () => ({
   ...P2P_BROWSER_PKC_OPTIONS,
   libp2pJsClientsOptions: P2P_BROWSER_PKC_OPTIONS.libp2pJsClientsOptions.map((options) => ({ ...options })),
+  ipfsGatewayUrls: [...P2P_BROWSER_PKC_OPTIONS.ipfsGatewayUrls],
+  pubsubKuboRpcClientsOptions: [...P2P_BROWSER_PKC_OPTIONS.pubsubKuboRpcClientsOptions],
   httpRoutersOptions: [...P2P_BROWSER_PKC_OPTIONS.httpRoutersOptions],
 });
 
