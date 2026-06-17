@@ -1,13 +1,6 @@
 {
   "entries": [
     {
-      "id": "release-0.9.3",
-      "kind": "release",
-      "timestamp": 1781611200,
-      "message": "v0.9.3: More reliable browser posting",
-      "version": "0.9.3"
-    },
-    {
       "id": "release-0.9.2",
       "kind": "release",
       "timestamp": 1781352000,

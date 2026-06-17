@@ -1,12 +1,13 @@
 export const PURE_P2P_BROWSER_SETTING_KEY = '5chan:pure-p2p-browser-enabled';
+export const BROWSER_PURE_P2P_DEFAULT_ENABLED = true;
 
 export const P2P_BROWSER_PKC_OPTIONS = {
   libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
-  ipfsGatewayUrls: [],
+  ipfsGatewayUrls: undefined,
   kuboRpcClientsOptions: undefined,
   pubsubHttpClientsOptions: undefined,
-  pubsubKuboRpcClientsOptions: [],
-  httpRoutersOptions: ['https://peers.pleb.bot', 'https://peers.forumindex.com'],
+  pubsubKuboRpcClientsOptions: undefined,
+  httpRoutersOptions: ['https://peers.plebpubsub.xyz', 'https://routing.lol', 'https://peers.pleb.bot'],
 };
 
 const GATEWAY_BROWSER_PKC_OPTIONS = {
@@ -29,8 +30,6 @@ type P2PBrowserConfigWindow = {
 export const getBrowserPureP2PPkcOptions = () => ({
   ...P2P_BROWSER_PKC_OPTIONS,
   libp2pJsClientsOptions: P2P_BROWSER_PKC_OPTIONS.libp2pJsClientsOptions.map((options) => ({ ...options })),
-  ipfsGatewayUrls: [...P2P_BROWSER_PKC_OPTIONS.ipfsGatewayUrls],
-  pubsubKuboRpcClientsOptions: [...P2P_BROWSER_PKC_OPTIONS.pubsubKuboRpcClientsOptions],
   httpRoutersOptions: [...P2P_BROWSER_PKC_OPTIONS.httpRoutersOptions],
 });
 
@@ -63,17 +62,26 @@ export const setPureP2PBrowserPreference = (enabled: boolean, targetWindow: P2PB
 
 export const isElectronRuntime = (targetWindow: P2PBrowserConfigWindow = window) => targetWindow.electronApi?.isElectron === true || targetWindow.isElectron === true;
 
+export const canUsePureP2PBrowser = (targetWindow: P2PBrowserConfigWindow = window) => !isElectronRuntime(targetWindow);
+
 export const shouldUsePureP2PBrowser = (targetWindow: P2PBrowserConfigWindow = window) => {
-  if (isElectronRuntime(targetWindow)) return false;
+  if (!canUsePureP2PBrowser(targetWindow)) return false;
 
   const preference = getPureP2PBrowserPreference(targetWindow);
   if (preference !== undefined) return preference;
 
-  return true;
+  return BROWSER_PURE_P2P_DEFAULT_ENABLED;
 };
 
 export const configureP2PBrowserPkcOptions = (targetWindow: P2PBrowserConfigWindow = window) => {
   if (!shouldUsePureP2PBrowser(targetWindow)) {
+    if (canUsePureP2PBrowser(targetWindow)) {
+      targetWindow.defaultPkcOptions = {
+        ...targetWindow.defaultPkcOptions,
+        ...getBrowserGatewayPkcOptions(),
+      };
+    }
+
     return false;
   }
 

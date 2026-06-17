@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This release fixes browser P2P posting errors, improves moderation queue responsiveness, and keeps board rule navigation in place after refreshes.';
+  'This release ships signed and notarized macOS desktop apps, adds LaTeX in /sci/, shows board subtitles on the All view, and improves YouTube thumbnails alongside moderation queue, challenge modal, and media playback fixes.';
 
 const releaseBody = `${oneLinerDescription}
 

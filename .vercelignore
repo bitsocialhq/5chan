@@ -1,0 +1,6 @@
+.codegraph/
+.firecrawl/
+.playwright-cli/
+build/
+coverage/
+release-assets/

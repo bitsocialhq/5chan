@@ -248,6 +248,23 @@ const getTrimmedLines = (value: string | undefined): string[] | undefined => {
   }, []);
 };
 
+const applyBrowserGatewayPkcOptions = (
+  pkcOptions: AccountProtocolOptions,
+  ipfsGatewayUrls: string[] | undefined,
+  pubsubKuboRpcClientsOptions: string[] | undefined,
+  httpRoutersOptions: string[] | undefined,
+) => {
+  const gatewayOptions = getBrowserGatewayPkcOptions();
+
+  return {
+    ...pkcOptions,
+    ...gatewayOptions,
+    ipfsGatewayUrls: ipfsGatewayUrls?.length ? ipfsGatewayUrls : gatewayOptions.ipfsGatewayUrls,
+    pubsubKuboRpcClientsOptions: pubsubKuboRpcClientsOptions?.length ? pubsubKuboRpcClientsOptions : gatewayOptions.pubsubKuboRpcClientsOptions,
+    httpRoutersOptions: httpRoutersOptions?.length ? httpRoutersOptions : gatewayOptions.httpRoutersOptions,
+  };
+};
+
 const AdvancedSettings = () => {
   const { t } = useTranslation();
   const account = useAccount() as AccountShape | undefined;
@@ -305,14 +322,7 @@ const AdvancedSettings = () => {
           pkcRpcClientsOptions: undefined,
         };
       } else {
-        const gatewayOptions = getBrowserGatewayPkcOptions();
-        pkcOptions = {
-          ...pkcOptions,
-          ...gatewayOptions,
-          ipfsGatewayUrls: ipfsGatewayUrls?.length ? ipfsGatewayUrls : gatewayOptions.ipfsGatewayUrls,
-          pubsubKuboRpcClientsOptions: pubsubKuboRpcClientsOptions?.length ? pubsubKuboRpcClientsOptions : gatewayOptions.pubsubKuboRpcClientsOptions,
-          httpRoutersOptions: httpRoutersOptions?.length ? httpRoutersOptions : gatewayOptions.httpRoutersOptions,
-        };
+        pkcOptions = applyBrowserGatewayPkcOptions(pkcOptions, ipfsGatewayUrls, pubsubKuboRpcClientsOptions, httpRoutersOptions);
       }
     }
 

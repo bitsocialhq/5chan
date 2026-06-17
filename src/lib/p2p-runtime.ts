@@ -1,4 +1,4 @@
-import { getBrowserGatewayPkcOptions, getBrowserPureP2PPkcOptions, isElectronRuntime, shouldUsePureP2PBrowser } from './p2p-browser-config';
+import { canUsePureP2PBrowser, getBrowserGatewayPkcOptions, getBrowserPureP2PPkcOptions, isElectronRuntime, shouldUsePureP2PBrowser } from './p2p-browser-config';
 
 export const P2P_STATS_SECTION_ID = 'p2p-stats-settings';
 
@@ -46,10 +46,13 @@ export const getP2PRuntimeMode = (account?: unknown, targetWindow: Window = wind
   return null;
 };
 
-export const canConfigureBrowserPureP2P = (targetWindow: Window = window) => !isElectronRuntime(targetWindow);
+export const canConfigureBrowserPureP2P = (targetWindow: Window = window) => canUsePureP2PBrowser(targetWindow);
 
-export const shouldShowP2PSettingsSection = (account?: unknown, targetWindow: Window = window) =>
-  getP2PRuntimeMode(account, targetWindow) !== null || (canConfigureBrowserPureP2P(targetWindow) && isBrowserPureP2PEnabled(account, targetWindow));
+export const shouldShowP2PSettingsSection = (account?: unknown, targetWindow: Window = window) => {
+  const runtimeMode = getP2PRuntimeMode(account, targetWindow);
+  if (runtimeMode === 'electron-kubo-rpc' || runtimeMode === 'full-node-rpc') return true;
+  return canConfigureBrowserPureP2P(targetWindow) && (runtimeMode === 'browser-libp2p' || isBrowserPureP2PEnabled(account, targetWindow));
+};
 
 export const isBrowserPureP2PEnabled = (account?: unknown, targetWindow: Window = window) => {
   if (!canConfigureBrowserPureP2P(targetWindow)) return false;
@@ -63,8 +66,18 @@ export const getBrowserPureP2PAccountOptions = (account?: unknown) => ({
   pkcRpcClientsOptions: undefined,
 });
 
-export const getBrowserGatewayAccountOptions = (account?: unknown) => ({
-  ...toAccountShape(account)?.pkcOptions,
-  ...getBrowserGatewayPkcOptions(),
-  pkcRpcClientsOptions: undefined,
-});
+export const getBrowserGatewayAccountOptions = (account?: unknown) => {
+  const protocolOptions = toAccountShape(account)?.pkcOptions;
+  const gatewayOptions = getBrowserGatewayPkcOptions();
+
+  return {
+    ...protocolOptions,
+    ...gatewayOptions,
+    ipfsGatewayUrls: hasArrayItems(protocolOptions?.ipfsGatewayUrls) ? protocolOptions?.ipfsGatewayUrls : gatewayOptions.ipfsGatewayUrls,
+    pubsubKuboRpcClientsOptions: hasArrayItems(protocolOptions?.pubsubKuboRpcClientsOptions)
+      ? protocolOptions?.pubsubKuboRpcClientsOptions
+      : gatewayOptions.pubsubKuboRpcClientsOptions,
+    httpRoutersOptions: hasArrayItems(protocolOptions?.httpRoutersOptions) ? protocolOptions?.httpRoutersOptions : gatewayOptions.httpRoutersOptions,
+    pkcRpcClientsOptions: undefined,
+  };
+};

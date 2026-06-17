@@ -227,7 +227,7 @@ describe('Rules', () => {
     expect(scrollIntoViewMock).toHaveBeenCalled();
   });
 
-  it('shows a friendly loading state string while a board over P2P is downloading', async () => {
+  it('shows a friendly loading state string while a board is downloading from peers', async () => {
     testState.communities = {
       'custom-board.eth': {
         state: 'fetching-ipns',

@@ -27,6 +27,16 @@ const browserWindowWithDisabledPureP2P = {
   },
 } as unknown as Window;
 
+const browserWindowWithEnabledPureP2P = {
+  electronApi: undefined,
+  isElectron: false,
+  location: { hostname: '5chan.app' },
+  localStorage: {
+    getItem: () => 'true',
+    setItem: () => undefined,
+  },
+} as unknown as Window;
+
 const electronWindow = {
   electronApi: { isElectron: true },
   isElectron: true,
@@ -56,10 +66,14 @@ describe('p2p-runtime', () => {
     expect(getP2PRuntimeMode(account, browserWindow)).toBe('full-node-rpc');
   });
 
-  it('shows p2p settings in browsers when pure p2p is enabled by default', () => {
+  it('keeps browser pure p2p on by default while allowing gateway mode when configured', () => {
     expect(shouldShowP2PSettingsSection(undefined, browserWindow)).toBe(true);
     expect(shouldShowP2PSettingsSection({ pkcOptions: { ipfsGatewayUrls: ['https://gateway.example'] } }, browserWindow)).toBe(true);
     expect(isBrowserPureP2PEnabled({ pkcOptions: { ipfsGatewayUrls: ['https://gateway.example'] } }, browserWindow)).toBe(true);
+    expect(shouldShowP2PSettingsSection({ pkcOptions: { libp2pJsClientsOptions: [{ key: 'libp2pjs' }] } }, browserWindow)).toBe(true);
+    expect(isBrowserPureP2PEnabled({ pkcOptions: { libp2pJsClientsOptions: [{ key: 'libp2pjs' }] } }, browserWindow)).toBe(true);
+    expect(shouldShowP2PSettingsSection({ pkcOptions: { ipfsGatewayUrls: ['https://gateway.example'] } }, browserWindowWithEnabledPureP2P)).toBe(true);
+    expect(isBrowserPureP2PEnabled({ pkcOptions: { ipfsGatewayUrls: ['https://gateway.example'] } }, browserWindowWithEnabledPureP2P)).toBe(true);
   });
 
   it('allows browser gateway mode when pure p2p is disabled', () => {
@@ -88,13 +102,15 @@ describe('p2p-runtime', () => {
 
     expect(getBrowserPureP2PAccountOptions(account)).toMatchObject({
       libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
-      ipfsGatewayUrls: [],
+      ipfsGatewayUrls: undefined,
       pkcRpcClientsOptions: undefined,
     });
     expect(getBrowserGatewayAccountOptions(account)).toMatchObject({
-      ipfsGatewayUrls: ['https://ipfsgateway.xyz', 'https://gateway.plebpubsub.xyz', 'https://gateway.forumindex.com'],
+      httpRoutersOptions: ['https://custom-router.example'],
+      ipfsGatewayUrls: ['https://gateway.example'],
       libp2pJsClientsOptions: undefined,
       pkcRpcClientsOptions: undefined,
+      pubsubKuboRpcClientsOptions: ['https://pubsubprovider.xyz/api/v0', 'https://plebpubsub.xyz/api/v0', 'https://rannithepleb.com/api/v0'],
     });
   });
 });

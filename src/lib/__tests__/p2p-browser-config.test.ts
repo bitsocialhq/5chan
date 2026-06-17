@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   configureP2PBrowserPkcOptions,
+  getBrowserGatewayPkcOptions,
   getPureP2PBrowserPreference,
-  P2P_BROWSER_PKC_OPTIONS,
   PURE_P2P_BROWSER_SETTING_KEY,
   setPureP2PBrowserPreference,
   shouldUsePureP2PBrowser,
@@ -17,36 +17,54 @@ const createStorage = (values: Record<string, string | undefined> = {}) => ({
 });
 
 describe('p2p-browser-config', () => {
+  const defaultHttpRouters = ['https://peers.plebpubsub.xyz', 'https://routing.lol', 'https://peers.pleb.bot'];
+
   it('configures browser PKC options for pure p2p by default', () => {
+    const chainProviders = {
+      eth: { urls: ['https://eth.example'], chainId: 1 },
+    };
     const targetWindow = {
       location: { hostname: '5chan.app' },
       localStorage: createStorage(),
       defaultPkcOptions: {
+        chainProviders,
         ipfsGatewayUrls: ['https://gateway.example'],
       },
     };
 
     expect(shouldUsePureP2PBrowser(targetWindow)).toBe(true);
     expect(configureP2PBrowserPkcOptions(targetWindow)).toBe(true);
-    expect(targetWindow.defaultPkcOptions).toEqual(P2P_BROWSER_PKC_OPTIONS);
+    expect(targetWindow.defaultPkcOptions).toMatchObject({
+      chainProviders,
+      httpRoutersOptions: defaultHttpRouters,
+      ipfsGatewayUrls: undefined,
+      libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      pubsubKuboRpcClientsOptions: undefined,
+    });
   });
 
-  it('respects disabled pure p2p preference on p2p subdomains', () => {
-    const defaultPkcOptions = {
-      ipfsGatewayUrls: ['https://gateway.example'],
+  it('configures browser PKC options for gateway mode when pure p2p is explicitly disabled', () => {
+    const chainProviders = {
+      eth: { urls: ['https://eth.example'], chainId: 1 },
     };
     const targetWindow = {
-      location: { hostname: 'p2p.5chan.app' },
+      location: { hostname: '5chan.app' },
       localStorage: createStorage({ [PURE_P2P_BROWSER_SETTING_KEY]: 'false' }),
-      defaultPkcOptions,
+      defaultPkcOptions: {
+        chainProviders,
+        ipfsGatewayUrls: ['https://gateway.example'],
+      },
     };
 
     expect(shouldUsePureP2PBrowser(targetWindow)).toBe(false);
     expect(configureP2PBrowserPkcOptions(targetWindow)).toBe(false);
-    expect(targetWindow.defaultPkcOptions).toBe(defaultPkcOptions);
+    expect(targetWindow.defaultPkcOptions).toEqual({
+      chainProviders,
+      ...getBrowserGatewayPkcOptions(),
+    });
   });
 
-  it('configures browser PKC options when pure p2p is enabled', () => {
+  it('configures browser PKC options when pure p2p is explicitly enabled', () => {
     const targetWindow = {
       location: { hostname: '5chan.app' },
       localStorage: createStorage({ [PURE_P2P_BROWSER_SETTING_KEY]: 'true' }),
@@ -55,22 +73,14 @@ describe('p2p-browser-config', () => {
       },
     };
 
+    expect(shouldUsePureP2PBrowser(targetWindow)).toBe(true);
     expect(configureP2PBrowserPkcOptions(targetWindow)).toBe(true);
-    expect(targetWindow.defaultPkcOptions).toEqual(P2P_BROWSER_PKC_OPTIONS);
-  });
-
-  it('leaves browser PKC options untouched when pure p2p is disabled', () => {
-    const defaultPkcOptions = {
-      ipfsGatewayUrls: ['https://gateway.example'],
-    };
-    const targetWindow = {
-      location: { hostname: '5chan.app' },
-      localStorage: createStorage({ [PURE_P2P_BROWSER_SETTING_KEY]: 'false' }),
-      defaultPkcOptions,
-    };
-
-    expect(configureP2PBrowserPkcOptions(targetWindow)).toBe(false);
-    expect(targetWindow.defaultPkcOptions).toBe(defaultPkcOptions);
+    expect(targetWindow.defaultPkcOptions).toMatchObject({
+      httpRoutersOptions: defaultHttpRouters,
+      ipfsGatewayUrls: undefined,
+      libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      pubsubKuboRpcClientsOptions: undefined,
+    });
   });
 
   it('leaves electron defaults untouched', () => {

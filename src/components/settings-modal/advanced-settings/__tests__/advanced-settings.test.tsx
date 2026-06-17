@@ -81,12 +81,6 @@ const clickButton = async (text: string) => {
   });
 };
 
-const getSaveAdvancedSettingsButton = () => {
-  const button = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'save_advanced_settings');
-  expect(button).toBeTruthy();
-  return button as HTMLButtonElement;
-};
-
 const setTestHostname = (hostname: string) => {
   Object.defineProperty(window, 'location', {
     configurable: true,
@@ -210,38 +204,30 @@ describe('AdvancedSettings', () => {
     expect(textInputs[2]?.value).toBe('/tmp/connected-node');
   });
 
-  it('hides gateway mode settings while browser pure p2p is enabled', async () => {
+  it('shows pure p2p browser mode checked by default', async () => {
     await renderSettings(false);
 
     expect(container.textContent).not.toContain('advanced_ipfs_gateways');
     expect(container.textContent).not.toContain('advanced_pubsub_providers');
     expect(container.textContent).toContain('advanced_http_routers');
     expect(container.textContent).toContain('advanced_full_node_websocket_rpc');
+    const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    expect(checkbox?.checked).toBe(true);
 
     const nodeRpcInput = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="text"]')).find(
       (input) => input.placeholder === 'advanced_p2p_rpc_placeholder',
     );
     expect(nodeRpcInput).toBeTruthy();
-
-    const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
-    await act(async () => {
-      checkbox?.click();
-    });
-
-    expect(container.textContent).toContain('advanced_ipfs_gateways');
-    expect(container.textContent).toContain('advanced_pubsub_providers');
   });
 
-  it('saves the browser pure p2p toggle through advanced settings', async () => {
+  it('saves browser pure p2p settings when the toggle is turned on', async () => {
     localStorage.setItem('5chan:pure-p2p-browser-enabled', 'false');
 
     await renderSettings(false);
 
     const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
     expect(checkbox?.checked).toBe(false);
-    expect(container.textContent).not.toContain('pure P2P:');
     expect(checkbox?.closest('label')?.nextElementSibling?.textContent).toBe('enable_pure_p2p_tip');
-    expect(getSaveAdvancedSettingsButton().previousElementSibling).toBe(checkbox?.closest('div'));
 
     await act(async () => {
       checkbox?.click();
@@ -252,10 +238,10 @@ describe('AdvancedSettings', () => {
       expect.objectContaining({
         pkcOptions: expect.objectContaining({
           httpRoutersOptions: ['https://router.old.example'],
-          ipfsGatewayUrls: [],
+          ipfsGatewayUrls: undefined,
           libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
           pkcRpcClientsOptions: undefined,
-          pubsubKuboRpcClientsOptions: [],
+          pubsubKuboRpcClientsOptions: undefined,
         }),
       }),
     );
@@ -263,7 +249,42 @@ describe('AdvancedSettings', () => {
     expect(reloadMock).toHaveBeenCalledOnce();
   });
 
-  it('allows browser pure p2p to be disabled on p2p subdomains', async () => {
+  it('saves gateway defaults when the browser pure p2p setting is turned off', async () => {
+    localStorage.setItem('5chan:pure-p2p-browser-enabled', 'true');
+    testState.account = {
+      mediaIpfsGatewayUrl: 'https://media.old.example',
+      pkcOptions: {
+        httpRoutersOptions: ['https://peers.pleb.bot'],
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      },
+    };
+
+    await renderSettings(false);
+
+    const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    expect(checkbox?.checked).toBe(true);
+
+    await act(async () => {
+      checkbox?.click();
+    });
+    await clickButton('save_advanced_settings');
+
+    expect(testState.setAccountMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pkcOptions: expect.objectContaining({
+          httpRoutersOptions: ['https://peers.pleb.bot'],
+          ipfsGatewayUrls: ['https://ipfsgateway.xyz', 'https://gateway.plebpubsub.xyz', 'https://gateway.forumindex.com'],
+          libp2pJsClientsOptions: undefined,
+          pkcRpcClientsOptions: undefined,
+          pubsubKuboRpcClientsOptions: ['https://pubsubprovider.xyz/api/v0', 'https://plebpubsub.xyz/api/v0', 'https://rannithepleb.com/api/v0'],
+        }),
+      }),
+    );
+    expect(localStorage.getItem('5chan:pure-p2p-browser-enabled')).toBe('false');
+    expect(reloadMock).toHaveBeenCalledOnce();
+  });
+
+  it('preserves custom browser gateway providers while pure p2p is unavailable', async () => {
     localStorage.setItem('5chan:pure-p2p-browser-enabled', 'false');
     setTestHostname('p2p.5chan.app');
 
@@ -271,7 +292,6 @@ describe('AdvancedSettings', () => {
 
     const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
     expect(checkbox?.checked).toBe(false);
-    expect(checkbox?.disabled).toBe(false);
 
     await clickButton('save_advanced_settings');
 
@@ -288,7 +308,7 @@ describe('AdvancedSettings', () => {
     expect(localStorage.getItem('5chan:pure-p2p-browser-enabled')).toBe('false');
   });
 
-  it('saves gateway mode defaults when browser pure p2p is disabled', async () => {
+  it('saves gateway mode defaults when browser pure p2p settings have no gateway endpoints', async () => {
     testState.account = {
       mediaIpfsGatewayUrl: 'https://media.old.example',
       pkcOptions: {

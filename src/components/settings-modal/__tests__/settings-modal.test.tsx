@@ -175,7 +175,7 @@ describe('SettingsModal', () => {
     expect(container.querySelector('[data-testid="p2p-stats-settings-panel"]')).toBeNull();
   });
 
-  it('opens the p2p stats section from its hash', () => {
+  it('opens the p2p stats section from its hash when browser pure p2p is enabled', () => {
     render('/all/settings#p2p-stats-settings');
 
     expect(container.querySelector('[data-testid="p2p-stats-settings-panel"]')).not.toBeNull();

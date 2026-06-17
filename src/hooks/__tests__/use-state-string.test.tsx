@@ -102,7 +102,7 @@ describe('use-state-string', () => {
     expect(latestValue).toBe('Resolving address, downloading board from peers');
   });
 
-  it('formats browser p2p fallback publishing states as peer downloads', () => {
+  it('formats browser p2p fallback publishing states as peer downloads when pure p2p is enabled', () => {
     localStorage.setItem('5chan:pure-p2p-browser-enabled', 'true');
 
     act(() => {
@@ -144,7 +144,7 @@ describe('use-state-string', () => {
     expect(latestValue).toBe('Downloading board via IPFS');
   });
 
-  it('formats browser p2p single-board feed fallback states as peer downloads', () => {
+  it('formats browser p2p single-board feed fallback states as peer downloads when pure p2p is enabled', () => {
     localStorage.setItem('5chan:pure-p2p-browser-enabled', 'true');
     testState.community = {
       state: 'updating',
