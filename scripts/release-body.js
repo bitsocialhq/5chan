@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This release ships signed and notarized macOS desktop apps, adds LaTeX in /sci/, shows board subtitles on the All view, and improves YouTube thumbnails alongside moderation queue, challenge modal, and media playback fixes.';
+  'This release restores reliable browser P2P posting and keeps the pure P2P setting available with gateway fallback options.';
 
 const releaseBody = `${oneLinerDescription}
 

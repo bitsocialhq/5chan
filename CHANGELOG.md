@@ -1,3 +1,22 @@
+## [0.9.3](https://github.com/bitsocialnet/5chan/compare/v0.9.2...v0.9.3) (2026-06-17)
+
+
+### Bug Fixes
+
+* **ci:** keep raw board tests side-effect free ([75dd7a8](https://github.com/bitsocialnet/5chan/commit/75dd7a84967cb3c99da37780fb31bb6a947d7d57))
+* **pubsub:** avoid false browser p2p provider failures ([10015de](https://github.com/bitsocialnet/5chan/commit/10015de6b925595694ce1abae547e628b169bf35))
+* **pubsub:** restore browser pure p2p publishing ([1278cf4](https://github.com/bitsocialnet/5chan/commit/1278cf42c00446ae85add65722b74caacee78ce3))
+* **release:** align blotter and release copy with LaTeX in /sci/ ([3577673](https://github.com/bitsocialnet/5chan/commit/35776737f2479266c00fffc440e4b946e5782517))
+* **rules:** re-scroll directory hash when data refreshes ([6006a65](https://github.com/bitsocialnet/5chan/commit/6006a658fbf4fe625a76c836992dff89540dbe4a))
+
+
+### Performance Improvements
+
+* **mod queue:** stabilize empty loading state ([33bb1d1](https://github.com/bitsocialnet/5chan/commit/33bb1d1356fbf09693acb5003bcc6e7039a51b90))
+* **mod queue:** stabilize moderation subscriptions ([f3565f0](https://github.com/bitsocialnet/5chan/commit/f3565f0dda132c67300c49eba49e868f2fc6bfbd))
+
+
+
 ## [0.9.2](https://github.com/bitsocialnet/5chan/compare/v0.9.1...v0.9.2) (2026-06-13)
 
 
@@ -5,7 +24,7 @@
 
 * **archive:** preserve button link text color on desktop ([b0193b3](https://github.com/bitsocialnet/5chan/commit/b0193b34beec9993d4ca3cedc259ac2e9bd88460))
 * **challenge-modal:** center mobile modal in viewport ([2e58961](https://github.com/bitsocialnet/5chan/commit/2e58961cf1d32fa303c042809309172add45eb51))
-* **challenge-modal:** publish challenge answers with pkc object schema ([591aaa7](https://github.com/bitsocialnet/5chan/commit/591aaa729))
+* **challenge-modal:** publish challenge answers with pkc object schema ([591aaa7](https://github.com/bitsocialnet/5chan/commit/591aaa729f05a4b2ff62b86c07ee67c112f4123b))
 * **deps:** bump react-router-dom to 6.30.4 ([ee5aa78](https://github.com/bitsocialnet/5chan/commit/ee5aa7845edcd66b4bde7d6b09a6018bf40b9974)), closes [#276](https://github.com/bitsocialnet/5chan/issues/276)
 * **deps:** resolve shell-quote critical dependabot alert ([fa7cab0](https://github.com/bitsocialnet/5chan/commit/fa7cab069999c745595d2d50bd4f9c920047963d))
 * **failed-publish:** keep bracket actions on one line ([9de2e6a](https://github.com/bitsocialnet/5chan/commit/9de2e6a8510d4ec6647ff13ce99bd9e8c22b197a))
