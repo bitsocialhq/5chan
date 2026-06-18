@@ -1,10 +1,11 @@
-## [0.9.3](https://github.com/bitsocialnet/5chan/compare/v0.9.2...v0.9.3) (2026-06-17)
+## [0.9.3](https://github.com/bitsocialnet/5chan/compare/v0.9.2...v0.9.3) (2026-06-18)
 
 
 ### Bug Fixes
 
 * **ci:** keep raw board tests side-effect free ([75dd7a8](https://github.com/bitsocialnet/5chan/commit/75dd7a84967cb3c99da37780fb31bb6a947d7d57))
 * **pubsub:** avoid false browser p2p provider failures ([10015de](https://github.com/bitsocialnet/5chan/commit/10015de6b925595694ce1abae547e628b169bf35))
+* **pubsub:** repair browser pure p2p publishing ([8cf03a7](https://github.com/bitsocialnet/5chan/commit/8cf03a7bb4951d115de101ba847d7b9de9253a3a))
 * **pubsub:** restore browser pure p2p publishing ([1278cf4](https://github.com/bitsocialnet/5chan/commit/1278cf42c00446ae85add65722b74caacee78ce3))
 * **release:** align blotter and release copy with LaTeX in /sci/ ([3577673](https://github.com/bitsocialnet/5chan/commit/35776737f2479266c00fffc440e4b946e5782517))
 * **rules:** re-scroll directory hash when data refreshes ([6006a65](https://github.com/bitsocialnet/5chan/commit/6006a658fbf4fe625a76c836992dff89540dbe4a))

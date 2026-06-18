@@ -3,8 +3,8 @@
     {
       "id": "release-0.9.3",
       "kind": "release",
-      "timestamp": 1781697600,
-      "message": "v0.9.3: More reliable browser posting",
+      "timestamp": 1781784000,
+      "message": "v0.9.3: Pure P2P browser posting hotfix",
       "version": "0.9.3"
     },
     {

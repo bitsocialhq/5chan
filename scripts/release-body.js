@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This release restores reliable browser P2P posting and keeps the pure P2P setting available with gateway fallback options.';
+  'This release applies a browser pure P2P posting hotfix and keeps the pure P2P setting on the in-browser peer-to-peer path.';
 
 const releaseBody = `${oneLinerDescription}
 
