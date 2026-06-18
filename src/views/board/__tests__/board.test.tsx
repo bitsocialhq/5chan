@@ -688,6 +688,43 @@ describe('Board', () => {
     expect(container.querySelectorAll('[data-testid="loading-ellipsis"]').length).toBe(1);
   });
 
+  it('renders an empty flash table when a loaded board reports explicit empty page cids', async () => {
+    testState.directories = [{ address: 'flash-posting.bso', directoryCode: 'f', title: '/f/ - Flash' }];
+    testState.directoryByAddress = {
+      'flash-posting.bso': {
+        address: 'flash-posting.bso',
+        directoryCode: 'f',
+        features: { postsPerPage: 50 },
+        title: '/f/ - Flash',
+      },
+    };
+    testState.resolvedCommunityAddress = 'flash-posting.bso';
+    testState.feedState = 'fetching-ipns';
+    testState.hasMore = true;
+    testState.community = {
+      error: undefined,
+      posts: {
+        pageCids: {},
+        pages: {},
+      },
+      shortAddress: 'flash-posting.bso',
+      state: 'succeeded',
+      title: '/f/ - Flash',
+      updatedAt: 1781773422,
+    };
+    testState.communitySnapshot = {
+      shortAddress: 'flash-posting.bso',
+      title: '/f/ - Flash',
+    };
+
+    await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
+
+    const table = container.querySelector('#flash-list');
+    expect(table).toBeTruthy();
+    expect(table?.textContent).toContain('no posts');
+    expect(table?.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+  });
+
   it('inserts a nonoko pending account comment after pinned posts on the redirected board index', async () => {
     const currentTimestamp = Math.floor(Date.now() / 1000);
     testState.feed = [

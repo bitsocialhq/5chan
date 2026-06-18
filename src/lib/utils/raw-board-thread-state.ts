@@ -1,11 +1,13 @@
 import type { Comment, CommunitiesPages, Community, CommunityPage } from '@bitsocial/bitsocial-react-hooks';
 
 export type RawBoardThreadState = {
+  hasExplicitEmptyPageCids: boolean;
   isFullyLoaded: boolean;
   rootThreadCids: Set<string>;
 };
 
 const EMPTY_RAW_BOARD_THREAD_STATE: RawBoardThreadState = {
+  hasExplicitEmptyPageCids: false,
   isFullyLoaded: false,
   rootThreadCids: new Set<string>(),
 };
@@ -80,6 +82,7 @@ export const getRawBoardThreadState = ({
 
   if (pages.length > 0) {
     return {
+      hasExplicitEmptyPageCids: false,
       isFullyLoaded: !pages[pages.length - 1]?.nextCid,
       rootThreadCids,
     };
@@ -98,6 +101,7 @@ export const getRawBoardThreadState = ({
   }
 
   return {
+    hasExplicitEmptyPageCids,
     isFullyLoaded: hasCompletePreloadedPage || hasExplicitEmptyPageCids,
     rootThreadCids,
   };
