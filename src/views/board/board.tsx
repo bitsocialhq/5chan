@@ -480,7 +480,9 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const isRawBoardThreadStateEmpty = isRawBoardThreadStateFullyLoaded && (rawBoardThreadState?.rootThreadCids.size ?? 0) === 0;
   const isSingleCommunityBoard = !isInAllView && !isInSubscriptionsView && !isInModView;
   const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
-  const isKnownEmptySingleCommunityBoard = isSingleCommunityBoard && combinedFeed.length === 0 && isLoadedCommunityState && isRawBoardThreadStateEmpty;
+  const isFeedSucceeded = feedState === 'succeeded';
+  const isKnownEmptySingleCommunityBoard =
+    isSingleCommunityBoard && combinedFeed.length === 0 && isLoadedCommunityState && isRawBoardThreadStateEmpty && (hasExplicitEmptyPageCids || isFeedSucceeded);
   const effectiveHasMore = isKnownEmptySingleCommunityBoard ? false : hasMore;
   const title = isInAllView ? t('all') : isInSubscriptionsView ? t('subscriptions') : isInModView ? t('mod') : communityTitle;
 
@@ -678,7 +680,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     communityIdentifier.publicKey.length > 0 &&
     communityData?.nameResolved === false;
   const displayFeed = effectiveInfiniteScroll ? combinedFeed : currentPageFeed;
-  const isFeedSucceeded = feedState === 'succeeded';
   const canShowEmptyFlashTable = hasExplicitEmptyPageCids || (isLoadedCommunityState && isFeedSucceeded && isRawBoardThreadStateFullyLoaded);
   const shouldShowFlashTableLoading = shouldUseFlashTable && displayFeed.length === 0 && !canShowEmptyFlashTable && communityState !== 'failed' && feedState !== 'failed';
 

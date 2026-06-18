@@ -1081,6 +1081,25 @@ describe('Board', () => {
     expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
   });
 
+  it('keeps loading when an empty preloaded board page finishes before the feed', async () => {
+    testState.feedStateString = undefined;
+    testState.feedState = 'fetching-ipns';
+    testState.hasMore = true;
+    testState.community = {
+      error: undefined,
+      shortAddress: 'music-posting.eth',
+      state: 'succeeded',
+      title: '/mu/ - Music',
+    };
+    markRawBoardThreadsFullyLoaded();
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(container.textContent).not.toContain('no_threads');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
+    expect(container.textContent).toContain('load_more');
+  });
+
   it('shows no threads when a loaded board reports explicit empty page cids', async () => {
     testState.feedStateString = 'Downloading board from peers';
     testState.feedState = 'fetching-ipns';
