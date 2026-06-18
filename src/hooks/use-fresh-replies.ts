@@ -1,11 +1,55 @@
 import { useMemo } from 'react';
 import { Comment, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
 import { sortRepliesForDisplay } from '../lib/utils/replies-preview-utils';
+import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
+import { normalizeBoardAddress } from '../lib/utils/directory-list-lookup-utils';
 
 // Keep the hook on its indexed fast path when there are no reply indices to resolve.
 const EMPTY_ACCOUNT_COMMENT_LOOKUP = { commentIndices: [-1] };
 
-const useFreshReplies = (replies: Comment[] = []) => {
+type UseFreshRepliesOptions = {
+  post?: Comment;
+};
+
+const getString = (value: unknown): string | undefined => (typeof value === 'string' && value.length > 0 ? value : undefined);
+
+const getThreadPostCid = (post: Comment | undefined): string | undefined => getString(post?.postCid) ?? getString(post?.cid);
+
+const hasSameCommunityAddress = (a: string | undefined, b: string | undefined): boolean => {
+  if (!a || !b) return a === b;
+  return normalizeBoardAddress(a) === normalizeBoardAddress(b);
+};
+
+const isFreshReplyForOriginalReply = (reply: Comment, freshReply: Comment, post: Comment | undefined): boolean => {
+  const replyCid = getString(reply?.cid);
+  const freshReplyCid = getString(freshReply?.cid);
+  if (replyCid && reply?.pendingApproval !== true && replyCid !== freshReplyCid) {
+    return false;
+  }
+
+  const expectedPostCid = getString(reply?.postCid) ?? getThreadPostCid(post);
+  if (expectedPostCid) {
+    if (getString(freshReply?.postCid) !== expectedPostCid) {
+      return false;
+    }
+
+    if (!getString(freshReply?.parentCid)) {
+      return false;
+    }
+  }
+
+  const expectedParentCid = getString(reply?.parentCid);
+  if (expectedParentCid && getString(freshReply?.parentCid) !== expectedParentCid) {
+    return false;
+  }
+
+  const expectedCommunityAddress = getCommentCommunityAddress(reply) ?? getCommentCommunityAddress(post);
+  const freshCommunityAddress = getCommentCommunityAddress(freshReply);
+  return hasSameCommunityAddress(expectedCommunityAddress, freshCommunityAddress);
+};
+
+const useFreshReplies = (replies: Comment[] = [], options: UseFreshRepliesOptions = {}) => {
+  const { post } = options;
   const replyIndices = useMemo(
     () => Array.from(new Set(replies.map((reply) => reply?.index).filter((replyIndex): replyIndex is number => typeof replyIndex === 'number'))),
     [replies],
@@ -74,6 +118,10 @@ const useFreshReplies = (replies: Comment[] = []) => {
         return reply;
       }
 
+      if (!isFreshReplyForOriginalReply(reply, freshReply, post)) {
+        return reply;
+      }
+
       hasFreshReplies = true;
       return freshReply;
     });
@@ -99,7 +147,7 @@ const useFreshReplies = (replies: Comment[] = []) => {
     });
 
     return sortRepliesForDisplay(hasDuplicateReplyIndices ? dedupedReplies : nextReplies);
-  }, [accountCommentsByCidList, accountCommentsByIndexList, replies]);
+  }, [accountCommentsByCidList, accountCommentsByIndexList, post, replies]);
 };
 
 export default useFreshReplies;
