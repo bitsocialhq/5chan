@@ -11,6 +11,11 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 type TestComment = {
   approved?: boolean;
+  accountId?: string;
+  author?: {
+    address?: string;
+    community?: unknown;
+  };
   cid?: string;
   content?: string;
   error?: Error;
@@ -35,6 +40,7 @@ type TestComment = {
 };
 
 const testState = vi.hoisted(() => ({
+  accountCommentsByCid: {} as Record<string, TestComment | undefined>,
   cachedComments: {} as Record<string, TestComment>,
   communityFieldAddress: undefined as string | undefined,
   commentsByCid: {} as Record<string, TestComment>,
@@ -78,6 +84,8 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
+  useAccount: () => ({ id: 'active-account', author: { address: 'account-author' } }),
+  useAccountComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.accountCommentsByCid[commentCid] : undefined),
   useComment: ({ commentCid, autoUpdate, community }: { commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string } }) => {
     testState.useCommentCalls.push({ commentCid, autoUpdate, community });
     return commentCid ? testState.commentsByCid[commentCid] : undefined;
@@ -177,6 +185,7 @@ vi.mock('../../../components/post-desktop/post-desktop', () => ({
       {
         'data-testid': 'post-desktop',
         'data-approved': post?.approved === undefined ? '' : String(post.approved),
+        'data-author-address': post?.author?.address || '',
         'data-number': post?.number === undefined ? '' : String(post.number),
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
@@ -204,6 +213,7 @@ vi.mock('../../../components/post-mobile/post-mobile', () => ({
       {
         'data-testid': 'post-mobile',
         'data-approved': post?.approved === undefined ? '' : String(post.approved),
+        'data-author-address': post?.author?.address || '',
         'data-number': post?.number === undefined ? '' : String(post.number),
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
@@ -251,6 +261,7 @@ const renderPostPage = async (initialEntry: string | { pathname: string; state?:
 describe('Post', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    testState.accountCommentsByCid = {};
     testState.cachedComments = {};
     testState.communityFieldAddress = undefined;
     testState.commentsByCid = {};
@@ -399,6 +410,41 @@ describe('Post', () => {
     expect(desktopPresenter?.getAttribute('data-approved')).toBe('true');
   });
 
+  it('rerenders posts when local author data becomes available after the remote post shell', async () => {
+    await act(async () => {
+      root.render(
+        createElement(Post, {
+          post: {
+            cid: 'post-author',
+            communityAddress: 'music-posting.eth',
+            content: 'body',
+            replyCount: 0,
+          },
+        }),
+      );
+    });
+
+    expect(container.querySelector('[data-testid="post-desktop"]')?.getAttribute('data-author-address')).toBe('');
+
+    await act(async () => {
+      root.render(
+        createElement(Post, {
+          post: {
+            author: {
+              address: 'account-author',
+            },
+            cid: 'post-author',
+            communityAddress: 'music-posting.eth',
+            content: 'body',
+            replyCount: 0,
+          },
+        }),
+      );
+    });
+
+    expect(container.querySelector('[data-testid="post-desktop"]')?.getAttribute('data-author-address')).toBe('account-author');
+  });
+
   it('hydrates thread pages from cached feed data, sets the document title, and renders thread footers', async () => {
     testState.commentsByCid = {
       'cached-cid': {
@@ -427,6 +473,115 @@ describe('Post', () => {
     expect(document.title).toBe('/mu/ - Cached thread... - 5chan');
     expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
     expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it('overlays local account comments on thread pages so author controls receive account author data', async () => {
+    testState.commentsByCid = {
+      'owned-cid': {
+        cid: 'owned-cid',
+        author: {
+          community: { displayName: 'Anonymous' },
+        },
+        content: 'remote body',
+        number: 14,
+        replyCount: 3,
+        communityAddress: 'music-posting.eth',
+        title: 'Remote thread',
+      },
+    };
+    testState.accountCommentsByCid = {
+      'owned-cid': {
+        cid: 'owned-cid',
+        postCid: 'owned-cid',
+        author: {
+          address: 'account-author',
+        },
+        content: 'local body',
+        communityAddress: 'music-posting.eth',
+        title: 'Local thread',
+      },
+    };
+
+    await renderPostPage('/mu/thread/owned-cid');
+
+    const desktopPresenter = container.querySelector('[data-testid="post-desktop"]');
+    expect(desktopPresenter?.getAttribute('data-author-address')).toBe('account-author');
+    expect(desktopPresenter?.getAttribute('data-number')).toBe('14');
+    expect(container.querySelector('[data-testid="thread-footer-first-row"]')?.textContent).toBe('owned-cid:14:music-posting.eth:false');
+  });
+
+  it('restores the active account author when a mapped account comment only has anonymous author metadata', async () => {
+    testState.commentsByCid = {
+      'mapped-owned-cid': {
+        cid: 'mapped-owned-cid',
+        author: {
+          community: { displayName: 'Anonymous' },
+        },
+        content: 'remote body',
+        number: 16,
+        replyCount: 0,
+        communityAddress: 'music-posting.eth',
+        title: 'Remote thread',
+      },
+    };
+    testState.accountCommentsByCid = {
+      'mapped-owned-cid': {
+        accountId: 'active-account',
+        cid: 'mapped-owned-cid',
+        postCid: 'mapped-owned-cid',
+        author: {
+          community: { displayName: 'Anonymous' },
+        },
+        content: 'local body',
+        communityAddress: 'music-posting.eth',
+        title: 'Local thread',
+      },
+    };
+
+    await renderPostPage('/mu/thread/mapped-owned-cid');
+
+    const desktopPresenter = container.querySelector('[data-testid="post-desktop"]');
+    expect(desktopPresenter?.getAttribute('data-author-address')).toBe('account-author');
+    expect(desktopPresenter?.getAttribute('data-number')).toBe('16');
+  });
+
+  it('keeps queued publish authors on thread pages when the remote OP is already renderable', async () => {
+    testState.commentsByCid = {
+      'queued-owned-cid': {
+        cid: 'queued-owned-cid',
+        author: {
+          community: { displayName: 'Anonymous' },
+        },
+        content: 'remote body',
+        number: 15,
+        pendingApproval: false,
+        replyCount: 0,
+        communityAddress: 'music-posting.eth',
+        title: 'Remote thread',
+      },
+    };
+
+    await renderPostPage({
+      pathname: '/mu/thread/queued-owned-cid',
+      state: {
+        queuedComment: {
+          cid: 'queued-owned-cid',
+          author: {
+            address: 'account-author',
+          },
+          content: 'queued body',
+          communityAddress: 'music-posting.eth',
+          pendingApproval: true,
+          title: 'Queued thread',
+        },
+      },
+    });
+
+    const desktopPresenter = container.querySelector('[data-testid="post-desktop"]');
+    expect(desktopPresenter?.getAttribute('data-author-address')).toBe('account-author');
+    expect(desktopPresenter?.getAttribute('data-number')).toBe('15');
+    expect(desktopPresenter?.getAttribute('data-pending-approval')).toBe('false');
+    expect(container.querySelector('[data-testid="thread-footer-first-row"]')?.textContent).toBe('queued-owned-cid:15:music-posting.eth:false');
   });
 
   it('passes archived OP state through to thread footers as closed', async () => {
