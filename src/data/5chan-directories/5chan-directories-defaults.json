@@ -506,7 +506,7 @@
         "postsPerPage": 15
       },
       "rules": [
-        "This is the destination for all cartoon/anime pony related content on 4chan.",
+        "This is the destination for all cartoon/anime pony related content on 5chan.",
         "This is a work safe board. No pornographic images or other not safe for work content is allowed (this includes clop).",
         "Topics must be show-related. When discussing people, they must be associated with the show and not the fandom.",
         "No roleplay.",
@@ -562,7 +562,7 @@
         "safeForWork": true,
         "hasFlags": false,
         "requirePostLink": false,
-        "requirePostLinkIsMedia": false,
+        "requirePostLinkIsMedia": true,
         "bumpLimit": 300,
         "noSpoilers": false,
         "noSpoilerReplies": false,
@@ -748,9 +748,7 @@
         "postsPerPage": 15
       },
       "rules": [
-        "You must check your #fortune in order to post on this board.",
-        "No porn dump threads. Keep that shit on /b/.",
-        "Moderators must check their #fortune as well."
+        "No porn dump threads. Keep that shit on /b/."
       ]
     },
     "sci": {

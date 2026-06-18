@@ -1,6 +1,16 @@
 import { memo, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type Comment, type CommunityIdentifier, type Role, useComment, useEditedComment, useCommunity, useReplies } from '@bitsocial/bitsocial-react-hooks';
+import {
+  type Account,
+  type Comment,
+  type CommunityIdentifier,
+  type Role,
+  useAccount,
+  useComment,
+  useEditedComment,
+  useCommunity,
+  useReplies,
+} from '@bitsocial/bitsocial-react-hooks';
 import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -20,6 +30,7 @@ import { getRequestedThreadTopCid, scrollThreadContainerToTop } from '../../lib/
 import { evictThreadRefreshCaches } from '../../lib/utils/thread-refresh-cache-utils';
 import { REPLIES_PER_PAGE } from '../../lib/constants';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
+import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import type { QueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
 import type { ReplyVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
 import styles from './post.module.css';
@@ -34,6 +45,19 @@ export type CommentWithRefresh = Comment & {
   errors?: Error[];
   index?: number;
   removed?: boolean;
+};
+
+const mergeDefinedFields = <T extends object>(base: T | undefined, override: T | undefined): T | undefined => {
+  if (!override) return base;
+
+  const merged = { ...base } as Record<string, unknown>;
+  for (const [key, value] of Object.entries(override)) {
+    if (value !== undefined) {
+      merged[key] = value;
+    }
+  }
+
+  return merged as T;
 };
 
 const getRouteUserState = (state: unknown): QueuedCommentRouteState | undefined => {
@@ -61,25 +85,6 @@ interface ReplyPaginationOverride {
   replies: Comment[];
   reset?: () => Promise<void>;
 }
-
-// useComment may not return cached feed data immediately due to its updatedAt comparison logic.
-// This hook falls back to the communities pages store (populated by useFeed) so content
-// from the catalog appears instantly instead of going through a loading phase.
-const useCommentWithFeedCache = (options: { commentCid: string | undefined; autoUpdate?: boolean; community?: CommunityIdentifier }): CommentWithRefresh | undefined => {
-  const comment = useComment(options);
-  const cachedComment = useCommunitiesPagesStore((state) => state.comments[options?.commentCid || '']);
-
-  return useMemo(() => {
-    if (!cachedComment || comment?.timestamp) return comment;
-    return {
-      ...cachedComment,
-      refresh: comment?.refresh,
-      state: comment?.state,
-      error: comment?.error,
-      errors: comment?.errors,
-    } as CommentWithRefresh;
-  }, [comment, cachedComment]);
-};
 
 const getQueuedCommentFromRouteState = (state: unknown, commentCid: string | undefined): CommentWithRefresh | undefined => {
   if (!commentCid) return undefined;
@@ -115,6 +120,71 @@ const mergeCommentFallback = (comment: CommentWithRefresh | undefined, fallback:
     refresh: comment.refresh,
     state: comment.state,
   };
+};
+
+const mergeLocalCommentAuthor = (comment: CommentWithRefresh | undefined, localComment: CommentWithRefresh | undefined): CommentWithRefresh | undefined => {
+  if (!localComment?.author) return comment;
+  if (!comment) return localComment;
+  if (comment.cid && localComment.cid && comment.cid !== localComment.cid) return comment;
+
+  const mergedAuthor = mergeDefinedFields(comment.author, localComment.author);
+
+  return {
+    ...comment,
+    ...(mergedAuthor ? { author: mergedAuthor } : {}),
+  };
+};
+
+const mergeLocalAccountComment = (comment: CommentWithRefresh | undefined, accountComment: CommentWithRefresh | undefined): CommentWithRefresh | undefined => {
+  if (!accountComment) return comment;
+  if (!comment) return accountComment;
+  if (comment.cid && accountComment.cid && comment.cid !== accountComment.cid) return comment;
+
+  const mergedComment = mergeDefinedFields(comment, accountComment) ?? comment;
+  return mergeLocalCommentAuthor(mergedComment, accountComment);
+};
+
+const restoreActiveAccountAuthor = (accountComment: CommentWithRefresh | undefined, account: Account | undefined): CommentWithRefresh | undefined => {
+  if (!accountComment || accountComment.author?.address || !account?.id || accountComment.accountId !== account.id || !account.author?.address) {
+    return accountComment;
+  }
+
+  const accountAuthor = {
+    address: account.author.address,
+    shortAddress: account.author.shortAddress,
+    displayName: account.author.displayName,
+    avatar: account.author.avatar,
+    flair: account.author.flair,
+  };
+
+  return {
+    ...accountComment,
+    author: mergeDefinedFields(accountComment.author, accountAuthor),
+  };
+};
+
+// useComment may not return cached feed data immediately due to its updatedAt comparison logic.
+// This hook falls back to the communities pages store and then overlays a matching
+// local account comment so author controls keep working after publish navigation.
+const useCommentWithFeedCache = (options: { commentCid: string | undefined; autoUpdate?: boolean; community?: CommunityIdentifier }): CommentWithRefresh | undefined => {
+  const comment = useComment(options);
+  const cachedComment = useCommunitiesPagesStore((state) => state.comments[options?.commentCid || '']);
+  const account = useAccount();
+  const accountComment = useSafeAccountComment({ commentCid: options.commentCid }) as CommentWithRefresh | undefined;
+  const accountCommentWithAuthor = useMemo(() => restoreActiveAccountAuthor(accountComment, account), [accountComment, account]);
+
+  const commentWithFeedCache = useMemo(() => {
+    if (!cachedComment || comment?.timestamp) return comment;
+    return {
+      ...cachedComment,
+      refresh: comment?.refresh,
+      state: comment?.state,
+      error: comment?.error,
+      errors: comment?.errors,
+    } as CommentWithRefresh;
+  }, [comment, cachedComment]);
+
+  return useMemo(() => mergeLocalAccountComment(commentWithFeedCache, accountCommentWithAuthor), [commentWithFeedCache, accountCommentWithAuthor]);
 };
 
 const mergeRepliesWithQueuedReply = (replies: Comment[], queuedReply: CommentWithRefresh | undefined): Comment[] => {
@@ -243,6 +313,9 @@ export const Post = memo(
       prev?.updatedAt === next?.updatedAt &&
       prev?.state === next?.state &&
       prev?.publishingState === next?.publishingState &&
+      prev?.author?.address === next?.author?.address &&
+      prev?.author?.displayName === next?.author?.displayName &&
+      prev?.author?.shortAddress === next?.author?.shortAddress &&
       prev?.error === next?.error &&
       prev?.errors === next?.errors &&
       prev?.approved === next?.approved &&
@@ -294,7 +367,7 @@ const PostPage = () => {
 
   const resolvedComment = useCommentWithFeedCache({ commentCid, autoUpdate: autoUpdateEnabled, community: resolvedCommunityIdentifier });
   const queuedComment = useMemo(() => getQueuedCommentFromRouteState(routeState, commentCid), [routeState, commentCid]);
-  const comment = useMemo(() => mergeCommentFallback(resolvedComment, queuedComment), [resolvedComment, queuedComment]);
+  const comment = useMemo(() => mergeLocalCommentAuthor(mergeCommentFallback(resolvedComment, queuedComment), queuedComment), [resolvedComment, queuedComment]);
   const commentCommunityAddress = getCommentCommunityAddress(comment);
   const communityAddress = resolvedCommunityAddress ?? commentCommunityAddress;
   const communityIdentifier = useCommunityIdentifier(communityAddress);
