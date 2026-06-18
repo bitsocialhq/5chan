@@ -309,7 +309,7 @@ export const Footer = () => {
           </a>
         </li>
         <li>
-          <a href='https://bitsocial.app/blog?q=5chan' target='_blank' rel='noopener noreferrer'>
+          <a href='https://bitsocial.net/blog?q=5chan' target='_blank' rel='noopener noreferrer'>
             Blog
           </a>
         </li>
