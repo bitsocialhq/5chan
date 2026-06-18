@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This release applies a browser pure P2P posting hotfix and keeps the pure P2P setting on the in-browser peer-to-peer path.';
+  'This release restores desktop .bso board address resolution, fixes empty board loading and fresh reply handling, and temporarily keeps browser pure P2P off by default while a peer-to-peer publishing bug is investigated.';
 
 const releaseBody = `${oneLinerDescription}
 

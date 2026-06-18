@@ -1,3 +1,17 @@
+## [0.9.4](https://github.com/bitsocialnet/5chan/compare/v0.9.3...v0.9.4) (2026-06-18)
+
+
+### Bug Fixes
+
+* **electron:** add BSO name resolvers for desktop board address resolution ([3a4a0d4](https://github.com/bitsocialnet/5chan/commit/3a4a0d413085892ec64071bb41268514d2c109b6))
+* **home:** point footer Blog link to bitsocial.net ([d2f058a](https://github.com/bitsocialnet/5chan/commit/d2f058a5ede54220384e4aa0efd8aeac7494ba54))
+* **p2p:** disable browser pure P2P by default ([1c14003](https://github.com/bitsocialnet/5chan/commit/1c140035b46d7477272234169017e03e182aabb2))
+* show loaded empty boards instead of a stuck loading state ([#1175](https://github.com/bitsocialnet/5chan/issues/1175)) ([eb47214](https://github.com/bitsocialnet/5chan/commit/eb47214f08b09cef3559d8f00bd03d2138905b50))
+* **post:** restore thread author controls after publish navigation ([6297edb](https://github.com/bitsocialnet/5chan/commit/6297edb49fdb7eba392a8165706b0ade47b84269))
+* **replies:** keep fresh replies scoped to thread ([#1174](https://github.com/bitsocialnet/5chan/issues/1174)) ([9896c44](https://github.com/bitsocialnet/5chan/commit/9896c4400bceab98575cfc4553c12665e05b4374))
+
+
+
 ## [0.9.3](https://github.com/bitsocialnet/5chan/compare/v0.9.2...v0.9.3) (2026-06-18)
 
 
@@ -1913,6 +1927,5 @@
 * Revert "fix touch bug" ([777935e](https://github.com/bitsocialnet/5chan/commit/777935ecbe1e3d781bc4bbadf8f824323acc8c8d))
 * Revert "test InfiniteScroll" ([212a0c1](https://github.com/bitsocialnet/5chan/commit/212a0c10e8a563b75eb35f8d20ba8b93d0adec45))
 * Revert "better lint, added InfiniteScroll, debugUtils" ([af0a4c6](https://github.com/bitsocialnet/5chan/commit/af0a4c67de33c544f997ec7bd64d94e5a5a41df3))
-
 
 

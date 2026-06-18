@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.4",
+      "kind": "release",
+      "timestamp": 1781784000,
+      "message": "v0.9.4: Desktop .bso addresses, browser posting fallback, empty boards",
+      "version": "0.9.4"
+    },
+    {
       "id": "release-0.9.3",
       "kind": "release",
       "timestamp": 1781784000,

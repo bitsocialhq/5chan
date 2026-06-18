@@ -227,7 +227,7 @@ describe('Rules', () => {
     expect(scrollIntoViewMock).toHaveBeenCalled();
   });
 
-  it('shows a friendly loading state string while a board is downloading from peers', async () => {
+  it('shows a friendly loading state string while a board is downloading via IPFS', async () => {
     testState.communities = {
       'custom-board.eth': {
         state: 'fetching-ipns',
@@ -237,7 +237,7 @@ describe('Rules', () => {
     await renderRules();
     await submitBoardAddress('custom-board.eth');
 
-    expect(container.textContent).toContain('Downloading board from peers');
+    expect(container.textContent).toContain('Downloading board via IPFS');
     expect(container.textContent).not.toContain('loading...');
   });
 
