@@ -8,6 +8,7 @@
 * **p2p:** disable browser pure P2P by default ([1c14003](https://github.com/bitsocialnet/5chan/commit/1c140035b46d7477272234169017e03e182aabb2))
 * show loaded empty boards instead of a stuck loading state ([#1175](https://github.com/bitsocialnet/5chan/issues/1175)) ([eb47214](https://github.com/bitsocialnet/5chan/commit/eb47214f08b09cef3559d8f00bd03d2138905b50))
 * **post:** restore thread author controls after publish navigation ([6297edb](https://github.com/bitsocialnet/5chan/commit/6297edb49fdb7eba392a8165706b0ade47b84269))
+* **posts:** hide stale initializing footer ([fb1a61e](https://github.com/bitsocialnet/5chan/commit/fb1a61eacea0efd8c2ce09ed4c51ecf93594ff45))
 * **replies:** keep fresh replies scoped to thread ([#1174](https://github.com/bitsocialnet/5chan/issues/1174)) ([9896c44](https://github.com/bitsocialnet/5chan/commit/9896c4400bceab98575cfc4553c12665e05b4374))
 
 
