@@ -67,10 +67,10 @@ describe('p2p-runtime', () => {
     expect(getP2PRuntimeMode(account, browserWindow)).toBe('full-node-rpc');
   });
 
-  it('keeps browser pure p2p on by default while allowing gateway mode when configured', () => {
-    expect(shouldShowP2PSettingsSection(undefined, browserWindow)).toBe(true);
-    expect(shouldShowP2PSettingsSection({ pkcOptions: { ipfsGatewayUrls: ['https://gateway.example'] } }, browserWindow)).toBe(true);
-    expect(isBrowserPureP2PEnabled({ pkcOptions: { ipfsGatewayUrls: ['https://gateway.example'] } }, browserWindow)).toBe(true);
+  it('keeps browser pure p2p off by default while honoring explicit preference and active libp2p accounts', () => {
+    expect(shouldShowP2PSettingsSection(undefined, browserWindow)).toBe(false);
+    expect(shouldShowP2PSettingsSection({ pkcOptions: { ipfsGatewayUrls: ['https://gateway.example'] } }, browserWindow)).toBe(false);
+    expect(isBrowserPureP2PEnabled({ pkcOptions: { ipfsGatewayUrls: ['https://gateway.example'] } }, browserWindow)).toBe(false);
     expect(shouldShowP2PSettingsSection({ pkcOptions: { libp2pJsClientsOptions: [{ key: 'libp2pjs' }] } }, browserWindow)).toBe(true);
     expect(isBrowserPureP2PEnabled({ pkcOptions: { libp2pJsClientsOptions: [{ key: 'libp2pjs' }] } }, browserWindow)).toBe(true);
     expect(shouldShowP2PSettingsSection({ pkcOptions: { ipfsGatewayUrls: ['https://gateway.example'] } }, browserWindowWithEnabledPureP2P)).toBe(true);
@@ -98,7 +98,8 @@ describe('p2p-runtime', () => {
     const mixedBrowserAccount = { pkcOptions: { libp2pJsClientsOptions: [{ key: 'libp2pjs' }], pubsubKuboRpcClientsOptions: ['https://pubsub.example/api/v0'] } };
     const fullNodeAccount = { pkcOptions: { pkcRpcClientsOptions: ['ws://node.example'] } };
 
-    expect(shouldUpgradeBrowserPureP2PAccount(gatewayAccount, browserWindow)).toBe(true);
+    expect(shouldUpgradeBrowserPureP2PAccount(gatewayAccount, browserWindow)).toBe(false);
+    expect(shouldUpgradeBrowserPureP2PAccount(gatewayAccount, browserWindowWithEnabledPureP2P)).toBe(true);
     expect(shouldUpgradeBrowserPureP2PAccount(browserAccount, browserWindow)).toBe(false);
     expect(shouldUpgradeBrowserPureP2PAccount(mixedBrowserAccount, browserWindow)).toBe(true);
     expect(shouldUpgradeBrowserPureP2PAccount(fullNodeAccount, browserWindow)).toBe(false);

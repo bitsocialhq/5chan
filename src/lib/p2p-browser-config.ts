@@ -1,5 +1,5 @@
 export const PURE_P2P_BROWSER_SETTING_KEY = '5chan:pure-p2p-browser-enabled';
-export const BROWSER_PURE_P2P_DEFAULT_ENABLED = true;
+export const BROWSER_PURE_P2P_DEFAULT_ENABLED = false;
 
 const BROWSER_PUBSUB_KUBO_RPC_CLIENTS_OPTIONS = ['https://pubsubprovider.xyz/api/v0', 'https://plebpubsub.xyz/api/v0', 'https://rannithepleb.com/api/v0'];
 

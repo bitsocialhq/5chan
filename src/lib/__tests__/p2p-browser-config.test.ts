@@ -19,7 +19,7 @@ const createStorage = (values: Record<string, string | undefined> = {}) => ({
 describe('p2p-browser-config', () => {
   const defaultHttpRouters = ['https://peers.plebpubsub.xyz', 'https://routing.lol', 'https://peers.pleb.bot'];
 
-  it('configures browser PKC options for pure p2p by default', () => {
+  it('configures browser PKC options for gateway mode by default', () => {
     const chainProviders = {
       eth: { urls: ['https://eth.example'], chainId: 1 },
     };
@@ -32,14 +32,11 @@ describe('p2p-browser-config', () => {
       },
     };
 
-    expect(shouldUsePureP2PBrowser(targetWindow)).toBe(true);
-    expect(configureP2PBrowserPkcOptions(targetWindow)).toBe(true);
-    expect(targetWindow.defaultPkcOptions).toMatchObject({
+    expect(shouldUsePureP2PBrowser(targetWindow)).toBe(false);
+    expect(configureP2PBrowserPkcOptions(targetWindow)).toBe(false);
+    expect(targetWindow.defaultPkcOptions).toEqual({
       chainProviders,
-      httpRoutersOptions: defaultHttpRouters,
-      ipfsGatewayUrls: undefined,
-      libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
-      pubsubKuboRpcClientsOptions: undefined,
+      ...getBrowserGatewayPkcOptions(),
     });
   });
 
@@ -105,7 +102,7 @@ describe('p2p-browser-config', () => {
     };
 
     expect(getPureP2PBrowserPreference(targetWindow)).toBeUndefined();
-    expect(shouldUsePureP2PBrowser(targetWindow)).toBe(true);
+    expect(shouldUsePureP2PBrowser(targetWindow)).toBe(false);
 
     setPureP2PBrowserPreference(false, targetWindow);
     expect(getPureP2PBrowserPreference(targetWindow)).toBe(false);
