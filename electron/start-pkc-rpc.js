@@ -6,18 +6,17 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import isDev from 'electron-is-dev';
 import { getPkcDataPath } from './pkc-paths.js';
+import { createDefaultPkcOptions } from './pkc-rpc-options.js';
 import { startPkcRpcServer } from './start-pkc-rpc-core.js';
 const dirname = path.join(path.dirname(fileURLToPath(import.meta.url)));
 const projectRoot = path.join(dirname, '..');
 
 // Always run the local PKC RPC server on this port so all desktop clients can reuse it.
 const port = 9138;
-const defaultPkcOptions = {
+const defaultPkcOptions = createDefaultPkcOptions({
   // find the user's OS data path
   dataPath: getPkcDataPath({ isDev, projectRoot }),
-  kuboRpcClientsOptions: [{ url: 'http://localhost:50019/api/v0' }],
-  httpRoutersOptions: ['https://routing.lol', 'https://peers.pleb.bot', 'https://peers.plebpubsub.xyz', 'https://peers.forumindex.com'],
-};
+});
 
 // Generate the local PKC RPC auth key if it does not exist yet.
 const pkcRpcAuthKeyPath = path.join(defaultPkcOptions.dataPath, 'auth-key');
