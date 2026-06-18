@@ -36,6 +36,7 @@ type TestComment = {
 type TestCommunity = {
   error?: Error;
   nameResolved?: boolean;
+  updatedAt?: number;
   posts?: {
     pageCids?: Record<string, string>;
     pages?: Record<string, { comments?: TestComment[]; nextCid?: string }>;
@@ -1041,6 +1042,52 @@ describe('Board', () => {
 
     expect(container.textContent).toContain('no_threads');
     expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+  });
+
+  it('shows no threads when a loaded board reports explicit empty page cids', async () => {
+    testState.feedStateString = 'Downloading board from peers';
+    testState.feedState = 'fetching-ipns';
+    testState.hasMore = true;
+    testState.community = {
+      error: undefined,
+      posts: {
+        pageCids: {},
+        pages: {},
+      },
+      shortAddress: 'blog.bitsocial.bso',
+      state: 'succeeded',
+      title: 'Bitsocial Updates',
+      updatedAt: 1781773422,
+    };
+    testState.communitySnapshot = {
+      shortAddress: 'blog.bitsocial.bso',
+      title: 'Bitsocial Updates',
+    };
+
+    await renderBoard({ initialEntry: '/blog.bitsocial.bso', routePath: '/:boardIdentifier/*' });
+
+    expect(container.textContent).toContain('no_threads');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+    expect(container.textContent).not.toContain('load_more');
+  });
+
+  it('keeps loading when raw board pages contain threads but the feed has not caught up', async () => {
+    testState.feedStateString = undefined;
+    testState.feedState = 'fetching-ipns';
+    testState.hasMore = true;
+    testState.community = {
+      error: undefined,
+      shortAddress: 'music-posting.eth',
+      state: 'succeeded',
+      title: '/mu/ - Music',
+    };
+    markRawBoardThreadsFullyLoaded([{ cid: 'post-1' }]);
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(container.textContent).not.toContain('no_threads');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
+    expect(container.textContent).toContain('load_more');
   });
 
   it('does not show no threads after board metadata loads but raw thread pages are still missing', async () => {

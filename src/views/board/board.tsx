@@ -60,6 +60,7 @@ interface BoardFooterProps {
   combinedFeedLength: number;
   isSingleCommunityBoard: boolean;
   isRawBoardThreadStateFullyLoaded: boolean;
+  isKnownEmptySingleCommunityBoard: boolean;
   isInSubscriptionsView: boolean;
   isInModView: boolean;
   currentTimeFilterName: string;
@@ -84,6 +85,7 @@ const BoardFooter = ({
   combinedFeedLength,
   isSingleCommunityBoard,
   isRawBoardThreadStateFullyLoaded,
+  isKnownEmptySingleCommunityBoard,
   isInSubscriptionsView,
   isInModView,
   currentTimeFilterName,
@@ -102,7 +104,9 @@ const BoardFooter = ({
   const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
   const isFeedSucceeded = feedState === 'succeeded';
   const isFeedFailed = feedState === 'failed';
-  const canShowNoThreads = isSingleCommunityBoard ? isLoadedCommunityState && isFeedSucceeded && isRawBoardThreadStateFullyLoaded : isFeedSucceeded && !hasMore;
+  const canShowNoThreads =
+    isKnownEmptySingleCommunityBoard ||
+    (isSingleCommunityBoard ? isLoadedCommunityState && isFeedSucceeded && isRawBoardThreadStateFullyLoaded : isFeedSucceeded && !hasMore);
   const isEmptyFeedLoading = combinedFeedLength === 0 && !canShowNoThreads && (isSingleCommunityBoard ? communityState !== 'failed' : !isFeedFailed);
   const showFooterLoading = showLoadingEllipsis && (hasMore || isEmptyFeedLoading);
 
@@ -472,6 +476,11 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     [account?.id, communitiesPages, communityData, isMultiboardView],
   );
   const isRawBoardThreadStateFullyLoaded = rawBoardThreadState?.isFullyLoaded ?? false;
+  const isRawBoardThreadStateEmpty = isRawBoardThreadStateFullyLoaded && (rawBoardThreadState?.rootThreadCids.size ?? 0) === 0;
+  const isSingleCommunityBoard = !isInAllView && !isInSubscriptionsView && !isInModView;
+  const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
+  const isKnownEmptySingleCommunityBoard = isSingleCommunityBoard && combinedFeed.length === 0 && isLoadedCommunityState && isRawBoardThreadStateEmpty;
+  const effectiveHasMore = isKnownEmptySingleCommunityBoard ? false : hasMore;
   const title = isInAllView ? t('all') : isInSubscriptionsView ? t('subscriptions') : isInModView ? t('mod') : communityTitle;
 
   // Memoize footer component to preserve identity across renders (Virtuoso optimization)
@@ -483,11 +492,12 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
           {shouldUseFlashTable ? null : (
             <BoardFooter
               communityAddresses={communityAddresses}
-              hasMore={hasMore}
+              hasMore={effectiveHasMore}
               feedState={feedState}
               combinedFeedLength={combinedFeed.length}
-              isSingleCommunityBoard={!isInAllView && !isInSubscriptionsView && !isInModView}
+              isSingleCommunityBoard={isSingleCommunityBoard}
               isRawBoardThreadStateFullyLoaded={isRawBoardThreadStateFullyLoaded}
+              isKnownEmptySingleCommunityBoard={isKnownEmptySingleCommunityBoard}
               isInSubscriptionsView={isInSubscriptionsView}
               isInModView={isInModView}
               currentTimeFilterName={currentTimeFilterName}
@@ -552,7 +562,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
                   </div>
                 </>
               )}
-              {hasMore && !effectiveInfiniteScroll && !shouldUseFlashTable && (
+              {effectiveHasMore && !effectiveInfiniteScroll && !shouldUseFlashTable && (
                 <div className={mobileFooterStyles.mobileFooterButtons}>
                   <button type='button' className='button' onClick={() => setEnableInfiniteScroll(true)}>
                     {t('load_more')}
@@ -566,9 +576,11 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     }),
     [
       communityAddresses,
-      hasMore,
+      effectiveHasMore,
       combinedFeed.length,
       isRawBoardThreadStateFullyLoaded,
+      isKnownEmptySingleCommunityBoard,
+      isSingleCommunityBoard,
       isInAllView,
       isInSubscriptionsView,
       isInModView,
@@ -665,7 +677,6 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     communityIdentifier.publicKey.length > 0 &&
     communityData?.nameResolved === false;
   const displayFeed = effectiveInfiniteScroll ? combinedFeed : currentPageFeed;
-  const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
   const isFeedSucceeded = feedState === 'succeeded';
   const canShowEmptyFlashTable = isLoadedCommunityState && isFeedSucceeded && isRawBoardThreadStateFullyLoaded;
   const shouldShowFlashTableLoading = shouldUseFlashTable && displayFeed.length === 0 && !canShowEmptyFlashTable && communityState !== 'failed' && feedState !== 'failed';
@@ -697,7 +708,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
             itemContent={boardItemContent}
             useWindowScroll={true}
             components={footerComponents}
-            endReached={hasMore ? loadMore : undefined}
+            endReached={effectiveHasMore ? loadMore : undefined}
             ref={virtuosoRef}
             restoreStateFrom={lastVirtuosoState}
             initialScrollTop={lastVirtuosoState?.scrollTop}

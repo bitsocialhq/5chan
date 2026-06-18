@@ -88,6 +88,8 @@ export const getRawBoardThreadState = ({
   const hasPageCid = Boolean(community.posts?.pageCids?.[sortType]);
   const preloadedPages = (preloadedSortPage ? [preloadedSortPage] : []) as Array<{ comments?: Comment[]; nextCid?: string }>;
   const hasCompletePreloadedPage = !hasPageCid && preloadedPages.some((page) => Array.isArray(page?.comments)) && preloadedPages.every((page) => !page?.nextCid);
+  const hasFetchedCommunityUpdate = typeof community.updatedAt === 'number' || typeof community.updateCid === 'string';
+  const hasExplicitEmptyPageCids = hasFetchedCommunityUpdate && Boolean(community.posts?.pageCids && !hasPageCid);
 
   if (hasCompletePreloadedPage) {
     for (const page of preloadedPages) {
@@ -96,7 +98,7 @@ export const getRawBoardThreadState = ({
   }
 
   return {
-    isFullyLoaded: hasCompletePreloadedPage,
+    isFullyLoaded: hasCompletePreloadedPage || hasExplicitEmptyPageCids,
     rootThreadCids,
   };
 };

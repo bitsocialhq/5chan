@@ -61,6 +61,46 @@ describe('getRawBoardThreadState', () => {
     ).toBe(true);
   });
 
+  it('treats explicit empty page CIDs as a fully loaded empty board', () => {
+    const community = {
+      posts: {
+        pageCids: {},
+        pages: {},
+      },
+      updatedAt: 1781773422,
+    } as Community;
+
+    expect(
+      getRawBoardThreadState({
+        accountId: undefined,
+        communitiesPages: {} as CommunitiesPages,
+        community,
+        sortType: 'active',
+      }),
+    ).toMatchObject({
+      isFullyLoaded: true,
+      rootThreadCids: new Set<string>(),
+    });
+  });
+
+  it('does not treat placeholder empty page CIDs as fully loaded', () => {
+    const community = {
+      posts: {
+        pageCids: {},
+        pages: {},
+      },
+    } as Community;
+
+    expect(
+      getRawBoardThreadState({
+        accountId: undefined,
+        communitiesPages: {} as CommunitiesPages,
+        community,
+        sortType: 'active',
+      }).isFullyLoaded,
+    ).toBe(false);
+  });
+
   it('walks stored board pages without importing side-effectful stores', () => {
     const community = {
       posts: {
