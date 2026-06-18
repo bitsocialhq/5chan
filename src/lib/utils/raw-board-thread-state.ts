@@ -1,11 +1,13 @@
 import type { Comment, CommunitiesPages, Community, CommunityPage } from '@bitsocial/bitsocial-react-hooks';
 
 export type RawBoardThreadState = {
+  hasExplicitEmptyPageCids: boolean;
   isFullyLoaded: boolean;
   rootThreadCids: Set<string>;
 };
 
 const EMPTY_RAW_BOARD_THREAD_STATE: RawBoardThreadState = {
+  hasExplicitEmptyPageCids: false,
   isFullyLoaded: false,
   rootThreadCids: new Set<string>(),
 };
@@ -80,6 +82,7 @@ export const getRawBoardThreadState = ({
 
   if (pages.length > 0) {
     return {
+      hasExplicitEmptyPageCids: false,
       isFullyLoaded: !pages[pages.length - 1]?.nextCid,
       rootThreadCids,
     };
@@ -88,6 +91,8 @@ export const getRawBoardThreadState = ({
   const hasPageCid = Boolean(community.posts?.pageCids?.[sortType]);
   const preloadedPages = (preloadedSortPage ? [preloadedSortPage] : []) as Array<{ comments?: Comment[]; nextCid?: string }>;
   const hasCompletePreloadedPage = !hasPageCid && preloadedPages.some((page) => Array.isArray(page?.comments)) && preloadedPages.every((page) => !page?.nextCid);
+  const hasFetchedCommunityUpdate = typeof community.updatedAt === 'number' || typeof community.updateCid === 'string';
+  const hasExplicitEmptyPageCids = hasFetchedCommunityUpdate && Boolean(community.posts?.pageCids && !hasPageCid);
 
   if (hasCompletePreloadedPage) {
     for (const page of preloadedPages) {
@@ -96,7 +101,8 @@ export const getRawBoardThreadState = ({
   }
 
   return {
-    isFullyLoaded: hasCompletePreloadedPage,
+    hasExplicitEmptyPageCids,
+    isFullyLoaded: hasCompletePreloadedPage || hasExplicitEmptyPageCids,
     rootThreadCids,
   };
 };

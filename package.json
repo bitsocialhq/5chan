@@ -9,7 +9,7 @@
   "private": true,
   "dependencies": {
     "@bbob/parser": "4.3.1",
-    "@bitsocial/bitsocial-react-hooks": "0.1.17",
+    "@bitsocial/bitsocial-react-hooks": "0.1.19",
     "@bitsocial/bso-resolver": "0.0.8",
     "@capacitor/app": "7.0.1",
     "@capacitor/browser": "7.0.5",
@@ -17,7 +17,7 @@
     "@capawesome/capacitor-android-edge-to-edge-support": "7.2.2",
     "@chenglou/pretext": "0.0.5",
     "@floating-ui/react": "0.26.1",
-    "@pkcprotocol/pkc-js": "patch:@pkcprotocol/pkc-js@npm%3A0.0.47#~/.yarn/patches/@pkcprotocol-pkc-js-npm-0.0.47-e2131d72c8.patch",
+    "@pkcprotocol/pkc-js": "patch:@pkcprotocol/pkc-js@npm%3A0.0.48#~/.yarn/patches/@pkcprotocol-pkc-js-npm-0.0.48-7f3bbd0d02.patch",
     "@react-spring/web": "10.0.3",
     "@ruffle-rs/ruffle": "0.2.0",
     "@types/node": "20.19.37",
@@ -244,7 +244,7 @@
     "yaml@npm:^2.8.2": "2.8.3",
     "use-sync-external-store": "1.6.0",
     "@electron/notarize@npm:^2.1.0": "patch:@electron/notarize@npm%3A2.5.0#~/.yarn/patches/@electron-notarize-npm-2.5.0-b15dc30c99.patch",
-    "@pkcprotocol/pkc-js@npm:0.0.47": "patch:@pkcprotocol/pkc-js@npm%3A0.0.47#~/.yarn/patches/@pkcprotocol-pkc-js-npm-0.0.47-e2131d72c8.patch"
+    "@pkcprotocol/pkc-js@npm:0.0.48": "patch:@pkcprotocol/pkc-js@npm%3A0.0.48#~/.yarn/patches/@pkcprotocol-pkc-js-npm-0.0.48-7f3bbd0d02.patch"
   },
   "main": "electron/main.js",
   "lint-staged": {
