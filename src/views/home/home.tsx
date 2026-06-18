@@ -301,8 +301,16 @@ export const Footer = () => {
     <>
       <ul className={styles.footer}>
         <li>
+          <Link to='/'>{t('home')}</Link>
+        </li>
+        <li>
           <a href='https://bitsocial.net' target='_blank' rel='noopener noreferrer'>
             {t('about')}
+          </a>
+        </li>
+        <li>
+          <a href='https://bitsocial.app/blog?q=5chan' target='_blank' rel='noopener noreferrer'>
+            Blog
           </a>
         </li>
         <li>
@@ -312,17 +320,12 @@ export const Footer = () => {
           <Link to='/rules'>Rules</Link>
         </li>
         <li>
+          <Link to='/pass'>{t('support_5chan')}</Link>
+        </li>
+        <li>
           <a href='https://x.com/5chanapp' target='_blank' rel='noopener noreferrer'>
             Twitter/X
           </a>
-        </li>
-        <li>
-          <a href='https://t.me/bitsocialnet' target='_blank' rel='noopener noreferrer'>
-            Telegram
-          </a>
-        </li>
-        <li>
-          <Link to='/pass'>{t('support_5chan')}</Link>
         </li>
         <li>
           <a href='https://github.com/bitsocialnet/5chan' target='_blank' rel='noopener noreferrer'>
