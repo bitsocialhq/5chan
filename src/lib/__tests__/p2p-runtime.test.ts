@@ -5,6 +5,7 @@ import {
   getP2PRuntimeMode,
   isBrowserPureP2PEnabled,
   shouldShowP2PSettingsSection,
+  shouldUpgradeBrowserPureP2PAccount,
 } from '../p2p-runtime';
 
 const browserWindow = {
@@ -91,6 +92,20 @@ describe('p2p-runtime', () => {
     expect(shouldShowP2PSettingsSection(account, browserWindowWithDisabledPureP2P)).toBe(true);
   });
 
+  it('upgrades only stale gateway browser accounts when pure p2p is enabled', () => {
+    const gatewayAccount = { pkcOptions: { ipfsGatewayUrls: ['https://gateway.example'] } };
+    const browserAccount = { pkcOptions: { libp2pJsClientsOptions: [{ key: 'libp2pjs' }] } };
+    const mixedBrowserAccount = { pkcOptions: { libp2pJsClientsOptions: [{ key: 'libp2pjs' }], pubsubKuboRpcClientsOptions: ['https://pubsub.example/api/v0'] } };
+    const fullNodeAccount = { pkcOptions: { pkcRpcClientsOptions: ['ws://node.example'] } };
+
+    expect(shouldUpgradeBrowserPureP2PAccount(gatewayAccount, browserWindow)).toBe(true);
+    expect(shouldUpgradeBrowserPureP2PAccount(browserAccount, browserWindow)).toBe(false);
+    expect(shouldUpgradeBrowserPureP2PAccount(mixedBrowserAccount, browserWindow)).toBe(true);
+    expect(shouldUpgradeBrowserPureP2PAccount(fullNodeAccount, browserWindow)).toBe(false);
+    expect(shouldUpgradeBrowserPureP2PAccount(gatewayAccount, browserWindowWithDisabledPureP2P)).toBe(false);
+    expect(shouldUpgradeBrowserPureP2PAccount(gatewayAccount, electronWindow)).toBe(false);
+  });
+
   it('builds browser p2p and gateway account options without a direct pkc-js import', () => {
     const account = {
       pkcOptions: {
@@ -104,6 +119,7 @@ describe('p2p-runtime', () => {
       libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
       ipfsGatewayUrls: undefined,
       pkcRpcClientsOptions: undefined,
+      pubsubKuboRpcClientsOptions: undefined,
     });
     expect(getBrowserGatewayAccountOptions(account)).toMatchObject({
       httpRoutersOptions: ['https://custom-router.example'],

@@ -13,6 +13,7 @@ import useIsMobile from './hooks/use-is-mobile';
 import { useAccountCommunityAddresses } from './hooks/use-account-community-addresses';
 import useTheme from './hooks/use-theme';
 import { useDirectories } from './hooks/use-directories';
+import { useBrowserPureP2PAccountUpgrade } from './hooks/use-browser-pure-p2p-account-upgrade';
 import { useCommunityIdentifier } from './hooks/use-community-identifiers';
 import { useResolvedCommunityAddress, useResolvedDirectoryBoardPath } from './hooks/use-resolved-community-address';
 import useSafeAccountComment from './hooks/use-safe-account-comment';
@@ -281,6 +282,8 @@ const ModQueueRoute = () => {
 };
 
 const App = () => {
+  useBrowserPureP2PAccountUpgrade();
+
   // Feed routes are always rendered by FeedCacheContainer (Virtuoso used for all modes)
   const boardFeedElement = null;
   const catalogFeedElement = null;

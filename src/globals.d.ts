@@ -1,5 +1,6 @@
 declare global {
   interface Window {
+    BITSOCIAL_REACT_HOOKS_ACCOUNTS_STORE_INITIALIZING?: boolean;
     isElectron: boolean;
     defaultPkcOptions?: Record<string, unknown>;
   }

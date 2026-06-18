@@ -1,5 +1,5 @@
 diff --git a/dist/browser/helia/helia-for-pkc.js b/dist/browser/helia/helia-for-pkc.js
-index e6821667b0601ac56a850e989bfedf76c14796a2..1a2ae7ab9b0afc605c9b4dcddccf25ac02aa1337 100644
+index e6821667b0601ac56a850e989bfedf76c14796a2..87d84a502bdbf72b8cf22b7a8ac6bd68e542c611 100644
 --- a/dist/browser/helia/helia-for-pkc.js
 +++ b/dist/browser/helia/helia-for-pkc.js
 @@ -145,6 +145,11 @@ export async function createLibp2pJsClientOrUseExistingOne(pkcOptions) {
@@ -45,7 +45,7 @@ index e6821667b0601ac56a850e989bfedf76c14796a2..1a2ae7ab9b0afc605c9b4dcddccf25ac
                  unsubscribe: async (topic, handler, options) => {
                      throwIfHeliaIsStoppingOrStopped();
 diff --git a/dist/browser/publications/publication.js b/dist/browser/publications/publication.js
-index 5e17c02a39c2715c7ac932695fe90d5078bce405..2d43d996e2b3cdab759e89c296eb9ed8aae857db 100644
+index 5e17c02a39c2715c7ac932695fe90d5078bce405..8c61955ee6ef6dd353e57584b4aaf745e143f6d4 100644
 --- a/dist/browser/publications/publication.js
 +++ b/dist/browser/publications/publication.js
 @@ -842,8 +842,14 @@ class Publication extends TypedEmitter {

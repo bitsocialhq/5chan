@@ -6272,7 +6272,7 @@ __metadata:
 
 "@pkcprotocol/pkc-js@patch:@pkcprotocol/pkc-js@npm%3A0.0.47#~/.yarn/patches/@pkcprotocol-pkc-js-npm-0.0.47-e2131d72c8.patch":
   version: 0.0.47
-  resolution: "@pkcprotocol/pkc-js@patch:@pkcprotocol/pkc-js@npm%3A0.0.47#~/.yarn/patches/@pkcprotocol-pkc-js-npm-0.0.47-e2131d72c8.patch::version=0.0.47&hash=df4e0a"
+  resolution: "@pkcprotocol/pkc-js@patch:@pkcprotocol/pkc-js@npm%3A0.0.47#~/.yarn/patches/@pkcprotocol-pkc-js-npm-0.0.47-e2131d72c8.patch::version=0.0.47&hash=bbfad6"
   dependencies:
     "@enhances/with-resolvers": "npm:0.0.5"
     "@helia/block-brokers": "npm:5.2.4"

@@ -30,6 +30,10 @@ const hasArrayItems = (value: unknown) => Array.isArray(value) && value.length >
 
 const hasObjectItems = (value: unknown) => !!value && typeof value === 'object' && Object.keys(value).length > 0;
 
+const hasMixedBrowserPureP2POptions = (protocolOptions: AccountProtocolOptions | undefined) =>
+  hasArrayItems(protocolOptions?.libp2pJsClientsOptions) &&
+  (hasArrayItems(protocolOptions?.kuboRpcClientsOptions) || hasArrayItems(protocolOptions?.pubsubKuboRpcClientsOptions));
+
 export const getP2PRuntimeMode = (account?: unknown, targetWindow: Window = window): P2PRuntimeMode | null => {
   const accountShape = toAccountShape(account);
   const protocolOptions = accountShape?.pkcOptions;
@@ -65,6 +69,13 @@ export const getBrowserPureP2PAccountOptions = (account?: unknown) => ({
   ...getBrowserPureP2PPkcOptions(),
   pkcRpcClientsOptions: undefined,
 });
+
+export const shouldUpgradeBrowserPureP2PAccount = (account?: unknown, targetWindow: Window = window) => {
+  if (!account || typeof account !== 'object' || !canConfigureBrowserPureP2P(targetWindow) || !isBrowserPureP2PEnabled(account, targetWindow)) return false;
+
+  const protocolOptions = toAccountShape(account)?.pkcOptions;
+  return getP2PRuntimeMode(account, targetWindow) === null || hasMixedBrowserPureP2POptions(protocolOptions);
+};
 
 export const getBrowserGatewayAccountOptions = (account?: unknown) => {
   const protocolOptions = toAccountShape(account)?.pkcOptions;

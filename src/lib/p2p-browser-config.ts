@@ -1,12 +1,14 @@
 export const PURE_P2P_BROWSER_SETTING_KEY = '5chan:pure-p2p-browser-enabled';
 export const BROWSER_PURE_P2P_DEFAULT_ENABLED = true;
 
+const BROWSER_PUBSUB_KUBO_RPC_CLIENTS_OPTIONS = ['https://pubsubprovider.xyz/api/v0', 'https://plebpubsub.xyz/api/v0', 'https://rannithepleb.com/api/v0'];
+
 export const P2P_BROWSER_PKC_OPTIONS = {
   libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
   ipfsGatewayUrls: undefined,
   kuboRpcClientsOptions: undefined,
   pubsubHttpClientsOptions: undefined,
-  pubsubKuboRpcClientsOptions: undefined,
+  pubsubKuboRpcClientsOptions: undefined as string[] | undefined,
   httpRoutersOptions: ['https://peers.plebpubsub.xyz', 'https://routing.lol', 'https://peers.pleb.bot'],
 };
 
@@ -15,7 +17,7 @@ const GATEWAY_BROWSER_PKC_OPTIONS = {
   kuboRpcClientsOptions: undefined,
   libp2pJsClientsOptions: undefined,
   pubsubHttpClientsOptions: undefined,
-  pubsubKuboRpcClientsOptions: ['https://pubsubprovider.xyz/api/v0', 'https://plebpubsub.xyz/api/v0', 'https://rannithepleb.com/api/v0'],
+  pubsubKuboRpcClientsOptions: BROWSER_PUBSUB_KUBO_RPC_CLIENTS_OPTIONS,
   httpRoutersOptions: ['https://routing.lol', 'https://peers.pleb.bot', 'https://peers.plebpubsub.xyz', 'https://peers.forumindex.com'],
 };
 
@@ -27,9 +29,12 @@ type P2PBrowserConfigWindow = {
   localStorage?: Pick<Storage, 'getItem' | 'setItem'>;
 };
 
+const cloneArray = <T>(value: T[] | undefined) => (value ? [...value] : undefined);
+
 export const getBrowserPureP2PPkcOptions = () => ({
   ...P2P_BROWSER_PKC_OPTIONS,
   libp2pJsClientsOptions: P2P_BROWSER_PKC_OPTIONS.libp2pJsClientsOptions.map((options) => ({ ...options })),
+  pubsubKuboRpcClientsOptions: cloneArray(P2P_BROWSER_PKC_OPTIONS.pubsubKuboRpcClientsOptions),
   httpRoutersOptions: [...P2P_BROWSER_PKC_OPTIONS.httpRoutersOptions],
 });
 
