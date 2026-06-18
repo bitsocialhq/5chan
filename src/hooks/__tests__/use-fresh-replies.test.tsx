@@ -12,13 +12,16 @@ type TestComment = {
   content?: string;
   index?: number;
   number?: number;
+  parentCid?: string;
   pendingApproval?: boolean;
+  postCid?: string;
   communityAddress?: string;
 };
 
 const testState = vi.hoisted(() => ({
   accountComments: [] as TestComment[],
   accountCommentsCalls: [] as Array<{ commentIndices?: number[]; filter?: (comment: TestComment) => boolean } | undefined>,
+  post: undefined as TestComment | undefined,
   replies: [] as TestComment[],
 }));
 
@@ -46,7 +49,7 @@ let latestValue: ReturnType<typeof useFreshReplies>;
 let root: Root;
 
 const HookHarness = () => {
-  latestValue = useFreshReplies(testState.replies as never);
+  latestValue = useFreshReplies(testState.replies as never, { post: testState.post as never });
   return null;
 };
 
@@ -60,6 +63,7 @@ describe('useFreshReplies', () => {
   beforeEach(() => {
     testState.accountComments = [];
     testState.accountCommentsCalls = [];
+    testState.post = undefined;
     testState.replies = [];
 
     container = document.createElement('div');
@@ -236,5 +240,69 @@ describe('useFreshReplies', () => {
     renderHook();
 
     expect(latestValue.map((reply) => reply.cid)).toEqual(['reply-8', 'reply-11', 'reply-12']);
+  });
+
+  it('does not replace a failed reply placeholder with a same-index post from another thread', () => {
+    testState.post = {
+      cid: 'g-thread-cid',
+      communityAddress: 'technology.eth',
+    };
+    testState.replies = [
+      {
+        content: 'failed g reply',
+        index: 4,
+        parentCid: 'g-thread-cid',
+        postCid: 'g-thread-cid',
+        communityAddress: 'technology.eth',
+      },
+    ];
+    testState.accountComments = [
+      {
+        cid: 'mu-thread-cid',
+        content: 'mu op',
+        index: 4,
+        postCid: 'mu-thread-cid',
+        communityAddress: 'music.eth',
+      },
+    ];
+
+    renderHook();
+
+    expect(latestValue).toHaveLength(1);
+    expect(latestValue[0]).toBe(testState.replies[0] as never);
+    expect(latestValue[0]?.content).toBe('failed g reply');
+    expect(testState.accountCommentsCalls).toContainEqual({ commentIndices: [4] });
+  });
+
+  it('replaces indexed replies when the account comment still belongs to the same thread', () => {
+    testState.post = {
+      cid: 'thread-cid',
+      communityAddress: 'music.eth',
+    };
+    testState.replies = [
+      {
+        content: 'pending reply',
+        index: 5,
+        parentCid: 'thread-cid',
+        postCid: 'thread-cid',
+        communityAddress: 'music.eth',
+      },
+    ];
+    testState.accountComments = [
+      {
+        cid: 'reply-cid',
+        content: 'fresh reply',
+        index: 5,
+        number: 9,
+        parentCid: 'thread-cid',
+        postCid: 'thread-cid',
+        communityAddress: 'music.bso',
+      },
+    ];
+
+    renderHook();
+
+    expect(latestValue[0]).toBe(testState.accountComments[0] as never);
+    expect(latestValue[0]?.number).toBe(9);
   });
 });

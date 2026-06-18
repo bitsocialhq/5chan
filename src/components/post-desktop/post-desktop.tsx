@@ -939,7 +939,7 @@ const PostDesktop = ({
         ? fullReplies
         : previewReplies
       : getPreviewDisplayReplies(previewReplies, BOARD_REPLIES_PREVIEW_VISIBLE_COUNT);
-  const freshRepliesForRender = useFreshReplies(repliesForRender);
+  const freshRepliesForRender = useFreshReplies(repliesForRender, { post: resolvedPost });
   useRegisterFreshReplies(resolvedPost, freshRepliesForRender);
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
   const repliesResetRequestId = useThreadLiveUpdatesStore((state) => state.repliesResetRequestId);

@@ -676,7 +676,7 @@ const PostMobile = ({
   const { replies, hasMore, loadMore } = repliesResult;
   const updatedReplies = repliesResult.updatedReplies;
   const repliesForRender = updatedReplies?.length ? updatedReplies : replies || [];
-  const freshRepliesForRender = useFreshReplies(repliesForRender);
+  const freshRepliesForRender = useFreshReplies(repliesForRender, { post: resolvedPost });
   useRegisterFreshReplies(resolvedPost, freshRepliesForRender);
   const reset = (repliesResult as { reset?: () => Promise<void> }).reset;
   const setResetFunction = useFeedResetStore((s) => s.setResetFunction);
