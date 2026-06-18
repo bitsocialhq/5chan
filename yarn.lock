@@ -11,6 +11,7 @@ __metadata:
   dependencies:
     "@bbob/parser": "npm:4.3.1"
     "@bitsocial/bitsocial-react-hooks": "npm:0.1.17"
+    "@bitsocial/bso-resolver": "npm:0.0.8"
     "@capacitor/android": "npm:7.4.5"
     "@capacitor/app": "npm:7.0.1"
     "@capacitor/browser": "npm:7.0.5"
