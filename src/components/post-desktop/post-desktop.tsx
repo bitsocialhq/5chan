@@ -73,6 +73,7 @@ import { getCommentUserID } from '../../lib/utils/comment-user-id-utils';
 import { getFeedPostHeightEstimate, getReplyHeightEstimates, reportReplyHeightAuditSample } from '../../lib/utils/pretext-height-estimates';
 import { getAuthorBadge } from '../../lib/utils/author-display-utils';
 import { hasCommentFlagsForDirectory } from '../../lib/comment-flag-selection';
+import { shouldSuppressPostLoadingState } from '../../lib/utils/post-loading-state-utils';
 
 const RepliesFooter = ({ hasMore, loadingString }: { hasMore: boolean; loadingString: string }) =>
   hasMore ? (
@@ -1331,7 +1332,7 @@ const PostDesktop = ({
       stateString &&
       !hasFailedState &&
       state !== 'succeeded' &&
-      !(resolvedPost?.timestamp && !resolvedPost?.updatedAt) &&
+      !shouldSuppressPostLoadingState(resolvedPost) &&
       isInPostPageView &&
       !(!showReplies && !showAllReplies) ? (
         <div className={styles.stateString}>

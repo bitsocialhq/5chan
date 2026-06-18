@@ -53,6 +53,7 @@ const testState = vi.hoisted(() => ({
   pseudonymityMode: 'none',
   replyComments: [] as Array<TestComment | undefined>,
   setResetFunctionMock: vi.fn(),
+  stateString: undefined as string | undefined,
   virtuosoProps: [] as Array<{ defaultItemHeight?: number; heightEstimates?: number[]; itemSize?: unknown }>,
 }));
 
@@ -242,7 +243,7 @@ vi.mock('../../hooks/use-hide', () => ({
 }));
 
 vi.mock('../../hooks/use-state-string', () => ({
-  default: () => undefined,
+  default: () => testState.stateString,
 }));
 
 vi.mock('../../hooks/use-scroll-to-reply', () => ({
@@ -460,6 +461,7 @@ describe('post community address compatibility', () => {
     testState.hasMoreReplies = false;
     testState.pseudonymityMode = 'none';
     testState.replyComments = [];
+    testState.stateString = undefined;
     testState.virtuosoProps = [];
 
     container = document.createElement('div');
@@ -494,6 +496,23 @@ describe('post community address compatibility', () => {
     expect(document.body.querySelector('a[href="/mu"]')?.textContent).toContain('Board: mu');
     expect(container.querySelector('[data-testid="comment-media"]')).toBeTruthy();
     expect(container.textContent).toContain('reply-1');
+  });
+
+  it('hides stale initializing post footers after a thread post has loaded', async () => {
+    testState.stateString = 'Initializing';
+    const post = {
+      ...makeLegacyThreadWithoutReplies(),
+      state: 'initializing',
+      updatedAt: 1_710_000_100,
+    };
+
+    await renderWithRoute(createElement(PostDesktop, { post, showAllReplies: true }), '/mu/thread/post-1');
+    expect(container.textContent).not.toContain('Initializing');
+    expect(container.textContent).toContain('post-1');
+
+    await renderWithRoute(createElement(PostMobile, { post, showAllReplies: true }), '/mu/thread/post-1');
+    expect(container.textContent).not.toContain('Initializing');
+    expect(container.textContent).toContain('post-1');
   });
 
   it('renders known developer badges and keeps anonymous as the default name on desktop and mobile', async () => {
