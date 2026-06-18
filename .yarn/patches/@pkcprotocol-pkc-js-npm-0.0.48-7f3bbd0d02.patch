@@ -1,0 +1,167 @@
+diff --git a/dist/browser/community/community-client-manager.js b/dist/browser/community/community-client-manager.js
+index 8b45a48e22aff3ff5c0f9f0a30408fd63dfe40a4..9356e89aca5a84eae0c13a790b2fdbfff88604ca 100644
+--- a/dist/browser/community/community-client-manager.js
++++ b/dist/browser/community/community-client-manager.js
+@@ -16,6 +16,7 @@ import { CID } from "kubo-rpc-client";
+ import { getAuthorNameFromRuntime } from "../publications/publication-author.js";
+ import { selectWinningGatewayCommunity } from "./community-gateway-selection.js";
+ export const MAX_FILE_SIZE_BYTES_FOR_COMMUNITY_IPFS = 1024 * 1024; // 1mb
++const BROWSER_P2P_GATEWAY_FALLBACK_IPNS_TIMEOUT_MS = 15000;
+ export class CommunityClientsManager extends PKCClientsManager {
+     constructor(community) {
+         super(community._pkc);
+@@ -378,22 +379,37 @@ export class CommunityClientsManager extends PKCClientsManager {
+             let subRes;
+             const areWeConnectedToKuboOrHelia = Object.keys(this._pkc.clients.kuboRpcClients).length > 0 || Object.keys(this._pkc.clients.libp2pJsClients).length > 0;
+             if (areWeConnectedToKuboOrHelia) {
++                const log = Logger("pkc-js:remote-community:update");
+                 const kuboRpcOrHelia = this.getDefaultKuboRpcClientOrHelia();
++                const canFallbackToGateways = Object.keys(this._pkc.clients.ipfsGateways).length > 0;
++                const p2pIpnsTimeoutMs = canFallbackToGateways && "_helia" in kuboRpcOrHelia
++                    ? Math.min(this._pkc._timeouts["community-ipns"], BROWSER_P2P_GATEWAY_FALLBACK_IPNS_TIMEOUT_MS)
++                    : this._pkc._timeouts["community-ipns"];
+                 // we're connected to kubo or helia
+                 try {
+-                    subRes = await this._fetchCommunityIpnsP2PAndVerify(ipnsName);
++                    subRes = await this._fetchCommunityIpnsP2PAndVerify(ipnsName, p2pIpnsTimeoutMs);
+                 }
+                 catch (e) {
+-                    //@ts-expect-error
+-                    e.details = {
++                    if (canFallbackToGateways && !this._community._getStopAbortSignal()?.aborted) {
++                        log.error("Falling back to gateways after browser P2P community IPNS fetch failed", {
++                            communityAddress,
++                            ipnsName,
++                            error: e
++                        });
++                        subRes = await this._fetchCommunityFromGateways(ipnsName);
++                    }
++                    else {
+                         //@ts-expect-error
+-                        ...e.details,
+-                        ipnsName,
+-                        communityAddress,
+-                        ipnsPubsubTopic: this._community.ipnsPubsubTopic,
+-                        ipnsPubsubTopicRoutingCid: this._community.ipnsPubsubTopicRoutingCid
+-                    };
+-                    throw e;
++                        e.details = {
++                            //@ts-expect-error
++                            ...e.details,
++                            ipnsName,
++                            communityAddress,
++                            ipnsPubsubTopic: this._community.ipnsPubsubTopic,
++                            ipnsPubsubTopicRoutingCid: this._community.ipnsPubsubTopicRoutingCid
++                        };
++                        throw e;
++                    }
+                 }
+                 finally {
+                     if ("_helia" in kuboRpcOrHelia)
+@@ -425,7 +441,7 @@ export class CommunityClientsManager extends PKCClientsManager {
+             return subRes;
+         });
+     }
+-    async _fetchCommunityIpnsP2PAndVerify(ipnsName) {
++    async _fetchCommunityIpnsP2PAndVerify(ipnsName, timeoutMs = this._pkc._timeouts["community-ipns"]) {
+         const log = Logger("pkc-js:clients-manager:_fetchCommunityIpnsP2PAndVerify");
+         const kuboRpcOrHelia = this.getDefaultKuboRpcClientOrHelia();
+         if ("_helia" in kuboRpcOrHelia) {
+@@ -434,7 +450,7 @@ export class CommunityClientsManager extends PKCClientsManager {
+         else
+             this.updateKuboRpcState("fetching-ipns", kuboRpcOrHelia.url);
+         const { cid: latestCommunityCid, ipnsHops } = await this.resolveIpnsToCidP2P(ipnsName, {
+-            timeoutMs: this._pkc._timeouts["community-ipns"],
++            timeoutMs,
+             abortSignal: this._community._getStopAbortSignal()
+         });
+         // ipnsHops[0] is the anchor (== ipnsName), ipnsHops.at(-1) is the terminal name whose
+diff --git a/dist/browser/helia/helia-for-pkc.js b/dist/browser/helia/helia-for-pkc.js
+index 3eca64dd532a19393c55ddf953dfd4ef207c65f8..683fed56722effc54b1b08e5b050e311ed174424 100644
+--- a/dist/browser/helia/helia-for-pkc.js
++++ b/dist/browser/helia/helia-for-pkc.js
+@@ -161,6 +161,11 @@ export async function createLibp2pJsClientOrUseExistingOne(pkcOptions) {
+             warmupPromisesByTopic.set(topic, p);
+             return p;
+         };
++        const ignoreBestEffortPubsubWarmupError = (operation, topic, err, options) => {
++            if (options?.signal?.aborted)
++                throw err;
++            log.error(`Best-effort pubsub peer warmup failed before ${operation} on topic`, topic, err);
++        };
+         const throwIfHeliaIsStoppingOrStopped = () => {
+             if (helia.libp2p.status === "stopped" || helia.libp2p.status === "stopping")
+                 throw new PKCError("ERR_HELIAS_STOPPING_OR_STOPPED", {
+@@ -299,8 +304,13 @@ export async function createLibp2pJsClientOrUseExistingOne(pkcOptions) {
+                     if (!wasAlreadySubscribed)
+                         helia.libp2p.services.pubsub.subscribe(topic);
+                     try {
+-                        await warmupForTopic(topic, options);
+-                        const res = await helia.libp2p.services.pubsub.publish(topic, data);
++                        try {
++                            await warmupForTopic(topic, options);
++                        }
++                        catch (err) {
++                            ignoreBestEffortPubsubWarmupError("publish", topic, err, options);
++                        }
++                        const res = await helia.libp2p.services.pubsub.publish(topic, data, { allowPublishToZeroTopicPeers: true });
+                         log("Published new data to pubsub topic (string, e.g. community address)", topic, "Direct gossipsub recipients (libp2p peer IDs, NOT signer/community addresses):", res.recipients.map((p) => p.toString()));
+                     }
+                     finally {
+@@ -323,7 +333,12 @@ export async function createLibp2pJsClientOrUseExistingOne(pkcOptions) {
+                     // locally subscribed to).
+                     const warmupPromise = warmupForTopic(topic, options);
+                     helia.libp2p.services.pubsub.subscribe(topic);
+-                    await warmupPromise;
++                    try {
++                        await warmupPromise;
++                    }
++                    catch (err) {
++                        ignoreBestEffortPubsubWarmupError("subscribe", topic, err, options);
++                    }
+                 },
+                 unsubscribe: async (topic, handler, options) => {
+                     throwIfHeliaIsStoppingOrStopped();
+diff --git a/dist/browser/publications/publication.js b/dist/browser/publications/publication.js
+index 5e17c02a39c2715c7ac932695fe90d5078bce405..2d43d996e2b3cdab759e89c296eb9ed8aae857db 100644
+--- a/dist/browser/publications/publication.js
++++ b/dist/browser/publications/publication.js
+@@ -842,8 +842,14 @@ class Publication extends TypedEmitter {
+                 await new Promise((resolve) => setTimeout(resolve, this._setProviderFailureThresholdSeconds * 1000));
+                 if (this._isAllAttemptsExhausted(providers.length)) {
+                     await this._postSucessOrFailurePublishing();
+-                    const allAttemptsFailedError = new PKCError("ERR_ALL_PUBSUB_PROVIDERS_THROW_ERRORS", {
+-                        challengeExchanges: this._challengeExchangesFormattedForErrors(),
++                    const challengeExchanges = this._challengeExchangesFormattedForErrors();
++                    const didEveryAttemptThrow = challengeExchanges.length > 0 &&
++                        challengeExchanges.every((exchange) => exchange.challengeRequestPublishError);
++                    const allAttemptsFailedError = new PKCError(didEveryAttemptThrow
++                        ? "ERR_ALL_PUBSUB_PROVIDERS_THROW_ERRORS"
++                        : "ERR_PUBSUB_DID_NOT_RECEIVE_RESPONSE_AFTER_PUBLISHING_CHALLENGE_REQUEST", {
++                        challengeExchanges,
++                        publishToDifferentProviderThresholdSeconds: this._publishToDifferentProviderThresholdSeconds,
+                         pubsubTopic: this._communityPubsubTopicWithFallback(),
+                         providerHeliaContexts: this._libp2pJsClientHeliaContexts()
+                     });
+diff --git a/dist/browser/runtime/browser/libp2p-extra-transports.js b/dist/browser/runtime/browser/libp2p-extra-transports.js
+index 1b7028978d1da8c3f78e9b4d18e790a3ad025e25..2b8eff3ce509cff57ac5be3d31b26b38a5301a52 100644
+--- a/dist/browser/runtime/browser/libp2p-extra-transports.js
++++ b/dist/browser/runtime/browser/libp2p-extra-transports.js
+@@ -1,3 +1,4 @@
+-const extraLibp2pTransports = [];
++import { webTransport } from "@libp2p/webtransport";
++const extraLibp2pTransports = typeof globalThis.WebTransport === "function" ? [webTransport()] : [];
+ export default extraLibp2pTransports;
+ //# sourceMappingURL=libp2p-extra-transports.js.map
+diff --git a/package.json b/package.json
+index 7667db9846b0e18a55ce3942d243f2148b2ab5a0..f064d57f444083a6cf2c7a9ecb1b8ab1049e7a46 100644
+--- a/package.json
++++ b/package.json
+@@ -78,6 +78,7 @@
+         "@libp2p/identify": "4.1.7",
+         "@libp2p/interface": "3.2.3",
+         "@libp2p/peer-id": "6.0.10",
++        "@libp2p/webtransport": "6.0.0",
+         "@multiformats/multiaddr": "13.0.3",
+         "@noble/curves": "2.2.0",
+         "@pkcprotocol/pkc-logger": "0.1.0",
