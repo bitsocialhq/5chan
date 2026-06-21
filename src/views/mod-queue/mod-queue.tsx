@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useCommunity, useCommunities } from '@bitsocial/bitsocial-react-hooks';
+import { useFeed, Comment, useEditedComment, useCommunity, useCommunities } from '@bitsocial/bitsocial-react-hooks';
 import { accountsStore as useAccountsStore } from '../../lib/bitsocial-internals/stores';
 import { useFloating, offset, shift, size, flip, autoUpdate } from '@floating-ui/react';
 import { Virtuoso, type Components } from 'react-virtuoso';
@@ -16,18 +16,11 @@ import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories'
 import getShortAddress from '../../lib/get-short-address';
 import { BOARD_CODE_GROUPS } from '../../constants/board-codes';
 import { getHasThumbnail, getCommentMediaInfo } from '../../lib/utils/media-utils';
-import {
-  approvePendingCommentModeration,
-  isPendingApprovalAwaiting,
-  isPendingApprovalRejected,
-  rejectPendingCommentModeration,
-} from '../../lib/utils/pending-approval-moderation';
+import { isPendingApprovalAwaiting, isPendingApprovalRejected } from '../../lib/utils/pending-approval-moderation';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
-import useChallengesStore from '../../stores/use-challenges-store';
-import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
-import { formatErrorForDisplay } from '../../lib/utils/error-utils';
+import usePendingCommentModerationActions from '../../hooks/use-pending-comment-moderation-actions';
 import {
   filterVisibleModQueueFeed,
   getModQueueBoardFilterGroups,
@@ -212,9 +205,6 @@ interface ModQueueRowProps {
   /** Board path for display (shortened when long IPNS key with no TLD) */
   boardDisplayPath: string | undefined;
 }
-
-// Track which action was initiated to show appropriate completion message
-type ModerationAction = 'approve' | 'reject' | null;
 
 interface ModQueueActionState {
   status: 'approved' | 'rejected' | 'failed' | null;
@@ -433,89 +423,38 @@ const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleAppr
 };
 
 const useModQueueActions = (comment: Comment): ModQueueActionState => {
-  const { t } = useTranslation();
   const { cid, approved, removed, pendingApproval } = comment || {};
   const communityAddress = getCommentCommunityAddress(comment);
   const dismissCommentFromQueue = useModQueueStore((state) => state.dismissCommentFromQueue);
   const rememberCommentsInQueue = useModQueueStore((state) => state.rememberCommentsInQueue);
-  const [initiatedAction, setInitiatedAction] = useState<ModerationAction>(null);
 
   const alreadyApproved = approved === true;
   const alreadyRejected = isPendingApprovalRejected({ approved, removed, pendingApproval });
 
   const {
-    publishCommentModeration: approve,
-    state: approveState,
-    error: approveError,
-  } = usePublishCommentModeration({
+    status: actionStatus,
+    error,
+    errorMessage,
+    isPublishing,
+    handleApprove,
+    handleReject,
+  } = usePendingCommentModerationActions({
+    comment,
     commentCid: cid,
     communityAddress,
-    commentModeration: approvePendingCommentModeration,
-    onChallenge: async (...args: any) => {
-      useChallengesStore.getState().addChallenge([...args, comment]);
-    },
-    onChallengeVerification: async (challengeVerification, comment) => {
-      alertChallengeVerificationFailed(challengeVerification, comment);
-    },
-    onError: (error: Error & { details?: unknown }) => {
-      console.error('Approve failed:', error, error.details);
-    },
-  });
-
-  const {
-    publishCommentModeration: reject,
-    state: rejectState,
-    error: rejectError,
-  } = usePublishCommentModeration({
-    commentCid: cid,
-    communityAddress,
-    commentModeration: rejectPendingCommentModeration,
-    onChallenge: async (...args: any) => {
-      useChallengesStore.getState().addChallenge([...args, comment]);
-    },
-    onChallengeVerification: async (challengeVerification, comment) => {
-      alertChallengeVerificationFailed(challengeVerification, comment);
-    },
-    onError: (error: Error & { details?: unknown }) => {
-      console.error('Reject failed:', error, error.details);
-    },
-  });
-
-  const handleApprove = async () => {
-    const confirm = window.confirm(t('double_confirm'));
-    if (!confirm) {
-      return;
-    }
-
-    setInitiatedAction('approve');
-    try {
-      await approve();
+    onApproveSuccess: () => {
       const approvedSnapshot = getQueuedCommentSnapshot({ ...comment, approved: true, pendingApproval: false });
       if (approvedSnapshot) {
         rememberCommentsInQueue([approvedSnapshot]);
       }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleReject = async () => {
-    const confirm = window.confirm(t('double_confirm'));
-    if (!confirm) {
-      return;
-    }
-
-    setInitiatedAction('reject');
-    try {
-      await reject();
+    },
+    onRejectSuccess: () => {
       const rejectedSnapshot = getQueuedCommentSnapshot({ ...comment, approved: false, pendingApproval: false });
       if (rejectedSnapshot) {
         rememberCommentsInQueue([rejectedSnapshot]);
       }
-    } catch (e) {
-      console.error(e);
-    }
-  };
+    },
+  });
 
   const handleRemove = () => {
     if (cid) {
@@ -523,19 +462,9 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
     }
   };
 
-  const isApproving = initiatedAction === 'approve' && approveState !== 'initializing' && approveState !== 'succeeded' && approveState !== 'failed';
-  const isRejecting = initiatedAction === 'reject' && rejectState !== 'initializing' && rejectState !== 'succeeded' && rejectState !== 'failed';
-  const isPublishing = isApproving || isRejecting;
-
-  const approveSucceeded = initiatedAction === 'approve' && approveState === 'succeeded';
-  const rejectSucceeded = initiatedAction === 'reject' && rejectState === 'succeeded';
-
-  const approveFailed = initiatedAction === 'approve' && approveState === 'failed';
-  const rejectFailed = initiatedAction === 'reject' && rejectState === 'failed';
-
-  const status = alreadyApproved || approveSucceeded ? 'approved' : alreadyRejected || rejectSucceeded ? 'rejected' : approveFailed || rejectFailed ? 'failed' : null;
-  const error = approveFailed ? approveError : rejectFailed ? rejectError : undefined;
-  const errorMessage = formatErrorForDisplay(error);
+  // Mod queue rows also reflect a comment that was already moderated before this
+  // session, so combine that baseline with the live action-derived status.
+  const status = alreadyApproved || actionStatus === 'approved' ? 'approved' : alreadyRejected || actionStatus === 'rejected' ? 'rejected' : actionStatus;
 
   return { status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove: status ? handleRemove : undefined };
 };

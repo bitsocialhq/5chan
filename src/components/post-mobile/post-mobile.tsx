@@ -2,14 +2,14 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useEditedComment, useReplies, useAccount, usePublishCommentModeration } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, useEditedComment, useReplies, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { shouldShowSnow } from '../../lib/snow';
 import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getTextColorForBackground, hashStringToColor } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
-import { approvePendingCommentModeration, isPendingApprovalAwaiting, rejectPendingCommentModeration } from '../../lib/utils/pending-approval-moderation';
+import { isPendingApprovalAwaiting } from '../../lib/utils/pending-approval-moderation';
 import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
@@ -39,12 +39,11 @@ import capitalize from 'lodash/capitalize';
 import lowerCase from 'lodash/lowerCase';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
-import useChallengesStore from '../../stores/use-challenges-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import useRegisterFreshReplies from '../../hooks/use-register-fresh-replies';
-import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
+import usePendingCommentModerationActions from '../../hooks/use-pending-comment-moderation-actions';
 import useProgressiveRender from '../../hooks/use-progressive-render';
 import useReplyHeightEstimates from '../../hooks/use-reply-height-estimates';
 import useFreshReplies from '../../hooks/use-fresh-replies';
@@ -128,85 +127,17 @@ const PostInfoAndMedia = ({
 
   // Moderation actions for pending approval posts
   const {
-    publishCommentModeration: approvePending,
-    state: approvePendingState,
-    error: approvePendingError,
-  } = usePublishCommentModeration({
+    handleApprove: handlePendingApprove,
+    handleReject: handlePendingReject,
+    isPublishing: isPublishingPending,
+    status: pendingStatus,
+    errorMessage: pendingErrorMessage,
+  } = usePendingCommentModerationActions({
+    comment: resolvedPost,
     commentCid: cid,
-    communityAddress: shouldShowPendingApprovalButtons ? communityAddress : undefined,
-    commentModeration: approvePendingCommentModeration,
-    onChallenge: async (...args: any) => {
-      useChallengesStore.getState().addChallenge([...args, resolvedPost]);
-    },
-    onChallengeVerification: async (challengeVerification, comment) => {
-      alertChallengeVerificationFailed(challengeVerification, comment);
-    },
-    onError: (error: Error & { details?: unknown }) => {
-      console.error('Approve failed:', error, error.details);
-    },
+    communityAddress,
+    enabled: !!shouldShowPendingApprovalButtons,
   });
-
-  const {
-    publishCommentModeration: rejectPending,
-    state: rejectPendingState,
-    error: rejectPendingError,
-  } = usePublishCommentModeration({
-    commentCid: cid,
-    communityAddress: shouldShowPendingApprovalButtons ? communityAddress : undefined,
-    commentModeration: rejectPendingCommentModeration,
-    onChallenge: async (...args: any) => {
-      useChallengesStore.getState().addChallenge([...args, resolvedPost]);
-    },
-    onChallengeVerification: async (challengeVerification, comment) => {
-      alertChallengeVerificationFailed(challengeVerification, comment);
-    },
-    onError: (error: Error & { details?: unknown }) => {
-      console.error('Reject failed:', error, error.details);
-    },
-  });
-
-  const [initiatedPendingAction, setInitiatedPendingAction] = useState<'approve' | 'reject' | null>(null);
-
-  const handlePendingApprove = useCallback(async () => {
-    const confirm = window.confirm(t('double_confirm'));
-    if (!confirm) {
-      return;
-    }
-    setInitiatedPendingAction('approve');
-    try {
-      await approvePending();
-    } catch (e) {
-      console.error(e);
-    }
-  }, [approvePending, t]);
-
-  const handlePendingReject = useCallback(async () => {
-    const confirm = window.confirm(t('double_confirm'));
-    if (!confirm) {
-      return;
-    }
-    setInitiatedPendingAction('reject');
-    try {
-      await rejectPending();
-    } catch (e) {
-      console.error(e);
-    }
-  }, [rejectPending, t]);
-
-  const isApprovingPending =
-    initiatedPendingAction === 'approve' && approvePendingState !== 'initializing' && approvePendingState !== 'succeeded' && approvePendingState !== 'failed';
-  const isRejectingPending =
-    initiatedPendingAction === 'reject' && rejectPendingState !== 'initializing' && rejectPendingState !== 'succeeded' && rejectPendingState !== 'failed';
-  const isPublishingPending = isApprovingPending || isRejectingPending;
-
-  const approvePendingSucceeded = initiatedPendingAction === 'approve' && approvePendingState === 'succeeded';
-  const rejectPendingSucceeded = initiatedPendingAction === 'reject' && rejectPendingState === 'succeeded';
-  const approvePendingFailed = initiatedPendingAction === 'approve' && approvePendingState === 'failed';
-  const rejectPendingFailed = initiatedPendingAction === 'reject' && rejectPendingState === 'failed';
-
-  const pendingStatus = approvePendingSucceeded ? 'approved' : rejectPendingSucceeded ? 'rejected' : approvePendingFailed || rejectPendingFailed ? 'failed' : null;
-  const pendingError = approvePendingFailed ? approvePendingError : rejectPendingFailed ? rejectPendingError : undefined;
-  const pendingErrorMessage = formatErrorForDisplay(pendingError);
 
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
