@@ -27,7 +27,7 @@ import useTimeFilter from '../../hooks/use-time-filter';
 import CatalogFilters from '../catalog-filters';
 import CatalogSearch from '../catalog-search';
 import Tooltip from '../tooltip';
-import { ModQueueButton } from '../../views/mod-queue/mod-queue';
+import { ModQueueButton } from '../mod-queue-button';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { getSearchWithTimeFilter, getTimeFilterOptionLabel } from '../../lib/utils/time-filter-utils';
 import { shouldShowCatalogButton } from './catalog-button-utils';

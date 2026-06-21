@@ -206,7 +206,7 @@ vi.mock('../../tooltip', () => ({
     createElement('span', { 'data-content': content, 'data-testid': 'tooltip' }, children),
 }));
 
-vi.mock('../../../views/mod-queue/mod-queue', () => ({
+vi.mock('../../mod-queue-button', () => ({
   ModQueueButton: ({ boardIdentifier, isMobile }: { boardIdentifier?: string; isMobile?: boolean }) =>
     createElement('div', { 'data-mobile': String(!!isMobile), 'data-testid': 'mod-queue-button' }, boardIdentifier || 'global-mod-queue'),
 }));

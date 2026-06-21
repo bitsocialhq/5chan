@@ -526,7 +526,8 @@ span.reject:hover {
 }
 
 
-/* ModQueueButton styles */
+/* Mod queue count badge styles (ModQueueBoardCount); the board mod-queue button
+   keeps its own copy in components/mod-queue-button/mod-queue-button.module.css */
 .modQueueButtonCount {
   font-weight: bold;
 }
