@@ -15,7 +15,7 @@ import { is5chanLink, transform5chanLinkToInternal, isValidCrossboardPattern } f
 import { CROSSBOARD_NUMBER_QUOTE_TOKEN_REGEX, type ExternalQuoteReference } from '../../lib/utils/external-quote-utils';
 import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import usePostNumberStore, { getCidForPostNumber } from '../../stores/use-post-number-store';
-import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
+import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { useComment } from '@bitsocial/bitsocial-react-hooks';
 import ReplyQuotePreview from '../reply-quote-preview/reply-quote-preview';
 import ExternalNumberQuoteLink from './external-number-quote-link';

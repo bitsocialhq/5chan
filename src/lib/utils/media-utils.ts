@@ -1,4 +1,4 @@
-import localForageLru from '@bitsocial/bitsocial-react-hooks/dist/lib/localforage-lru/index.js';
+import { localForageLru } from '../bitsocial-internals/utils';
 import { canEmbed, getYouTubeVideoId, youtubeHosts } from '../../components/embed/embed-utils';
 import memoize from 'memoizee';
 import { isPrivateNetworkHostname, isValidURL, parseHttpUrl } from './url-utils';

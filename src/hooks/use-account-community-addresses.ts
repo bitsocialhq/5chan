@@ -1,5 +1,5 @@
-import useAccountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js';
-import { getEquivalentCommunityAddressGroupKey, pickPreferredEquivalentCommunityAddress } from '@bitsocial/bitsocial-react-hooks/dist/lib/community-address.js';
+import { accountsStore as useAccountsStore } from '../lib/bitsocial-internals/stores';
+import { getEquivalentCommunityAddressGroupKey, pickPreferredEquivalentCommunityAddress } from '../lib/bitsocial-internals/utils';
 
 type AccountWithCommunities = {
   communities?: Record<string, unknown>;

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
 import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useCommunity, useCommunities } from '@bitsocial/bitsocial-react-hooks';
-import useAccountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js';
+import { accountsStore as useAccountsStore } from '../../lib/bitsocial-internals/stores';
 import { useFloating, offset, shift, size, flip, autoUpdate } from '@floating-ui/react';
 import { Virtuoso, type Components } from 'react-virtuoso';
 import styles from './mod-queue.module.css';

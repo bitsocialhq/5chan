@@ -1,4 +1,4 @@
-import useCommunitiesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities';
+import { communitiesStore as useCommunitiesStore } from '../lib/bitsocial-internals/stores';
 import type { Community } from '@bitsocial/bitsocial-react-hooks';
 import { normalizeBoardAddress } from './use-directories';
 

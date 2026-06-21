@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useFeed } from '@bitsocial/bitsocial-react-hooks';
-import useFeedsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/feeds';
+import { feedsStore as useFeedsStore } from '../lib/bitsocial-internals/stores';
 import { useDirectoryByAddress } from './use-directories';
 import { useBoardFeedPageSize } from './use-board-feed-page-size';
 import { useCommunityIdentifier } from './use-community-identifiers';

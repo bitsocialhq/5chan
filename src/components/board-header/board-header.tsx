@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
-import useAccountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts';
+import { accountsStore as useAccountsStore } from '../../lib/bitsocial-internals/stores';
 import getShortAddress from '../../lib/get-short-address';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useStableCommunity } from '../../hooks/use-stable-community';
