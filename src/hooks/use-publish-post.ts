@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import usePublishPostStore from '../stores/use-publish-post-store';
 import useChallengesStore from '../stores/use-challenges-store';
 import usePublishAuthorDomainGuard, { getPublishAuthorDomainErrorMessage } from './use-publish-author-domain-guard';
+import usePendingPublishRequest from './use-pending-publish-request';
 
 type UsePublishPostOptions = {
   communityAddress?: string;
@@ -30,6 +31,7 @@ const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
   const [pendingPublishRequestId, setPendingPublishRequestId] = useState(0);
   const startedPublishRequestIdRef = useRef(0);
   const { blockedReason } = usePublishAuthorDomainGuard();
+  const { finishPendingPublishRequest, startPendingPublishRequest } = usePendingPublishRequest();
   const abandonCurrentPublish = useCallback(async () => {
     await abandonPublishRef.current?.();
   }, []);
@@ -95,14 +97,14 @@ const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
     setPublishPostError(null);
   }, [author?.displayName, blockedReason, communityAddress, content, flairs, link, spoiler, title]);
 
-  const startPublishPost = useCallback(() => {
+  const startPublishPost = useCallback(async () => {
     if (blockedReason) {
       setPublishPostError(getPublishAuthorDomainErrorMessage(blockedReason));
       return;
     }
 
     setPublishPostError(null);
-    return publishComment();
+    await publishComment();
   }, [blockedReason, publishComment]);
 
   useEffect(() => {
@@ -110,21 +112,32 @@ const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
       return;
     }
 
-    startedPublishRequestIdRef.current = pendingPublishRequestId;
-    startPublishPost();
-  }, [pendingPublishRequestId, startPublishPost]);
+    const requestId = pendingPublishRequestId;
+    startedPublishRequestIdRef.current = requestId;
+    void startPublishPost()
+      .catch(() => undefined)
+      .finally(() => finishPendingPublishRequest(requestId));
+  }, [finishPendingPublishRequest, pendingPublishRequestId, startPublishPost]);
 
   const publishPost = useCallback(
     (options?: Partial<Comment>) => {
-      if (options) {
-        setPublishPostOptions(options);
-        setPendingPublishRequestId((requestId) => requestId + 1);
-        return;
+      const pendingRequest = startPendingPublishRequest();
+      if (!pendingRequest.started) {
+        return pendingRequest.request.promise;
       }
 
-      return startPublishPost();
+      if (options) {
+        setPublishPostOptions(options);
+        setPendingPublishRequestId(pendingRequest.request.id);
+        return pendingRequest.request.promise;
+      }
+
+      void startPublishPost()
+        .catch(() => undefined)
+        .finally(() => finishPendingPublishRequest(pendingRequest.request.id));
+      return pendingRequest.request.promise;
     },
-    [setPublishPostOptions, startPublishPost],
+    [finishPendingPublishRequest, setPublishPostOptions, startPendingPublishRequest, startPublishPost],
   );
 
   return {
