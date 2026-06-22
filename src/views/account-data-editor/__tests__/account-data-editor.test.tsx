@@ -79,8 +79,20 @@ vi.mock('react-ace', async () => {
   };
 });
 
-vi.mock('ace-builds/src-noconflict/mode-json', () => ({}));
-vi.mock('ace-builds/src-noconflict/theme-monokai', () => ({}));
+vi.mock('ace-builds/src-noconflict/mode-json', () => {
+  if (!(globalThis as typeof globalThis & { ace?: unknown }).ace) {
+    throw new Error('mode-json imported before ace');
+  }
+
+  return {};
+});
+vi.mock('ace-builds/src-noconflict/theme-monokai', () => {
+  if (!(globalThis as typeof globalThis & { ace?: unknown }).ace) {
+    throw new Error('theme-monokai imported before ace');
+  }
+
+  return {};
+});
 vi.mock('ace-builds/esm-resolver', () => {
   if (!(globalThis as typeof globalThis & { ace?: unknown }).ace) {
     throw new Error('ace is not defined');
