@@ -10,6 +10,7 @@ import { extractUnresolvedExternalQuoteReferences, getExternalQuoteStatusMessage
 import { resolveExternalQuoteTarget } from '../lib/utils/external-quote-resolver';
 import useChallengesStore from '../stores/use-challenges-store';
 import usePublishAuthorDomainGuard, { getPublishAuthorDomainErrorMessage } from './use-publish-author-domain-guard';
+import usePendingPublishRequest from './use-pending-publish-request';
 
 type UsePublishReplyOptions = {
   cid: string;
@@ -47,6 +48,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
   const [isResolvingExternalQuotes, setIsResolvingExternalQuotes] = useState(false);
   const [publishReplyError, setPublishReplyError] = useState<string | null>(null);
   const [publishReplyStateMessage, setPublishReplyStateMessage] = useState<string | null>(null);
+  const { finishPendingPublishRequest, startPendingPublishRequest } = usePendingPublishRequest();
   const abandonCurrentPublish = useCallback(async () => {
     await abandonPublishRef.current?.();
   }, []);
@@ -166,35 +168,35 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
       return;
     }
 
-    startedPublishRequestIdRef.current = pendingPublishRequestId;
-    publishComment();
-  }, [pendingPublishRequestId, publishComment]);
+    const requestId = pendingPublishRequestId;
+    startedPublishRequestIdRef.current = requestId;
+    void Promise.resolve()
+      .then(() => publishComment())
+      .catch(() => undefined)
+      .finally(() => finishPendingPublishRequest(requestId));
+  }, [finishPendingPublishRequest, pendingPublishRequestId, publishComment]);
 
-  const publishReply = useCallback(
-    async (options?: Partial<Comment>) => {
-      if (options) {
-        setPublishReplyOptions(options);
-        setPendingSyncedPublishRequestId((requestId) => requestId + 1);
-        return;
-      }
-
+  const preparePublishReply = useCallback(
+    async (requestId: number) => {
       setPublishReplyError(null);
 
       if (blockedReason) {
         setPublishReplyStateMessage(null);
         setPublishReplyError(getPublishAuthorDomainErrorMessage(blockedReason));
+        finishPendingPublishRequest(requestId);
         return;
       }
 
       if (publishResolvableQuoteReferences.length === 0) {
         setResolvedExternalQuotedCids(undefined);
         setPublishReplyStateMessage(null);
-        setPendingPublishRequestId((requestId) => requestId + 1);
+        setPendingPublishRequestId(requestId);
         return;
       }
 
       if (!account?.id) {
         setPublishReplyError(t('external_quote_resolution_unavailable'));
+        finishPendingPublishRequest(requestId);
         return;
       }
 
@@ -220,6 +222,7 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
                 quote: reference.raw,
               }),
             );
+            finishPendingPublishRequest(requestId);
             return;
           }
 
@@ -228,14 +231,34 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
 
         setResolvedExternalQuotedCids(resolvedCids.size > 0 ? [...resolvedCids] : undefined);
         setPublishReplyStateMessage(null);
-        setPendingPublishRequestId((requestId) => requestId + 1);
+        setPendingPublishRequestId(requestId);
       } catch {
         setPublishReplyError(t('external_quote_resolution_unavailable'));
+        finishPendingPublishRequest(requestId);
       } finally {
         setIsResolvingExternalQuotes(false);
       }
     },
-    [account, blockedReason, directories, publishResolvableQuoteReferences, setPublishReplyOptions, t],
+    [account, blockedReason, directories, finishPendingPublishRequest, publishResolvableQuoteReferences, t],
+  );
+
+  const publishReply = useCallback(
+    (options?: Partial<Comment>) => {
+      const pendingRequest = startPendingPublishRequest();
+      if (!pendingRequest.started) {
+        return pendingRequest.request.promise;
+      }
+
+      if (options) {
+        setPublishReplyOptions(options);
+        setPendingSyncedPublishRequestId(pendingRequest.request.id);
+        return pendingRequest.request.promise;
+      }
+
+      void preparePublishReply(pendingRequest.request.id).catch(() => finishPendingPublishRequest(pendingRequest.request.id));
+      return pendingRequest.request.promise;
+    },
+    [finishPendingPublishRequest, preparePublishReply, setPublishReplyOptions, startPendingPublishRequest],
   );
 
   useEffect(() => {
@@ -243,9 +266,10 @@ const usePublishReply = ({ cid, communityAddress, postCid }: UsePublishReplyOpti
       return;
     }
 
-    startedSyncedPublishRequestIdRef.current = pendingSyncedPublishRequestId;
-    publishReply();
-  }, [pendingSyncedPublishRequestId, publishReply]);
+    const requestId = pendingSyncedPublishRequestId;
+    startedSyncedPublishRequestIdRef.current = requestId;
+    void preparePublishReply(requestId).catch(() => finishPendingPublishRequest(requestId));
+  }, [finishPendingPublishRequest, pendingSyncedPublishRequestId, preparePublishReply]);
 
   return {
     isResolvingExternalQuotes,
