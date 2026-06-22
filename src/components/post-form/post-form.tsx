@@ -713,7 +713,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       };
 
       nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-      publishPost({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...publishOptions });
+      await publishPost({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...publishOptions });
     });
 
   // redirect to pending page when pending comment is created

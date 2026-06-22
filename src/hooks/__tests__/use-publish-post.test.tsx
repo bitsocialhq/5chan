@@ -156,6 +156,50 @@ describe('usePublishPost', () => {
     expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps a one-shot publish pending and ignores duplicate publish calls until it settles', async () => {
+    let resolvePublish: () => void = () => {};
+    const publishPromise = new Promise<void>((resolve) => {
+      resolvePublish = resolve;
+    });
+    testState.publishCommentMock.mockReturnValue(publishPromise);
+
+    let firstPublish: Promise<void> | undefined;
+    let secondPublish: Promise<void> | undefined;
+
+    await act(async () => {
+      firstPublish = latestValue.publishPost({
+        content: 'Fresh body',
+      } as never);
+      secondPublish = latestValue.publishPost({
+        content: 'Duplicate body',
+      } as never);
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(firstPublish).toBe(secondPublish);
+    expect(testState.lastPublishOptions?.content).toBe('Fresh body');
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+
+    let isSettled = false;
+    firstPublish?.then(() => {
+      isSettled = true;
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(isSettled).toBe(false);
+
+    await act(async () => {
+      resolvePublish();
+      await publishPromise;
+      await firstPublish;
+    });
+
+    expect(isSettled).toBe(true);
+  });
+
   it('clears stale flag data from one-shot publish options', async () => {
     await act(async () => {
       latestValue.setPublishPostOptions({

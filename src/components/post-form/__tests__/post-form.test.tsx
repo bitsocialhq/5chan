@@ -806,6 +806,39 @@ describe('PostForm', () => {
     expect(testState.publishedPostOptions?.content).toBe(`${youtubeLink}\nVideo body`);
   });
 
+  it('ignores duplicate post clicks while publish is pending', async () => {
+    let resolvePublish: () => void = () => {};
+    const publishPromise = new Promise<void>((resolve) => {
+      resolvePublish = resolve;
+    });
+    testState.publishPostMock.mockReturnValue(publishPromise);
+
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const select = table.querySelector('select') as HTMLSelectElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const postButton = Array.from(table.querySelectorAll('button')).find((button) => button.textContent === 'post') as HTMLButtonElement;
+
+    await dispatchChange(select, 'music-posting.eth');
+    await dispatchInput(textarea, 'Thread body');
+
+    await clickByText(table, 'post');
+    expect(postButton.disabled).toBe(true);
+
+    await clickByText(table, 'post');
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolvePublish();
+      await publishPromise;
+    });
+    await flushEffects();
+
+    expect(postButton.disabled).toBe(false);
+  });
+
   it('publishes known twimg query-format post links with a path extension without editing the field', async () => {
     const twimgLink = 'https://pbs.twimg.com/media/HJxnhNKWMAAhqFU?format=jpg&name=medium';
     const publishLink = 'https://pbs.twimg.com/media/HJxnhNKWMAAhqFU.jpg';

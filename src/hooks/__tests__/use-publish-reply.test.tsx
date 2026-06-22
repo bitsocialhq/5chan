@@ -179,7 +179,9 @@ describe('usePublishReply', () => {
     });
 
     await act(async () => {
-      await latestValue.publishReply();
+      latestValue.publishReply();
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
       await Promise.resolve();
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
@@ -197,7 +199,9 @@ describe('usePublishReply', () => {
     });
 
     await act(async () => {
-      await latestValue.publishReply();
+      latestValue.publishReply();
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
       await Promise.resolve();
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
@@ -215,15 +219,63 @@ describe('usePublishReply', () => {
     });
 
     await act(async () => {
-      await latestValue.publishReply({
+      latestValue.publishReply({
         content: 'Fresh reply',
       } as never);
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
       await Promise.resolve();
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(testState.lastPublishOptions?.content).toBe('Fresh reply');
     expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps a one-shot reply pending and ignores duplicate publish calls until it settles', async () => {
+    let resolvePublish: () => void = () => {};
+    const publishPromise = new Promise<void>((resolve) => {
+      resolvePublish = resolve;
+    });
+    testState.publishCommentMock.mockReturnValue(publishPromise);
+
+    let firstPublish: Promise<void> | undefined;
+    let secondPublish: Promise<void> | undefined;
+
+    await act(async () => {
+      firstPublish = latestValue.publishReply({
+        content: 'Fresh reply',
+      } as never);
+      secondPublish = latestValue.publishReply({
+        content: 'Duplicate reply',
+      } as never);
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(firstPublish).toBe(secondPublish);
+    expect(testState.lastPublishOptions?.content).toBe('Fresh reply');
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+
+    let isSettled = false;
+    firstPublish?.then(() => {
+      isSettled = true;
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(isSettled).toBe(false);
+
+    await act(async () => {
+      resolvePublish();
+      await publishPromise;
+      await firstPublish;
+    });
+
+    expect(isSettled).toBe(true);
   });
 
   it('clears stale flag data from one-shot reply options', async () => {
@@ -238,11 +290,13 @@ describe('usePublishReply', () => {
     });
 
     await act(async () => {
-      await latestValue.publishReply({
+      latestValue.publishReply({
         content: 'Plain reply',
         challengeRequest: undefined,
         flairs: undefined,
       } as never);
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
       await Promise.resolve();
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
@@ -263,8 +317,9 @@ describe('usePublishReply', () => {
     });
 
     await act(async () => {
-      await latestValue.publishReply();
+      latestValue.publishReply();
       await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(latestValue.publishReplyError).toContain('external_quote_publish_missing');
@@ -276,7 +331,8 @@ describe('usePublishReply', () => {
     renderHook();
 
     await act(async () => {
-      await latestValue.publishReply();
+      latestValue.publishReply();
+      await Promise.resolve();
     });
 
     expect(latestValue.publishReplyError).toBe('blocked:unresolved');
