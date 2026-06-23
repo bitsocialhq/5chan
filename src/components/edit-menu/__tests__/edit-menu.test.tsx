@@ -52,7 +52,11 @@ vi.mock('@floating-ui/react', () => ({
   autoUpdate: () => undefined,
   offset: () => ({}),
   shift: () => ({}),
-  useClick: () => ({}),
+  useClick: ({ onOpenChange, open }: { onOpenChange: (open: boolean) => void; open: boolean }) => ({
+    reference: {
+      onClick: () => onOpenChange(!open),
+    },
+  }),
   useDismiss: () => ({}),
   useFloating: ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) => ({
     context: {
@@ -66,9 +70,16 @@ vi.mock('@floating-ui/react', () => ({
     },
   }),
   useId: () => 'edit-menu-heading',
-  useInteractions: () => ({
+  useInteractions: (interactions: Array<{ reference?: { onClick?: () => void } }>) => ({
     getFloatingProps: (props?: Record<string, unknown>) => props || {},
-    getReferenceProps: (props?: Record<string, unknown>) => props || {},
+    getReferenceProps: (props?: Record<string, unknown>) => ({
+      ...props,
+      onClick: () => {
+        for (const interaction of interactions) {
+          interaction.reference?.onClick?.();
+        }
+      },
+    }),
   }),
   useRole: () => ({}),
 }));
@@ -227,7 +238,21 @@ describe('EditMenu', () => {
     expect(alertSpy).toHaveBeenLastCalledWith('cannot_edit_reply');
   });
 
-  it('lets comment authors update content and deletion', async () => {
+  it('keeps an unauthorized reply checkbox unchecked after showing the edit warning', async () => {
+    await renderMenu({
+      ...basePost,
+      parentCid: 'parent-1',
+    });
+
+    const editCheckbox = container.querySelector<HTMLInputElement>('span input[type="checkbox"]');
+    await click(editCheckbox);
+
+    expect(alertSpy).toHaveBeenCalledWith('cannot_edit_reply');
+    expect(editCheckbox?.checked).toBe(false);
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('lets comment authors delete without exposing content editing', async () => {
     testState.privileges = {
       isAccountCommentAuthor: true,
       isAccountMod: false,
@@ -238,12 +263,8 @@ describe('EditMenu', () => {
     await openMenu();
 
     await click(getCheckbox('deleted'));
-    await click(getLabelCheckbox('Edit?'));
-
-    const textarea = container.querySelector('textarea');
-    expect(textarea).not.toBeNull();
-
-    await dispatchInput(textarea as HTMLTextAreaElement, 'Updated body');
+    expect(getLabelCheckbox('Edit?')).toBeNull();
+    expect(container.querySelector('textarea')).toBeNull();
     await clickButton('save');
 
     expect(testState.publishAuthorEditMock).toHaveBeenCalledOnce();
@@ -254,11 +275,11 @@ describe('EditMenu', () => {
         displayName: 'Alice',
       },
       commentCid: 'comment-1',
-      content: 'Updated body',
       deleted: true,
-      spoiler: false,
       communityAddress: 'music-posting.eth',
     });
+    expect(testState.authorOptions?.content).toBeUndefined();
+    expect(testState.authorOptions?.spoiler).toBeUndefined();
     expect(testState.authorPrivilegesOptions).toMatchObject({
       commentAuthorAddress: '0xauthor',
       communityAddress: 'music-posting.eth',
@@ -463,7 +484,7 @@ describe('EditMenu', () => {
     expect(getCheckbox('archived')).toBeNull();
   });
 
-  it('runs both the author edit and moderation publication paths when the user has both privileges', async () => {
+  it('does not publish author-side edits for author moderators when deletion did not change', async () => {
     testState.privileges = {
       isAccountCommentAuthor: true,
       isAccountMod: true,
@@ -474,7 +495,7 @@ describe('EditMenu', () => {
     await openMenu();
     await clickButton('save');
 
-    expect(testState.publishAuthorEditMock).toHaveBeenCalledOnce();
+    expect(testState.publishAuthorEditMock).not.toHaveBeenCalled();
     expect(testState.publishCommentModerationMock).toHaveBeenCalledOnce();
   });
 });
