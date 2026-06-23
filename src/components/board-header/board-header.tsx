@@ -15,7 +15,7 @@ import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useIsCommunityOffline from '../../hooks/use-is-community-offline';
 import { shouldShowSnow } from '../../lib/snow';
-import Tooltip from '../tooltip';
+import Tooltip from '../tooltip/tooltip';
 import { BANNERS } from '../../generated/asset-manifest';
 
 const ImageBanner = () => {

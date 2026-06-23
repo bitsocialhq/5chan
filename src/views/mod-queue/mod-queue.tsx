@@ -39,7 +39,7 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import { useCurrentTime } from '../../hooks/use-current-time';
 import { Post } from '../post/post';
 import { useLocallyModeratedModQueueFeed } from '../../hooks/use-locally-moderated-mod-queue-feed';
-import ModQueueCommunityMetadataLoader from '../../components/mod-queue-community-metadata-loader';
+import ModQueueCommunityMetadataLoader from '../../components/mod-queue-community-metadata-loader/mod-queue-community-metadata-loader';
 import capitalize from 'lodash/capitalize';
 import lowerCase from 'lodash/lowerCase';
 import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '../../components/footer/footer';

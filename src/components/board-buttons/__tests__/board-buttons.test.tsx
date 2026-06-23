@@ -193,20 +193,20 @@ vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
 }));
 
-vi.mock('../../catalog-filters', () => ({
+vi.mock('../../catalog-filters/catalog-filters', () => ({
   default: () => createElement('div', { 'data-testid': 'catalog-filters' }, 'catalog-filters'),
 }));
 
-vi.mock('../../catalog-search', () => ({
+vi.mock('../../catalog-search/catalog-search', () => ({
   default: () => createElement('div', { 'data-testid': 'catalog-search' }, 'catalog-search'),
 }));
 
-vi.mock('../../tooltip', () => ({
+vi.mock('../../tooltip/tooltip', () => ({
   default: ({ content, children }: { content: string; children: React.ReactNode }) =>
     createElement('span', { 'data-content': content, 'data-testid': 'tooltip' }, children),
 }));
 
-vi.mock('../../mod-queue-button', () => ({
+vi.mock('../../mod-queue-button/mod-queue-button', () => ({
   ModQueueButton: ({ boardIdentifier, isMobile }: { boardIdentifier?: string; isMobile?: boolean }) =>
     createElement('div', { 'data-mobile': String(!!isMobile), 'data-testid': 'mod-queue-button' }, boardIdentifier || 'global-mod-queue'),
 }));

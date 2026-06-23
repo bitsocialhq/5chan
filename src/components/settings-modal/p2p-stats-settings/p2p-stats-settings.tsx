@@ -15,7 +15,7 @@ import {
   type TextStatRow,
 } from '../../../lib/p2p-stats';
 import useP2PStats from '../../../hooks/use-p2p-stats';
-import LoadingEllipsis from '../../loading-ellipsis';
+import LoadingEllipsis from '../../loading-ellipsis/loading-ellipsis';
 import PeerWorldMap from './peer-world-map';
 import styles from './p2p-stats-settings.module.css';
 

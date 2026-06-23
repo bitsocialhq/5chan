@@ -12,7 +12,7 @@ import { canAccessBoardModQueue, hasModQueueAccessRole } from '../../lib/utils/m
 import { useModeratedCommunityAddressInputs, useModeratedCommunityAddressesForInputs } from '../../hooks/use-moderated-community-addresses';
 import { getAddressListFromKey, getAddressListKey } from '../../lib/utils/mod-queue-utils';
 import { useLocallyModeratedModQueueFeed } from '../../hooks/use-locally-moderated-mod-queue-feed';
-import ModQueueCommunityMetadataLoader from '../mod-queue-community-metadata-loader';
+import ModQueueCommunityMetadataLoader from '../mod-queue-community-metadata-loader/mod-queue-community-metadata-loader';
 import styles from './mod-queue-button.module.css';
 
 interface ModQueueButtonProps {
