@@ -189,6 +189,7 @@ vi.mock('../../../components/post-desktop/post-desktop', () => ({
         'data-number': post?.number === undefined ? '' : String(post.number),
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
+        'data-roles-present': String(roles !== undefined),
       },
       createElement('div', { 'data-thread-container-cid': post?.cid }),
       createElement('div', { 'data-post-info-cid': post?.cid }),
@@ -217,6 +218,7 @@ vi.mock('../../../components/post-mobile/post-mobile', () => ({
         'data-number': post?.number === undefined ? '' : String(post.number),
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
+        'data-roles-present': String(roles !== undefined),
       },
       createElement('div', { 'data-thread-container-cid': post?.cid }),
       createElement('div', { 'data-post-info-cid': post?.cid }),
@@ -368,6 +370,18 @@ describe('Post', () => {
 
     expect(container.querySelector('[data-testid="post-desktop"]')?.textContent).toBe('post-shell:none:1');
     expect(testState.communityFieldAddress).toBe('music-posting.eth');
+  });
+
+  it('passes an empty role map after a community with no roles is loaded', async () => {
+    testState.communitySnapshot = {};
+
+    await act(async () => {
+      root.render(createElement(Post, { post: { cid: 'post-no-roles', communityAddress: 'music-posting.eth', content: '[b]raw[/b]' } }));
+    });
+
+    const postDesktop = container.querySelector('[data-testid="post-desktop"]');
+    expect(postDesktop?.getAttribute('data-roles-present')).toBe('true');
+    expect(postDesktop?.textContent).toBe('post-no-roles:none:0');
   });
 
   it('rerenders posts when pending approval turns into an approved numbered post', async () => {

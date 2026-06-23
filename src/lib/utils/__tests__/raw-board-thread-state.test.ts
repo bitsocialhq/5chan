@@ -35,12 +35,12 @@ describe('getRawBoardThreadState', () => {
         sortType: 'active',
       }),
     ).toMatchObject({
-      isFullyLoaded: true,
+      isFullyLoaded: false,
       rootThreadCids: new Set<string>(),
     });
   });
 
-  it('treats an empty preloaded requested-sort page as a fully loaded empty board', () => {
+  it('does not treat an empty preloaded requested-sort page as loaded before community update evidence', () => {
     const community = {
       posts: {
         pages: {
@@ -58,7 +58,53 @@ describe('getRawBoardThreadState', () => {
         community,
         sortType: 'active',
       }).isFullyLoaded,
+    ).toBe(false);
+  });
+
+  it('treats an empty preloaded requested-sort page as loaded after community update evidence', () => {
+    const community = {
+      posts: {
+        pages: {
+          active: {
+            comments: [],
+          },
+        },
+      },
+      updatedAt: 1781773422,
+    } as Community;
+
+    expect(
+      getRawBoardThreadState({
+        accountId: undefined,
+        communitiesPages: {} as CommunitiesPages,
+        community,
+        sortType: 'active',
+      }).isFullyLoaded,
     ).toBe(true);
+  });
+
+  it('treats a non-empty complete preloaded requested-sort page as loaded', () => {
+    const community = {
+      posts: {
+        pages: {
+          active: {
+            comments: [rootThread('thread-1')],
+          },
+        },
+      },
+    } as Community;
+
+    expect(
+      getRawBoardThreadState({
+        accountId: undefined,
+        communitiesPages: {} as CommunitiesPages,
+        community,
+        sortType: 'active',
+      }),
+    ).toMatchObject({
+      isFullyLoaded: true,
+      rootThreadCids: new Set(['thread-1']),
+    });
   });
 
   it('treats explicit empty page CIDs as a fully loaded empty board', () => {

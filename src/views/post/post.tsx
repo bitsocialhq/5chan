@@ -1,16 +1,6 @@
 import { memo, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  type Account,
-  type Comment,
-  type CommunityIdentifier,
-  type Role,
-  useAccount,
-  useComment,
-  useEditedComment,
-  useCommunity,
-  useReplies,
-} from '@bitsocial/bitsocial-react-hooks';
+import { type Comment, type CommunityIdentifier, type Role, useAccount, useComment, useEditedComment, useCommunity, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -21,6 +11,7 @@ import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { areSameBoardAddress, isDirectoryBoard } from '../../lib/utils/route-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
+import { mergeDefinedFields, restoreActiveAccountAuthor } from '../../lib/utils/account-comment-author-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import ErrorDisplay from '../../components/error-display/error-display';
 import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer/footer';
@@ -35,6 +26,8 @@ import type { QueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
 import type { ReplyVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
 import styles from './post.module.css';
 
+const EMPTY_ROLE_MAP = {};
+
 export type CommentWithRefresh = Comment & {
   approved?: boolean;
   communityAddress?: string;
@@ -45,19 +38,6 @@ export type CommentWithRefresh = Comment & {
   errors?: Error[];
   index?: number;
   removed?: boolean;
-};
-
-const mergeDefinedFields = <T extends object>(base: T | undefined, override: T | undefined): T | undefined => {
-  if (!override) return base;
-
-  const merged = { ...base } as Record<string, unknown>;
-  for (const [key, value] of Object.entries(override)) {
-    if (value !== undefined) {
-      merged[key] = value;
-    }
-  }
-
-  return merged as T;
 };
 
 const getRouteUserState = (state: unknown): QueuedCommentRouteState | undefined => {
@@ -142,25 +122,6 @@ const mergeLocalAccountComment = (comment: CommentWithRefresh | undefined, accou
 
   const mergedComment = mergeDefinedFields(comment, accountComment) ?? comment;
   return mergeLocalCommentAuthor(mergedComment, accountComment);
-};
-
-const restoreActiveAccountAuthor = (accountComment: CommentWithRefresh | undefined, account: Account | undefined): CommentWithRefresh | undefined => {
-  if (!accountComment || accountComment.author?.address || !account?.id || accountComment.accountId !== account.id || !account.author?.address) {
-    return accountComment;
-  }
-
-  const accountAuthor = {
-    address: account.author.address,
-    shortAddress: account.author.shortAddress,
-    displayName: account.author.displayName,
-    avatar: account.author.avatar,
-    flair: account.author.flair,
-  };
-
-  return {
-    ...accountComment,
-    author: mergeDefinedFields(accountComment.author, accountAuthor),
-  };
 };
 
 // useComment may not return cached feed data immediately due to its updatedAt comparison logic.
@@ -249,7 +210,7 @@ export const Post = memo(
   }: PostProps) => {
     // Only subscribe to roles field to avoid rerenders from updatingState changes
     const communityAddress = getCommentCommunityAddress(post);
-    const roles = useCommunityField(communityAddress, (community) => community?.roles);
+    const roles = useCommunityField(communityAddress, (community) => community?.roles ?? EMPTY_ROLE_MAP);
     const isMobile = useIsMobile();
 
     let comment = post;

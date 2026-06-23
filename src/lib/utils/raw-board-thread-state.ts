@@ -88,17 +88,19 @@ export const getRawBoardThreadState = ({
     };
   }
 
-  const hasPageCid = Boolean(community.posts?.pageCids?.[sortType]);
-  const preloadedPages = (preloadedSortPage ? [preloadedSortPage] : []) as Array<{ comments?: Comment[]; nextCid?: string }>;
-  const hasCompletePreloadedPage = !hasPageCid && preloadedPages.some((page) => Array.isArray(page?.comments)) && preloadedPages.every((page) => !page?.nextCid);
   const hasFetchedCommunityUpdate = typeof community.updatedAt === 'number' || typeof community.updateCid === 'string';
+  const hasPageCid = Boolean(community.posts?.pageCids?.[sortType]);
   const hasExplicitEmptyPageCids = hasFetchedCommunityUpdate && Boolean(community.posts?.pageCids && !hasPageCid);
+  const preloadedPages = (preloadedSortPage ? [preloadedSortPage] : []) as Array<{ comments?: Comment[]; nextCid?: string }>;
+  const hasCompletePreloadedChain = !hasPageCid && preloadedPages.some((page) => Array.isArray(page?.comments)) && preloadedPages.every((page) => !page?.nextCid);
 
-  if (hasCompletePreloadedPage) {
+  if (hasCompletePreloadedChain) {
     for (const page of preloadedPages) {
       addRootThreadCids(rootThreadCids, page?.comments);
     }
   }
+
+  const hasCompletePreloadedPage = hasCompletePreloadedChain && (rootThreadCids.size > 0 || hasFetchedCommunityUpdate);
 
   return {
     hasExplicitEmptyPageCids,
