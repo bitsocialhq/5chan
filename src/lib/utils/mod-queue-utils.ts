@@ -6,6 +6,12 @@ import { isPendingApprovalRejected } from './pending-approval-moderation';
 import { areSameBoardAddress, getBoardPath } from './route-utils';
 import { getThreadTopNavigationState } from './thread-scroll-utils';
 
+// Serialize a list of board addresses into a single stable string key (and back)
+// so memoization dependencies stay referentially stable across renders. Shared
+// by the mod queue route and the board mod-queue button.
+export const getAddressListKey = (addresses: string[]) => addresses.join('\0');
+export const getAddressListFromKey = (key: string) => (key ? key.split('\0') : []);
+
 type ModQueueCommentLike = {
   approved?: boolean;
   author?: Comment['author'];

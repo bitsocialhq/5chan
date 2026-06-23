@@ -2,8 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { useFeed, Comment, usePublishCommentModeration, useEditedComment, useCommunity, useCommunities } from '@bitsocial/bitsocial-react-hooks';
-import useAccountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js';
+import { useFeed, Comment, useEditedComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { useFloating, offset, shift, size, flip, autoUpdate } from '@floating-ui/react';
 import { Virtuoso, type Components } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
@@ -16,20 +15,15 @@ import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories'
 import getShortAddress from '../../lib/get-short-address';
 import { BOARD_CODE_GROUPS } from '../../constants/board-codes';
 import { getHasThumbnail, getCommentMediaInfo } from '../../lib/utils/media-utils';
-import {
-  approvePendingCommentModeration,
-  isPendingApprovalAwaiting,
-  isPendingApprovalRejected,
-  rejectPendingCommentModeration,
-} from '../../lib/utils/pending-approval-moderation';
+import { isPendingApprovalAwaiting, isPendingApprovalRejected } from '../../lib/utils/pending-approval-moderation';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
-import useChallengesStore from '../../stores/use-challenges-store';
-import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
-import { formatErrorForDisplay } from '../../lib/utils/error-utils';
+import usePendingCommentModerationActions from '../../hooks/use-pending-comment-moderation-actions';
 import {
   filterVisibleModQueueFeed,
+  getAddressListFromKey,
+  getAddressListKey,
   getModQueueBoardFilterGroups,
   getModQueueBoardFilterKey,
   getModQueueCommentRoute,
@@ -44,7 +38,8 @@ import { useCommunityIdentifier, useCommunityIdentifiers } from '../../hooks/use
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useCurrentTime } from '../../hooks/use-current-time';
 import { Post } from '../post/post';
-import { canAccessBoardModQueue, hasModQueueAccessRole } from '../../lib/utils/mod-access';
+import { useLocallyModeratedModQueueFeed } from '../../hooks/use-locally-moderated-mod-queue-feed';
+import ModQueueCommunityMetadataLoader from '../../components/mod-queue-community-metadata-loader/mod-queue-community-metadata-loader';
 import capitalize from 'lodash/capitalize';
 import lowerCase from 'lodash/lowerCase';
 import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '../../components/footer/footer';
@@ -58,77 +53,13 @@ const getBoardDisplayPath = (address: string, path: string): string => {
   return getShortAddress(address) || address;
 };
 
-type LocalModerationEditSummary = Record<string, { timestamp?: number; value: unknown } | undefined>;
-type LocalModerationEditSummaries = Record<string, LocalModerationEditSummary | undefined>;
-
-const LOCAL_MODERATION_EDIT_FIELDS = ['approved', 'removed'] as const;
-const LOCAL_EDIT_PENDING_SECONDS = 20 * 60;
-
-const shouldApplyLocalModerationEdit = (
-  comment: Comment,
-  propertyName: (typeof LOCAL_MODERATION_EDIT_FIELDS)[number],
-  edit: { timestamp?: number; value: unknown },
-  now: number,
-) => {
-  const editTimestamp = edit.timestamp ?? 0;
-  const updatedAt = (comment as { updatedAt?: number }).updatedAt;
-  const currentValue = (comment as Record<string, unknown>)[propertyName];
-
-  if (!updatedAt) {
-    return Object.is(currentValue, edit.value) || editTimestamp > now - LOCAL_EDIT_PENDING_SECONDS;
-  }
-
-  if (updatedAt < editTimestamp || Object.is(currentValue, edit.value)) {
-    return true;
-  }
-
-  return editTimestamp > now - LOCAL_EDIT_PENDING_SECONDS || updatedAt - editTimestamp < LOCAL_EDIT_PENDING_SECONDS;
-};
-
-const applyLocalModerationEdits = (comment: Comment, editSummary: LocalModerationEditSummary | undefined, now: number): Comment => {
-  if (!editSummary) {
-    return comment;
-  }
-
-  let editedComment: Comment | undefined;
-  for (const propertyName of LOCAL_MODERATION_EDIT_FIELDS) {
-    const edit = editSummary[propertyName];
-    if (!edit || edit.value === undefined || !shouldApplyLocalModerationEdit(comment, propertyName, edit, now)) {
-      continue;
-    }
-    editedComment = { ...(editedComment ?? comment), [propertyName]: edit.value } as Comment;
-  }
-
-  return editedComment ?? comment;
-};
-
-const useLocallyModeratedModQueueFeed = (feed: Comment[], currentTime: number) => {
-  const accountId = useAccountsStore((state) => state.activeAccountId);
-  const editSummaries = useAccountsStore((state) => (accountId ? state.accountsEditsSummaries[accountId] : undefined)) as LocalModerationEditSummaries | undefined;
-
-  return useMemo(() => {
-    if (!editSummaries) {
-      return feed;
-    }
-    return feed.map((comment) => (comment.cid ? applyLocalModerationEdits(comment, editSummaries[comment.cid], currentTime) : comment));
-  }, [currentTime, editSummaries, feed]);
-};
-
 interface ModQueueViewProps {
   boardIdentifier?: string; // If provided, shows queue for single board
 }
 
-const getAddressListKey = (addresses: string[]) => addresses.join('\0');
-const getAddressListFromKey = (key: string) => (key ? key.split('\0') : []);
 const EMPTY_COMMENTS: Comment[] = [];
 const MOD_QUEUE_VIRTUOSO_INCREASE_VIEWPORT_BY = { bottom: 600, top: 600 };
 const NOOP_LOAD_MORE = () => undefined;
-
-const ModQueueCommunityMetadataLoader = memo(({ candidateCommunityAddresses }: { candidateCommunityAddresses: string[] }) => {
-  const candidateCommunities = useCommunityIdentifiers(candidateCommunityAddresses);
-  useCommunities(candidateCommunities.length > 0 ? { communities: candidateCommunities } : undefined);
-  return null;
-});
 
 interface ModQueueFooterProps {
   hasMore: boolean;
@@ -212,9 +143,6 @@ interface ModQueueRowProps {
   /** Board path for display (shortened when long IPNS key with no TLD) */
   boardDisplayPath: string | undefined;
 }
-
-// Track which action was initiated to show appropriate completion message
-type ModerationAction = 'approve' | 'reject' | null;
 
 interface ModQueueActionState {
   status: 'approved' | 'rejected' | 'failed' | null;
@@ -433,89 +361,38 @@ const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleAppr
 };
 
 const useModQueueActions = (comment: Comment): ModQueueActionState => {
-  const { t } = useTranslation();
   const { cid, approved, removed, pendingApproval } = comment || {};
   const communityAddress = getCommentCommunityAddress(comment);
   const dismissCommentFromQueue = useModQueueStore((state) => state.dismissCommentFromQueue);
   const rememberCommentsInQueue = useModQueueStore((state) => state.rememberCommentsInQueue);
-  const [initiatedAction, setInitiatedAction] = useState<ModerationAction>(null);
 
   const alreadyApproved = approved === true;
   const alreadyRejected = isPendingApprovalRejected({ approved, removed, pendingApproval });
 
   const {
-    publishCommentModeration: approve,
-    state: approveState,
-    error: approveError,
-  } = usePublishCommentModeration({
+    status: actionStatus,
+    error,
+    errorMessage,
+    isPublishing,
+    handleApprove,
+    handleReject,
+  } = usePendingCommentModerationActions({
+    comment,
     commentCid: cid,
     communityAddress,
-    commentModeration: approvePendingCommentModeration,
-    onChallenge: async (...args: any) => {
-      useChallengesStore.getState().addChallenge([...args, comment]);
-    },
-    onChallengeVerification: async (challengeVerification, comment) => {
-      alertChallengeVerificationFailed(challengeVerification, comment);
-    },
-    onError: (error: Error & { details?: unknown }) => {
-      console.error('Approve failed:', error, error.details);
-    },
-  });
-
-  const {
-    publishCommentModeration: reject,
-    state: rejectState,
-    error: rejectError,
-  } = usePublishCommentModeration({
-    commentCid: cid,
-    communityAddress,
-    commentModeration: rejectPendingCommentModeration,
-    onChallenge: async (...args: any) => {
-      useChallengesStore.getState().addChallenge([...args, comment]);
-    },
-    onChallengeVerification: async (challengeVerification, comment) => {
-      alertChallengeVerificationFailed(challengeVerification, comment);
-    },
-    onError: (error: Error & { details?: unknown }) => {
-      console.error('Reject failed:', error, error.details);
-    },
-  });
-
-  const handleApprove = async () => {
-    const confirm = window.confirm(t('double_confirm'));
-    if (!confirm) {
-      return;
-    }
-
-    setInitiatedAction('approve');
-    try {
-      await approve();
+    onApproveSuccess: () => {
       const approvedSnapshot = getQueuedCommentSnapshot({ ...comment, approved: true, pendingApproval: false });
       if (approvedSnapshot) {
         rememberCommentsInQueue([approvedSnapshot]);
       }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleReject = async () => {
-    const confirm = window.confirm(t('double_confirm'));
-    if (!confirm) {
-      return;
-    }
-
-    setInitiatedAction('reject');
-    try {
-      await reject();
+    },
+    onRejectSuccess: () => {
       const rejectedSnapshot = getQueuedCommentSnapshot({ ...comment, approved: false, pendingApproval: false });
       if (rejectedSnapshot) {
         rememberCommentsInQueue([rejectedSnapshot]);
       }
-    } catch (e) {
-      console.error(e);
-    }
-  };
+    },
+  });
 
   const handleRemove = () => {
     if (cid) {
@@ -523,19 +400,9 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
     }
   };
 
-  const isApproving = initiatedAction === 'approve' && approveState !== 'initializing' && approveState !== 'succeeded' && approveState !== 'failed';
-  const isRejecting = initiatedAction === 'reject' && rejectState !== 'initializing' && rejectState !== 'succeeded' && rejectState !== 'failed';
-  const isPublishing = isApproving || isRejecting;
-
-  const approveSucceeded = initiatedAction === 'approve' && approveState === 'succeeded';
-  const rejectSucceeded = initiatedAction === 'reject' && rejectState === 'succeeded';
-
-  const approveFailed = initiatedAction === 'approve' && approveState === 'failed';
-  const rejectFailed = initiatedAction === 'reject' && rejectState === 'failed';
-
-  const status = alreadyApproved || approveSucceeded ? 'approved' : alreadyRejected || rejectSucceeded ? 'rejected' : approveFailed || rejectFailed ? 'failed' : null;
-  const error = approveFailed ? approveError : rejectFailed ? rejectError : undefined;
-  const errorMessage = formatErrorForDisplay(error);
+  // Mod queue rows also reflect a comment that was already moderated before this
+  // session, so combine that baseline with the live action-derived status.
+  const status = alreadyApproved || actionStatus === 'approved' ? 'approved' : alreadyRejected || actionStatus === 'rejected' ? 'rejected' : actionStatus;
 
   return { status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove: status ? handleRemove : undefined };
 };
@@ -1061,142 +928,6 @@ const ModQueueContent = memo(
   },
 );
 ModQueueContent.displayName = 'ModQueueContent';
-
-interface ModQueueButtonProps {
-  boardIdentifier?: string;
-  isMobile?: boolean;
-}
-
-interface ModQueueButtonContentProps {
-  feed: Comment[];
-  alertThresholdSeconds: number;
-  boardIdentifier?: string;
-  isMobile?: boolean;
-}
-
-const ModQueueButtonContent = ({ feed, alertThresholdSeconds, boardIdentifier, isMobile }: ModQueueButtonContentProps) => {
-  const { t } = useTranslation();
-  const currentTime = useCurrentTime();
-  const locallyModeratedFeed = useLocallyModeratedModQueueFeed(feed, currentTime);
-
-  const { normalCount, urgentCount } = useMemo(() => {
-    let normal = 0;
-    let urgent = 0;
-    for (const comment of locallyModeratedFeed) {
-      if (!isPendingApprovalAwaiting(comment)) continue;
-      const timeWaiting = currentTime - (comment.timestamp ?? 0);
-      if (timeWaiting > alertThresholdSeconds) urgent++;
-      else normal++;
-    }
-    return { normalCount: normal, urgentCount: urgent };
-  }, [alertThresholdSeconds, currentTime, locallyModeratedFeed]);
-
-  const totalCount = normalCount + urgentCount;
-  const to = boardIdentifier ? `/${boardIdentifier}/mod/queue` : '/mod/queue';
-
-  const buttonContent = (
-    <Link className='button' to={to}>
-      {t('mod_queue')}
-      {totalCount > 0 && (
-        <strong>
-          (
-          {urgentCount > 0 && normalCount > 0 ? (
-            <>
-              <span className={styles.modQueueButtonCount}>{normalCount}</span>
-              <span className={`${styles.modQueueButtonCount} ${styles.modQueueButtonCountAlert}`}>
-                {'+'}
-                {urgentCount}
-              </span>
-            </>
-          ) : urgentCount > 0 ? (
-            <span className={`${styles.modQueueButtonCount} ${styles.modQueueButtonCountAlert}`}>{urgentCount}</span>
-          ) : (
-            <span className={styles.modQueueButtonCount}>{totalCount}</span>
-          )}
-          )
-        </strong>
-      )}
-    </Link>
-  );
-
-  return isMobile ? buttonContent : <>[{buttonContent}]</>;
-};
-
-export const ModQueueButton = ({ boardIdentifier, isMobile }: ModQueueButtonProps) => {
-  const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
-
-  const moderatedCommunityAddressInputs = useModeratedCommunityAddressInputs();
-  const accountAddress = moderatedCommunityAddressInputs.accountAddress;
-  const rawAccountCommunityAddresses = useModeratedCommunityAddressesForInputs(moderatedCommunityAddressInputs);
-  const accountCommunityAddressesKey = getAddressListKey(rawAccountCommunityAddresses);
-  const accountCommunityAddresses = useMemo(() => getAddressListFromKey(accountCommunityAddressesKey), [accountCommunityAddressesKey]);
-
-  const directories = useDirectories();
-
-  const resolvedAddress = useMemo(() => {
-    if (boardIdentifier) {
-      return getCommunityAddress(boardIdentifier, directories);
-    }
-    return undefined;
-  }, [boardIdentifier, directories]);
-  const resolvedCommunity = useCommunityIdentifier(resolvedAddress);
-  const community = useCommunity(resolvedCommunity ? { community: resolvedCommunity } : undefined);
-
-  const communityAddresses = useMemo(() => {
-    if (resolvedAddress) {
-      return [resolvedAddress];
-    }
-    return accountCommunityAddresses;
-  }, [resolvedAddress, accountCommunityAddresses]);
-
-  const accountRole = accountAddress ? community?.roles?.[accountAddress]?.role : undefined;
-  const hasBoardAccessFromAccountCommunities = resolvedAddress
-    ? accountCommunityAddresses.some((address) => areSameBoardAddress(address, resolvedAddress))
-    : accountCommunityAddresses.length > 0;
-  const hasBoardAccess = canAccessBoardModQueue({
-    boardAddress: resolvedAddress,
-    accountCommunityAddresses,
-    accountRole,
-  });
-  const isBoardAccessLoading =
-    Boolean(resolvedAddress) &&
-    Boolean(accountAddress) &&
-    !hasModQueueAccessRole(accountRole) &&
-    !hasBoardAccessFromAccountCommunities &&
-    community?.state !== 'succeeded' &&
-    community?.state !== 'failed';
-
-  // Only fetch if we have addresses to check and permissions
-  const shouldFetch = !isBoardAccessLoading && communityAddresses.length > 0 && hasBoardAccess;
-
-  const feedAddresses = shouldFetch ? communityAddresses : [];
-  const feedCommunities = useCommunityIdentifiers(feedAddresses);
-  const feedOptions = useMemo(
-    () => ({
-      communities: feedCommunities,
-      modQueue: ['pendingApproval'],
-      sortType: 'new' as const,
-      postsPerPage: 200,
-    }),
-    [feedCommunities],
-  );
-  const { feed } = useFeed(feedOptions);
-  const metadataLoader = <ModQueueCommunityMetadataLoader candidateCommunityAddresses={moderatedCommunityAddressInputs.candidateCommunityAddresses} />;
-
-  if (!shouldFetch || communityAddresses.length === 0) {
-    return metadataLoader;
-  }
-
-  const alertThresholdSeconds = getAlertThresholdSeconds();
-  // Remount when switching boards so memoized counts reset cleanly.
-  const contentKey = communityAddresses.join(',');
-  return (
-    <>
-      {metadataLoader}
-      <ModQueueButtonContent key={contentKey} feed={feed} alertThresholdSeconds={alertThresholdSeconds} boardIdentifier={boardIdentifier} isMobile={isMobile} />
-    </>
-  );
-};
 
 const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProps) => {
   const params = useParams();

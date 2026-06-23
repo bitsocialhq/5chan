@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Comment, useAccount, useAccountComments, useCommunity, useFeed } from '@bitsocial/bitsocial-react-hooks';
 import { useCommunityField } from '../../hooks/use-stable-community';
-import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
+import { communitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './board.module.css';
@@ -27,6 +27,7 @@ import { getPageSlice } from '../../lib/utils/board-feed-pagination';
 import { getPageFromFeedPath, isDirectoryBoard, normalizeMultiboardFeedPath, stripPageFromFeedPath } from '../../lib/utils/route-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
+import { restoreActiveAccountAuthor } from '../../lib/utils/account-comment-author-utils';
 import { getNonokoPendingAccountCommentIndex } from '../../lib/utils/post-options-utils';
 import { getRawBoardThreadState } from '../../lib/utils/raw-board-thread-state';
 import { getSearchWithTimeFilter, getTimeFilterSuggestion, type TimeFilterSuggestion } from '../../lib/utils/time-filter-utils';
@@ -53,16 +54,52 @@ const EMPTY_COMMUNITIES_PAGES = {};
 /** Board feed always uses 'active' sort; catalog dropdown does not affect board ordering. */
 const BOARD_SORT_TYPE = 'active' as const;
 
+const toFiniteNumber = (value: unknown) => (typeof value === 'number' && Number.isFinite(value) ? value : 0);
+
+const compareBoardActivePosts = (firstPost: Comment, secondPost: Comment) => {
+  const activeDifference =
+    toFiniteNumber(secondPost?.lastReplyTimestamp ?? secondPost?.timestamp) - toFiniteNumber(firstPost?.lastReplyTimestamp ?? firstPost?.timestamp);
+  if (activeDifference !== 0) return activeDifference;
+
+  const upvoteDifference = toFiniteNumber(secondPost?.upvoteCount) - toFiniteNumber(firstPost?.upvoteCount);
+  if (upvoteDifference !== 0) return upvoteDifference;
+
+  return toFiniteNumber(secondPost?.timestamp) - toFiniteNumber(firstPost?.timestamp);
+};
+
+const sortBoardActiveFeed = (posts: Comment[]) => {
+  const pinnedPosts: Comment[] = [];
+  const regularPosts: Comment[] = [];
+
+  for (const post of posts) {
+    if (post?.pinned) {
+      pinnedPosts.push(post);
+    } else {
+      regularPosts.push(post);
+    }
+  }
+
+  return [...pinnedPosts, ...regularPosts.toSorted(compareBoardActivePosts)];
+};
+
+type RefreshHoldState = {
+  hasSettledResetCall: boolean;
+  hasSeenEmptyFeed: boolean;
+  isReleased: boolean;
+  startedFeedLength: number;
+  startedAt: number;
+};
+
 interface BoardFooterProps {
   communityAddresses: string[];
   hasMore: boolean;
   feedState: string | undefined;
   combinedFeedLength: number;
   isSingleCommunityBoard: boolean;
-  isRawBoardThreadStateFullyLoaded: boolean;
   isKnownEmptySingleCommunityBoard: boolean;
   isInSubscriptionsView: boolean;
   isInModView: boolean;
+  isManualRefreshPending: boolean;
   currentTimeFilterName: string;
   moreThreadsSuggestion: TimeFilterSuggestion | null;
   moreThreadsSuggestionPathname: string | null;
@@ -84,10 +121,10 @@ const BoardFooter = ({
   feedState,
   combinedFeedLength,
   isSingleCommunityBoard,
-  isRawBoardThreadStateFullyLoaded,
   isKnownEmptySingleCommunityBoard,
   isInSubscriptionsView,
   isInModView,
+  isManualRefreshPending,
   currentTimeFilterName,
   moreThreadsSuggestion,
   moreThreadsSuggestionPathname,
@@ -100,13 +137,13 @@ const BoardFooter = ({
 }: BoardFooterProps) => {
   const { t } = useTranslation();
 
-  const loadingStateString = useFeedStateString(communityAddresses) || (combinedFeedLength === 0 ? t('downloading_board') : t('looking_for_more_posts'));
-  const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
+  const feedStateString = useFeedStateString(communityAddresses);
+  const loadingStateString = isManualRefreshPending
+    ? t('loading_feed')
+    : feedStateString || (combinedFeedLength === 0 ? t('downloading_board') : t('looking_for_more_posts'));
   const isFeedSucceeded = feedState === 'succeeded';
   const isFeedFailed = feedState === 'failed';
-  const canShowNoThreads =
-    isKnownEmptySingleCommunityBoard ||
-    (isSingleCommunityBoard ? isLoadedCommunityState && isFeedSucceeded && isRawBoardThreadStateFullyLoaded : isFeedSucceeded && !hasMore);
+  const canShowNoThreads = !isManualRefreshPending && (isSingleCommunityBoard ? isKnownEmptySingleCommunityBoard : isFeedSucceeded && !hasMore);
   const isEmptyFeedLoading = combinedFeedLength === 0 && !canShowNoThreads && (isSingleCommunityBoard ? communityState !== 'failed' : !isFeedFailed);
   const showFooterLoading = showLoadingEllipsis && (hasMore || isEmptyFeedLoading);
 
@@ -334,15 +371,85 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const paginationBasePath = stripPageFromFeedPath(pathWithoutSettings);
 
   const resetTriggeredRef = useRef(false);
+  const refreshHoldRef = useRef<RefreshHoldState | null>(null);
+  const feedLengthRef = useRef(feed.length);
+  feedLengthRef.current = feed.length;
+  const [, bumpRefreshHoldVersion] = useState(0);
+  const [isManualRefreshPending, startManualRefreshTransition] = useTransition();
+  const refreshBoardFeed = useCallback(() => {
+    const startedAt = Date.now();
+    refreshHoldRef.current = { hasSettledResetCall: false, hasSeenEmptyFeed: false, isReleased: false, startedFeedLength: feedLengthRef.current, startedAt };
+    bumpRefreshHoldVersion((version) => version + 1);
+    startManualRefreshTransition(async () => {
+      try {
+        await reset();
+      } catch (error) {
+        console.error('Failed to refresh board feed:', error);
+      } finally {
+        const currentRefreshHold = refreshHoldRef.current;
+        if (currentRefreshHold?.startedAt === startedAt && !currentRefreshHold.isReleased) {
+          currentRefreshHold.hasSettledResetCall = true;
+          bumpRefreshHoldVersion((version) => version + 1);
+        }
+      }
+    });
+  }, [reset, startManualRefreshTransition]);
 
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
   useEffect(() => {
     if (isVisible) {
-      setResetFunction(reset);
+      setResetFunction(refreshBoardFeed);
     }
-  }, [reset, setResetFunction, feed, isVisible]);
+  }, [refreshBoardFeed, setResetFunction, isVisible]);
 
-  // show account comments instantly in the feed once published (cid defined), instead of waiting for the feed to update
+  // Use stable community fields to avoid rerenders from updatingState
+  const communityTitle = useCommunityField(communityAddress, (community) => community?.title);
+  const shortAddress = useCommunityField(communityAddress, (community) => community?.shortAddress);
+  // useCommunityField only reads from store, doesn't trigger fetching
+  const communityData = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
+  const { error: communityError, state: communityState } = communityData || {};
+  const communitiesPages = communitiesPagesStore((state) => (isMultiboardView ? EMPTY_COMMUNITIES_PAGES : state.communitiesPages));
+  const rawBoardThreadState = useMemo(
+    () =>
+      isMultiboardView
+        ? undefined
+        : getRawBoardThreadState({
+            accountId: account?.id,
+            communitiesPages,
+            community: communityData,
+            sortType: BOARD_SORT_TYPE,
+          }),
+    [account?.id, communitiesPages, communityData, isMultiboardView],
+  );
+  const isRawBoardThreadStateFullyLoaded = rawBoardThreadState?.isFullyLoaded ?? false;
+  const isRawBoardThreadStateEmpty = isRawBoardThreadStateFullyLoaded && (rawBoardThreadState?.rootThreadCids.size ?? 0) === 0;
+  const isSingleCommunityBoard = !isInAllView && !isInSubscriptionsView && !isInModView;
+  const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
+  const isFeedSucceeded = feedState === 'succeeded';
+  const refreshHold = refreshHoldRef.current;
+  if (refreshHold && !refreshHold.isReleased && !refreshHold.hasSeenEmptyFeed && feed.length === 0) {
+    refreshHold.hasSeenEmptyFeed = true;
+  }
+  const canReleaseRefreshHoldToEmptyBoard =
+    refreshHold?.startedFeedLength === 0 && isSingleCommunityBoard && isLoadedCommunityState && isRawBoardThreadStateEmpty && isFeedSucceeded;
+  const refreshHoldHasSeenEmptyFeed = Boolean(refreshHold?.hasSeenEmptyFeed || (refreshHold && feed.length === 0));
+  const canReleaseRefreshHold = Boolean(
+    refreshHold &&
+    !refreshHold.isReleased &&
+    (feed.length > 0 ||
+      communityState === 'failed' ||
+      feedState === 'failed' ||
+      canReleaseRefreshHoldToEmptyBoard ||
+      (!refreshHoldHasSeenEmptyFeed && refreshHold.hasSettledResetCall)) &&
+    (refreshHoldHasSeenEmptyFeed || refreshHold.hasSettledResetCall),
+  );
+  if (refreshHold && canReleaseRefreshHold) {
+    refreshHold.isReleased = true;
+  }
+  const isRefreshHoldPending = Boolean(refreshHold && !refreshHold.isReleased);
+  const isBoardRefreshPending = isManualRefreshPending || isRefreshHoldPending;
+
+  // Show local posts without letting them become the whole board during feed hydration.
   const feedCids = useMemo(() => new Set(feed.map((f) => f.cid)), [feed]);
   const nonokoPendingAccountComment = useMemo(() => {
     const comment = nonokoPendingAccountComments.find(Boolean);
@@ -375,21 +482,32 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     [recentAccountComments, communityAddress, feedCids, nowSeconds],
   );
   const localAccountComments = useMemo(() => {
-    if (!nonokoPendingAccountComment) return filteredComments;
-    if (!nonokoPendingAccountComment.cid) return [nonokoPendingAccountComment, ...filteredComments];
+    const comments = (() => {
+      if (!nonokoPendingAccountComment) return filteredComments;
+      if (!nonokoPendingAccountComment.cid) return [nonokoPendingAccountComment, ...filteredComments];
 
-    return [nonokoPendingAccountComment, ...filteredComments.filter((comment) => comment.cid !== nonokoPendingAccountComment.cid)];
-  }, [nonokoPendingAccountComment, filteredComments]);
+      return [nonokoPendingAccountComment, ...filteredComments.filter((comment) => comment.cid !== nonokoPendingAccountComment.cid)];
+    })();
 
-  // show newest account comment at the top of the feed but after pinned posts
-  const combinedFeed = useMemo(() => {
-    const newFeed = [...feed];
-    const lastPinnedIndex = newFeed.map((post) => post.pinned).lastIndexOf(true);
-    if (localAccountComments.length > 0) {
-      newFeed.splice(lastPinnedIndex + 1, 0, ...localAccountComments);
+    return comments.map((comment) => restoreActiveAccountAuthor(comment, account));
+  }, [nonokoPendingAccountComment, filteredComments, account]);
+
+  const sortedFeed = useMemo(() => sortBoardActiveFeed(feed), [feed]);
+  const canShowRecentLocalAccountComments = !isSingleCommunityBoard || sortedFeed.length > 0 || isRawBoardThreadStateFullyLoaded;
+  const feedWithLocalAccountComments = useMemo(() => {
+    if (isBoardRefreshPending) {
+      return sortedFeed;
     }
-    return newFeed;
-  }, [feed, localAccountComments]);
+
+    const visibleLocalAccountComments = canShowRecentLocalAccountComments ? localAccountComments : nonokoPendingAccountComment ? localAccountComments.slice(0, 1) : [];
+
+    if (visibleLocalAccountComments.length === 0) {
+      return sortedFeed;
+    }
+
+    return sortBoardActiveFeed([...feed, ...visibleLocalAccountComments]);
+  }, [canShowRecentLocalAccountComments, feed, isBoardRefreshPending, localAccountComments, nonokoPendingAccountComment, sortedFeed]);
+  const combinedFeed = feedWithLocalAccountComments;
 
   const cappedFeed = useMemo(
     () => (effectiveInfiniteScroll ? combinedFeed : combinedFeed.slice(0, guiPostsPerPage * maxGuiPages)),
@@ -456,33 +574,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     }
   }, [combinedFeed, registerComments]);
 
-  // Use stable community fields to avoid rerenders from updatingState
-  const communityTitle = useCommunityField(communityAddress, (community) => community?.title);
-  const shortAddress = useCommunityField(communityAddress, (community) => community?.shortAddress);
-  // useCommunityField only reads from store, doesn't trigger fetching
-  const communityData = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
-  const { error: communityError, state: communityState } = communityData || {};
-  const communitiesPages = communitiesPagesStore((state) => (isMultiboardView ? EMPTY_COMMUNITIES_PAGES : state.communitiesPages));
-  const rawBoardThreadState = useMemo(
-    () =>
-      isMultiboardView
-        ? undefined
-        : getRawBoardThreadState({
-            accountId: account?.id,
-            communitiesPages,
-            community: communityData,
-            sortType: BOARD_SORT_TYPE,
-          }),
-    [account?.id, communitiesPages, communityData, isMultiboardView],
-  );
-  const isRawBoardThreadStateFullyLoaded = rawBoardThreadState?.isFullyLoaded ?? false;
-  const hasExplicitEmptyPageCids = rawBoardThreadState?.hasExplicitEmptyPageCids ?? false;
-  const isRawBoardThreadStateEmpty = isRawBoardThreadStateFullyLoaded && (rawBoardThreadState?.rootThreadCids.size ?? 0) === 0;
-  const isSingleCommunityBoard = !isInAllView && !isInSubscriptionsView && !isInModView;
-  const isLoadedCommunityState = communityState === 'succeeded' || communityState === 'ready';
-  const isFeedSucceeded = feedState === 'succeeded';
-  const isKnownEmptySingleCommunityBoard =
-    isSingleCommunityBoard && combinedFeed.length === 0 && isLoadedCommunityState && isRawBoardThreadStateEmpty && (hasExplicitEmptyPageCids || isFeedSucceeded);
+  const isKnownEmptySingleCommunityBoard = isSingleCommunityBoard && combinedFeed.length === 0 && isLoadedCommunityState && isRawBoardThreadStateEmpty && isFeedSucceeded;
   const effectiveHasMore = isKnownEmptySingleCommunityBoard ? false : hasMore;
   const title = isInAllView ? t('all') : isInSubscriptionsView ? t('subscriptions') : isInModView ? t('mod') : communityTitle;
 
@@ -499,10 +591,10 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               feedState={feedState}
               combinedFeedLength={combinedFeed.length}
               isSingleCommunityBoard={isSingleCommunityBoard}
-              isRawBoardThreadStateFullyLoaded={isRawBoardThreadStateFullyLoaded}
               isKnownEmptySingleCommunityBoard={isKnownEmptySingleCommunityBoard}
               isInSubscriptionsView={isInSubscriptionsView}
               isInModView={isInModView}
+              isManualRefreshPending={isBoardRefreshPending}
               currentTimeFilterName={currentTimeFilterName}
               moreThreadsSuggestion={moreThreadsSuggestion}
               moreThreadsSuggestionPathname={moreThreadsSuggestionPathname}
@@ -539,7 +631,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
                 <button type='button' className='button' onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}>
                   {t('top')}
                 </button>
-                <button type='button' className='button' onClick={() => reset && reset()}>
+                <button type='button' className='button' onClick={refreshBoardFeed}>
                   {t('refresh')}
                 </button>
               </div>
@@ -581,12 +673,12 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       communityAddresses,
       effectiveHasMore,
       combinedFeed.length,
-      isRawBoardThreadStateFullyLoaded,
       isKnownEmptySingleCommunityBoard,
       isSingleCommunityBoard,
       isInAllView,
       isInSubscriptionsView,
       isInModView,
+      isBoardRefreshPending,
       currentTimeFilterName,
       moreThreadsSuggestion,
       moreThreadsSuggestionPathname,
@@ -603,7 +695,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       currentPage,
       totalPages,
       setEnableInfiniteScroll,
-      reset,
+      refreshBoardFeed,
       routerLocation.search,
       t,
     ],
@@ -680,7 +772,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     communityIdentifier.publicKey.length > 0 &&
     communityData?.nameResolved === false;
   const displayFeed = effectiveInfiniteScroll ? combinedFeed : currentPageFeed;
-  const canShowEmptyFlashTable = hasExplicitEmptyPageCids || (isLoadedCommunityState && isFeedSucceeded && isRawBoardThreadStateFullyLoaded);
+  const canShowEmptyFlashTable = isLoadedCommunityState && isFeedSucceeded && isRawBoardThreadStateEmpty;
   const shouldShowFlashTableLoading = shouldUseFlashTable && displayFeed.length === 0 && !canShowEmptyFlashTable && communityState !== 'failed' && feedState !== 'failed';
 
   return (

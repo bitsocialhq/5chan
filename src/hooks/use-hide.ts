@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useAccount, useBlock } from '@bitsocial/bitsocial-react-hooks';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
-import accountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts';
+import { accountsStore } from '../lib/bitsocial-internals/stores';
 import useHiddenCatalogThreadsStore from '../stores/use-hidden-catalog-threads-store';
 
 export type HiddenCidLookup = { [cid: string]: boolean | undefined };

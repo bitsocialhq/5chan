@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
-import useAccountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts';
+import { accountsStore as useAccountsStore } from '../../lib/bitsocial-internals/stores';
 import getShortAddress from '../../lib/get-short-address';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useStableCommunity } from '../../hooks/use-stable-community';
@@ -15,7 +15,7 @@ import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useIsCommunityOffline from '../../hooks/use-is-community-offline';
 import { shouldShowSnow } from '../../lib/snow';
-import Tooltip from '../tooltip';
+import Tooltip from '../tooltip/tooltip';
 import { BANNERS } from '../../generated/asset-manifest';
 
 const ImageBanner = () => {

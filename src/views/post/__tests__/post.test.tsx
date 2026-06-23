@@ -64,7 +64,7 @@ const testState = vi.hoisted(() => ({
     roles: {
       '0xmod': { role: 'admin' },
     },
-  } as { roles?: Record<string, unknown> },
+  } as { roles?: Record<string, unknown> } | undefined,
   useCommentCalls: [] as Array<{ commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string } }>,
   evictThreadRefreshCachesMock: vi.fn(),
 }));
@@ -116,7 +116,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages', () => 
 vi.mock('../../../hooks/use-stable-community', () => ({
   useCommunityField: (address: string | undefined, selector: (community: typeof testState.communitySnapshot) => unknown) => {
     testState.communityFieldAddress = address;
-    return selector(testState.communitySnapshot);
+    return testState.communitySnapshot ? selector(testState.communitySnapshot) : undefined;
   },
 }));
 
@@ -189,6 +189,7 @@ vi.mock('../../../components/post-desktop/post-desktop', () => ({
         'data-number': post?.number === undefined ? '' : String(post.number),
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
+        'data-roles-present': String(roles !== undefined),
       },
       createElement('div', { 'data-thread-container-cid': post?.cid }),
       createElement('div', { 'data-post-info-cid': post?.cid }),
@@ -217,6 +218,7 @@ vi.mock('../../../components/post-mobile/post-mobile', () => ({
         'data-number': post?.number === undefined ? '' : String(post.number),
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
+        'data-roles-present': String(roles !== undefined),
       },
       createElement('div', { 'data-thread-container-cid': post?.cid }),
       createElement('div', { 'data-post-info-cid': post?.cid }),
@@ -368,6 +370,44 @@ describe('Post', () => {
 
     expect(container.querySelector('[data-testid="post-desktop"]')?.textContent).toBe('post-shell:none:1');
     expect(testState.communityFieldAddress).toBe('music-posting.eth');
+  });
+
+  it('passes an empty role map after a community with no roles is loaded', async () => {
+    testState.communitySnapshot = {};
+
+    await act(async () => {
+      root.render(createElement(Post, { post: { cid: 'post-no-roles', communityAddress: 'music-posting.eth', content: '[b]raw[/b]' } }));
+    });
+
+    const postDesktop = container.querySelector('[data-testid="post-desktop"]');
+    expect(postDesktop?.getAttribute('data-roles-present')).toBe('true');
+    expect(postDesktop?.textContent).toBe('post-no-roles:none:0');
+  });
+
+  it('keeps roles pending for matching board routes until the community loads', async () => {
+    testState.communitySnapshot = undefined;
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await act(async () => {
+      root.render(createElement(Post, { post: { cid: 'post-pending-roles', communityAddress: 'music-posting.eth', content: '[color=red]raw[/color]' } }));
+    });
+
+    const postDesktop = container.querySelector('[data-testid="post-desktop"]');
+    expect(postDesktop?.getAttribute('data-roles-present')).toBe('false');
+    expect(postDesktop?.textContent).toBe('post-pending-roles:none:0');
+  });
+
+  it('uses an empty role map for posts outside a resolved board route when the community is unavailable', async () => {
+    testState.communitySnapshot = undefined;
+    testState.resolvedCommunityAddress = undefined;
+
+    await act(async () => {
+      root.render(createElement(Post, { post: { cid: 'post-multiboard', communityAddress: 'other-board.eth', content: '[color=red]raw[/color]' } }));
+    });
+
+    const postDesktop = container.querySelector('[data-testid="post-desktop"]');
+    expect(postDesktop?.getAttribute('data-roles-present')).toBe('true');
+    expect(postDesktop?.textContent).toBe('post-multiboard:none:0');
   });
 
   it('rerenders posts when pending approval turns into an approved numbered post', async () => {

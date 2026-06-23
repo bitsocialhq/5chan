@@ -1,7 +1,5 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
-import feedsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/feeds';
-import repliesStore, { feedOptionsToFeedName } from '@bitsocial/bitsocial-react-hooks/dist/stores/replies';
-import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
+import { feedsStore, repliesStore, feedOptionsToFeedName, communitiesPagesStore } from '../bitsocial-internals/stores';
 import type { DirectoryCommunity } from '../../hooks/use-directories';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import type { ExternalQuoteReference, ExternalQuoteSearchStatus } from './external-quote-utils';

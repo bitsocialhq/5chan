@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { autoUpdate, FloatingFocusManager, FloatingPortal, offset, shift, useClick, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
+import { autoUpdate, FloatingFocusManager, FloatingPortal, offset, shift, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
 import {
   Comment,
   PublishCommentEditOptions,
@@ -34,14 +34,13 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const resolvedPost = withResolvedCommentCommunityAddress(post);
-  const { author, cid, content, deleted, locked, parentCid, pinned, postCid, reason, removed, spoiler } = resolvedPost || {};
+  const { author, cid, deleted, locked, parentCid, pinned, postCid, reason, removed, spoiler } = resolvedPost || {};
   const communityAddress = getCommentCommunityAddress(resolvedPost);
   const archived = isCommentArchived(resolvedPost);
   const authorDisplayName = resolvedPost?.author?.displayName;
   const modBanExpiresAt = resolvedPost?.author?.community?.banExpiresAt ?? resolvedPost?.commentModeration?.author?.banExpiresAt;
   const purged = resolvedPost?.commentModeration?.purged ?? false;
   const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
-  const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
 
   const account = useAccount();
   const { isCommentAuthorMod, isAccountMod, isAccountCommentAuthor } = useAuthorPrivileges({
@@ -65,9 +64,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
       commentCid: cid,
       communityAddress,
       // Author edit properties
-      content: isAccountCommentAuthor ? content : undefined,
       deleted: canAttemptAuthorDelete ? (deleted ?? false) : undefined,
-      spoiler: isAccountCommentAuthor ? (spoiler ?? false) : undefined,
       // Mod edit properties
       commentModeration: isAccountMod
         ? {
@@ -90,11 +87,9 @@ const EditMenu = ({ post }: { post: Comment }) => {
     };
   }, [
     isAccountMod,
-    isAccountCommentAuthor,
     canAttemptAuthorDelete,
     archived,
     cid,
-    content,
     deleted,
     locked,
     pinned,
@@ -114,9 +109,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
     const options: PublishCommentEditOptions = {
       commentCid: cid,
       communityAddress,
-      content: publishCommentEditOptions.content,
       deleted: publishCommentEditOptions.deleted,
-      spoiler: publishCommentEditOptions.spoiler,
       onChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
       onError: (error: Error) => {
@@ -173,7 +166,6 @@ const EditMenu = ({ post }: { post: Comment }) => {
     setBanDuration(
       defaultPublishEditOptions.commentModeration?.author?.banExpiresAt ? timestampToDays(defaultPublishEditOptions.commentModeration.author.banExpiresAt) : 1,
     );
-    setIsContentEditorOpen(false);
   };
 
   const onCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -199,8 +191,6 @@ const EditMenu = ({ post }: { post: Comment }) => {
 
       if (id === 'deleted' && canAttemptAuthorDelete) {
         newState.deleted = checked;
-      } else if (isAccountCommentAuthor) {
-        newState[id] = checked;
       }
 
       return newState;
@@ -253,17 +243,16 @@ const EditMenu = ({ post }: { post: Comment }) => {
     whileElementsMounted: autoUpdate,
   });
 
-  const click = useClick(context);
   const dismiss = useDismiss(context);
   const role = useRole(context);
 
-  const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss, role]);
+  const { getReferenceProps, getFloatingProps } = useInteractions([dismiss, role]);
 
   const headingId = useId();
   const hasDeleteStateChanged = (deleted ?? false) !== (publishCommentEditOptions.deleted ?? false);
 
   const _publishCommentEdit = async () => {
-    const shouldPublishAuthorEdit = isAccountCommentAuthor || (canAttemptAuthorDelete && hasDeleteStateChanged);
+    const shouldPublishAuthorEdit = canAttemptAuthorDelete && hasDeleteStateChanged;
 
     try {
       if (shouldPublishAuthorEdit && isAccountMod) {
@@ -325,35 +314,6 @@ const EditMenu = ({ post }: { post: Comment }) => {
                         {capitalize(t('delete'))}?]
                       </label>
                     </div>
-                  </>
-                )}
-                {isAccountCommentAuthor && (
-                  <>
-                    <div className={styles.menuItem}>
-                      <label>
-                        [
-                        <input
-                          type='checkbox'
-                          aria-label={capitalize(t('edit'))}
-                          onChange={() => setIsContentEditorOpen(!isContentEditorOpen)}
-                          checked={isContentEditorOpen}
-                        />
-                        {capitalize(t('edit'))}?]
-                      </label>
-                    </div>
-                    {isContentEditorOpen && (
-                      <div>
-                        <textarea
-                          aria-label={capitalize(t('edit'))}
-                          className={styles.editTextarea}
-                          value={publishCommentEditOptions.content || ''}
-                          onChange={(e) => {
-                            const newContent = e.target.value;
-                            setPublishCommentEditOptions((state) => ({ ...state, content: newContent }));
-                          }}
-                        />
-                      </div>
-                    )}
                   </>
                 )}
                 {isAccountMod && (

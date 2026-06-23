@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import localForageLru from '@bitsocial/bitsocial-react-hooks/dist/lib/localforage-lru/index.js';
+import { localForageLru } from '../lib/bitsocial-internals/utils';
 
 const gifFrameDb = localForageLru.createInstance({ name: '5chanGifFrames', size: 500 });
 const failedUrls = new Set<string>();

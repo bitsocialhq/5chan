@@ -1,5 +1,5 @@
 import { create, StoreApi } from 'zustand';
-import localForageLru from '@bitsocial/bitsocial-react-hooks/dist/lib/localforage-lru/index.js';
+import { localForageLru } from '../lib/bitsocial-internals/utils';
 
 interface ThemeState {
   themes: {

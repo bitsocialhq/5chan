@@ -136,7 +136,7 @@ vi.mock('../../../hooks/use-state-string', () => ({
   default: () => testState.stateString,
 }));
 
-vi.mock('../../loading-ellipsis', () => ({
+vi.mock('../../loading-ellipsis/loading-ellipsis', () => ({
   default: ({ string }: { string: string }) => createElement('span', { 'data-testid': 'loading-ellipsis' }, string),
 }));
 
@@ -154,7 +154,7 @@ vi.mock('../../error-display/error-display', () => ({
     ),
 }));
 
-vi.mock('../../reply-quote-preview', () => ({
+vi.mock('../../reply-quote-preview/reply-quote-preview', () => ({
   default: ({
     isOP,
     isQuotelinkReply,
@@ -180,11 +180,11 @@ vi.mock('../../reply-quote-preview', () => ({
     ),
 }));
 
-vi.mock('../../markdown', () => ({
+vi.mock('../../markdown/markdown', () => ({
   default: ({ content }: { content?: string }) => createElement('div', { 'data-testid': 'markdown' }, content),
 }));
 
-vi.mock('../../tooltip', () => ({
+vi.mock('../../tooltip/tooltip', () => ({
   default: ({ children, content }: { children?: React.ReactNode; content: string }) => createElement('span', { 'data-testid': 'tooltip', title: content }, children),
 }));
 
@@ -337,6 +337,27 @@ describe('CommentContent', () => {
 
     expect(container.querySelector('strong')).toBeNull();
     expect(queryMarkdownText()).toEqual(['[b]plain[/b]']);
+  });
+
+  it('waits for role data before rendering role-sensitive BBCode content', async () => {
+    const comment = {
+      author: { address: '0xmod' },
+      cid: 'post-1',
+      communityAddress: 'music-posting.eth',
+      content: '[color=red]hello[/color]',
+      postCid: 'post-1',
+    };
+
+    await renderContent(comment);
+
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading');
+    expect(container.textContent).not.toContain('[color=red]');
+    expect(queryMarkdownText()).toEqual([]);
+
+    await renderContent(comment, {});
+
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+    expect(queryMarkdownText()).toEqual(['[color=red]hello[/color]']);
   });
 
   it('ignores unsupported BBCode styling values for moderator authors', async () => {

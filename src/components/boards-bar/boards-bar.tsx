@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import getShortAddress from '../../lib/get-short-address';
-import useAccountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts';
+import { accountsStore as useAccountsStore } from '../../lib/bitsocial-internals/stores';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';

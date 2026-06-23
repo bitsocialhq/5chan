@@ -8,7 +8,7 @@ import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getHasThumbnail, getMediaDimensions, getPostMediaTypeLabel, getYouTubeEmbedPostMediaFileLink } from '../../lib/utils/media-utils';
 import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
-import { approvePendingCommentModeration, isPendingApprovalAwaiting, rejectPendingCommentModeration } from '../../lib/utils/pending-approval-moderation';
+import { isPendingApprovalAwaiting } from '../../lib/utils/pending-approval-moderation';
 import { isValidURL, parseHttpUrl } from '../../lib/utils/url-utils';
 import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
@@ -44,13 +44,11 @@ import lowerCase from 'lodash/lowerCase';
 import { shouldShowSnow } from '../../lib/snow';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
-import useChallengesStore from '../../stores/use-challenges-store';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import useRegisterFreshReplies from '../../hooks/use-register-fresh-replies';
 import useReplyHeightEstimates from '../../hooks/use-reply-height-estimates';
-import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-utils';
-import { usePublishCommentModeration } from '@bitsocial/bitsocial-react-hooks';
+import usePendingCommentModerationActions from '../../hooks/use-pending-comment-moderation-actions';
 import useQuotedByMap from '../../hooks/use-quoted-by-map';
 import useProgressiveRender from '../../hooks/use-progressive-render';
 import useFreshReplies from '../../hooks/use-fresh-replies';
@@ -105,78 +103,12 @@ const PendingModerationActions = ({ cid, communityAddress, post }: { cid: string
   const { t } = useTranslation();
 
   const {
-    publishCommentModeration: approvePending,
-    state: approvePendingState,
-    error: approvePendingError,
-  } = usePublishCommentModeration({
-    commentCid: cid,
-    communityAddress,
-    commentModeration: approvePendingCommentModeration,
-    onChallenge: async (...args: any) => {
-      useChallengesStore.getState().addChallenge([...args, post]);
-    },
-    onChallengeVerification: async (challengeVerification, comment) => {
-      alertChallengeVerificationFailed(challengeVerification, comment);
-    },
-    onError: (error: Error & { details?: unknown }) => {
-      console.error('Approve failed:', error, error.details);
-    },
-  });
-
-  const {
-    publishCommentModeration: rejectPending,
-    state: rejectPendingState,
-    error: rejectPendingError,
-  } = usePublishCommentModeration({
-    commentCid: cid,
-    communityAddress,
-    commentModeration: rejectPendingCommentModeration,
-    onChallenge: async (...args: any) => {
-      useChallengesStore.getState().addChallenge([...args, post]);
-    },
-    onChallengeVerification: async (challengeVerification, comment) => {
-      alertChallengeVerificationFailed(challengeVerification, comment);
-    },
-    onError: (error: Error & { details?: unknown }) => {
-      console.error('Reject failed:', error, error.details);
-    },
-  });
-
-  const [initiatedPendingAction, setInitiatedPendingAction] = useState<'approve' | 'reject' | null>(null);
-  const handlePendingApprove = useCallback(async () => {
-    if (!window.confirm(t('double_confirm'))) return;
-    setInitiatedPendingAction('approve');
-    try {
-      await approvePending();
-    } catch (e) {
-      console.error(e);
-    }
-  }, [approvePending, t]);
-
-  const handlePendingReject = useCallback(async () => {
-    if (!window.confirm(t('double_confirm'))) return;
-    setInitiatedPendingAction('reject');
-    try {
-      await rejectPending();
-    } catch (e) {
-      console.error(e);
-    }
-  }, [rejectPending, t]);
-
-  const isApprovingPending =
-    initiatedPendingAction === 'approve' && approvePendingState !== 'initializing' && approvePendingState !== 'succeeded' && approvePendingState !== 'failed';
-  const isRejectingPending =
-    initiatedPendingAction === 'reject' && rejectPendingState !== 'initializing' && rejectPendingState !== 'succeeded' && rejectPendingState !== 'failed';
-  const isPublishingPending = isApprovingPending || isRejectingPending;
-
-  const approvePendingSucceeded = initiatedPendingAction === 'approve' && approvePendingState === 'succeeded';
-  const rejectPendingSucceeded = initiatedPendingAction === 'reject' && rejectPendingState === 'succeeded';
-  const approvePendingFailed = initiatedPendingAction === 'approve' && approvePendingState === 'failed';
-  const rejectPendingFailed = initiatedPendingAction === 'reject' && rejectPendingState === 'failed';
-
-  const pendingStatus = approvePendingSucceeded ? 'approved' : rejectPendingSucceeded ? 'rejected' : approvePendingFailed || rejectPendingFailed ? 'failed' : null;
-  const pendingError = approvePendingFailed ? approvePendingError : rejectPendingFailed ? rejectPendingError : undefined;
-  const pendingErrorMessage = formatErrorForDisplay(pendingError);
+    handleApprove: handlePendingApprove,
+    handleReject: handlePendingReject,
+    isPublishing: isPublishingPending,
+    status: pendingStatus,
+    errorMessage: pendingErrorMessage,
+  } = usePendingCommentModerationActions({ comment: post, commentCid: cid, communityAddress });
 
   return (
     <span className={styles.modQueueActions}>

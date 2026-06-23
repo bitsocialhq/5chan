@@ -1,0 +1,23 @@
+/* Count badge styling for the board mod-queue button. Mirrors the route's
+   ModQueueBoardCount styling, which shares the same visual; kept here so the
+   button stays self-contained and does not import the route's stylesheet. */
+.modQueueButtonCount {
+  font-weight: bold;
+}
+
+/* Number blinking, changing color to red */
+.modQueueButtonCountAlert {
+  animation: blink-color 2s infinite;
+}
+
+@keyframes blink-color {
+  0% {
+    color: inherit;
+  }
+  50% {
+    color: var(--mod-queue-alert-color);
+  }
+  100% {
+    color: inherit;
+  }
+}
