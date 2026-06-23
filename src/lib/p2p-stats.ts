@@ -155,7 +155,7 @@ const getStringValue = (value: unknown, fallback = 'unknown') => {
 
 const getFiniteNumber = (value: unknown) => {
   if (value === null || value === undefined) return undefined;
-  const numericValue = typeof value === 'bigint' ? Number(value) : Number(value);
+  const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue : undefined;
 };
 

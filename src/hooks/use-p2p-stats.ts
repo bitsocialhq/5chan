@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 import { getP2PStats, type AccountShape, type StatRow } from '../lib/p2p-stats';
 import type { P2PRuntimeMode } from '../lib/p2p-runtime';
 
@@ -27,9 +27,9 @@ type StatsAction =
     };
 
 const statsReducer = (state: StatsState, action: StatsAction): StatsState => {
-  if (action.type === 'loading') return { ...state, error: undefined, loading: true };
+  if (action.type === 'loading') return { ...state, error: undefined, loading: state.rows.length === 0 };
   if (action.type === 'loaded') return { loading: false, rows: action.rows, updatedAt: action.timestamp };
-  return { error: action.error, loading: false, rows: [], updatedAt: action.timestamp };
+  return { ...state, error: action.error, loading: false, updatedAt: action.timestamp };
 };
 
 const getErrorMessage = (error: unknown, fallback = 'Error') => (error instanceof Error ? error.message : String(error || fallback));
@@ -53,6 +53,8 @@ export interface P2PStatsResult {
 // change so stale results never overwrite fresh state.
 export const useP2PStats = ({ account, mode, rpcState }: UseP2PStatsOptions): P2PStatsResult => {
   const [statsState, dispatchStats] = useReducer(statsReducer, { loading: !!mode, rows: [] });
+  const accountRef = useRef(account);
+  accountRef.current = account;
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -64,7 +66,7 @@ export const useP2PStats = ({ account, mode, rpcState }: UseP2PStatsOptions): P2
     const refreshStats = async () => {
       dispatchStats({ type: 'loading' });
       try {
-        const rows = await getP2PStats(activeMode, account, rpcState, signal);
+        const rows = await getP2PStats(activeMode, accountRef.current, rpcState, signal);
         if (!signal.aborted) dispatchStats({ rows, timestamp: Date.now(), type: 'loaded' });
       } catch (error) {
         if (!signal.aborted) {
@@ -83,7 +85,7 @@ export const useP2PStats = ({ account, mode, rpcState }: UseP2PStatsOptions): P2
       abortController.abort();
       window.clearInterval(intervalId);
     };
-  }, [account, mode, rpcState]);
+  }, [mode, rpcState]);
 
   return { error: statsState.error, loading: statsState.loading, rows: statsState.rows, updatedAt: statsState.updatedAt };
 };
