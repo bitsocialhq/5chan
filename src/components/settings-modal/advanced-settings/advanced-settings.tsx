@@ -270,9 +270,10 @@ const AdvancedSettings = () => {
   const account = useAccount() as AccountShape | undefined;
   const protocolOptions = getProtocolOptions(account);
   const canConfigurePureP2PBrowser = canConfigureBrowserPureP2P();
+  const activeBrowserPureP2PEnabled = canConfigurePureP2PBrowser && isBrowserPureP2PEnabled(account);
   const [browserPureP2PSelection, setBrowserPureP2PSelection] = useState<boolean | undefined>(undefined);
-  const browserPureP2PEnabled = browserPureP2PSelection ?? (canConfigurePureP2PBrowser && isBrowserPureP2PEnabled(account));
-  const shouldShowGatewayModeSettings = !canConfigurePureP2PBrowser || !browserPureP2PEnabled;
+  const browserPureP2PEnabled = browserPureP2PSelection ?? activeBrowserPureP2PEnabled;
+  const shouldShowGatewayModeSettings = !canConfigurePureP2PBrowser || !activeBrowserPureP2PEnabled;
 
   const ipfsGatewayUrlsRef = useRef<HTMLTextAreaElement>(null);
   const mediaIpfsGatewayUrlRef = useRef<HTMLInputElement>(null);

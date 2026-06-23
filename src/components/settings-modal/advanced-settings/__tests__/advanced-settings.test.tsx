@@ -232,6 +232,9 @@ describe('AdvancedSettings', () => {
     await act(async () => {
       checkbox?.click();
     });
+    expect(checkbox?.checked).toBe(true);
+    expect(container.textContent).toContain('advanced_pubsub_providers');
+
     await clickButton('save_advanced_settings');
 
     expect(testState.setAccountMock).toHaveBeenCalledWith(
@@ -267,6 +270,9 @@ describe('AdvancedSettings', () => {
     await act(async () => {
       checkbox?.click();
     });
+    expect(checkbox?.checked).toBe(false);
+    expect(container.textContent).not.toContain('advanced_pubsub_providers');
+
     await clickButton('save_advanced_settings');
 
     expect(testState.setAccountMock).toHaveBeenCalledWith(
