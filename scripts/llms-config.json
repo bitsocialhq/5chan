@@ -37,5 +37,5 @@
     "docs/agent-playbooks/translations.md",
     "docs/agent-playbooks/skills-and-tools.md"
   ],
-  "optionalDocs": ["CHANGELOG.md", "docs/upload-automation-retest-checklist.md"]
+  "optionalDocs": ["docs/upload-automation-retest-checklist.md"]
 }
