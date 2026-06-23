@@ -710,6 +710,44 @@ describe('Board', () => {
     expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
   });
 
+  it('releases the manual refresh hold when feed reset rejects', async () => {
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    testState.feed = [{ cid: 'older-post', communityAddress: 'music-posting.eth', timestamp: currentTimestamp - 60 }];
+    testState.accountComments = [
+      {
+        cid: 'fresh-post',
+        postCid: 'fresh-post',
+        state: 'succeeded',
+        communityAddress: 'music-posting.eth',
+        timestamp: currentTimestamp,
+      },
+    ];
+    markRawBoardThreadsFullyLoaded();
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['fresh-post', 'older-post']);
+
+    const refreshError = new Error('reset failed');
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    testState.resetMock.mockReset();
+    testState.resetMock.mockRejectedValue(refreshError);
+
+    await act(async () => {
+      const refreshButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'refresh');
+      refreshButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    await flushEffects();
+
+    expect(testState.resetMock).toHaveBeenCalledOnce();
+    expect(consoleError).toHaveBeenCalledWith('Failed to refresh board feed:', refreshError);
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['fresh-post', 'older-post']);
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+
+    consoleError.mockRestore();
+  });
+
   it('shows loading copy instead of no threads when refresh hides the only local thread', async () => {
     const currentTimestamp = Math.floor(Date.now() / 1000);
     testState.feedState = 'succeeded';

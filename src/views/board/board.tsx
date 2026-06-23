@@ -372,21 +372,28 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
 
   const resetTriggeredRef = useRef(false);
   const refreshHoldRef = useRef<RefreshHoldState | null>(null);
+  const feedLengthRef = useRef(feed.length);
+  feedLengthRef.current = feed.length;
   const [, bumpRefreshHoldVersion] = useState(0);
   const [isManualRefreshPending, startManualRefreshTransition] = useTransition();
   const refreshBoardFeed = useCallback(() => {
     const startedAt = Date.now();
-    refreshHoldRef.current = { hasSettledResetCall: false, hasSeenEmptyFeed: false, isReleased: false, startedFeedLength: feed.length, startedAt };
+    refreshHoldRef.current = { hasSettledResetCall: false, hasSeenEmptyFeed: false, isReleased: false, startedFeedLength: feedLengthRef.current, startedAt };
     bumpRefreshHoldVersion((version) => version + 1);
     startManualRefreshTransition(async () => {
-      await reset();
-      const currentRefreshHold = refreshHoldRef.current;
-      if (currentRefreshHold?.startedAt === startedAt && !currentRefreshHold.isReleased) {
-        currentRefreshHold.hasSettledResetCall = true;
-        bumpRefreshHoldVersion((version) => version + 1);
+      try {
+        await reset();
+      } catch (error) {
+        console.error('Failed to refresh board feed:', error);
+      } finally {
+        const currentRefreshHold = refreshHoldRef.current;
+        if (currentRefreshHold?.startedAt === startedAt && !currentRefreshHold.isReleased) {
+          currentRefreshHold.hasSettledResetCall = true;
+          bumpRefreshHoldVersion((version) => version + 1);
+        }
       }
     });
-  }, [feed.length, reset, startManualRefreshTransition]);
+  }, [reset, startManualRefreshTransition]);
 
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
   useEffect(() => {
