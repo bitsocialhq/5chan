@@ -103,7 +103,7 @@ vi.mock('../../../lib/snow', () => ({
   shouldShowSnow: () => testState.shouldShowSnow,
 }));
 
-vi.mock('../../tooltip', () => ({
+vi.mock('../../tooltip/tooltip', () => ({
   default: ({ content, children }: { content: string; children: React.ReactNode }) =>
     createElement('span', { 'data-testid': 'tooltip', 'data-content': content }, children),
 }));

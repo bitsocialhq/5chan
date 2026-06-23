@@ -1,6 +1,6 @@
 import type { Comment, RepliesPages } from '@bitsocial/bitsocial-react-hooks';
-import repliesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/replies-pages';
-import localForageLru from '@bitsocial/bitsocial-react-hooks/dist/lib/localforage-lru';
+import { repliesPagesStore } from '../bitsocial-internals/stores';
+import { localForageLru } from '../bitsocial-internals/utils';
 
 const commentsDatabase = localForageLru.createInstance({ name: 'bitsocialReactHooks-comments' });
 const repliesPagesDatabase = localForageLru.createInstance({ name: 'bitsocialReactHooks-repliesPages' });

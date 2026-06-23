@@ -11,13 +11,20 @@ import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../.
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 type TestComment = {
+  accountId?: string;
   author?: {
+    address?: string;
+    avatar?: unknown;
+    community?: unknown;
     displayName?: string;
+    flair?: unknown;
+    shortAddress?: string;
   };
   cid?: string;
   content?: string;
   flairs?: Array<{ text?: string }>;
   index?: number;
+  lastReplyTimestamp?: number;
   link?: string;
   number?: number | string;
   parentCid?: string;
@@ -31,6 +38,19 @@ type TestComment = {
   state?: string;
   timestamp?: number;
   title?: string;
+  upvoteCount?: number;
+};
+
+type TestAccount = {
+  author?: {
+    address?: string;
+    avatar?: unknown;
+    displayName?: string;
+    flair?: unknown;
+    shortAddress?: string;
+  };
+  id?: string;
+  subscriptions?: string[];
 };
 
 type TestCommunity = {
@@ -47,7 +67,7 @@ type TestCommunity = {
 };
 
 const testState = vi.hoisted(() => ({
-  account: { subscriptions: [] as string[] },
+  account: { subscriptions: [] as string[] } as TestAccount,
   accountComments: [] as Array<TestComment | undefined>,
   accountCommentsCalls: [] as Array<{ commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' } | undefined>,
   accountCommunityAddresses: [] as string[],
@@ -290,7 +310,16 @@ vi.mock('../../../components/footer/footer', () => ({
 }));
 
 vi.mock('../../post/post', () => ({
-  Post: ({ post }: { post?: TestComment }) => createElement('div', { 'data-testid': 'post' }, post?.cid || post?.content || 'missing-post'),
+  Post: ({ post }: { post?: TestComment }) =>
+    createElement(
+      'div',
+      {
+        'data-author-address': post?.author?.address || '',
+        'data-content': post?.content || '',
+        'data-testid': 'post',
+      },
+      post?.cid || post?.content || 'missing-post',
+    ),
 }));
 
 vi.mock('../../../lib/snow', () => ({
@@ -318,11 +347,14 @@ const flushEffects = async (count = 5) => {
   }
 };
 
-const markRawBoardThreadsFullyLoaded = (comments: TestComment[] = []) => {
+const markRawBoardThreadsFullyLoaded = (comments: TestComment[] = [], options: { hasCommunityUpdate?: boolean } = {}) => {
   testState.community = {
     ...testState.community,
+    ...(options.hasCommunityUpdate ? { updatedAt: 1781773422 } : {}),
     posts: {
+      ...testState.community?.posts,
       pages: {
+        ...testState.community?.posts?.pages,
         active: {
           comments,
         },
@@ -542,7 +574,7 @@ describe('Board', () => {
     await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
 
     expect(document.title).toBe('/mu/ - 5chan');
-    expect(testState.setResetFunctionMock).toHaveBeenCalledWith(testState.resetMock);
+    expect(testState.setResetFunctionMock).toHaveBeenCalledWith(expect.any(Function));
     expect(testState.accountCommentsCalls).toContainEqual({
       communityAddress: 'music-posting.eth',
       newerThan: 3600,
@@ -567,6 +599,279 @@ describe('Board', () => {
 
     expect(testState.resetMock).toHaveBeenCalledTimes(2);
     expect(testState.setEnableInfiniteScrollMock).toHaveBeenCalledWith(true);
+  });
+
+  it('does not render recent account comments as the whole board while the feed is still hydrating', async () => {
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    testState.feedState = 'succeeded';
+    testState.feedStateString = undefined;
+    testState.accountComments = [
+      {
+        cid: 'fresh-post',
+        postCid: 'fresh-post',
+        state: 'succeeded',
+        communityAddress: 'music-posting.eth',
+        timestamp: currentTimestamp,
+      },
+    ];
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(container.querySelector('[data-testid="post"]')).toBeNull();
+    expect(container.textContent).not.toContain('no_threads');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
+  });
+
+  it('hides local account comments while a manual refresh is pending', async () => {
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    testState.feed = [{ cid: 'older-post', communityAddress: 'music-posting.eth', timestamp: currentTimestamp - 60 }];
+    testState.accountComments = [
+      {
+        cid: 'fresh-post',
+        postCid: 'fresh-post',
+        state: 'succeeded',
+        communityAddress: 'music-posting.eth',
+        timestamp: currentTimestamp,
+      },
+    ];
+    markRawBoardThreadsFullyLoaded();
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['fresh-post', 'older-post']);
+
+    let resolveManualRefresh: (() => void) | undefined;
+    testState.resetMock.mockReset();
+    testState.resetMock.mockReturnValue(
+      new Promise<void>((resolve) => {
+        resolveManualRefresh = resolve;
+      }),
+    );
+
+    await act(async () => {
+      const refreshButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'refresh');
+      refreshButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(testState.resetMock).toHaveBeenCalledOnce();
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['older-post']);
+
+    await act(async () => {
+      resolveManualRefresh?.();
+      await Promise.resolve();
+    });
+    await flushEffects();
+
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['fresh-post', 'older-post']);
+  });
+
+  it('keeps local account comments hidden after refresh settles until the canonical feed repopulates', async () => {
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    const canonicalFeed = [
+      { cid: 'fresh-post', communityAddress: 'music-posting.eth', postCid: 'fresh-post', timestamp: currentTimestamp },
+      { cid: 'older-post', communityAddress: 'music-posting.eth', timestamp: currentTimestamp - 60 },
+    ];
+    testState.feed = [canonicalFeed[1]];
+    testState.accountComments = [
+      {
+        cid: 'fresh-post',
+        postCid: 'fresh-post',
+        state: 'succeeded',
+        communityAddress: 'music-posting.eth',
+        timestamp: currentTimestamp,
+      },
+    ];
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['fresh-post', 'older-post']);
+
+    testState.resetMock.mockReset();
+    testState.resetMock.mockImplementation(() => {
+      testState.feed = [];
+      return Promise.resolve();
+    });
+
+    await act(async () => {
+      const refreshButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'refresh');
+      refreshButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    await flushEffects();
+
+    expect(testState.resetMock).toHaveBeenCalledOnce();
+    expect(container.querySelector('[data-testid="post"]')).toBeNull();
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_feed');
+
+    testState.feed = canonicalFeed;
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['fresh-post', 'older-post']);
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+  });
+
+  it('releases the manual refresh hold when feed reset rejects', async () => {
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    testState.feed = [{ cid: 'older-post', communityAddress: 'music-posting.eth', timestamp: currentTimestamp - 60 }];
+    testState.accountComments = [
+      {
+        cid: 'fresh-post',
+        postCid: 'fresh-post',
+        state: 'succeeded',
+        communityAddress: 'music-posting.eth',
+        timestamp: currentTimestamp,
+      },
+    ];
+    markRawBoardThreadsFullyLoaded();
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['fresh-post', 'older-post']);
+
+    const refreshError = new Error('reset failed');
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    testState.resetMock.mockReset();
+    testState.resetMock.mockRejectedValue(refreshError);
+
+    await act(async () => {
+      const refreshButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'refresh');
+      refreshButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    await flushEffects();
+
+    expect(testState.resetMock).toHaveBeenCalledOnce();
+    expect(consoleError).toHaveBeenCalledWith('Failed to refresh board feed:', refreshError);
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['fresh-post', 'older-post']);
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+
+    consoleError.mockRestore();
+  });
+
+  it('shows loading copy instead of no threads when refresh hides the only local thread', async () => {
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    testState.feedState = 'succeeded';
+    testState.feedStateString = undefined;
+    testState.community = {
+      error: undefined,
+      posts: {
+        pageCids: {},
+        pages: {},
+      },
+      shortAddress: 'music-posting.eth',
+      state: 'succeeded',
+      title: '/mu/ - Music',
+      updatedAt: currentTimestamp,
+    };
+    testState.accountComments = [
+      {
+        cid: 'fresh-post',
+        postCid: 'fresh-post',
+        state: 'succeeded',
+        communityAddress: 'music-posting.eth',
+        timestamp: currentTimestamp,
+      },
+    ];
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['fresh-post']);
+    expect(container.textContent).not.toContain('no_threads');
+
+    let resolveManualRefresh: (() => void) | undefined;
+    testState.resetMock.mockReset();
+    testState.resetMock.mockReturnValue(
+      new Promise<void>((resolve) => {
+        resolveManualRefresh = resolve;
+      }),
+    );
+
+    await act(async () => {
+      const refreshButton = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'refresh');
+      refreshButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(testState.resetMock).toHaveBeenCalledOnce();
+    expect(container.querySelector('[data-testid="post"]')).toBeNull();
+    expect(container.textContent).not.toContain('no_threads');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('loading_feed');
+
+    await act(async () => {
+      resolveManualRefresh?.();
+      await Promise.resolve();
+    });
+    await flushEffects();
+
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['fresh-post']);
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+  });
+
+  it('restores active account author data on local board posts before rendering', async () => {
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    testState.account = {
+      id: 'active-account',
+      author: {
+        address: 'plebeius.bso',
+        shortAddress: 'plebeius',
+      },
+      subscriptions: [],
+    };
+    testState.feed = [{ cid: 'older-post', communityAddress: 'music-posting.eth', timestamp: currentTimestamp - 60 }];
+    testState.accountComments = [
+      {
+        accountId: 'active-account',
+        author: {
+          community: { displayName: 'Anonymous' },
+        },
+        cid: 'fresh-dev-post',
+        communityAddress: 'music-posting.eth',
+        content: '[color=red]hello[/color]',
+        postCid: 'fresh-dev-post',
+        state: 'succeeded',
+        timestamp: currentTimestamp,
+      },
+    ];
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    const firstPost = container.querySelector('[data-testid="post"]');
+    expect(firstPost?.textContent).toBe('fresh-dev-post');
+    expect(firstPost?.getAttribute('data-author-address')).toBe('plebeius.bso');
+    expect(firstPost?.getAttribute('data-content')).toBe('[color=red]hello[/color]');
+    expect(testState.registerCommentsMock).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          author: expect.objectContaining({ address: 'plebeius.bso' }),
+          cid: 'fresh-dev-post',
+          content: '[color=red]hello[/color]',
+        }),
+      ]),
+    );
+  });
+
+  it('keeps propagated board posts in active order when hook updates are appended', async () => {
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    testState.pageSizes = {
+      guiPostsPerPage: 6,
+      infiniteFeedPostsPerPage: 6,
+      maxGuiPages: 3,
+      paginationFeedPostsPerPage: 6,
+    };
+    testState.feed = [
+      { cid: 'pinned-post', pinned: true, communityAddress: 'music-posting.eth', timestamp: currentTimestamp - 300 },
+      { cid: 'older-post', communityAddress: 'music-posting.eth', lastReplyTimestamp: currentTimestamp - 200, timestamp: currentTimestamp - 200 },
+      { cid: 'newly-propagated-post', communityAddress: 'music-posting.eth', postCid: 'newly-propagated-post', timestamp: currentTimestamp },
+      { cid: 'middle-post', communityAddress: 'music-posting.eth', lastReplyTimestamp: currentTimestamp - 100, timestamp: currentTimestamp - 100 },
+    ];
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual([
+      'pinned-post',
+      'newly-propagated-post',
+      'middle-post',
+      'older-post',
+    ]);
   });
 
   it('renders flash board posts as table rows instead of the normal feed', async () => {
@@ -643,7 +948,7 @@ describe('Board', () => {
       shortAddress: 'flash-posting.bso',
       title: '/f/ - Flash',
     };
-    markRawBoardThreadsFullyLoaded();
+    markRawBoardThreadsFullyLoaded([], { hasCommunityUpdate: true });
 
     await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
 
@@ -677,7 +982,7 @@ describe('Board', () => {
       title: '/f/ - Flash',
     };
     testState.hasMore = true;
-    markRawBoardThreadsFullyLoaded();
+    markRawBoardThreadsFullyLoaded([], { hasCommunityUpdate: true });
 
     await renderBoard({ initialEntry: '/f', routePath: '/:boardIdentifier/*' });
 
@@ -699,8 +1004,9 @@ describe('Board', () => {
       },
     };
     testState.resolvedCommunityAddress = 'flash-posting.bso';
-    testState.feedState = 'fetching-ipns';
-    testState.hasMore = true;
+    testState.feedState = 'succeeded';
+    testState.feedStateString = undefined;
+    testState.hasMore = false;
     testState.community = {
       error: undefined,
       posts: {
@@ -751,6 +1057,28 @@ describe('Board', () => {
       commentIndices: [7],
     });
     expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['pinned-post', 'pending thread body']);
+  });
+
+  it('keeps a nonoko pending account comment visible before the canonical board feed hydrates', async () => {
+    const currentTimestamp = Math.floor(Date.now() / 1000);
+    testState.accountComments[7] = {
+      content: 'pending thread body',
+      communityAddress: 'music-posting.eth',
+      index: 7,
+      state: 'publishing-challenge',
+      timestamp: currentTimestamp,
+    };
+
+    await renderBoard({
+      initialEntry: '/mu',
+      initialState: { nonokoPendingAccountCommentIndex: 7 },
+      routePath: '/:boardIdentifier/*',
+    });
+
+    expect(testState.accountCommentsCalls).toContainEqual({
+      commentIndices: [7],
+    });
+    expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual(['pending thread body']);
   });
 
   it('redirects oversized board pages back to the last available page', async () => {
@@ -1073,7 +1401,7 @@ describe('Board', () => {
       state: 'succeeded',
       title: '/mu/ - Music',
     };
-    markRawBoardThreadsFullyLoaded();
+    markRawBoardThreadsFullyLoaded([], { hasCommunityUpdate: true });
 
     await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
 
@@ -1100,10 +1428,37 @@ describe('Board', () => {
     expect(container.textContent).toContain('load_more');
   });
 
-  it('shows no threads when a loaded board reports explicit empty page cids', async () => {
+  it('keeps loading when explicit empty page cids arrive before the feed finishes', async () => {
     testState.feedStateString = 'Downloading board from peers';
     testState.feedState = 'fetching-ipns';
     testState.hasMore = true;
+    testState.community = {
+      error: undefined,
+      posts: {
+        pageCids: {},
+        pages: {},
+      },
+      shortAddress: 'blog.bitsocial.bso',
+      state: 'succeeded',
+      title: 'Bitsocial Updates',
+      updatedAt: 1781773422,
+    };
+    testState.communitySnapshot = {
+      shortAddress: 'blog.bitsocial.bso',
+      title: 'Bitsocial Updates',
+    };
+
+    await renderBoard({ initialEntry: '/blog.bitsocial.bso', routePath: '/:boardIdentifier/*' });
+
+    expect(container.textContent).not.toContain('no_threads');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('Downloading board from peers');
+    expect(container.textContent).toContain('load_more');
+  });
+
+  it('shows no threads when a loaded empty board feed finishes', async () => {
+    testState.feedStateString = undefined;
+    testState.feedState = 'succeeded';
+    testState.hasMore = false;
     testState.community = {
       error: undefined,
       posts: {
@@ -1144,6 +1499,24 @@ describe('Board', () => {
     expect(container.textContent).not.toContain('no_threads');
     expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
     expect(container.textContent).toContain('load_more');
+  });
+
+  it('does not show no threads when a succeeded feed has not caught up to loaded raw thread pages', async () => {
+    testState.feedStateString = undefined;
+    testState.feedState = 'succeeded';
+    testState.hasMore = false;
+    testState.community = {
+      error: undefined,
+      shortAddress: 'music-posting.eth',
+      state: 'succeeded',
+      title: '/mu/ - Music',
+    };
+    markRawBoardThreadsFullyLoaded([{ cid: 'post-1' }]);
+
+    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+
+    expect(container.textContent).not.toContain('no_threads');
+    expect(container.querySelector('[data-testid="loading-ellipsis"]')?.textContent).toBe('downloading_board');
   });
 
   it('does not show no threads after board metadata loads but raw thread pages are still missing', async () => {

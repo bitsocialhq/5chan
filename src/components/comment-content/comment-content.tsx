@@ -2,7 +2,7 @@ import { type ReactNode, useMemo, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import { Comment, useComment } from '@bitsocial/bitsocial-react-hooks';
-import useCommunitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
+import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import usePostNumberStore from '../../stores/use-post-number-store';
 import getShortAddress from '../../lib/get-short-address';
 import { getFormattedDate } from '../../lib/utils/time-utils';
@@ -10,12 +10,12 @@ import { isUnavailableQuoteTarget } from '../../lib/utils/quote-link-utils';
 import { isPostPageView } from '../../lib/utils/view-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useStateString from '../../hooks/use-state-string';
-import LoadingEllipsis from '../loading-ellipsis';
+import LoadingEllipsis from '../loading-ellipsis/loading-ellipsis';
 import BbcodeContent from '../../components/bbcode-content/bbcode-content';
 import ErrorDisplay from '../../components/error-display/error-display';
-import ReplyQuotePreview from '../reply-quote-preview';
-import Markdown from '../markdown';
-import Tooltip from '../tooltip';
+import ReplyQuotePreview from '../reply-quote-preview/reply-quote-preview';
+import Markdown from '../markdown/markdown';
+import Tooltip from '../tooltip/tooltip';
 import styles from '../../views/post/post.module.css';
 import capitalize from 'lodash/capitalize';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
@@ -81,6 +81,10 @@ const getRoleByAddress = (roles: unknown, address?: string): string | undefined 
   return typeof roleEntry?.role === 'string' ? roleEntry.role : undefined;
 };
 
+const ROLE_SENSITIVE_BBCODE_PATTERN = /\[(?:\/(?:b|i|u|s|color|size|quote|url)|(?:b|i|u|s|quote)|(?:color|size|url)(?:=[^\]\r\n]*)?)\]/i;
+
+const containsRoleSensitiveBbcode = (content: string | undefined): boolean => Boolean(content && ROLE_SENSITIVE_BBCODE_PATTERN.test(content));
+
 const CommentContent = ({
   appendContent,
   comment: post,
@@ -106,6 +110,7 @@ const CommentContent = ({
   const authorRole = getRoleByAddress(roles, authorAddress);
   const isPrivilegedAuthor = hasModQueueAccessRole(authorRole);
   const shouldRenderBbcode = isPrivilegedAuthor;
+  const shouldWaitForRoleSensitiveBbcode = roles === undefined && Boolean(authorAddress && communityAddress) && containsRoleSensitiveBbcode(visibleContent);
   const purged = resolvedPost?.commentModeration?.purged;
   const banExpiresAt = resolvedPost?.author?.community?.banExpiresAt;
   const banned = !!banExpiresAt;
@@ -179,7 +184,11 @@ const CommentContent = ({
     </div>
   );
   const renderContent = (value: string | undefined) =>
-    shouldRenderBbcode ? (
+    shouldWaitForRoleSensitiveBbcode && containsRoleSensitiveBbcode(value) ? (
+      <span className={styles.stateString}>
+        <LoadingEllipsis string={t('loading')} />
+      </span>
+    ) : shouldRenderBbcode ? (
       <BbcodeContent content={value || ''} postCid={postCid} communityAddress={communityAddress} />
     ) : (
       <Markdown content={value || ''} postCid={postCid} communityAddress={communityAddress} />

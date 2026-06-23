@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useAccount, type Comment } from '@bitsocial/bitsocial-react-hooks';
-import accountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts';
-import communitiesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities';
-import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
+import { accountsStore, communitiesStore, communitiesPagesStore } from '../lib/bitsocial-internals/stores';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
 import { isCommentArchived } from '../lib/utils/comment-moderation-utils';
 import { getRawBoardThreadState } from '../lib/utils/raw-board-thread-state';

@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import type { Community } from '@bitsocial/bitsocial-react-hooks';
-import useAccountsStore from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js';
-import useCommunitiesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities';
+import { accountsStore as useAccountsStore, communitiesStore as useCommunitiesStore } from '../lib/bitsocial-internals/stores';
 import { useDirectories } from './use-directories';
 import { areStringArraysEqual, useAccountCommunityAddresses } from './use-account-community-addresses';
 import { getModeratedCommunityAddresses } from '../lib/utils/mod-queue-utils';
