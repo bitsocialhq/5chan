@@ -171,10 +171,15 @@ describe('misc utils', () => {
   });
 
   it('builds reply previews, omitted counts, and fallback reply totals', () => {
-    expect(filterRepliesForDisplay([{ cid: 'visible' }, { cid: 'deleted', deleted: true }, { cid: 'removed', deleted: false }])).toEqual([
-      { cid: 'visible' },
-      { cid: 'removed', deleted: false },
-    ]);
+    expect(
+      filterRepliesForDisplay([
+        { cid: 'visible' },
+        { cid: 'deleted', deleted: true },
+        { cid: 'removed', removed: true },
+        { cid: 'blank-reason', reason: '   ', removed: true },
+        { cid: 'removed-with-reason', reason: 'off-topic', removed: true },
+      ]),
+    ).toEqual([{ cid: 'visible' }, { cid: 'removed-with-reason', reason: 'off-topic', removed: true }]);
 
     expect(
       getPreviewDisplayReplies(

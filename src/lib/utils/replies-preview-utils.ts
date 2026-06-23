@@ -6,6 +6,8 @@ interface CommentLike {
   index?: number;
   number?: number;
   pendingApproval?: boolean;
+  reason?: string | null;
+  removed?: boolean;
   state?: string;
   timestamp?: number;
 }
@@ -44,7 +46,7 @@ export function sortRepliesForDisplay<T extends CommentLike>(replies: T[]): T[] 
 }
 
 export function filterRepliesForDisplay<T extends CommentLike>(replies: T[]): T[] {
-  return replies.filter((reply) => !reply.deleted);
+  return replies.filter((reply) => !reply.deleted && (!reply.removed || Boolean(reply.reason?.trim())));
 }
 
 /**

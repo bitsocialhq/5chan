@@ -990,7 +990,8 @@ const PostDesktop = ({
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
 
-  // Author-deleted replies are hidden from thread replies; moderator removals still render their placeholder.
+  // Author-deleted replies and no-reason moderator removals are hidden from thread replies.
+  // Moderator removals with a reason still render their placeholder and reason.
   const filteredReplies = useMemo(() => filterRepliesForDisplay(freshRepliesForRender), [freshRepliesForRender]);
   const postsByAuthorInThread = useMemo(() => getThreadPostCountsByAuthor(resolvedPost, filteredReplies), [resolvedPost, filteredReplies]);
   const directRepliesByParentCid = useMemo(() => {
