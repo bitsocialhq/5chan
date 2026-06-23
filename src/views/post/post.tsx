@@ -210,7 +210,10 @@ export const Post = memo(
   }: PostProps) => {
     // Only subscribe to roles field to avoid rerenders from updatingState changes
     const communityAddress = getCommentCommunityAddress(post);
-    const roles = useCommunityField(communityAddress, (community) => community?.roles ?? EMPTY_ROLE_MAP);
+    const routeCommunityAddress = useResolvedCommunityAddress();
+    const rawRoles = useCommunityField(communityAddress, (community) => community?.roles ?? EMPTY_ROLE_MAP);
+    const shouldWaitForRoles = Boolean(routeCommunityAddress && communityAddress && areSameBoardAddress(routeCommunityAddress, communityAddress));
+    const roles = rawRoles ?? (shouldWaitForRoles ? undefined : EMPTY_ROLE_MAP);
     const isMobile = useIsMobile();
 
     let comment = post;

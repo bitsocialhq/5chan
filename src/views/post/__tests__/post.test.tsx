@@ -64,7 +64,7 @@ const testState = vi.hoisted(() => ({
     roles: {
       '0xmod': { role: 'admin' },
     },
-  } as { roles?: Record<string, unknown> },
+  } as { roles?: Record<string, unknown> } | undefined,
   useCommentCalls: [] as Array<{ commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string } }>,
   evictThreadRefreshCachesMock: vi.fn(),
 }));
@@ -116,7 +116,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages', () => 
 vi.mock('../../../hooks/use-stable-community', () => ({
   useCommunityField: (address: string | undefined, selector: (community: typeof testState.communitySnapshot) => unknown) => {
     testState.communityFieldAddress = address;
-    return selector(testState.communitySnapshot);
+    return testState.communitySnapshot ? selector(testState.communitySnapshot) : undefined;
   },
 }));
 
@@ -382,6 +382,32 @@ describe('Post', () => {
     const postDesktop = container.querySelector('[data-testid="post-desktop"]');
     expect(postDesktop?.getAttribute('data-roles-present')).toBe('true');
     expect(postDesktop?.textContent).toBe('post-no-roles:none:0');
+  });
+
+  it('keeps roles pending for matching board routes until the community loads', async () => {
+    testState.communitySnapshot = undefined;
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await act(async () => {
+      root.render(createElement(Post, { post: { cid: 'post-pending-roles', communityAddress: 'music-posting.eth', content: '[color=red]raw[/color]' } }));
+    });
+
+    const postDesktop = container.querySelector('[data-testid="post-desktop"]');
+    expect(postDesktop?.getAttribute('data-roles-present')).toBe('false');
+    expect(postDesktop?.textContent).toBe('post-pending-roles:none:0');
+  });
+
+  it('uses an empty role map for posts outside a resolved board route when the community is unavailable', async () => {
+    testState.communitySnapshot = undefined;
+    testState.resolvedCommunityAddress = undefined;
+
+    await act(async () => {
+      root.render(createElement(Post, { post: { cid: 'post-multiboard', communityAddress: 'other-board.eth', content: '[color=red]raw[/color]' } }));
+    });
+
+    const postDesktop = container.querySelector('[data-testid="post-desktop"]');
+    expect(postDesktop?.getAttribute('data-roles-present')).toBe('true');
+    expect(postDesktop?.textContent).toBe('post-multiboard:none:0');
   });
 
   it('rerenders posts when pending approval turns into an approved numbered post', async () => {
