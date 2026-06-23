@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Comment, usePublishCommentModeration } from '@bitsocial/bitsocial-react-hooks';
 import { approvePendingCommentModeration, rejectPendingCommentModeration } from '../lib/utils/pending-approval-moderation';
@@ -88,35 +88,44 @@ export const usePendingCommentModerationActions = ({
   });
 
   const [initiatedAction, setInitiatedAction] = useState<'approve' | 'reject' | null>(null);
+  const pendingActionRef = useRef<'approve' | 'reject' | null>(null);
 
   const handleApprove = useCallback(async () => {
+    if (pendingActionRef.current) return;
     if (!window.confirm(t('double_confirm'))) {
       return;
     }
+    pendingActionRef.current = 'approve';
     setInitiatedAction('approve');
     try {
       await approve();
       await onApproveSuccess?.();
     } catch (e) {
       console.error(e);
+    } finally {
+      pendingActionRef.current = null;
     }
   }, [approve, onApproveSuccess, t]);
 
   const handleReject = useCallback(async () => {
+    if (pendingActionRef.current) return;
     if (!window.confirm(t('double_confirm'))) {
       return;
     }
+    pendingActionRef.current = 'reject';
     setInitiatedAction('reject');
     try {
       await reject();
       await onRejectSuccess?.();
     } catch (e) {
       console.error(e);
+    } finally {
+      pendingActionRef.current = null;
     }
   }, [reject, onRejectSuccess, t]);
 
-  const isApproving = initiatedAction === 'approve' && approveState !== 'initializing' && approveState !== 'succeeded' && approveState !== 'failed';
-  const isRejecting = initiatedAction === 'reject' && rejectState !== 'initializing' && rejectState !== 'succeeded' && rejectState !== 'failed';
+  const isApproving = initiatedAction === 'approve' && approveState !== 'succeeded' && approveState !== 'failed';
+  const isRejecting = initiatedAction === 'reject' && rejectState !== 'succeeded' && rejectState !== 'failed';
   const isPublishing = isApproving || isRejecting;
 
   const approveSucceeded = initiatedAction === 'approve' && approveState === 'succeeded';

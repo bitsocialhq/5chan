@@ -48,6 +48,14 @@ const HookHarness = () => {
   return null;
 };
 
+const createDeferred = () => {
+  let resolve: (() => void) | undefined;
+  const promise = new Promise<undefined>((promiseResolve) => {
+    resolve = () => promiseResolve(undefined);
+  });
+  return { promise, resolve: () => resolve?.() };
+};
+
 const renderHook = () => {
   act(() => {
     root.render(createElement(HookHarness));
@@ -88,6 +96,23 @@ describe('usePendingCommentModerationActions', () => {
     expect(testState.approve.options?.commentModeration).toEqual({ approved: true });
   });
 
+  it('ignores rapid duplicate approve clicks while the publish is in flight', async () => {
+    const pendingApprove = createDeferred();
+    testState.approve.publish.mockReturnValueOnce(pendingApprove.promise);
+
+    await act(async () => {
+      const firstPublish = latestValue.handleApprove();
+      const duplicatePublish = latestValue.handleApprove();
+      await Promise.resolve();
+      pendingApprove.resolve();
+      await Promise.all([firstPublish, duplicatePublish]);
+    });
+
+    expect(window.confirm).toHaveBeenCalledTimes(1);
+    expect(testState.approve.publish).toHaveBeenCalledTimes(1);
+    expect(testState.reject.publish).not.toHaveBeenCalled();
+  });
+
   it('publishes the reject moderation after confirmation', async () => {
     await act(async () => {
       await latestValue.handleReject();
@@ -96,6 +121,23 @@ describe('usePendingCommentModerationActions', () => {
     expect(testState.reject.publish).toHaveBeenCalledTimes(1);
     expect(testState.approve.publish).not.toHaveBeenCalled();
     expect(testState.reject.options?.commentModeration).toEqual({ approved: false });
+  });
+
+  it('ignores rapid duplicate reject clicks while the publish is in flight', async () => {
+    const pendingReject = createDeferred();
+    testState.reject.publish.mockReturnValueOnce(pendingReject.promise);
+
+    await act(async () => {
+      const firstPublish = latestValue.handleReject();
+      const duplicatePublish = latestValue.handleReject();
+      await Promise.resolve();
+      pendingReject.resolve();
+      await Promise.all([firstPublish, duplicatePublish]);
+    });
+
+    expect(window.confirm).toHaveBeenCalledTimes(1);
+    expect(testState.reject.publish).toHaveBeenCalledTimes(1);
+    expect(testState.approve.publish).not.toHaveBeenCalled();
   });
 
   it('does not publish when the confirmation is cancelled', async () => {
