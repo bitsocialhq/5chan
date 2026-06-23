@@ -7,10 +7,10 @@
 
 /* Number blinking, changing color to red */
 .modQueueButtonCountAlert {
-  animation: blinkColor 2s infinite;
+  animation: blink-color 2s infinite;
 }
 
-@keyframes blinkColor {
+@keyframes blink-color {
   0% {
     color: inherit;
   }
