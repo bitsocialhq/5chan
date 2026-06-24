@@ -1,13 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useAccountComments } from '@bitsocial/bitsocial-react-hooks';
+import { useAccountComment, useAccountComments } from '@bitsocial/bitsocial-react-hooks';
 import { useDirectories } from '../../hooks/use-directories';
-import useSafeAccountComment from '../../hooks/use-safe-account-comment';
+import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useFailedPostRetryStore from '../../stores/use-failed-post-retry-store';
-import { Post } from '../post';
+import { Post } from '../post/post';
 
 type PendingAccountComment = {
   index?: number;
@@ -46,9 +46,9 @@ const PendingPost = () => {
   const { accountComments } = useAccountComments();
   const { accountCommentIndex } = useParams<{ accountCommentIndex?: string }>();
   const location = useLocation();
-  const normalizedAccountCommentIndex = accountCommentIndex === undefined ? undefined : Number(accountCommentIndex);
-  const hasNormalizedAccountCommentIndex = normalizedAccountCommentIndex !== undefined && !Number.isNaN(normalizedAccountCommentIndex);
-  const post = useSafeAccountComment({ commentIndex: accountCommentIndex });
+  const normalizedAccountCommentIndex = normalizeAccountCommentIndex(accountCommentIndex);
+  const hasNormalizedAccountCommentIndex = normalizedAccountCommentIndex !== undefined;
+  const post = useAccountComment({ commentIndex: normalizedAccountCommentIndex });
   const postCommunityAddress = getCommentCommunityAddress(post);
   const hasAddressablePost = Boolean(post?.cid || postCommunityAddress);
   const navigate = useNavigate();
@@ -70,11 +70,7 @@ const PendingPost = () => {
   }, [normalizedAccountCommentIndex, pendingBoardPath]);
 
   const isValidAccountCommentIndex =
-    !accountCommentIndex ||
-    (hasNormalizedAccountCommentIndex &&
-      normalizedAccountCommentIndex >= 0 &&
-      Number.isInteger(normalizedAccountCommentIndex) &&
-      hasPendingAccountCommentIndex(accountComments, normalizedAccountCommentIndex));
+    !accountCommentIndex || (hasNormalizedAccountCommentIndex && hasPendingAccountCommentIndex(accountComments, normalizedAccountCommentIndex));
 
   useEffect(() => {
     // A retry deletes this pending row before republishing, briefly invalidating the index. Stay put;

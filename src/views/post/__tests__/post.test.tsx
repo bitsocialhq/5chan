@@ -69,6 +69,26 @@ const testState = vi.hoisted(() => ({
   evictThreadRefreshCachesMock: vi.fn(),
 }));
 
+const activeAccount = {
+  author: { address: 'account-author' },
+  id: 'active-account',
+};
+
+const enrichAccountCommentAuthor = (comment: TestComment | undefined): TestComment | undefined => {
+  if (!comment || comment.author?.address || comment.accountId !== activeAccount.id) {
+    return comment;
+  }
+
+  return {
+    ...comment,
+    author: {
+      ...activeAccount.author,
+      ...comment.author,
+      address: activeAccount.author.address,
+    },
+  };
+};
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -84,8 +104,8 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  useAccount: () => ({ id: 'active-account', author: { address: 'account-author' } }),
-  useAccountComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? testState.accountCommentsByCid[commentCid] : undefined),
+  useAccount: () => activeAccount,
+  useAccountComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? enrichAccountCommentAuthor(testState.accountCommentsByCid[commentCid]) : undefined),
   useComment: ({ commentCid, autoUpdate, community }: { commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string } }) => {
     testState.useCommentCalls.push({ commentCid, autoUpdate, community });
     return commentCid ? testState.commentsByCid[commentCid] : undefined;

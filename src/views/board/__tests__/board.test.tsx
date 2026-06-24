@@ -142,6 +142,24 @@ const getScopedAccountComments = (options?: { commentIndices?: number[]; communi
   return scopedComments;
 };
 
+const enrichAccountCommentAuthor = (comment: TestComment): TestComment => {
+  if (comment.author?.address || !comment.accountId || comment.accountId !== testState.account.id || !testState.account.author?.address) {
+    return comment;
+  }
+
+  const accountAuthor = testState.account.author;
+
+  return {
+    ...comment,
+    author: {
+      ...accountAuthor,
+      ...comment.author,
+      address: accountAuthor.address,
+      ...(accountAuthor.shortAddress ? { shortAddress: accountAuthor.shortAddress } : {}),
+    },
+  };
+};
+
 const getScopedFeed = (options?: { filter?: { filter: (comment: TestComment) => boolean }; newerThan?: number; postsPerPage?: number }) => {
   let scopedFeed = [...testState.feed];
 
@@ -165,7 +183,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
   useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
     testState.accountCommentsCalls.push(options);
-    return { accountComments: getScopedAccountComments(options) };
+    return { accountComments: getScopedAccountComments(options).map(enrichAccountCommentAuthor) };
   },
   useFeed: (options?: {
     communities?: unknown[];

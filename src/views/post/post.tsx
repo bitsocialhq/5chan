@@ -1,6 +1,15 @@
 import { memo, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type Comment, type CommunityIdentifier, type Role, useAccount, useComment, useEditedComment, useCommunity, useReplies } from '@bitsocial/bitsocial-react-hooks';
+import {
+  type Comment,
+  type CommunityIdentifier,
+  type Role,
+  useAccountComment,
+  useComment,
+  useEditedComment,
+  useCommunity,
+  useReplies,
+} from '@bitsocial/bitsocial-react-hooks';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -11,7 +20,6 @@ import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { areSameBoardAddress, isDirectoryBoard } from '../../lib/utils/route-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
-import { mergeDefinedFields, restoreActiveAccountAuthor } from '../../lib/utils/account-comment-author-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import ErrorDisplay from '../../components/error-display/error-display';
 import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer/footer';
@@ -21,7 +29,6 @@ import { getRequestedThreadTopCid, scrollThreadContainerToTop } from '../../lib/
 import { evictThreadRefreshCaches } from '../../lib/utils/thread-refresh-cache-utils';
 import { REPLIES_PER_PAGE } from '../../lib/constants';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
-import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import type { QueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
 import type { ReplyVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
 import styles from './post.module.css';
@@ -102,6 +109,19 @@ const mergeCommentFallback = (comment: CommentWithRefresh | undefined, fallback:
   };
 };
 
+const mergeDefinedFields = <T extends object>(base: T | undefined, override: T | undefined): T | undefined => {
+  if (!override) return base;
+
+  const merged = { ...base } as Record<string, unknown>;
+  for (const [key, value] of Object.entries(override)) {
+    if (value !== undefined) {
+      merged[key] = value;
+    }
+  }
+
+  return merged as T;
+};
+
 const mergeLocalCommentAuthor = (comment: CommentWithRefresh | undefined, localComment: CommentWithRefresh | undefined): CommentWithRefresh | undefined => {
   if (!localComment?.author) return comment;
   if (!comment) return localComment;
@@ -130,9 +150,7 @@ const mergeLocalAccountComment = (comment: CommentWithRefresh | undefined, accou
 const useCommentWithFeedCache = (options: { commentCid: string | undefined; autoUpdate?: boolean; community?: CommunityIdentifier }): CommentWithRefresh | undefined => {
   const comment = useComment(options);
   const cachedComment = useCommunitiesPagesStore((state) => state.comments[options?.commentCid || '']);
-  const account = useAccount();
-  const accountComment = useSafeAccountComment({ commentCid: options.commentCid }) as CommentWithRefresh | undefined;
-  const accountCommentWithAuthor = useMemo(() => restoreActiveAccountAuthor(accountComment, account), [accountComment, account]);
+  const accountComment = useAccountComment({ commentCid: options.commentCid }) as CommentWithRefresh | undefined;
 
   const commentWithFeedCache = useMemo(() => {
     if (!cachedComment || comment?.timestamp) return comment;
@@ -145,7 +163,7 @@ const useCommentWithFeedCache = (options: { commentCid: string | undefined; auto
     } as CommentWithRefresh;
   }, [comment, cachedComment]);
 
-  return useMemo(() => mergeLocalAccountComment(commentWithFeedCache, accountCommentWithAuthor), [commentWithFeedCache, accountCommentWithAuthor]);
+  return useMemo(() => mergeLocalAccountComment(commentWithFeedCache, accountComment), [commentWithFeedCache, accountComment]);
 };
 
 const mergeRepliesWithQueuedReply = (replies: Comment[], queuedReply: CommentWithRefresh | undefined): Comment[] => {

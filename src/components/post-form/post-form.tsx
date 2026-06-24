@@ -2,7 +2,7 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Comment, setAccount, useAccount, useEditedComment } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, setAccount, useAccount, useAccountComment, useEditedComment } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { getDisplayMediaInfoType, getLinkMediaInfo, getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
@@ -41,7 +41,7 @@ import { useDirectoryEntry } from '../../hooks/use-directory-entry';
 import { useCommunityField } from '../../hooks/use-stable-community';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
-import useSafeAccountComment from '../../hooks/use-safe-account-comment';
+import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import { useYouTubeThumbnailLinkConversion } from '../../hooks/use-youtube-thumbnail-link-conversion';
 import usePublishSubmissionGuard from '../../hooks/use-publish-submission-guard';
@@ -544,7 +544,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const [url, setUrl] = useState('');
   const author = account?.author || {};
   const { displayName } = author || {};
-  const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
+  const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
   const { setPublishPostOptions, postIndex, publishPost, publishPostError, publishPostOptions, resetPublishPostOptions } = usePublishPost({
@@ -1028,7 +1028,7 @@ const PostForm = () => {
 
   const [showForm, setShowForm] = useState(false);
 
-  const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
+  const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
 

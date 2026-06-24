@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import { useCommunity } from '@bitsocial/bitsocial-react-hooks';
+import { useAccountComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { accountsStore as useAccountsStore } from '../../lib/bitsocial-internals/stores';
 import getShortAddress from '../../lib/get-short-address';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
@@ -11,7 +11,7 @@ import { isArchiveRoute, isDirectoryListRoute } from '../../lib/utils/route-util
 import styles from './board-header.module.css';
 import { useDirectories } from '../../hooks/use-directories';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
-import useSafeAccountComment from '../../hooks/use-safe-account-comment';
+import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useIsCommunityOffline from '../../hooks/use-is-community-offline';
 import { shouldShowSnow } from '../../lib/snow';
@@ -54,7 +54,7 @@ const BoardHeader = () => {
   const isInModView = isModView(location.pathname);
   const isInArchiveView = isArchiveRoute(location.pathname);
   const isInDirectoryListView = isDirectoryListRoute(location.pathname);
-  const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
+  const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
+import { useAccountComment } from '@bitsocial/bitsocial-react-hooks';
 import { isAllView, isModView, isSubscriptionsView } from '../lib/utils/view-utils';
 import useThemeStore from '../stores/use-theme-store';
 import { useDirectories } from './use-directories';
@@ -7,8 +8,8 @@ import { useResolvedCommunityAddress } from './use-resolved-community-address';
 import useSpecialThemeStore from '../stores/use-special-theme-store';
 import { getActiveSpecialTheme, getSpecialThemeClass } from '../lib/utils/time-utils';
 import { isSfwBoard, updateFavicon } from '../lib/update-favicon';
-import useSafeAccountComment from './use-safe-account-comment';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
+import { normalizeAccountCommentIndex } from '../lib/utils/account-comment-index-utils';
 
 const themeClasses = ['yotsuba', 'yotsuba-b', 'futaba', 'burichan', 'tomorrow', 'photon', 'spooky'];
 
@@ -23,8 +24,7 @@ const useTheme = (): [string, (theme: string) => void] => {
   const location = useLocation();
   const params = useParams<{ boardIdentifier?: string }>();
   const pendingPostParams = useParams<{ accountCommentIndex?: string }>();
-  const pendingPostCommentIndex = pendingPostParams?.accountCommentIndex ? parseInt(pendingPostParams.accountCommentIndex, 10) : undefined;
-  const pendingPost = useSafeAccountComment({ commentIndex: pendingPostCommentIndex });
+  const pendingPost = useAccountComment({ commentIndex: normalizeAccountCommentIndex(pendingPostParams?.accountCommentIndex) });
   const pendingPostCommunityAddress = getCommentCommunityAddress(pendingPost);
 
   const { isEnabled, setIsEnabled } = useSpecialThemeStore();

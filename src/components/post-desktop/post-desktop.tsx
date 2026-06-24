@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useEditedComment, useReplies, useAccount } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, useAccount, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getHasThumbnail, getMediaDimensions, getPostMediaTypeLabel, getYouTubeEmbedPostMediaFileLink } from '../../lib/utils/media-utils';
@@ -22,7 +22,6 @@ import useFetchGifFirstFrame from '../../hooks/use-fetch-gif-first-frame';
 import useHide from '../../hooks/use-hide';
 import useStateString from '../../hooks/use-state-string';
 import useScrollToReply from '../../hooks/use-scroll-to-reply';
-import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import { useCurrentTime } from '../../hooks/use-current-time';
 import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
 import CommentContent from '../comment-content/comment-content';
@@ -689,7 +688,7 @@ const Reply = ({
   postsByAuthorInThread,
   disableDeferredLayout,
 }: PostProps & { directRepliesByParentCid?: Map<string, Comment[]>; postsByAuthorInThread?: Map<string, number>; disableDeferredLayout?: boolean }) => {
-  const accountReply = useSafeAccountComment({
+  const accountReply = useAccountComment({
     commentCid: reply?.cid,
     commentIndex: typeof reply?.index === 'number' ? reply.index : undefined,
   });
