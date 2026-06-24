@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import { useAccount, useCommunity } from '@bitsocial/bitsocial-react-hooks';
+import { useAccount, useAccountComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { initSnow, removeSnow, shouldShowSnow } from './lib/snow';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from './lib/utils/view-utils';
 import { preloadReplyModal, preloadThemeAssets } from './lib/utils/preload-utils';
@@ -16,8 +16,8 @@ import { useDirectories } from './hooks/use-directories';
 import { useBrowserPureP2PAccountUpgrade } from './hooks/use-browser-pure-p2p-account-upgrade';
 import { useCommunityIdentifier } from './hooks/use-community-identifiers';
 import { useResolvedCommunityAddress, useResolvedDirectoryBoardPath } from './hooks/use-resolved-community-address';
-import useSafeAccountComment from './hooks/use-safe-account-comment';
 import useSuspendOffscreenMediaPlayback from './hooks/use-suspend-offscreen-media-playback';
+import { normalizeAccountCommentIndex } from './lib/utils/account-comment-index-utils';
 import { getCommentCommunityAddress } from './lib/utils/comment-utils';
 import {
   getBoardPath,
@@ -82,7 +82,7 @@ const BoardLayout = () => {
   const directories = useDirectories();
   const communityAddress = useResolvedCommunityAddress(boardIdentifier);
   const { boardPath: resolvedDirectoryBoardPath, isDirectoryCandidate } = useResolvedDirectoryBoardPath(boardIdentifier);
-  const pendingPost = useSafeAccountComment({ commentIndex: accountCommentIndex });
+  const pendingPost = useAccountComment({ commentIndex: normalizeAccountCommentIndex(accountCommentIndex) });
   const pendingPostCommunityAddress = getCommentCommunityAddress(pendingPost);
   const { closeCreateBoardModal } = useCreateBoardModalStore();
   const isOnPostRoute = isPostRoute(pathname);

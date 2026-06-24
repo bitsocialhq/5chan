@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAccountComment } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import { accountsStore as useAccountsStore } from '../../lib/bitsocial-internals/stores';
 import { isAllView, isCatalogView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath, useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
-import useSafeAccountComment from '../../hooks/use-safe-account-comment';
+import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import useCreateBoardModalStore from '../../stores/use-create-board-modal-store';
@@ -418,8 +419,7 @@ const BoardsBarMobile = ({ communityAddress }: { communityAddress?: string }) =>
 
 const BoardsBar = () => {
   const params = useParams();
-  const commentIndex = params?.accountCommentIndex ? parseInt(params.accountCommentIndex, 10) : undefined;
-  const accountComment = useSafeAccountComment({ commentIndex });
+  const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedCommunityAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedCommunityAddress || getCommentCommunityAddress(accountComment);
 

@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Comment, useAccount } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, useAccount, useAccountComment } from '@bitsocial/bitsocial-react-hooks';
 import { useFloating, offset, shift, size, autoUpdate, Placement } from '@floating-ui/react';
 import { useDirectories } from '../../hooks/use-directories';
-import useSafeAccountComment from '../../hooks/use-safe-account-comment';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import { formatQuoteNumber, getQuoteTargetAvailability, shouldShowFloatingQuotePreview } from '../../lib/utils/quote-link-utils';
 import { findPreferredScrollTarget, getThreadTopNavigationState, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
@@ -90,7 +89,7 @@ const scrollToReplyOnPage = (cid: string) => {
 
 const useIsOwnQuotelink = (quotelinkReply?: Comment) => {
   const account = useAccount();
-  const ownQuotelink = useSafeAccountComment({ commentCid: quotelinkReply?.cid });
+  const ownQuotelink = useAccountComment({ commentCid: quotelinkReply?.cid });
   const quotedAuthorAddress = quotelinkReply?.author?.address;
   const accountAuthorAddress = account?.author?.address;
 

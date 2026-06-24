@@ -27,7 +27,6 @@ import { getPageSlice } from '../../lib/utils/board-feed-pagination';
 import { getPageFromFeedPath, isDirectoryBoard, normalizeMultiboardFeedPath, stripPageFromFeedPath } from '../../lib/utils/route-utils';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
-import { restoreActiveAccountAuthor } from '../../lib/utils/account-comment-author-utils';
 import { getNonokoPendingAccountCommentIndex } from '../../lib/utils/post-options-utils';
 import { getRawBoardThreadState } from '../../lib/utils/raw-board-thread-state';
 import { getSearchWithTimeFilter, getTimeFilterSuggestion, type TimeFilterSuggestion } from '../../lib/utils/time-filter-utils';
@@ -482,15 +481,11 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     [recentAccountComments, communityAddress, feedCids, nowSeconds],
   );
   const localAccountComments = useMemo(() => {
-    const comments = (() => {
-      if (!nonokoPendingAccountComment) return filteredComments;
-      if (!nonokoPendingAccountComment.cid) return [nonokoPendingAccountComment, ...filteredComments];
+    if (!nonokoPendingAccountComment) return filteredComments;
+    if (!nonokoPendingAccountComment.cid) return [nonokoPendingAccountComment, ...filteredComments];
 
-      return [nonokoPendingAccountComment, ...filteredComments.filter((comment) => comment.cid !== nonokoPendingAccountComment.cid)];
-    })();
-
-    return comments.map((comment) => restoreActiveAccountAuthor(comment, account));
-  }, [nonokoPendingAccountComment, filteredComments, account]);
+    return [nonokoPendingAccountComment, ...filteredComments.filter((comment) => comment.cid !== nonokoPendingAccountComment.cid)];
+  }, [nonokoPendingAccountComment, filteredComments]);
 
   const sortedFeed = useMemo(() => sortBoardActiveFeed(feed), [feed]);
   const canShowRecentLocalAccountComments = !isSingleCommunityBoard || sortedFeed.length > 0 || isRawBoardThreadStateFullyLoaded;

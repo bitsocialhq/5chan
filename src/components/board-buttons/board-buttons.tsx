@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useAccount, useComment, useSubscribe } from '@bitsocial/bitsocial-react-hooks';
+import { useAccount, useAccountComment, useComment, useSubscribe } from '@bitsocial/bitsocial-react-hooks';
 import { isAllView, isCatalogView, isModView, isModQueueView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { usePostPageNumber } from '../../hooks/use-post-page-number';
 import { useDirectories, useDirectoryByAddress } from '../../hooks/use-directories';
@@ -9,7 +9,7 @@ import { useFilteredDirectoryAddresses } from '../../hooks/use-filtered-director
 import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
-import useSafeAccountComment from '../../hooks/use-safe-account-comment';
+import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import useHiddenCatalogThreads from '../../hooks/use-hidden-catalog-threads';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import useCatalogStyleStore from '../../stores/use-catalog-style-store';
@@ -532,7 +532,7 @@ export const MobileBoardButtons = () => {
   const isInModView = isModView(location.pathname);
   const isInModQueueView = isModQueueView(location.pathname);
 
-  const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
+  const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
 
@@ -646,7 +646,7 @@ export const PostPageStats = () => {
   const autoUpdateEnabled = useThreadLiveUpdatesStore((state) => state.enabled);
   const commentCid = params?.commentCid as string | undefined;
   const resolvedAddress = useResolvedCommunityAddress();
-  const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
+  const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
   const communityIdentifier = useCommunityIdentifier(communityAddress);
 
@@ -716,7 +716,7 @@ export const CatalogSearchResultsLabel = () => {
 export const DesktopBoardButtons = () => {
   const params = useParams();
   const location = useLocation();
-  const accountComment = useSafeAccountComment({ commentIndex: params?.accountCommentIndex });
+  const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
   const isInCatalogView = isCatalogView(location.pathname, params);
