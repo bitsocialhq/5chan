@@ -7,7 +7,7 @@ import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useFailedPostRetryStore from '../../stores/use-failed-post-retry-store';
-import { Post } from '../post';
+import { Post } from '../post/post';
 
 type PendingAccountComment = {
   index?: number;

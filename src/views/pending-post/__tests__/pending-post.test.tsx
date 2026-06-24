@@ -15,6 +15,7 @@ type TestComment = {
 
 const testState = vi.hoisted(() => ({
   accountCommentIndex: undefined as string | undefined,
+  accountCommentLookupOptions: undefined as { commentIndex?: number } | undefined,
   accountComments: [] as TestComment[],
   challengeCount: 0,
   directories: [] as Array<{ address: string; title?: string }>,
@@ -41,7 +42,10 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useAccount: () => undefined,
-  useAccountComment: () => testState.post,
+  useAccountComment: (options?: { commentIndex?: number }) => {
+    testState.accountCommentLookupOptions = options;
+    return testState.post;
+  },
   useAccountComments: () => ({
     accountComments: testState.accountComments,
   }),
@@ -60,10 +64,11 @@ vi.mock('../../../stores/use-challenges-store', () => ({
 }));
 
 vi.mock('../../../stores/use-failed-post-retry-store', () => ({
-  default: (selector: (state: { retryingAccountCommentIndex: number | null }) => unknown) => selector({ retryingAccountCommentIndex: testState.retryingAccountCommentIndex }),
+  default: (selector: (state: { retryingAccountCommentIndex: number | null }) => unknown) =>
+    selector({ retryingAccountCommentIndex: testState.retryingAccountCommentIndex }),
 }));
 
-vi.mock('../../post', () => ({
+vi.mock('../../post/post', () => ({
   Post: ({ post }: { post?: TestComment }) => createElement('div', { 'data-testid': 'post-view' }, post?.cid ?? 'no-post'),
 }));
 
@@ -91,6 +96,7 @@ describe('PendingPost', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.accountCommentIndex = undefined;
+    testState.accountCommentLookupOptions = undefined;
     testState.accountComments = [];
     testState.challengeCount = 0;
     testState.directories = [];
@@ -124,6 +130,16 @@ describe('PendingPost', () => {
 
     expect(scrollToMock).toHaveBeenCalledWith(0, 0);
     expect(container.querySelector('[data-testid="post-view"]')?.textContent).toBe('no-post');
+    expect(testState.navigateMock).not.toHaveBeenCalledWith('/not-found', { replace: true });
+  });
+
+  it('passes normalized numeric-string pending indices to the account comment lookup', async () => {
+    testState.accountCommentIndex = '01';
+    testState.accountComments = [{}, {}];
+
+    await renderPendingPost();
+
+    expect(testState.accountCommentLookupOptions).toEqual({ commentIndex: 1 });
     expect(testState.navigateMock).not.toHaveBeenCalledWith('/not-found', { replace: true });
   });
 
