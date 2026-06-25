@@ -53,32 +53,17 @@ const EMPTY_COMMUNITIES_PAGES = {};
 /** Board feed always uses 'active' sort; catalog dropdown does not affect board ordering. */
 const BOARD_SORT_TYPE = 'active' as const;
 
-const toFiniteNumber = (value: unknown) => (typeof value === 'number' && Number.isFinite(value) ? value : 0);
-
-const compareBoardActivePosts = (firstPost: Comment, secondPost: Comment) => {
-  const activeDifference =
-    toFiniteNumber(secondPost?.lastReplyTimestamp ?? secondPost?.timestamp) - toFiniteNumber(firstPost?.lastReplyTimestamp ?? firstPost?.timestamp);
-  if (activeDifference !== 0) return activeDifference;
-
-  const upvoteDifference = toFiniteNumber(secondPost?.upvoteCount) - toFiniteNumber(firstPost?.upvoteCount);
-  if (upvoteDifference !== 0) return upvoteDifference;
-
-  return toFiniteNumber(secondPost?.timestamp) - toFiniteNumber(firstPost?.timestamp);
-};
-
-const sortBoardActiveFeed = (posts: Comment[]) => {
-  const pinnedPosts: Comment[] = [];
-  const regularPosts: Comment[] = [];
-
-  for (const post of posts) {
-    if (post?.pinned) {
-      pinnedPosts.push(post);
-    } else {
-      regularPosts.push(post);
-    }
+const mergeVisibleLocalAccountComments = (feed: Comment[], visibleLocalAccountComments: Comment[]) => {
+  if (visibleLocalAccountComments.length === 0) {
+    return feed;
   }
 
-  return [...pinnedPosts, ...regularPosts.toSorted(compareBoardActivePosts)];
+  let firstRegularPostIndex = 0;
+  while (firstRegularPostIndex < feed.length && feed[firstRegularPostIndex]?.pinned) {
+    firstRegularPostIndex += 1;
+  }
+
+  return [...feed.slice(0, firstRegularPostIndex), ...visibleLocalAccountComments, ...feed.slice(firstRegularPostIndex)];
 };
 
 type RefreshHoldState = {
@@ -487,21 +472,20 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     return [nonokoPendingAccountComment, ...filteredComments.filter((comment) => comment.cid !== nonokoPendingAccountComment.cid)];
   }, [nonokoPendingAccountComment, filteredComments]);
 
-  const sortedFeed = useMemo(() => sortBoardActiveFeed(feed), [feed]);
-  const canShowRecentLocalAccountComments = !isSingleCommunityBoard || sortedFeed.length > 0 || isRawBoardThreadStateFullyLoaded;
+  const canShowRecentLocalAccountComments = !isSingleCommunityBoard || feed.length > 0 || isRawBoardThreadStateFullyLoaded;
   const feedWithLocalAccountComments = useMemo(() => {
     if (isBoardRefreshPending) {
-      return sortedFeed;
+      return feed;
     }
 
     const visibleLocalAccountComments = canShowRecentLocalAccountComments ? localAccountComments : nonokoPendingAccountComment ? localAccountComments.slice(0, 1) : [];
 
     if (visibleLocalAccountComments.length === 0) {
-      return sortedFeed;
+      return feed;
     }
 
-    return sortBoardActiveFeed([...feed, ...visibleLocalAccountComments]);
-  }, [canShowRecentLocalAccountComments, feed, isBoardRefreshPending, localAccountComments, nonokoPendingAccountComment, sortedFeed]);
+    return mergeVisibleLocalAccountComments(feed, visibleLocalAccountComments);
+  }, [canShowRecentLocalAccountComments, feed, isBoardRefreshPending, localAccountComments, nonokoPendingAccountComment]);
   const combinedFeed = feedWithLocalAccountComments;
 
   const cappedFeed = useMemo(
