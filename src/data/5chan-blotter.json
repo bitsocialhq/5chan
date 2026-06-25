@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.5",
+      "kind": "release",
+      "timestamp": 1782388800,
+      "message": "v0.9.5: Pure peer-to-peer browser mode by default, more peer routes",
+      "version": "0.9.5"
+    },
+    {
       "id": "release-0.9.4",
       "kind": "release",
       "timestamp": 1781784000,

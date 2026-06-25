@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This release restores desktop .bso board address resolution, fixes stuck loading text on loaded posts, fixes empty board loading and fresh reply handling, and temporarily keeps browser pure P2P off by default while a peer-to-peer publishing bug is investigated.';
+  'This release enables pure peer-to-peer browser mode by default, adds more peer routes, and fixes account recovery reloads, duplicate posting, removed reply visibility, settings refreshes, and the account data editor.';
 
 const releaseBody = `${oneLinerDescription}
 

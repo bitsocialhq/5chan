@@ -1,3 +1,23 @@
+## [0.9.5](https://github.com/bitsocialnet/5chan/compare/v0.9.4...v0.9.5) (2026-06-25)
+
+
+### Bug Fixes
+
+* **account-data-editor:** restore Ace load ordering ([cb74ba8](https://github.com/bitsocialnet/5chan/commit/cb74ba803de69cacb76bfca8137f95a004a4f156))
+* consume enriched account comments directly ([#1178](https://github.com/bitsocialnet/5chan/issues/1178)) ([f1022fc](https://github.com/bitsocialnet/5chan/commit/f1022fc2d929087f5ef2f6769a687de351fada72))
+* **deps:** bump vulnerable transitive dependencies for Dependabot alerts ([7f193b4](https://github.com/bitsocialnet/5chan/commit/7f193b479b76de5d0f4c9bd06059db987fc0dd2a))
+* **p2p:** stop account recovery reload loop ([5dd2d95](https://github.com/bitsocialnet/5chan/commit/5dd2d952136bfa29629ab879c02c91a879a15647))
+* **publishing:** keep submit guard active until publish settles ([0426221](https://github.com/bitsocialnet/5chan/commit/04262214e1d7553ea93b4fbf77946f71242922a1))
+* **replies:** hide no-reason removed replies ([4737d37](https://github.com/bitsocialnet/5chan/commit/4737d379672edb6d67ac453a356aec8a7b21e24e))
+* **settings:** keep pubsub visibility stable before refresh ([ca5582c](https://github.com/bitsocialnet/5chan/commit/ca5582cffacb6ca62937480828446c294a902622))
+
+
+### Features
+
+* **p2p:** enable pure browser p2p by default ([fb00446](https://github.com/bitsocialnet/5chan/commit/fb004469e39ffba7d0a98679da710fc41c9355cd))
+
+
+
 ## [0.9.4](https://github.com/bitsocialnet/5chan/compare/v0.9.3...v0.9.4) (2026-06-18)
 
 
