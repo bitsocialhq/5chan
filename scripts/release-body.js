@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This release enables pure peer-to-peer browser mode by default, adds more peer routes, and fixes account recovery reloads, duplicate posting, removed reply visibility, settings refreshes, and the account data editor.';
+  'This release fixes /all feeds shifting while posts load and keeps partially visible videos playing smoothly.';
 
 const releaseBody = `${oneLinerDescription}
 

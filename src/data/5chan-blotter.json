@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.6",
+      "kind": "release",
+      "timestamp": 1782388800,
+      "message": "v0.9.6: Steadier /all loading, smoother video playback",
+      "version": "0.9.6"
+    },
+    {
       "id": "release-0.9.5",
       "kind": "release",
       "timestamp": 1782388800,

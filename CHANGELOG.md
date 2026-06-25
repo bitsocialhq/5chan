@@ -1,3 +1,13 @@
+## [0.9.6](https://github.com/bitsocialnet/5chan/compare/v0.9.5...v0.9.6) (2026-06-25)
+
+
+### Bug Fixes
+
+* **board:** preserve feed order during hydration ([2ff7b8b](https://github.com/bitsocialnet/5chan/commit/2ff7b8bc8803100fdaf7d2d644f54cdc955eaa80))
+* **media playback:** keep partially visible videos playing ([7fe3bd7](https://github.com/bitsocialnet/5chan/commit/7fe3bd791146d71ab7fb606fc47d00971987d722))
+
+
+
 ## [0.9.5](https://github.com/bitsocialnet/5chan/compare/v0.9.4...v0.9.5) (2026-06-25)
 
 
@@ -1948,5 +1958,3 @@
 * Revert "fix touch bug" ([777935e](https://github.com/bitsocialnet/5chan/commit/777935ecbe1e3d781bc4bbadf8f824323acc8c8d))
 * Revert "test InfiniteScroll" ([212a0c1](https://github.com/bitsocialnet/5chan/commit/212a0c10e8a563b75eb35f8d20ba8b93d0adec45))
 * Revert "better lint, added InfiniteScroll, debugUtils" ([af0a4c6](https://github.com/bitsocialnet/5chan/commit/af0a4c67de33c544f997ec7bd64d94e5a5a41df3))
-
-
