@@ -27,6 +27,8 @@ interface RestoreSuspendedMediaPlaybackOptions {
 
 const suspendedIframes = new WeakMap<HTMLIFrameElement, SuspendedIframeState>();
 
+const getPlayableMediaElements = (element: Element): Element[] => [...element.querySelectorAll(PLAYABLE_MEDIA_SELECTOR)];
+
 const isElementInViewport = (element: Element): boolean => {
   const rect = element.getBoundingClientRect();
   const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
@@ -106,7 +108,9 @@ export const restoreSuspendedMediaPlayback = (container: ParentNode | null, opti
   }
 };
 
-const hasPlayableMedia = (element: Element): boolean => Boolean(element.querySelector(PLAYABLE_MEDIA_SELECTOR));
+const hasPlayableMedia = (element: Element): boolean => getPlayableMediaElements(element).length > 0;
+
+const hasVisiblePlayableMedia = (element: Element): boolean => getPlayableMediaElements(element).some(isElementInViewport);
 
 export const observeOffscreenMediaPlayback = (root: ParentNode | null, options: OffscreenMediaPlaybackOptions = {}) => {
   if (!root || typeof window === 'undefined' || !window.IntersectionObserver || !window.MutationObserver) {
@@ -133,14 +137,14 @@ export const observeOffscreenMediaPlayback = (root: ParentNode | null, options: 
       const target = entry.target;
       clearPendingSuspend(target);
 
-      if (entry.isIntersecting || entry.intersectionRatio > 0) {
+      if (hasVisiblePlayableMedia(target)) {
         restoreSuspendedMediaPlayback(target);
         continue;
       }
 
       const timeout = setTimeout(() => {
         pendingSuspends.delete(target);
-        if (target.isConnected) {
+        if (target.isConnected && !hasVisiblePlayableMedia(target)) {
           suspendMediaPlayback(target);
         }
       }, delayMs);

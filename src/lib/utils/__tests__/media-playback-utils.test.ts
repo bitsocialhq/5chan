@@ -28,11 +28,11 @@ class MockIntersectionObserver {
     this.observedElements.delete(element);
   }
 
-  trigger(target: Element, isIntersecting: boolean) {
+  trigger(target: Element, isIntersecting: boolean, intersectionRatio = isIntersecting ? 1 : 0) {
     this.callback(
       [
         {
-          intersectionRatio: isIntersecting ? 1 : 0,
+          intersectionRatio,
           isIntersecting,
           target,
         } as IntersectionObserverEntry,
@@ -59,6 +59,37 @@ const createExpandedMedia = () => {
 
   return { container, iframe, srcdocIframe, video };
 };
+
+const createClientRect = ({ bottom, height, left, right, top, width }: Pick<DOMRect, 'bottom' | 'height' | 'left' | 'right' | 'top' | 'width'>) =>
+  ({
+    bottom,
+    height,
+    left,
+    right,
+    top,
+    width,
+    x: left,
+    y: top,
+    toJSON: () => '',
+  }) as DOMRect;
+
+const VISIBLE_RECT = createClientRect({
+  bottom: 300,
+  height: 300,
+  left: 0,
+  right: 400,
+  top: 0,
+  width: 400,
+});
+
+const PARTIALLY_VISIBLE_TOP_RECT = createClientRect({
+  bottom: 1,
+  height: 300,
+  left: 0,
+  right: 400,
+  top: -299,
+  width: 400,
+});
 
 describe('media-playback-utils', () => {
   beforeEach(() => {
@@ -99,6 +130,7 @@ describe('media-playback-utils', () => {
     expect(iframe.getAttribute('src')).toBe('about:blank');
     expect(srcdocIframe.getAttribute('srcdoc')).toBeNull();
 
+    vi.spyOn(video, 'getBoundingClientRect').mockReturnValue(VISIBLE_RECT);
     observer.trigger(container, true);
 
     expect(iframe.getAttribute('src')).toBe('https://player.example.com/embed');
@@ -148,6 +180,7 @@ describe('media-playback-utils', () => {
     expect(iframe.getAttribute('src')).toBe('about:blank');
     expect(srcdocIframe.getAttribute('srcdoc')).toBeNull();
 
+    vi.spyOn(video, 'getBoundingClientRect').mockReturnValue(VISIBLE_RECT);
     observer.trigger(container, true);
 
     expect(iframe.getAttribute('src')).toBe('https://player.example.com/embed');
@@ -169,8 +202,30 @@ describe('media-playback-utils', () => {
 
     observer.trigger(container, false);
     await vi.advanceTimersByTimeAsync(999);
+    vi.spyOn(video, 'getBoundingClientRect').mockReturnValue(VISIBLE_RECT);
     observer.trigger(container, true);
     await vi.advanceTimersByTimeAsync(1);
+
+    expect(pauseMock).not.toHaveBeenCalled();
+    expect(iframe.getAttribute('src')).toBe('https://player.example.com/embed');
+
+    cleanup();
+    root.remove();
+  });
+
+  it('keeps expanded media active while the playable element is partially visible', async () => {
+    const root = document.createElement('div');
+    const { container, iframe, video } = createExpandedMedia();
+    const pauseMock = vi.spyOn(video, 'pause').mockImplementation(() => {});
+    vi.spyOn(video, 'getBoundingClientRect').mockReturnValue(PARTIALLY_VISIBLE_TOP_RECT);
+    root.append(container);
+    document.body.append(root);
+
+    const cleanup = observeOffscreenMediaPlayback(root);
+    const observer = MockIntersectionObserver.instances[0];
+
+    observer.trigger(container, false);
+    await vi.advanceTimersByTimeAsync(1000);
 
     expect(pauseMock).not.toHaveBeenCalled();
     expect(iframe.getAttribute('src')).toBe('https://player.example.com/embed');
