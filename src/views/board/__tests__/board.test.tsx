@@ -867,7 +867,7 @@ describe('Board', () => {
     );
   });
 
-  it('keeps propagated board posts in active order when hook updates are appended', async () => {
+  it('preserves hook order when multiboard updates are appended during hydration', async () => {
     const currentTimestamp = Math.floor(Date.now() / 1000);
     testState.pageSizes = {
       guiPostsPerPage: 6,
@@ -876,19 +876,22 @@ describe('Board', () => {
       paginationFeedPostsPerPage: 6,
     };
     testState.feed = [
-      { cid: 'pinned-post', pinned: true, communityAddress: 'music-posting.eth', timestamp: currentTimestamp - 300 },
-      { cid: 'older-post', communityAddress: 'music-posting.eth', lastReplyTimestamp: currentTimestamp - 200, timestamp: currentTimestamp - 200 },
-      { cid: 'newly-propagated-post', communityAddress: 'music-posting.eth', postCid: 'newly-propagated-post', timestamp: currentTimestamp },
-      { cid: 'middle-post', communityAddress: 'music-posting.eth', lastReplyTimestamp: currentTimestamp - 100, timestamp: currentTimestamp - 100 },
+      { cid: 'first-visible-post', communityAddress: 'music-posting.eth', lastReplyTimestamp: currentTimestamp - 200, timestamp: currentTimestamp - 200 },
+      { cid: 'second-visible-post', communityAddress: 'music-posting.eth', lastReplyTimestamp: currentTimestamp - 100, timestamp: currentTimestamp - 100 },
+      { cid: 'later-appended-newer-post', communityAddress: 'sports-posting.bso', postCid: 'later-appended-newer-post', timestamp: currentTimestamp },
     ];
+    testState.filteredDirectoryAddresses = ['music-posting.eth', 'sports-posting.bso'];
 
-    await renderBoard({ initialEntry: '/mu', routePath: '/:boardIdentifier/*' });
+    await renderBoard({
+      boardProps: { viewType: 'all' },
+      initialEntry: '/all',
+      routePath: '/all/*',
+    });
 
     expect(Array.from(container.querySelectorAll('[data-testid="post"]')).map((element) => element.textContent)).toEqual([
-      'pinned-post',
-      'newly-propagated-post',
-      'middle-post',
-      'older-post',
+      'first-visible-post',
+      'second-visible-post',
+      'later-appended-newer-post',
     ]);
   });
 
