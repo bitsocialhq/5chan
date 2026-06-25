@@ -9,15 +9,18 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 const testState = vi.hoisted(() => ({
   account: undefined as Record<string, any> | undefined,
   accounts: [] as Record<string, any>[] | undefined,
+  accountsState: 'initializing',
   createAccountMock: vi.fn().mockResolvedValue(undefined),
+  setActiveAccountMock: vi.fn().mockResolvedValue(undefined),
   setAccountMock: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   createAccount: () => testState.createAccountMock(),
   setAccount: (account: unknown) => testState.setAccountMock(account),
+  setActiveAccount: (accountName: string) => testState.setActiveAccountMock(accountName),
   useAccount: () => testState.account,
-  useAccounts: () => ({ accounts: testState.accounts }),
+  useAccounts: () => ({ accounts: testState.accounts, state: testState.accountsState }),
 }));
 
 let container: HTMLDivElement;
@@ -48,7 +51,9 @@ describe('useBrowserPureP2PAccountUpgrade', () => {
     localStorage.clear();
     testState.account = undefined;
     testState.accounts = [];
+    testState.accountsState = 'initializing';
     testState.createAccountMock.mockReset().mockResolvedValue(undefined);
+    testState.setActiveAccountMock.mockReset().mockResolvedValue(undefined);
     testState.setAccountMock.mockReset().mockResolvedValue(undefined);
     reloadMock = vi.fn();
     Object.defineProperty(window, 'location', {
@@ -144,31 +149,56 @@ describe('useBrowserPureP2PAccountUpgrade', () => {
     expect(reloadMock).not.toHaveBeenCalled();
   });
 
-  it('recovers a missing browser account after the hooks store finishes initializing', async () => {
+  it('waits for the hooks store instead of creating duplicate accounts while initialization is running', async () => {
     vi.useFakeTimers();
     window.BITSOCIAL_REACT_HOOKS_ACCOUNTS_STORE_INITIALIZING = true;
 
     await renderHook();
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(1000);
+      await vi.advanceTimersByTimeAsync(5000);
     });
+
     expect(testState.createAccountMock).not.toHaveBeenCalled();
-
-    window.BITSOCIAL_REACT_HOOKS_ACCOUNTS_STORE_INITIALIZING = false;
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(1000);
-      await Promise.resolve();
-    });
-
-    expect(testState.createAccountMock).toHaveBeenCalledOnce();
-    expect(reloadMock).toHaveBeenCalledOnce();
+    expect(testState.setActiveAccountMock).not.toHaveBeenCalled();
+    expect(reloadMock).not.toHaveBeenCalled();
   });
 
-  it('treats temporarily missing accounts as empty while recovering', async () => {
+  it('recovers an empty account store without reloading', async () => {
+    window.BITSOCIAL_REACT_HOOKS_ACCOUNTS_STORE_INITIALIZING = false;
+
+    await renderHook();
+
+    expect(testState.createAccountMock).toHaveBeenCalledOnce();
+    expect(testState.setActiveAccountMock).not.toHaveBeenCalled();
+    expect(reloadMock).not.toHaveBeenCalled();
+  });
+
+  it('selects the first existing account when no active account is selected', async () => {
+    testState.accountsState = 'succeeded';
+    testState.account = undefined;
+    testState.accounts = [
+      {
+        id: 'account-1',
+        name: 'Account 1',
+      },
+      {
+        id: 'account-2',
+        name: 'Account 2',
+      },
+    ];
+
+    await renderHook();
+
+    expect(testState.setActiveAccountMock).toHaveBeenCalledWith('Account 1');
+    expect(testState.createAccountMock).not.toHaveBeenCalled();
+    expect(reloadMock).not.toHaveBeenCalled();
+  });
+
+  it('treats temporarily missing accounts as still initializing', async () => {
     vi.useFakeTimers();
     testState.accounts = undefined;
-    window.BITSOCIAL_REACT_HOOKS_ACCOUNTS_STORE_INITIALIZING = false;
+    window.BITSOCIAL_REACT_HOOKS_ACCOUNTS_STORE_INITIALIZING = true;
 
     await renderHook();
 
@@ -177,7 +207,8 @@ describe('useBrowserPureP2PAccountUpgrade', () => {
       await Promise.resolve();
     });
 
-    expect(testState.createAccountMock).toHaveBeenCalledOnce();
-    expect(reloadMock).toHaveBeenCalledOnce();
+    expect(testState.createAccountMock).not.toHaveBeenCalled();
+    expect(testState.setActiveAccountMock).not.toHaveBeenCalled();
+    expect(reloadMock).not.toHaveBeenCalled();
   });
 });

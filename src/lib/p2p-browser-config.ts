@@ -2,6 +2,15 @@ export const PURE_P2P_BROWSER_SETTING_KEY = '5chan:pure-p2p-browser-enabled';
 export const BROWSER_PURE_P2P_DEFAULT_ENABLED = false;
 
 const BROWSER_PUBSUB_KUBO_RPC_CLIENTS_OPTIONS = ['https://pubsubprovider.xyz/api/v0', 'https://plebpubsub.xyz/api/v0', 'https://rannithepleb.com/api/v0'];
+// Keep this aligned with bitsocial-react-hooks' DEFAULT_HTTP_ROUTER_URLS without relying on a package-internal runtime import before window.defaultPkcOptions is configured.
+const DEFAULT_HTTP_ROUTER_URLS = [
+  'https://peers.pleb.bot',
+  'https://routing.lol',
+  'https://peers.forumindex.com',
+  'https://peers.plebpubsub.xyz',
+  'https://routerofbitsocial.xyz',
+  'https://bsotracker.online',
+];
 
 export const P2P_BROWSER_PKC_OPTIONS = {
   libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
@@ -9,7 +18,7 @@ export const P2P_BROWSER_PKC_OPTIONS = {
   kuboRpcClientsOptions: undefined,
   pubsubHttpClientsOptions: undefined,
   pubsubKuboRpcClientsOptions: undefined as string[] | undefined,
-  httpRoutersOptions: ['https://peers.plebpubsub.xyz', 'https://routing.lol', 'https://peers.pleb.bot'],
+  httpRoutersOptions: DEFAULT_HTTP_ROUTER_URLS,
 };
 
 const GATEWAY_BROWSER_PKC_OPTIONS = {
@@ -18,7 +27,7 @@ const GATEWAY_BROWSER_PKC_OPTIONS = {
   libp2pJsClientsOptions: undefined,
   pubsubHttpClientsOptions: undefined,
   pubsubKuboRpcClientsOptions: BROWSER_PUBSUB_KUBO_RPC_CLIENTS_OPTIONS,
-  httpRoutersOptions: ['https://routing.lol', 'https://peers.pleb.bot', 'https://peers.plebpubsub.xyz', 'https://peers.forumindex.com'],
+  httpRoutersOptions: DEFAULT_HTTP_ROUTER_URLS,
 };
 
 type P2PBrowserConfigWindow = {

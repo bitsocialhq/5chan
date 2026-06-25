@@ -32,6 +32,7 @@ const testState = vi.hoisted(() => ({
   shouldShowSnow: true,
   createAccountMock: vi.fn().mockResolvedValue(undefined),
   removeSnowMock: vi.fn(),
+  setActiveAccountMock: vi.fn().mockResolvedValue(undefined),
   setAccountMock: vi.fn().mockResolvedValue(undefined),
   replyModalState: {
     activeCid: null,
@@ -52,6 +53,7 @@ const testState = vi.hoisted(() => ({
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   createAccount: () => testState.createAccountMock(),
+  setActiveAccount: (accountName: string) => testState.setActiveAccountMock(accountName),
   setAccount: (account: unknown) => testState.setAccountMock(account),
   useAccount: () => testState.account,
   useAccounts: () => ({ accounts: testState.account ? [testState.account] : [] }),
@@ -371,6 +373,7 @@ describe('App', () => {
     testState.communities = {};
     testState.useThemeMock.mockReset();
     testState.createAccountMock.mockReset().mockResolvedValue(undefined);
+    testState.setActiveAccountMock.mockReset().mockResolvedValue(undefined);
     testState.setAccountMock.mockReset().mockResolvedValue(undefined);
     testState.closeCreateBoardModalMock.mockReset();
     testState.initSnowMock.mockReset();

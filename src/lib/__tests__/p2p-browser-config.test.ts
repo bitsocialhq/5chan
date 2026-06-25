@@ -1,3 +1,4 @@
+import { DEFAULT_HTTP_ROUTER_URLS } from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts/account-generator.js';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -17,7 +18,7 @@ const createStorage = (values: Record<string, string | undefined> = {}) => ({
 });
 
 describe('p2p-browser-config', () => {
-  const defaultHttpRouters = ['https://peers.plebpubsub.xyz', 'https://routing.lol', 'https://peers.pleb.bot'];
+  const defaultHttpRouters = DEFAULT_HTTP_ROUTER_URLS;
 
   it('configures browser PKC options for gateway mode by default', () => {
     const chainProviders = {
@@ -37,6 +38,7 @@ describe('p2p-browser-config', () => {
     expect(targetWindow.defaultPkcOptions).toEqual({
       chainProviders,
       ...getBrowserGatewayPkcOptions(),
+      httpRoutersOptions: defaultHttpRouters,
     });
   });
 
@@ -58,6 +60,7 @@ describe('p2p-browser-config', () => {
     expect(targetWindow.defaultPkcOptions).toEqual({
       chainProviders,
       ...getBrowserGatewayPkcOptions(),
+      httpRoutersOptions: defaultHttpRouters,
     });
   });
 
