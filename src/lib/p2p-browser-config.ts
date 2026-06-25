@@ -1,5 +1,5 @@
 export const PURE_P2P_BROWSER_SETTING_KEY = '5chan:pure-p2p-browser-enabled';
-export const BROWSER_PURE_P2P_DEFAULT_ENABLED = false;
+export const BROWSER_PURE_P2P_DEFAULT_ENABLED = true;
 
 const BROWSER_PUBSUB_KUBO_RPC_CLIENTS_OPTIONS = ['https://pubsubprovider.xyz/api/v0', 'https://plebpubsub.xyz/api/v0', 'https://rannithepleb.com/api/v0'];
 // Keep this aligned with bitsocial-react-hooks' DEFAULT_HTTP_ROUTER_URLS without relying on a package-internal runtime import before window.defaultPkcOptions is configured.

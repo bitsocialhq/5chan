@@ -86,7 +86,8 @@ describe('useBrowserPureP2PAccountUpgrade', () => {
     window.isElectron = false;
   });
 
-  it('does not upgrade stale gateway browser accounts when pure p2p is disabled by default', async () => {
+  it('does not upgrade stale gateway browser accounts when pure p2p is explicitly disabled', async () => {
+    localStorage.setItem('5chan:pure-p2p-browser-enabled', 'false');
     testState.account = {
       id: 'account-1',
       name: 'Account 1',
@@ -104,8 +105,7 @@ describe('useBrowserPureP2PAccountUpgrade', () => {
     expect(reloadMock).not.toHaveBeenCalled();
   });
 
-  it('upgrades stale gateway browser accounts when pure p2p is enabled and reloads after saving', async () => {
-    localStorage.setItem('5chan:pure-p2p-browser-enabled', 'true');
+  it('upgrades stale gateway browser accounts by default and reloads after saving', async () => {
     testState.account = {
       id: 'account-1',
       name: 'Account 1',

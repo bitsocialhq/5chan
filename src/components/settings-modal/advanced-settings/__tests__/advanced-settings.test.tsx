@@ -204,15 +204,15 @@ describe('AdvancedSettings', () => {
     expect(textInputs[2]?.value).toBe('/tmp/connected-node');
   });
 
-  it('shows pure p2p browser mode unchecked by default', async () => {
+  it('shows pure p2p browser mode checked by default', async () => {
     await renderSettings(false);
 
-    expect(container.textContent).toContain('advanced_ipfs_gateways');
-    expect(container.textContent).toContain('advanced_pubsub_providers');
+    expect(container.textContent).not.toContain('advanced_ipfs_gateways');
+    expect(container.textContent).not.toContain('advanced_pubsub_providers');
     expect(container.textContent).toContain('advanced_http_routers');
     expect(container.textContent).toContain('advanced_full_node_websocket_rpc');
     const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
-    expect(checkbox?.checked).toBe(false);
+    expect(checkbox?.checked).toBe(true);
 
     const nodeRpcInput = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="text"]')).find(
       (input) => input.placeholder === 'advanced_p2p_rpc_placeholder',
