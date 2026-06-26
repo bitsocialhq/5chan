@@ -1,3 +1,12 @@
+## [0.9.7](https://github.com/bitsocialnet/5chan/compare/v0.9.6...v0.9.7) (2026-06-26)
+
+
+### Bug Fixes
+
+* **post flags:** show flags on directory candidate boards ([8170cd1](https://github.com/bitsocialnet/5chan/commit/8170cd169d248408fed655a312d2d21362560cfb))
+
+
+
 ## [0.9.6](https://github.com/bitsocialnet/5chan/compare/v0.9.5...v0.9.6) (2026-06-25)
 
 

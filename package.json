@@ -1,6 +1,6 @@
 {
   "name": "5chan",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "packageManager": "yarn@4.13.0",
   "description": "A Bitsocial client with an imageboard UI",
   "type": "module",

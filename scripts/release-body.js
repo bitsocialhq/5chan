@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This release fixes /all feeds shifting while posts load and keeps partially visible videos playing smoothly.';
+  'This release fixes flag display on alternate /pol/ community pages opened by their direct board address.';
 
 const releaseBody = `${oneLinerDescription}
 

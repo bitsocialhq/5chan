@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.7",
+      "kind": "release",
+      "timestamp": 1782475200,
+      "message": "v0.9.7: Flags on alternate /pol/ community pages",
+      "version": "0.9.7"
+    },
+    {
       "id": "release-0.9.6",
       "kind": "release",
       "timestamp": 1782388800,
