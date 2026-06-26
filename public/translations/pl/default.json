@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Tryb przeglądarki czystego P2P",
   "advanced_options_saved_reloading": "Opcje zapisane, ładowanie ponowne...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Błąd podczas zapisywania opcji: {{message}}"
+  "advanced_error_saving_options": "Błąd podczas zapisywania opcji: {{message}}",
+  "advanced_settings_upgrade_available": "aktualizacja ustawień dostępna",
+  "advanced_settings_upgrade_tip": "To nowe domyślne ustawienia 5chan, których brakuje na tym koncie. Odznacz wszystko, czego nie chcesz.",
+  "advanced_settings_upgrade_http_routers": "dodaj nowe trackery HTTP",
+  "advanced_settings_upgrade_http_router_aria": "Dodaj {{router}} do routerów HTTP",
+  "settings_upgrade_keep_current": "zachowaj obecne ustawienia",
+  "settings_upgrade_apply_selected": "zastosuj wybrane zmiany",
+  "settings_upgrade_error_saving": "Nie udało się zapisać aktualizacji ustawień.",
+  "settings_upgrade_review_notice": "aktualizacja ustawień dostępna",
+  "settings_upgrade_review_button": "przejrzyj",
+  "settings_upgrade_never_show_again": "nie pokazuj ponownie"
 }

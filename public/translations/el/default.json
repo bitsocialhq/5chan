@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Λειτουργία καθαρού P2P προγράμματος περιήγησης",
   "advanced_options_saved_reloading": "Οι επιλογές αποθηκεύτηκαν, επαναφόρτωση...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Σφάλμα αποθήκευσης ρυθμίσεων: {{message}}"
+  "advanced_error_saving_options": "Σφάλμα αποθήκευσης ρυθμίσεων: {{message}}",
+  "advanced_settings_upgrade_available": "αναβάθμιση ρυθμίσεων διαθέσιμη",
+  "advanced_settings_upgrade_tip": "Αυτές είναι νέες προεπιλογές 5chan που λείπουν από αυτόν τον λογαριασμό. Αποεπιλέξτε ό,τι δεν θέλετε.",
+  "advanced_settings_upgrade_http_routers": "προσθήκη νέων HTTP trackers",
+  "advanced_settings_upgrade_http_router_aria": "Προσθήκη {{router}} σε δρομολογητές HTTP",
+  "settings_upgrade_keep_current": "διατήρηση τρεχουσών ρυθμίσεων",
+  "settings_upgrade_apply_selected": "εφαρμογή επιλεγμένων αλλαγών",
+  "settings_upgrade_error_saving": "Δεν ήταν δυνατή η αποθήκευση της αναβάθμισης ρυθμίσεων.",
+  "settings_upgrade_review_notice": "αναβάθμιση ρυθμίσεων διαθέσιμη",
+  "settings_upgrade_review_button": "έλεγχος",
+  "settings_upgrade_never_show_again": "να μην εμφανιστεί ξανά"
 }

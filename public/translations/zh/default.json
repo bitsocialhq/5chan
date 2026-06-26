@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "纯 P2P 浏览器模式",
   "advanced_options_saved_reloading": "选项已保存，正在重新加载...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "保存选项时出错：{{message}}"
+  "advanced_error_saving_options": "保存选项时出错：{{message}}",
+  "advanced_settings_upgrade_available": "设置升级可用",
+  "advanced_settings_upgrade_tip": "这些是当前账户缺少的新 5chan 默认设置。取消勾选您不需要的项目。",
+  "advanced_settings_upgrade_http_routers": "添加新的 HTTP 跟踪器",
+  "advanced_settings_upgrade_http_router_aria": "将 {{router}} 添加到 HTTP 路由器",
+  "settings_upgrade_keep_current": "保留当前设置",
+  "settings_upgrade_apply_selected": "应用所选更改",
+  "settings_upgrade_error_saving": "无法保存设置升级。",
+  "settings_upgrade_review_notice": "设置升级可用",
+  "settings_upgrade_review_button": "查看",
+  "settings_upgrade_never_show_again": "不再显示"
 }

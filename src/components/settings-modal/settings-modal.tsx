@@ -1,18 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAccount } from '@bitsocial/bitsocial-react-hooks';
+import { useAccount, usePkcRpcSettings } from '@bitsocial/bitsocial-react-hooks';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import styles from './settings-modal.module.css';
-import AccountSettings from './account-settings';
-import CryptoAddressSetting from './crypto-address-setting';
-import CryptoWalletsSetting from './crypto-wallets-setting';
-import InterfaceSettings from './interface-settings';
-import MediaHostingSettings from './media-hosting-settings';
-import AdvancedSettings from './advanced-settings';
-import SubscriptionsSetting from './subscriptions-setting';
-import TrustedBoardLinksSetting from './trusted-board-links-setting';
-import P2PStatsSettings from './p2p-stats-settings';
+import AccountSettings from './account-settings/account-settings';
+import CryptoAddressSetting from './crypto-address-setting/crypto-address-setting';
+import CryptoWalletsSetting from './crypto-wallets-setting/crypto-wallets-setting';
+import InterfaceSettings from './interface-settings/interface-settings';
+import MediaHostingSettings from './media-hosting-settings/media-hosting-settings';
+import AdvancedSettings from './advanced-settings/advanced-settings';
+import SubscriptionsSetting from './subscriptions-setting/subscriptions-setting';
+import TrustedBoardLinksSetting from './trusted-board-links-setting/trusted-board-links-setting';
+import P2PStatsSettings from './p2p-stats-settings/p2p-stats-settings';
 import { P2P_STATS_SECTION_ID, shouldShowP2PSettingsSection } from '../../lib/p2p-runtime';
+import { getReviewableSettingsUpgrades, getSettingsUpgradeKey, type SettingsUpgradeAccount } from '../../lib/settings-upgrades';
+import useSettingsUpgradeReviewStore from '../../stores/use-settings-upgrade-review-store';
 
 const allSectionIds = [
   'interface-settings',
@@ -32,11 +34,22 @@ const hashToSection = (hash: string, sectionIds = allSectionIds): string | null 
 const SettingsModal = () => {
   const { t } = useTranslation();
   const account = useAccount();
+  const pkcRpc = usePkcRpcSettings();
   const { hash: locationHash, pathname } = useLocation();
   const navigate = useNavigate();
+  const hiddenReviewUpgradeKeys = useSettingsUpgradeReviewStore((state) => state.hiddenReviewUpgradeKeys);
+  const reviewUpgradeKeys = useSettingsUpgradeReviewStore((state) => state.reviewUpgradeKeys);
   const hash = locationHash.slice(1);
   const sectionIds = useMemo(() => (shouldShowP2PSettingsSection(account) ? [...allSectionIds, P2P_STATS_SECTION_ID] : allSectionIds), [account]);
   const hashSection = hashToSection(hash, sectionIds);
+  const settingsUpgradeKeys = useMemo(() => {
+    if (!account || pkcRpc?.state === 'connected') return [];
+
+    const settingsUpgradeAccount = account as SettingsUpgradeAccount;
+    return getReviewableSettingsUpgrades(settingsUpgradeAccount).map((upgrade) => getSettingsUpgradeKey(settingsUpgradeAccount, upgrade));
+  }, [account, pkcRpc?.state]);
+  const visibleSettingsUpgradeKeys = settingsUpgradeKeys.filter((upgradeKey) => !hiddenReviewUpgradeKeys.includes(upgradeKey));
+  const showSettingsUpgradeReview = visibleSettingsUpgradeKeys.length > 0;
 
   const closeModal = useCallback(() => {
     const newPath = pathname.replace(/\/settings$/, '');
@@ -107,6 +120,10 @@ const SettingsModal = () => {
       setExpandedSections(new Set(sectionIds));
       navigate(basePath, { replace: true });
     }
+  };
+
+  const handleReviewSettingsUpgrades = () => {
+    reviewUpgradeKeys(visibleSettingsUpgradeKeys);
   };
 
   const handleKeyDown = (handler: () => void) => (e: React.KeyboardEvent) => {
@@ -201,6 +218,16 @@ const SettingsModal = () => {
             </div>
             {showP2PStatsSettings && <P2PStatsSettings />}
           </>
+        )}
+        {showSettingsUpgradeReview && (
+          <output className={styles.settingsUpgradeNotice} aria-live='polite' data-testid='settings-upgrade-review-banner'>
+            <span>{t('settings_upgrade_review_notice')}</span>
+            {' ['}
+            <button type='button' tabIndex={0} onClick={handleReviewSettingsUpgrades} onKeyDown={handleKeyDown(handleReviewSettingsUpgrades)}>
+              {t('settings_upgrade_review_button')}
+            </button>
+            {']'}
+          </output>
         )}
       </dialog>
     </>

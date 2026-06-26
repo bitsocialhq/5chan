@@ -4,20 +4,26 @@ import { createRoot, Root } from 'react-dom/client';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import SettingsModal from '../settings-modal';
+import useSettingsUpgradeReviewStore from '../../../stores/use-settings-upgrade-review-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
   account: {
+    id: 'account-1',
     pkcOptions: {
       libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
     },
+  } as Record<string, any>,
+  rpcSettings: {
+    state: 'disconnected',
   } as Record<string, any>,
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
+  usePkcRpcSettings: () => testState.rpcSettings,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -26,39 +32,39 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('../account-settings', () => ({
+vi.mock('../account-settings/account-settings', () => ({
   default: () => <div data-testid='account-settings'>account-settings</div>,
 }));
 
-vi.mock('../crypto-address-setting', () => ({
+vi.mock('../crypto-address-setting/crypto-address-setting', () => ({
   default: () => <div data-testid='crypto-address-setting'>crypto-address-setting</div>,
 }));
 
-vi.mock('../crypto-wallets-setting', () => ({
+vi.mock('../crypto-wallets-setting/crypto-wallets-setting', () => ({
   default: () => <div data-testid='crypto-wallets-setting'>crypto-wallets-setting</div>,
 }));
 
-vi.mock('../interface-settings', () => ({
+vi.mock('../interface-settings/interface-settings', () => ({
   default: () => <div data-testid='interface-settings-panel'>interface-settings</div>,
 }));
 
-vi.mock('../media-hosting-settings', () => ({
+vi.mock('../media-hosting-settings/media-hosting-settings', () => ({
   default: () => <div data-testid='media-hosting-settings-panel'>media-hosting-settings</div>,
 }));
 
-vi.mock('../advanced-settings', () => ({
+vi.mock('../advanced-settings/advanced-settings', () => ({
   default: () => <div data-testid='advanced-settings-panel'>advanced-settings</div>,
 }));
 
-vi.mock('../subscriptions-setting', () => ({
+vi.mock('../subscriptions-setting/subscriptions-setting', () => ({
   default: () => <div data-testid='subscriptions-settings-panel'>subscriptions-settings</div>,
 }));
 
-vi.mock('../trusted-board-links-setting', () => ({
+vi.mock('../trusted-board-links-setting/trusted-board-links-setting', () => ({
   default: () => <div data-testid='trusted-board-links-settings-panel'>trusted-board-links-settings</div>,
 }));
 
-vi.mock('../p2p-stats-settings', () => ({
+vi.mock('../p2p-stats-settings/p2p-stats-settings', () => ({
   default: () => <div data-testid='p2p-stats-settings-panel'>p2p-stats-settings</div>,
 }));
 
@@ -91,6 +97,22 @@ const getSectionToggleByText = (text: string) => {
 describe('SettingsModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
+    testState.account = {
+      id: 'account-1',
+      pkcOptions: {
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      },
+    };
+    testState.rpcSettings = {
+      state: 'disconnected',
+    };
+    useSettingsUpgradeReviewStore.setState({
+      hiddenReviewUpgradeKeys: [],
+      persistentDismissedUpgradeKeys: [],
+      reviewedUpgradeKeys: [],
+      reviewRequestId: 0,
+    });
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -173,6 +195,42 @@ describe('SettingsModal', () => {
     expect(container.querySelector('[data-testid="trusted-board-links-settings-panel"]')).toBeNull();
     expect(container.querySelector('[data-testid="advanced-settings-panel"]')).toBeNull();
     expect(container.querySelector('[data-testid="p2p-stats-settings-panel"]')).toBeNull();
+  });
+
+  it('shows a review button for dismissed settings upgrades', async () => {
+    const upgradeKey = 'account-1:http-routers:https://routerofbitsocial.xyz|https://bsotracker.online';
+    testState.account = {
+      id: 'account-1',
+      pkcOptions: {
+        httpRoutersOptions: ['https://routing.lol', 'https://peers.pleb.bot', 'https://peers.plebpubsub.xyz', 'https://peers.forumindex.com'],
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      },
+    };
+    useSettingsUpgradeReviewStore.getState().dismissUpgradeKeys([upgradeKey]);
+
+    render('/all/settings');
+
+    expect(container.textContent).toContain('settings_upgrade_review_notice');
+    const reviewButton = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'settings_upgrade_review_button');
+    if (!reviewButton) {
+      throw new Error('settings upgrade review button not found');
+    }
+    const reviewBanner = container.querySelector('[data-testid="settings-upgrade-review-banner"]');
+    const settingsDialog = container.querySelector('dialog[aria-labelledby="settings-modal-title"]');
+
+    expect(reviewBanner).not.toBeNull();
+    expect(reviewBanner?.textContent).toBe('settings_upgrade_review_notice [settings_upgrade_review_button]');
+    expect(reviewBanner?.querySelector('br')).toBeNull();
+    expect(reviewBanner?.textContent).not.toContain('settings_upgrade_never_show_again');
+    expect(settingsDialog?.lastElementChild).toBe(reviewBanner);
+
+    await act(async () => {
+      reviewButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(localStorage.getItem('5chan:dismissed-settings-upgrades')).not.toContain(upgradeKey);
+    expect(localStorage.getItem('5chan:hidden-settings-upgrade-reviews')).not.toContain(upgradeKey);
+    expect(useSettingsUpgradeReviewStore.getState().reviewRequestId).toBe(1);
   });
 
   it('opens the p2p stats section from its hash when browser pure p2p is enabled', () => {

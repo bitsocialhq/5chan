@@ -1,3 +1,4 @@
+import { DEFAULT_HTTP_ROUTER_URLS } from '@bitsocial/bitsocial-react-hooks/dist/stores/accounts/account-generator.js';
 import { describe, expect, it } from 'vitest';
 import {
   getBrowserGatewayAccountOptions,
@@ -7,6 +8,7 @@ import {
   shouldShowP2PSettingsSection,
   shouldUpgradeBrowserPureP2PAccount,
 } from '../p2p-runtime';
+import { getLegacyDefaultBrowserHttpRoutersOptions } from '../p2p-browser-config';
 
 const browserWindow = {
   electronApi: undefined,
@@ -94,13 +96,27 @@ describe('p2p-runtime', () => {
 
   it('upgrades only stale gateway browser accounts when pure p2p is enabled', () => {
     const gatewayAccount = { pkcOptions: { ipfsGatewayUrls: ['https://gateway.example'] } };
-    const browserAccount = { pkcOptions: { libp2pJsClientsOptions: [{ key: 'libp2pjs' }] } };
+    const browserAccount = { pkcOptions: { httpRoutersOptions: DEFAULT_HTTP_ROUTER_URLS, libp2pJsClientsOptions: [{ key: 'libp2pjs' }] } };
+    const browserAccountWithLegacyDefaultRouters = {
+      pkcOptions: {
+        httpRoutersOptions: ['https://routing.lol', 'https://peers.pleb.bot', 'https://peers.plebpubsub.xyz', 'https://peers.forumindex.com'],
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      },
+    };
+    const browserAccountWithCustomRouters = {
+      pkcOptions: {
+        httpRoutersOptions: ['https://router.custom.example'],
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      },
+    };
     const mixedBrowserAccount = { pkcOptions: { libp2pJsClientsOptions: [{ key: 'libp2pjs' }], pubsubKuboRpcClientsOptions: ['https://pubsub.example/api/v0'] } };
     const fullNodeAccount = { pkcOptions: { pkcRpcClientsOptions: ['ws://node.example'] } };
 
     expect(shouldUpgradeBrowserPureP2PAccount(gatewayAccount, browserWindow)).toBe(true);
     expect(shouldUpgradeBrowserPureP2PAccount(gatewayAccount, browserWindowWithEnabledPureP2P)).toBe(true);
     expect(shouldUpgradeBrowserPureP2PAccount(browserAccount, browserWindow)).toBe(false);
+    expect(shouldUpgradeBrowserPureP2PAccount(browserAccountWithLegacyDefaultRouters, browserWindow)).toBe(false);
+    expect(shouldUpgradeBrowserPureP2PAccount(browserAccountWithCustomRouters, browserWindow)).toBe(false);
     expect(shouldUpgradeBrowserPureP2PAccount(mixedBrowserAccount, browserWindow)).toBe(true);
     expect(shouldUpgradeBrowserPureP2PAccount(fullNodeAccount, browserWindow)).toBe(false);
     expect(shouldUpgradeBrowserPureP2PAccount(gatewayAccount, browserWindowWithDisabledPureP2P)).toBe(false);
@@ -117,6 +133,7 @@ describe('p2p-runtime', () => {
     };
 
     expect(getBrowserPureP2PAccountOptions(account)).toMatchObject({
+      httpRoutersOptions: ['https://custom-router.example'],
       libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
       ipfsGatewayUrls: undefined,
       pkcRpcClientsOptions: undefined,
@@ -128,6 +145,16 @@ describe('p2p-runtime', () => {
       libp2pJsClientsOptions: undefined,
       pkcRpcClientsOptions: undefined,
       pubsubKuboRpcClientsOptions: ['https://pubsubprovider.xyz/api/v0', 'https://plebpubsub.xyz/api/v0', 'https://rannithepleb.com/api/v0'],
+    });
+  });
+
+  it('uses the legacy router baseline when upgrading imported accounts without saved protocol options', () => {
+    expect(getBrowserPureP2PAccountOptions({ id: 'imported-account' })).toMatchObject({
+      httpRoutersOptions: getLegacyDefaultBrowserHttpRoutersOptions(),
+      libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      ipfsGatewayUrls: undefined,
+      pkcRpcClientsOptions: undefined,
+      pubsubKuboRpcClientsOptions: undefined,
     });
   });
 });

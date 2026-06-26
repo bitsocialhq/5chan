@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "وضع متصفح P2P خالص",
   "advanced_options_saved_reloading": "تم حفظ الخيارات، جارٍ إعادة التحميل...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "خطأ في حفظ الخيارات: {{message}}"
+  "advanced_error_saving_options": "خطأ في حفظ الخيارات: {{message}}",
+  "advanced_settings_upgrade_available": "ترقية الإعدادات متاحة",
+  "advanced_settings_upgrade_tip": "هذه إعدادات 5chan الافتراضية الجديدة المفقودة من هذا الحساب. قم بإلغاء تحديد أي شيء لا تريده.",
+  "advanced_settings_upgrade_http_routers": "إضافة متتبعات HTTP جديدة",
+  "advanced_settings_upgrade_http_router_aria": "إضافة {{router}} إلى موجهات HTTP",
+  "settings_upgrade_keep_current": "الإبقاء على الإعدادات الحالية",
+  "settings_upgrade_apply_selected": "تطبيق التغييرات المحددة",
+  "settings_upgrade_error_saving": "تعذر حفظ ترقية الإعدادات.",
+  "settings_upgrade_review_notice": "ترقية الإعدادات متاحة",
+  "settings_upgrade_review_button": "مراجعة",
+  "settings_upgrade_never_show_again": "لا تظهر مرة أخرى"
 }

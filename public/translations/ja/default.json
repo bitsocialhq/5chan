@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "純粋なP2Pブラウザモード",
   "advanced_options_saved_reloading": "オプションを保存しました。再読み込み中...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "オプションの保存中にエラーが発生しました: {{message}}"
+  "advanced_error_saving_options": "オプションの保存中にエラーが発生しました: {{message}}",
+  "advanced_settings_upgrade_available": "設定のアップグレードが利用可能",
+  "advanced_settings_upgrade_tip": "これはこのアカウントに不足している新しい5chanのデフォルト設定です。不要なものはチェックを外してください。",
+  "advanced_settings_upgrade_http_routers": "新しいHTTPトラッカーを追加",
+  "advanced_settings_upgrade_http_router_aria": "{{router}} を HTTPルーターに追加",
+  "settings_upgrade_keep_current": "現在の設定を維持",
+  "settings_upgrade_apply_selected": "選択した変更を適用",
+  "settings_upgrade_error_saving": "設定のアップグレードを保存できませんでした。",
+  "settings_upgrade_review_notice": "設定のアップグレードが利用可能",
+  "settings_upgrade_review_button": "確認",
+  "settings_upgrade_never_show_again": "今後表示しない"
 }

@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Rent P2P-webbläsarläge",
   "advanced_options_saved_reloading": "Alternativ sparade, laddar om...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Fel vid sparande av alternativ: {{message}}"
+  "advanced_error_saving_options": "Fel vid sparande av alternativ: {{message}}",
+  "advanced_settings_upgrade_available": "inställningsuppgradering tillgänglig",
+  "advanced_settings_upgrade_tip": "Det här är nya 5chan-standardinställningar som saknas i detta konto. Avmarkera allt du inte vill ha.",
+  "advanced_settings_upgrade_http_routers": "lägg till nya HTTP-trackers",
+  "advanced_settings_upgrade_http_router_aria": "Lägg till {{router}} i HTTP-routrar",
+  "settings_upgrade_keep_current": "behåll nuvarande inställningar",
+  "settings_upgrade_apply_selected": "tillämpa valda ändringar",
+  "settings_upgrade_error_saving": "Kunde inte spara inställningsuppgraderingen.",
+  "settings_upgrade_review_notice": "inställningsuppgradering tillgänglig",
+  "settings_upgrade_review_button": "granska",
+  "settings_upgrade_never_show_again": "visa inte igen"
 }

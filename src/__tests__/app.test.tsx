@@ -270,6 +270,10 @@ vi.mock('../components/settings-modal', () => ({
   default: MockSettingsModal,
 }));
 
+vi.mock('../components/settings-upgrade-modal', () => ({
+  default: makeNamedComponent('settings-upgrade-modal'),
+}));
+
 vi.mock('../components/reply-modal', () => ({
   default: ({ parentCid, postCid }: { parentCid: string; postCid: string }) => createElement('div', { 'data-testid': 'reply-modal' }, `${parentCid}:${postCid}`),
 }));

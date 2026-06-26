@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Modalitet shfletuesi P2P i pastër",
   "advanced_options_saved_reloading": "Opsionet u ruajtën, po ringarkohet...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Gabim gjatë ruajtjes së opsioneve: {{message}}"
+  "advanced_error_saving_options": "Gabim gjatë ruajtjes së opsioneve: {{message}}",
+  "advanced_settings_upgrade_available": "përmirësim i cilësimeve i disponueshëm",
+  "advanced_settings_upgrade_tip": "Këto janë parazgjedhje të reja 5chan që mungojnë në këtë llogari. Hiqni shenjën nga çdo gjë që nuk dëshironi.",
+  "advanced_settings_upgrade_http_routers": "shto gjurmues HTTP të rinj",
+  "advanced_settings_upgrade_http_router_aria": "Shto {{router}} te routerët HTTP",
+  "settings_upgrade_keep_current": "mbaj cilësimet aktuale",
+  "settings_upgrade_apply_selected": "apliko ndryshimet e zgjedhura",
+  "settings_upgrade_error_saving": "Nuk u ruajt përmirësimi i cilësimeve.",
+  "settings_upgrade_review_notice": "përmirësim i cilësimeve i disponueshëm",
+  "settings_upgrade_review_button": "shqyrto",
+  "settings_upgrade_never_show_again": "mos e shfaq më"
 }

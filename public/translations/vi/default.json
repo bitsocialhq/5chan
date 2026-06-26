@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Chế độ trình duyệt P2P thuần túy",
   "advanced_options_saved_reloading": "Đã lưu tùy chọn, đang tải lại...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Lỗi khi lưu tùy chọn: {{message}}"
+  "advanced_error_saving_options": "Lỗi khi lưu tùy chọn: {{message}}",
+  "advanced_settings_upgrade_available": "nâng cấp cài đặt có sẵn",
+  "advanced_settings_upgrade_tip": "Đây là các giá trị mặc định mới của 5chan còn thiếu trong tài khoản này. Bỏ chọn những mục bạn không muốn.",
+  "advanced_settings_upgrade_http_routers": "thêm trình theo dõi HTTP mới",
+  "advanced_settings_upgrade_http_router_aria": "Thêm {{router}} vào bộ định tuyến HTTP",
+  "settings_upgrade_keep_current": "giữ cài đặt hiện tại",
+  "settings_upgrade_apply_selected": "áp dụng các thay đổi đã chọn",
+  "settings_upgrade_error_saving": "Không thể lưu bản nâng cấp cài đặt.",
+  "settings_upgrade_review_notice": "nâng cấp cài đặt có sẵn",
+  "settings_upgrade_review_button": "xem lại",
+  "settings_upgrade_never_show_again": "không hiển thị lại"
 }

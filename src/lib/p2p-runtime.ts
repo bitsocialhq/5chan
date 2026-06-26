@@ -1,4 +1,11 @@
-import { canUsePureP2PBrowser, getBrowserGatewayPkcOptions, getBrowserPureP2PPkcOptions, isElectronRuntime, shouldUsePureP2PBrowser } from './p2p-browser-config';
+import {
+  canUsePureP2PBrowser,
+  getBrowserGatewayPkcOptions,
+  getBrowserPureP2PPkcOptions,
+  getLegacyDefaultBrowserHttpRoutersOptions,
+  isElectronRuntime,
+  shouldUsePureP2PBrowser,
+} from './p2p-browser-config';
 
 export const P2P_STATS_SECTION_ID = 'p2p-stats-settings';
 
@@ -64,11 +71,17 @@ export const isBrowserPureP2PEnabled = (account?: unknown, targetWindow: Window 
   return shouldUsePureP2PBrowser(targetWindow);
 };
 
-export const getBrowserPureP2PAccountOptions = (account?: unknown) => ({
-  ...toAccountShape(account)?.pkcOptions,
-  ...getBrowserPureP2PPkcOptions(),
-  pkcRpcClientsOptions: undefined,
-});
+export const getBrowserPureP2PAccountOptions = (account?: unknown) => {
+  const protocolOptions = toAccountShape(account)?.pkcOptions;
+  const pureP2POptions = getBrowserPureP2PPkcOptions();
+
+  return {
+    ...protocolOptions,
+    ...pureP2POptions,
+    httpRoutersOptions: hasArrayItems(protocolOptions?.httpRoutersOptions) ? protocolOptions?.httpRoutersOptions : getLegacyDefaultBrowserHttpRoutersOptions(),
+    pkcRpcClientsOptions: undefined,
+  };
+};
 
 export const shouldUpgradeBrowserPureP2PAccount = (account?: unknown, targetWindow: Window = window) => {
   if (!account || typeof account !== 'object' || !canConfigureBrowserPureP2P(targetWindow) || !isBrowserPureP2PEnabled(account, targetWindow)) return false;

@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "خالص P2P براؤزر موڈ",
   "advanced_options_saved_reloading": "اختیارات محفوظ ہو گئیں، دوبارہ لوڈ ہو رہا ہے...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "اختیارات محفوظ کرنے میں خرابی: {{message}}"
+  "advanced_error_saving_options": "اختیارات محفوظ کرنے میں خرابی: {{message}}",
+  "advanced_settings_upgrade_available": "ترتیبات اپ گریڈ دستیاب",
+  "advanced_settings_upgrade_tip": "یہ نئے 5chan ڈیفالٹ ہیں جو اس اکاؤنٹ میں موجود نہیں۔ جو آپ نہیں چاہتے، ان کا نشان ہٹا دیں۔",
+  "advanced_settings_upgrade_http_routers": "نئے HTTP ٹریکرس شامل کریں",
+  "advanced_settings_upgrade_http_router_aria": "HTTP روٹرز میں {{router}} شامل کریں",
+  "settings_upgrade_keep_current": "موجودہ ترتیبات برقرار رکھیں",
+  "settings_upgrade_apply_selected": "منتخب تبدیلیاں لاگو کریں",
+  "settings_upgrade_error_saving": "ترتیبات اپ گریڈ محفوظ نہیں ہو سکی۔",
+  "settings_upgrade_review_notice": "ترتیبات اپ گریڈ دستیاب",
+  "settings_upgrade_review_button": "جائزہ لیں",
+  "settings_upgrade_never_show_again": "دوبارہ نہ دکھائیں"
 }

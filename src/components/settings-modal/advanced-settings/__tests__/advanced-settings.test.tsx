@@ -220,6 +220,22 @@ describe('AdvancedSettings', () => {
     expect(nodeRpcInput).toBeTruthy();
   });
 
+  it('keeps settings upgrade review out of advanced settings', async () => {
+    testState.account = {
+      mediaIpfsGatewayUrl: 'https://media.old.example',
+      pkcOptions: {
+        httpRoutersOptions: ['https://routing.lol', 'https://peers.pleb.bot', 'https://peers.plebpubsub.xyz', 'https://peers.forumindex.com'],
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      },
+    };
+
+    await renderSettings(false);
+
+    expect(container.textContent).not.toContain('advanced_settings_upgrade_available');
+    expect(container.textContent).not.toContain('https://routerofbitsocial.xyz');
+    expect(container.textContent).not.toContain('https://bsotracker.online');
+  });
+
   it('saves browser pure p2p settings when the toggle is turned on', async () => {
     localStorage.setItem('5chan:pure-p2p-browser-enabled', 'false');
 

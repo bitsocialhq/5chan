@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "বিশুদ্ধ P2P ব্রাউজার মোড",
   "advanced_options_saved_reloading": "বিকল্পগুলো সংরক্ষণ করা হয়েছে, পুনরায় লোড করা হচ্ছে...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "বিকল্প সংরক্ষণে ত্রুটি: {{message}}"
+  "advanced_error_saving_options": "বিকল্প সংরক্ষণে ত্রুটি: {{message}}",
+  "advanced_settings_upgrade_available": "সেটিংস আপগ্রেড উপলব্ধ",
+  "advanced_settings_upgrade_tip": "এগুলো এই অ্যাকাউন্টে অনুপস্থিত নতুন 5chan ডিফল্ট। যা চান না, তা আনচেক করুন।",
+  "advanced_settings_upgrade_http_routers": "নতুন HTTP ট্র্যাকার যোগ করুন",
+  "advanced_settings_upgrade_http_router_aria": "HTTP রাউটারে {{router}} যোগ করুন",
+  "settings_upgrade_keep_current": "বর্তমান সেটিংস রাখুন",
+  "settings_upgrade_apply_selected": "নির্বাচিত পরিবর্তনগুলি প্রয়োগ করুন",
+  "settings_upgrade_error_saving": "সেটিংস আপগ্রেড সংরক্ষণ করা যায়নি।",
+  "settings_upgrade_review_notice": "সেটিংস আপগ্রেড উপলব্ধ",
+  "settings_upgrade_review_button": "পর্যালোচনা",
+  "settings_upgrade_never_show_again": "আর দেখাবেন না"
 }

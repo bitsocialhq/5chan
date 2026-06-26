@@ -4,6 +4,7 @@ import { deleteAccount, exportAccount, importAccount, setActiveAccount, useAccou
 import styles from './account-settings.module.css';
 import { Capacitor } from '@capacitor/core';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { getLegacyDefaultBrowserHttpRoutersOptions } from '../../../lib/p2p-browser-config';
 
 const isAndroid = Capacitor.getPlatform() === 'android';
 const IMPORTED_ACCOUNT_ADDRESSES_STORAGE_KEY = 'importedAccountAddresses';
@@ -62,6 +63,18 @@ const getImportedAccountActiveName = (importedAccountName: string | undefined, a
     return undefined;
   }
   return accounts.some((account) => account?.name === importedAccountName) ? `${importedAccountName} 2` : importedAccountName;
+};
+
+type ImportedAccountProtocolOptions = Record<string, unknown> & {
+  httpRoutersOptions?: unknown;
+};
+
+const toImportedAccountProtocolOptions = (protocolOptions: unknown): ImportedAccountProtocolOptions =>
+  protocolOptions && typeof protocolOptions === 'object' && !Array.isArray(protocolOptions) ? (protocolOptions as ImportedAccountProtocolOptions) : {};
+
+const hasExplicitHttpRoutersOptions = (protocolOptions: unknown) => {
+  const httpRoutersOptions = toImportedAccountProtocolOptions(protocolOptions).httpRoutersOptions;
+  return Array.isArray(httpRoutersOptions) && httpRoutersOptions.some((routerUrl) => typeof routerUrl === 'string' && routerUrl.trim().length > 0);
 };
 
 // Inner component keyed by account id so state resets when user switches account
@@ -139,7 +152,13 @@ const AccountSettingsEditor = ({
         }
 
         const accountData = safeParseJSON<{
-          account?: { communities?: Record<string, unknown>; subscriptions?: string[]; author?: { address?: string }; name?: string };
+          account?: {
+            communities?: Record<string, unknown>;
+            subscriptions?: string[];
+            author?: { address?: string };
+            name?: string;
+            pkcOptions?: ImportedAccountProtocolOptions;
+          };
         }>(fileContent);
         if (!accountData) {
           alert('Invalid JSON in file.');
@@ -160,6 +179,13 @@ const AccountSettingsEditor = ({
             }
           }
           accountData.account.subscriptions = uniqueSubscriptions;
+        }
+
+        if (accountData.account && !hasExplicitHttpRoutersOptions(accountData.account.pkcOptions)) {
+          accountData.account.pkcOptions = {
+            ...toImportedAccountProtocolOptions(accountData.account.pkcOptions),
+            httpRoutersOptions: getLegacyDefaultBrowserHttpRoutersOptions(),
+          };
         }
 
         const modifiedAccountJson = JSON.stringify(accountData);

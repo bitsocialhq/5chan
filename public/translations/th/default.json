@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "โหมดเบราว์เซอร์ P2P แบบบริสุทธิ์",
   "advanced_options_saved_reloading": "บันทึกตัวเลือกแล้ว กำลังโหลดใหม่...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "เกิดข้อผิดพลาดในการบันทึกตัวเลือก: {{message}}"
+  "advanced_error_saving_options": "เกิดข้อผิดพลาดในการบันทึกตัวเลือก: {{message}}",
+  "advanced_settings_upgrade_available": "มีการอัปเกรดการตั้งค่า",
+  "advanced_settings_upgrade_tip": "นี่คือค่าเริ่มต้น 5chan ใหม่ที่บัญชีนี้ยังไม่มี ให้ยกเลิกการเลือกสิ่งที่คุณไม่ต้องการ",
+  "advanced_settings_upgrade_http_routers": "เพิ่ม HTTP tracker ใหม่",
+  "advanced_settings_upgrade_http_router_aria": "เพิ่ม {{router}} ในเราเตอร์ HTTP",
+  "settings_upgrade_keep_current": "คงการตั้งค่าปัจจุบัน",
+  "settings_upgrade_apply_selected": "ใช้การเปลี่ยนแปลงที่เลือก",
+  "settings_upgrade_error_saving": "ไม่สามารถบันทึกการอัปเกรดการตั้งค่าได้",
+  "settings_upgrade_review_notice": "มีการอัปเกรดการตั้งค่า",
+  "settings_upgrade_review_button": "ตรวจสอบ",
+  "settings_upgrade_never_show_again": "ไม่ต้องแสดงอีก"
 }

@@ -2,8 +2,11 @@ import { DEFAULT_HTTP_ROUTER_URLS } from '@bitsocial/bitsocial-react-hooks/dist/
 import { describe, expect, it } from 'vitest';
 
 import {
+  addBrowserHttpRoutersOptions,
   configureP2PBrowserPkcOptions,
+  getBrowserHttpRoutersSettingsUpgrade,
   getBrowserGatewayPkcOptions,
+  getLegacyDefaultBrowserHttpRoutersOptions,
   getPureP2PBrowserPreference,
   PURE_P2P_BROWSER_SETTING_KEY,
   setPureP2PBrowserPreference,
@@ -19,6 +22,8 @@ const createStorage = (values: Record<string, string | undefined> = {}) => ({
 
 describe('p2p-browser-config', () => {
   const defaultHttpRouters = DEFAULT_HTTP_ROUTER_URLS;
+  const legacyGatewayHttpRouters = ['https://routing.lol', 'https://peers.pleb.bot', 'https://peers.plebpubsub.xyz', 'https://peers.forumindex.com'];
+  const legacyPureP2PHttpRouters = ['https://peers.plebpubsub.xyz', 'https://routing.lol', 'https://peers.pleb.bot'];
 
   it('configures browser PKC options for pure p2p mode by default', () => {
     const chainProviders = {
@@ -116,5 +121,42 @@ describe('p2p-browser-config', () => {
     setPureP2PBrowserPreference(true, targetWindow);
     expect(getPureP2PBrowserPreference(targetWindow)).toBe(true);
     expect(shouldUsePureP2PBrowser(targetWindow)).toBe(true);
+  });
+
+  it('describes a reviewable upgrade for legacy shipped router defaults', () => {
+    expect(getLegacyDefaultBrowserHttpRoutersOptions()).toEqual(legacyGatewayHttpRouters);
+    expect(getBrowserHttpRoutersSettingsUpgrade(legacyGatewayHttpRouters)).toEqual({
+      currentHttpRoutersOptions: legacyGatewayHttpRouters,
+      missingDefaultHttpRoutersOptions: ['https://routerofbitsocial.xyz', 'https://bsotracker.online'],
+      upgradedHttpRoutersOptions: [...legacyGatewayHttpRouters, 'https://routerofbitsocial.xyz', 'https://bsotracker.online'],
+    });
+    expect(getBrowserHttpRoutersSettingsUpgrade(legacyPureP2PHttpRouters)).toEqual({
+      currentHttpRoutersOptions: legacyPureP2PHttpRouters,
+      missingDefaultHttpRoutersOptions: ['https://peers.forumindex.com', 'https://routerofbitsocial.xyz', 'https://bsotracker.online'],
+      upgradedHttpRoutersOptions: [...legacyPureP2PHttpRouters, 'https://peers.forumindex.com', 'https://routerofbitsocial.xyz', 'https://bsotracker.online'],
+    });
+  });
+
+  it('keeps partially applied shipped router defaults reviewable', () => {
+    const partiallyUpgradedRouters = [...legacyGatewayHttpRouters, 'https://routerofbitsocial.xyz'];
+
+    expect(getBrowserHttpRoutersSettingsUpgrade(partiallyUpgradedRouters)).toEqual({
+      currentHttpRoutersOptions: partiallyUpgradedRouters,
+      missingDefaultHttpRoutersOptions: ['https://bsotracker.online'],
+      upgradedHttpRoutersOptions: [...partiallyUpgradedRouters, 'https://bsotracker.online'],
+    });
+  });
+
+  it('does not offer default upgrades for custom router lists', () => {
+    const customRouters = ['https://router.custom.example', 'https://peers.pleb.bot'];
+
+    expect(getBrowserHttpRoutersSettingsUpgrade(customRouters)).toBeUndefined();
+  });
+
+  it('adds selected browser routers without changing existing order', () => {
+    expect(addBrowserHttpRoutersOptions(legacyGatewayHttpRouters, ['https://bsotracker.online', 'https://routing.lol'])).toEqual([
+      ...legacyGatewayHttpRouters,
+      'https://bsotracker.online',
+    ]);
   });
 });

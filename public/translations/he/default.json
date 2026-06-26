@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "מצב דפדפן P2P טהור",
   "advanced_options_saved_reloading": "ההגדרות נשמרו, טוען מחדש...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "שגיאה בשמירת האפשרויות: {{message}}"
+  "advanced_error_saving_options": "שגיאה בשמירת האפשרויות: {{message}}",
+  "advanced_settings_upgrade_available": "שדרוג הגדרות זמין",
+  "advanced_settings_upgrade_tip": "אלה ברירות המחדל החדשות של 5chan שחסרות בחשבון זה. בטל סימון של כל מה שאינך רוצה.",
+  "advanced_settings_upgrade_http_routers": "הוסף מעקבי HTTP חדשים",
+  "advanced_settings_upgrade_http_router_aria": "הוסף את {{router}} לנתבי HTTP",
+  "settings_upgrade_keep_current": "שמור על ההגדרות הנוכחיות",
+  "settings_upgrade_apply_selected": "החל שינויים שנבחרו",
+  "settings_upgrade_error_saving": "לא ניתן לשמור את שדרוג ההגדרות.",
+  "settings_upgrade_review_notice": "שדרוג הגדרות זמין",
+  "settings_upgrade_review_button": "סקור",
+  "settings_upgrade_never_show_again": "לא להציג שוב"
 }

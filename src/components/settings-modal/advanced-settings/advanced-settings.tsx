@@ -293,7 +293,7 @@ const AdvancedSettings = () => {
 
     const ethRpcUrls = getTrimmedLines(ethRpcRef.current?.value);
 
-    const httpRoutersOptions = getTrimmedLines(httpRoutersRef.current?.value);
+    const httpRoutersOptions = httpRoutersRef.current ? getTrimmedLines(httpRoutersRef.current.value) : protocolOptions?.httpRoutersOptions;
 
     const pkcRpcClientsOptions = p2pRpcRef.current?.value.trim() ? [p2pRpcRef.current.value.trim()] : undefined;
     const dataPath = p2pDataPathRef.current?.value.trim() || undefined;

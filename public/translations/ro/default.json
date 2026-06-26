@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Mod browser P2P pur",
   "advanced_options_saved_reloading": "Opțiuni salvate, se reîncarcă...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Eroare la salvarea opțiunilor: {{message}}"
+  "advanced_error_saving_options": "Eroare la salvarea opțiunilor: {{message}}",
+  "advanced_settings_upgrade_available": "actualizare setări disponibilă",
+  "advanced_settings_upgrade_tip": "Acestea sunt noi setări implicite 5chan lipsă din acest cont. Debifați tot ce nu doriți.",
+  "advanced_settings_upgrade_http_routers": "adaugă noi trackere HTTP",
+  "advanced_settings_upgrade_http_router_aria": "Adaugă {{router}} la routerele HTTP",
+  "settings_upgrade_keep_current": "păstrează setările actuale",
+  "settings_upgrade_apply_selected": "aplică modificările selectate",
+  "settings_upgrade_error_saving": "Nu s-a putut salva actualizarea setărilor.",
+  "settings_upgrade_review_notice": "actualizare setări disponibilă",
+  "settings_upgrade_review_button": "revizuiește",
+  "settings_upgrade_never_show_again": "nu mai afișa"
 }
