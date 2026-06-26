@@ -14,6 +14,7 @@ import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView
 import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
+import { useDirectoryEntry } from '../../hooks/use-directory-entry';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useAuthorAddressClick from '../../hooks/use-author-address-click';
 import { useCommentMediaInfo } from '../../hooks/use-comment-media-info';
@@ -88,7 +89,7 @@ const PostInfoAndMedia = ({
   const archived = isCommentArchived(resolvedPost);
   const purged = resolvedPost?.commentModeration?.purged;
   const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
-  const directoryEntry = communityAddress ? findDirectoryByAddress(directories, communityAddress) : undefined;
+  const directoryEntry = useDirectoryEntry(communityAddress);
   const showAuthorFlags = hasCommentFlagsForDirectory(directoryEntry) && !(deleted || removed || purged);
   const displayBoardPath =
     boardPath && communityAddress

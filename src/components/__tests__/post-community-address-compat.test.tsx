@@ -19,6 +19,7 @@ type TestComment = {
   communityAddress?: string;
   content?: string;
   deleted?: boolean;
+  flairs?: Array<{ code?: string; text?: string; type?: string }>;
   index?: number;
   link?: string;
   linkHeight?: number;
@@ -48,6 +49,7 @@ type TestComment = {
 const testState = vi.hoisted(() => ({
   addChallengeMock: vi.fn(),
   accountCommentsByCid: {} as Record<string, TestComment | undefined>,
+  directoryEntryByAddress: {} as Record<string, { address: string; directoryCode?: string; features?: Record<string, unknown>; title?: string } | undefined>,
   hasMoreReplies: false,
   openReplyModalMock: vi.fn(),
   pseudonymityMode: 'none',
@@ -210,6 +212,10 @@ vi.mock('../../stores/use-mod-queue-store', () => ({
 vi.mock('../../hooks/use-directories', () => ({
   findDirectoryByAddress: (_directories: unknown[], address?: string) => (address ? { address, features: {} } : undefined),
   useDirectories: () => [{ address: 'music-posting.eth', title: '/mu/ - Music' }],
+}));
+
+vi.mock('../../hooks/use-directory-entry', () => ({
+  useDirectoryEntry: (address?: string) => (address ? testState.directoryEntryByAddress[address] : undefined),
 }));
 
 vi.mock('../../lib/utils/route-utils', () => ({
@@ -458,6 +464,9 @@ describe('post community address compatibility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     testState.accountCommentsByCid = {};
+    testState.directoryEntryByAddress = {
+      'music-posting.eth': { address: 'music-posting.eth', features: {} },
+    };
     testState.hasMoreReplies = false;
     testState.pseudonymityMode = 'none';
     testState.replyComments = [];
@@ -531,6 +540,26 @@ describe('post community address compatibility', () => {
     expect(container.textContent).toContain('Anonymous');
     expect(container.textContent).toContain('## 5chan Dev');
     expect(container.querySelector('.capcodeAdminIcon')).toBeTruthy();
+  });
+
+  it('renders author flags for raw-address posts on non-primary directory candidate boards', async () => {
+    testState.directoryEntryByAddress['nothing-is-beyond-our-reach.bso'] = {
+      address: 'nothing-is-beyond-our-reach.bso',
+      directoryCode: 'pol',
+      features: { hasFlags: true },
+      title: '/pol/ - Politically Incorrect',
+    };
+    const post = {
+      ...makeLegacyThreadWithoutReplies(),
+      communityAddress: 'nothing-is-beyond-our-reach.bso',
+      flairs: [{ text: 'flag:pol:AC' }],
+    };
+
+    await renderWithRoute(createElement(PostDesktop, { post } as any), '/nothing-is-beyond-our-reach.bso/thread/post-1');
+    expect(container.querySelector('img[title="Anarcho-Capitalist"]')).toBeTruthy();
+
+    await renderWithRoute(createElement(PostMobile, { post } as any), '/nothing-is-beyond-our-reach.bso/thread/post-1');
+    expect(container.querySelector('img[title="Anarcho-Capitalist"]')).toBeTruthy();
   });
 
   it('falls back to author shortAddress when the full author address cannot be shortened', async () => {
