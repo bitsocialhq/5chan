@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "خطأ في حفظ الخيارات: {{message}}",
   "advanced_settings_upgrade_available": "ترقية الإعدادات متاحة",
   "advanced_settings_upgrade_tip": "هذه إعدادات 5chan الافتراضية الجديدة المفقودة من هذا الحساب. قم بإلغاء تحديد أي شيء لا تريده.",
-  "advanced_settings_upgrade_http_routers": "إضافة متتبعات HTTP جديدة",
+  "advanced_settings_upgrade_http_routers": "إضافة موجهات HTTP جديدة",
   "advanced_settings_upgrade_http_router_aria": "إضافة {{router}} إلى موجهات HTTP",
   "settings_upgrade_keep_current": "الإبقاء على الإعدادات الحالية",
   "settings_upgrade_apply_selected": "تطبيق التغييرات المحددة",

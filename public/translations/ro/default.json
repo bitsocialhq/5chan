@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "Eroare la salvarea opțiunilor: {{message}}",
   "advanced_settings_upgrade_available": "actualizare setări disponibilă",
   "advanced_settings_upgrade_tip": "Acestea sunt noi setări implicite 5chan lipsă din acest cont. Debifați tot ce nu doriți.",
-  "advanced_settings_upgrade_http_routers": "adaugă noi trackere HTTP",
+  "advanced_settings_upgrade_http_routers": "adaugă noi routere HTTP",
   "advanced_settings_upgrade_http_router_aria": "Adaugă {{router}} la routerele HTTP",
   "settings_upgrade_keep_current": "păstrează setările actuale",
   "settings_upgrade_apply_selected": "aplică modificările selectate",

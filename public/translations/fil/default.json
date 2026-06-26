@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "Error sa pag-save ng mga opsyon: {{message}}",
   "advanced_settings_upgrade_available": "may upgrade ng setting",
   "advanced_settings_upgrade_tip": "Ito ang mga bagong default ng 5chan na wala sa account na ito. Alisin ang check sa anumang ayaw mo.",
-  "advanced_settings_upgrade_http_routers": "magdagdag ng mga bagong HTTP tracker",
+  "advanced_settings_upgrade_http_routers": "magdagdag ng mga bagong HTTP routers",
   "advanced_settings_upgrade_http_router_aria": "Idagdag ang {{router}} sa HTTP routers",
   "settings_upgrade_keep_current": "panatilihin ang kasalukuyang mga setting",
   "settings_upgrade_apply_selected": "ilapat ang mga napiling pagbabago",

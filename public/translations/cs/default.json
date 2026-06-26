@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "Chyba při ukládání možností: {{message}}",
   "advanced_settings_upgrade_available": "upgrade nastavení k dispozici",
   "advanced_settings_upgrade_tip": "Toto jsou nová výchozí nastavení 5chan, která v tomto účtu chybí. Zrušte zaškrtnutí u všeho, co nechcete.",
-  "advanced_settings_upgrade_http_routers": "přidat nové HTTP trackery",
+  "advanced_settings_upgrade_http_routers": "přidat nové HTTP směrovače",
   "advanced_settings_upgrade_http_router_aria": "Přidat {{router}} do HTTP směrovačů",
   "settings_upgrade_keep_current": "ponechat stávající nastavení",
   "settings_upgrade_apply_selected": "použít vybrané změny",

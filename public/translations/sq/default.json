@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "Gabim gjatë ruajtjes së opsioneve: {{message}}",
   "advanced_settings_upgrade_available": "përmirësim i cilësimeve i disponueshëm",
   "advanced_settings_upgrade_tip": "Këto janë parazgjedhje të reja 5chan që mungojnë në këtë llogari. Hiqni shenjën nga çdo gjë që nuk dëshironi.",
-  "advanced_settings_upgrade_http_routers": "shto gjurmues HTTP të rinj",
+  "advanced_settings_upgrade_http_routers": "shto routerë HTTP të rinj",
   "advanced_settings_upgrade_http_router_aria": "Shto {{router}} te routerët HTTP",
   "settings_upgrade_keep_current": "mbaj cilësimet aktuale",
   "settings_upgrade_apply_selected": "apliko ndryshimet e zgjedhura",

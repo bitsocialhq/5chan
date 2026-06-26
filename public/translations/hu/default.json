@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "Hiba a beállítások mentésekor: {{message}}",
   "advanced_settings_upgrade_available": "beállításfrissítés elérhető",
   "advanced_settings_upgrade_tip": "Ezek olyan új 5chan-alapértelmezések, amelyek hiányoznak ebből a fiókból. Vegye ki a pipát mindenből, amit nem szeretne.",
-  "advanced_settings_upgrade_http_routers": "új HTTP trackerek hozzáadása",
+  "advanced_settings_upgrade_http_routers": "új HTTP routerek hozzáadása",
   "advanced_settings_upgrade_http_router_aria": "{{router}} hozzáadása HTTP routerekhez",
   "settings_upgrade_keep_current": "jelenlegi beállítások megtartása",
   "settings_upgrade_apply_selected": "kiválasztott módosítások alkalmazása",

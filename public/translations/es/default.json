@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "Error al guardar las opciones: {{message}}",
   "advanced_settings_upgrade_available": "actualización de configuración disponible",
   "advanced_settings_upgrade_tip": "Estos son nuevos valores predeterminados de 5chan que faltan en esta cuenta. Desmarca lo que no quieras.",
-  "advanced_settings_upgrade_http_routers": "añadir nuevos rastreadores HTTP",
+  "advanced_settings_upgrade_http_routers": "añadir nuevos enrutadores HTTP",
   "advanced_settings_upgrade_http_router_aria": "Agregar {{router}} a los enrutadores HTTP",
   "settings_upgrade_keep_current": "mantener la configuración actual",
   "settings_upgrade_apply_selected": "aplicar cambios seleccionados",

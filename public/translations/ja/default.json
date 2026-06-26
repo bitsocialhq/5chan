@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "オプションの保存中にエラーが発生しました: {{message}}",
   "advanced_settings_upgrade_available": "設定のアップグレードが利用可能",
   "advanced_settings_upgrade_tip": "これはこのアカウントに不足している新しい5chanのデフォルト設定です。不要なものはチェックを外してください。",
-  "advanced_settings_upgrade_http_routers": "新しいHTTPトラッカーを追加",
+  "advanced_settings_upgrade_http_routers": "新しいHTTPルーターを追加",
   "advanced_settings_upgrade_http_router_aria": "{{router}} を HTTPルーターに追加",
   "settings_upgrade_keep_current": "現在の設定を維持",
   "settings_upgrade_apply_selected": "選択した変更を適用",

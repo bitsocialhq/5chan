@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "Seçenekler kaydedilirken hata oluştu: {{message}}",
   "advanced_settings_upgrade_available": "ayar yükseltmesi mevcut",
   "advanced_settings_upgrade_tip": "Bunlar bu hesapta eksik olan yeni 5chan varsayılanlarıdır. İstemediğiniz her şeyin işaretini kaldırın.",
-  "advanced_settings_upgrade_http_routers": "yeni HTTP tracker ekle",
+  "advanced_settings_upgrade_http_routers": "yeni HTTP yönlendiricileri ekle",
   "advanced_settings_upgrade_http_router_aria": "{{router}} adresini HTTP yönlendiricilerine ekle",
   "settings_upgrade_keep_current": "mevcut ayarları koru",
   "settings_upgrade_apply_selected": "seçili değişiklikleri uygula",

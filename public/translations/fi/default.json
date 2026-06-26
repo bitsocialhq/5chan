@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "Virhe asetusten tallennuksessa: {{message}}",
   "advanced_settings_upgrade_available": "asetuspäivitys saatavilla",
   "advanced_settings_upgrade_tip": "Nämä ovat uusia 5chan-oletusasetuksia, jotka puuttuvat tältä tililtä. Poista valinta kaikista, joita et halua.",
-  "advanced_settings_upgrade_http_routers": "lisää uudet HTTP-trackerit",
+  "advanced_settings_upgrade_http_routers": "lisää uudet HTTP-reitittimet",
   "advanced_settings_upgrade_http_router_aria": "Lisää {{router}} HTTP-reitittimiin",
   "settings_upgrade_keep_current": "säilytä nykyiset asetukset",
   "settings_upgrade_apply_selected": "käytä valitut muutokset",

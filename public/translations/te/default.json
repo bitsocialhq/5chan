@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "ఎంపికలు సేవ్ చేయడంలో లోపం: {{message}}",
   "advanced_settings_upgrade_available": "సెట్టింగ్‌ల అప్‌గ్రేడ్ అందుబాటులో ఉంది",
   "advanced_settings_upgrade_tip": "ఇవి ఈ ఖాతాలో లేని కొత్త 5chan డిఫాల్ట్‌లు. మీకు కావనివి అన్చెక్ చేయండి.",
-  "advanced_settings_upgrade_http_routers": "నూతన HTTP ట్రాకర్లను జోడించండి",
+  "advanced_settings_upgrade_http_routers": "నూతన HTTP రౌటర్‌లను జోడించండి",
   "advanced_settings_upgrade_http_router_aria": "HTTP రౌటర్‌లకు {{router}} జోడించండి",
   "settings_upgrade_keep_current": "ప్రస్తుత అమరికలను ఉంచండి",
   "settings_upgrade_apply_selected": "ఎంచుకున్న మార్పులను వర్తింపజేయండి",

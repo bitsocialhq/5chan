@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "옵션 저장 오류: {{message}}",
   "advanced_settings_upgrade_available": "설정 업그레이드 사용 가능",
   "advanced_settings_upgrade_tip": "이 계정에 없는 새로운 5chan 기본값입니다. 원하지 않는 항목은 선택을 해제하세요.",
-  "advanced_settings_upgrade_http_routers": "새 HTTP 트래커 추가",
+  "advanced_settings_upgrade_http_routers": "새 HTTP 라우터 추가",
   "advanced_settings_upgrade_http_router_aria": "{{router}}를 HTTP 라우터에 추가",
   "settings_upgrade_keep_current": "현재 설정 유지",
   "settings_upgrade_apply_selected": "선택한 변경 사항 적용",

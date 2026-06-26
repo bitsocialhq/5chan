@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "Errore nel salvataggio delle opzioni: {{message}}",
   "advanced_settings_upgrade_available": "aggiornamento impostazioni disponibile",
   "advanced_settings_upgrade_tip": "Queste sono nuove impostazioni predefinite di 5chan assenti in questo account. Deseleziona ciò che non desideri.",
-  "advanced_settings_upgrade_http_routers": "aggiungi nuovi tracker HTTP",
+  "advanced_settings_upgrade_http_routers": "aggiungi nuovi router HTTP",
   "advanced_settings_upgrade_http_router_aria": "Aggiungi {{router}} ai router HTTP",
   "settings_upgrade_keep_current": "mantieni le impostazioni attuali",
   "settings_upgrade_apply_selected": "applica modifiche selezionate",

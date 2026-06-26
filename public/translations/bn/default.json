@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "বিকল্প সংরক্ষণে ত্রুটি: {{message}}",
   "advanced_settings_upgrade_available": "সেটিংস আপগ্রেড উপলব্ধ",
   "advanced_settings_upgrade_tip": "এগুলো এই অ্যাকাউন্টে অনুপস্থিত নতুন 5chan ডিফল্ট। যা চান না, তা আনচেক করুন।",
-  "advanced_settings_upgrade_http_routers": "নতুন HTTP ট্র্যাকার যোগ করুন",
+  "advanced_settings_upgrade_http_routers": "নতুন HTTP রাউটার যোগ করুন",
   "advanced_settings_upgrade_http_router_aria": "HTTP রাউটারে {{router}} যোগ করুন",
   "settings_upgrade_keep_current": "বর্তমান সেটিংস রাখুন",
   "settings_upgrade_apply_selected": "নির্বাচিত পরিবর্তনগুলি প্রয়োগ করুন",

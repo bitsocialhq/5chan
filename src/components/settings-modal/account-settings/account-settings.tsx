@@ -74,7 +74,7 @@ const toImportedAccountProtocolOptions = (protocolOptions: unknown): ImportedAcc
 
 const hasExplicitHttpRoutersOptions = (protocolOptions: unknown) => {
   const httpRoutersOptions = toImportedAccountProtocolOptions(protocolOptions).httpRoutersOptions;
-  return Array.isArray(httpRoutersOptions) && httpRoutersOptions.some((routerUrl) => typeof routerUrl === 'string' && routerUrl.trim().length > 0);
+  return Array.isArray(httpRoutersOptions);
 };
 
 // Inner component keyed by account id so state resets when user switches account

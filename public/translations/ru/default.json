@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "Ошибка при сохранении параметров: {{message}}",
   "advanced_settings_upgrade_available": "обновление настроек доступно",
   "advanced_settings_upgrade_tip": "Это новые настройки 5chan по умолчанию, отсутствующие в этом аккаунте. Снимите галочку с того, что вам не нужно.",
-  "advanced_settings_upgrade_http_routers": "добавить новые HTTP-трекеры",
+  "advanced_settings_upgrade_http_routers": "добавить новые HTTP-маршрутизаторы",
   "advanced_settings_upgrade_http_router_aria": "Добавить {{router}} в HTTP-маршрутизаторы",
   "settings_upgrade_keep_current": "сохранить текущие настройки",
   "settings_upgrade_apply_selected": "применить выбранные изменения",

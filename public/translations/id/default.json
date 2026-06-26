@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "Kesalahan saat menyimpan opsi: {{message}}",
   "advanced_settings_upgrade_available": "pembaruan pengaturan tersedia",
   "advanced_settings_upgrade_tip": "Ini adalah default 5chan baru yang belum ada di akun ini. Hapus centang pada apa pun yang tidak Anda inginkan.",
-  "advanced_settings_upgrade_http_routers": "tambahkan pelacak HTTP baru",
+  "advanced_settings_upgrade_http_routers": "tambahkan router HTTP baru",
   "advanced_settings_upgrade_http_router_aria": "Tambahkan {{router}} ke router HTTP",
   "settings_upgrade_keep_current": "pertahankan pengaturan saat ini",
   "settings_upgrade_apply_selected": "terapkan perubahan yang dipilih",

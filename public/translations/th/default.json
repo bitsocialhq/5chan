@@ -435,7 +435,7 @@
   "advanced_error_saving_options": "เกิดข้อผิดพลาดในการบันทึกตัวเลือก: {{message}}",
   "advanced_settings_upgrade_available": "มีการอัปเกรดการตั้งค่า",
   "advanced_settings_upgrade_tip": "นี่คือค่าเริ่มต้น 5chan ใหม่ที่บัญชีนี้ยังไม่มี ให้ยกเลิกการเลือกสิ่งที่คุณไม่ต้องการ",
-  "advanced_settings_upgrade_http_routers": "เพิ่ม HTTP tracker ใหม่",
+  "advanced_settings_upgrade_http_routers": "เพิ่มเราเตอร์ HTTP ใหม่",
   "advanced_settings_upgrade_http_router_aria": "เพิ่ม {{router}} ในเราเตอร์ HTTP",
   "settings_upgrade_keep_current": "คงการตั้งค่าปัจจุบัน",
   "settings_upgrade_apply_selected": "ใช้การเปลี่ยนแปลงที่เลือก",

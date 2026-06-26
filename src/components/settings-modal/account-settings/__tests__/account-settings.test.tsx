@@ -386,6 +386,40 @@ describe('AccountSettings', () => {
     });
   });
 
+  it('preserves an explicit empty HTTP routers list when importing an account backup', async () => {
+    fileReaderState.result = JSON.stringify({
+      account: {
+        name: 'Imported',
+        author: { address: '0x999' },
+        pkcOptions: {
+          httpRoutersOptions: [],
+          ipfsGatewayUrls: ['https://gateway.custom.example'],
+        },
+      },
+    });
+    hookMocks.importAccount.mockResolvedValue(undefined);
+    hookMocks.setActiveAccount.mockResolvedValue(undefined);
+
+    render();
+
+    await act(async () => {
+      getButtonByText('import_account_backup').click();
+    });
+
+    const file = new File(['{}'], 'account.json', { type: 'application/json' });
+    await act(async () => {
+      createdInput?.onchange?.({ target: { files: [file] } } as unknown as Event);
+      await Promise.resolve();
+    });
+    await flushMicrotasks();
+
+    const importedPayload = JSON.parse(hookMocks.importAccount.mock.calls[0][0]);
+    expect(importedPayload.account.pkcOptions).toEqual({
+      httpRoutersOptions: [],
+      ipfsGatewayUrls: ['https://gateway.custom.example'],
+    });
+  });
+
   it('activates the resolved account name when an imported account name already exists', async () => {
     hookMocks.useAccounts.mockReturnValue({
       accounts: [
