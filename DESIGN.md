@@ -1,4 +1,5 @@
 ---
+version: alpha
 name: 5chan
 description: A decentralized imageboard with a classic imageboard user experience.
 colors:
@@ -77,9 +78,7 @@ components:
     rounded: "{rounded.square}"
 ---
 
-# Design System: 5chan
-
-## 1. Overview
+## Overview
 
 **Creative North Star: "The Preserved Imageboard"**
 
@@ -96,7 +95,7 @@ Most surfaces are flat, compact, text-first, and visibly old web. Controls may l
 - Text links and bracketed actions over large button components.
 - Visual compatibility with classic imageboard user expectations.
 
-## 2. Colors
+## Colors
 
 The palette is inherited from classic imageboard themes and should remain recognizable. Use the existing CSS variables in `src/themes.css` as the source of truth for implementation.
 
@@ -131,7 +130,7 @@ The palette is inherited from classic imageboard themes and should remain recogn
 
 **The Functional Color Exception.** Small, deterministic per-entity colors used as data — for example a hashed swatch that gives each connected peer a stable identity — are allowed. Render them as flat, square, small indicators (not gradients, glows, or large fills). This exception is for conveying data, not for decoration or branding.
 
-## 3. Typography
+## Typography
 
 **Display Font:** Tahoma, sans-serif.
 **Body Font:** Arial, Helvetica, sans-serif.
@@ -152,7 +151,22 @@ The palette is inherited from classic imageboard themes and should remain recogn
 
 **The Browser-Native Rule.** Do not add custom web fonts, variable-font display systems, negative letter spacing, oversized headings, or marketing typography to product surfaces.
 
-## 4. Elevation
+## Layout
+
+Layouts are dense, compact, and text-first, mirroring classic imageboard information density. Spacing is small and deliberate rather than generous, and structure comes from tables, inline rows, and slash-separated links instead of large spaced-out cards.
+
+- **Page edge** (`5px`): outer gutters around boards, catalogs, and threads.
+- **Field padding** (`2px`): inputs, table cells, and compact controls.
+- **Compact padding** (`0.5em`): reply blocks, menus, and small panels.
+- **Hairline** (`1px`): borders and separators between rows, posts, and panels.
+
+Desktop and mobile intentionally differ: desktop stays maximally compact, while mobile raises tap-target and text sizes only as much as needed to stay usable and avoid browser zoom.
+
+### Named Rules
+
+**The Density Rule.** When in doubt, choose the more compact layout. Whitespace is not a feature on core imageboard surfaces.
+
+## Elevation & Depth
 
 5chan is flat by default. Depth is conveyed through background color, 1px borders, hard separators, and occasional legacy-style hard shadows on small menus. Avoid soft elevation, glass, blur, ambient shadows, floating cards, and layered dashboard surfaces.
 
@@ -164,7 +178,19 @@ The palette is inherited from classic imageboard themes and should remain recogn
 
 **The Flat Surface Rule.** If a surface can be separated with a border or theme background, do that instead of adding shadow.
 
-## 5. Components
+## Shapes
+
+5chan is uniformly square. Corner radius is `0` everywhere on product surfaces, and structure comes from 1px theme borders rather than rounding or elevation.
+
+- **Corners:** square (`0` radius) on buttons, inputs, cards, replies, modals, and menus.
+- **Borders:** 1px theme border colors (for example Yotsuba `#d9bfb7`, Yotsuba B `#b7c5d9`).
+- **Indicators:** functional per-entity swatches render as small flat squares, never rounded chips.
+
+### Named Rules
+
+**The No Rounding Rule.** Do not introduce `border-radius`, pill, capsule, chip, or rounded badge shapes on product UI. A label is square text, not a rounded token.
+
+## Components
 
 ### Buttons
 
@@ -208,7 +234,7 @@ The palette is inherited from classic imageboard themes and should remain recogn
 - **Copy:** short labels and direct status messages.
 - **Behavior:** custom features such as challenges, settings, and posting flows should feel like imageboard utilities, not app dialogs.
 
-## 6. Do's and Don'ts
+## Do's and Don'ts
 
 ### Do
 
