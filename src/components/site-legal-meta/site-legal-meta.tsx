@@ -1,5 +1,6 @@
-import Version from '../version';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import Version from '../version';
 
 type SiteLegalMetaOrder = 'version-first' | 'license-first';
 
@@ -16,11 +17,7 @@ const LicenseText = () => {
 
 const VersionFeedbackContact = () => (
   <>
-    <Version /> •{' '}
-    <a href='https://github.com/bitsocialnet/5chan/issues/new' target='_blank' rel='noopener noreferrer'>
-      Feedback
-    </a>{' '}
-    •{' '}
+    <Version /> • <Link to='/q'>Feedback</Link> •{' '}
     <a href='https://github.com/bitsocialnet/5chan/graphs/contributors' target='_blank' rel='noopener noreferrer'>
       Contact
     </a>

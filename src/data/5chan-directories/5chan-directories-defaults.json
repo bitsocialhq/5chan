@@ -2,7 +2,7 @@
   "title": "5chan Directory Defaults",
   "description": "Expected 5chan UX defaults by directory code. These defaults apply to the directory, not to individual candidate boards.",
   "createdAt": 1779262179,
-  "updatedAt": 1780129468,
+  "updatedAt": 1782467500,
   "directories": {
     "3": {
       "directoryCode": "3",
@@ -690,6 +690,29 @@
       },
       "rules": [
         "All images and discussion should pertain to professional wrestling."
+      ]
+    },
+    "q": {
+      "directoryCode": "q",
+      "title": "/q/ - 5chan Feedback",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": true,
+        "hasFlags": false,
+        "requirePostLink": false,
+        "requirePostLinkIsMedia": false,
+        "bumpLimit": 300,
+        "noSpoilers": false,
+        "noSpoilerReplies": false,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "This board is for feedback, bug reports, feature requests, board proposals, governance, and other discussion about 5chan itself.",
+        "Keep threads focused on 5chan, Bitsocial, directory listings, board ownership, moderation policy, or site behavior.",
+        "Do not use this board for personal callouts, harassment, or drama about ordinary posters.",
+        "Do not post private information, credentials, node secrets, exploit details, or other security-sensitive material.",
+        "Ban appeals and moderation disputes belong on the relevant board unless they concern directory-wide policy.",
+        "Board proposals should explain the intended audience, rules, and why the board helps 5chan grow."
       ]
     },
     "qst": {
