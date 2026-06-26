@@ -29,6 +29,8 @@ const suspendedIframes = new WeakMap<HTMLIFrameElement, SuspendedIframeState>();
 
 const getPlayableMediaElements = (element: Element): Element[] => [...element.querySelectorAll(PLAYABLE_MEDIA_SELECTOR)];
 
+const isVideoElement = (target: EventTarget | null): target is HTMLVideoElement => typeof HTMLVideoElement !== 'undefined' && target instanceof HTMLVideoElement;
+
 const isElementInViewport = (element: Element): boolean => {
   const rect = element.getBoundingClientRect();
   const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
@@ -243,5 +245,43 @@ export const observeOffscreenMediaPlayback = (root: ParentNode | null, options: 
     }
     observedElements.clear();
     intersectionObserver.disconnect();
+  };
+};
+
+export const observeExclusiveVideoPlayback = (root: EventTarget | null) => {
+  if (!root || typeof window === 'undefined') {
+    return () => {};
+  }
+
+  let activeVideo: HTMLVideoElement | null = null;
+
+  const handlePlay = (event: Event) => {
+    const video = isVideoElement(event.target) ? event.target : null;
+    if (!video) {
+      return;
+    }
+
+    if (activeVideo && activeVideo !== video && !activeVideo.paused) {
+      activeVideo.pause();
+    }
+
+    activeVideo = video;
+  };
+
+  const handleInactive = (event: Event) => {
+    if (event.target === activeVideo) {
+      activeVideo = null;
+    }
+  };
+
+  root.addEventListener('play', handlePlay, true);
+  root.addEventListener('pause', handleInactive, true);
+  root.addEventListener('ended', handleInactive, true);
+
+  return () => {
+    root.removeEventListener('play', handlePlay, true);
+    root.removeEventListener('pause', handleInactive, true);
+    root.removeEventListener('ended', handleInactive, true);
+    activeVideo = null;
   };
 };

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { observeOffscreenMediaPlayback, restoreSuspendedMediaPlayback } from '../media-playback-utils';
+import { observeExclusiveVideoPlayback, observeOffscreenMediaPlayback, restoreSuspendedMediaPlayback } from '../media-playback-utils';
 
 class MockIntersectionObserver {
   static instances: MockIntersectionObserver[] = [];
@@ -43,6 +43,34 @@ class MockIntersectionObserver {
 }
 
 const nextMicrotask = () => Promise.resolve();
+
+const mockVideoPlayback = (video: HTMLVideoElement, playing = false) => {
+  let paused = !playing;
+  Object.defineProperty(video, 'paused', {
+    configurable: true,
+    get: () => paused,
+  });
+
+  const pauseMock = vi.spyOn(video, 'pause').mockImplementation(() => {
+    paused = true;
+  });
+
+  return {
+    pauseMock,
+    dispatchEnded: () => {
+      paused = true;
+      video.dispatchEvent(new Event('ended'));
+    },
+    dispatchPause: () => {
+      paused = true;
+      video.dispatchEvent(new Event('pause'));
+    },
+    dispatchPlay: () => {
+      paused = false;
+      video.dispatchEvent(new Event('play'));
+    },
+  };
+};
 
 const createExpandedMedia = () => {
   const container = document.createElement('span');
@@ -138,6 +166,66 @@ describe('media-playback-utils', () => {
 
     cleanup();
     root.remove();
+  });
+
+  it('pauses the previous video when a different video starts playing', () => {
+    const root = document.createElement('div');
+    const firstVideo = document.createElement('video');
+    const secondVideo = document.createElement('video');
+    const firstPlayback = mockVideoPlayback(firstVideo);
+    const secondPlayback = mockVideoPlayback(secondVideo);
+    root.append(firstVideo, secondVideo);
+
+    const cleanup = observeExclusiveVideoPlayback(root);
+
+    firstPlayback.dispatchPlay();
+    secondPlayback.dispatchPlay();
+
+    expect(firstPlayback.pauseMock).toHaveBeenCalledTimes(1);
+    expect(secondPlayback.pauseMock).not.toHaveBeenCalled();
+
+    cleanup();
+  });
+
+  it('does not pause the previous video after it becomes inactive', () => {
+    const root = document.createElement('div');
+    const firstVideo = document.createElement('video');
+    const secondVideo = document.createElement('video');
+    const firstPlayback = mockVideoPlayback(firstVideo);
+    const secondPlayback = mockVideoPlayback(secondVideo);
+    root.append(firstVideo, secondVideo);
+
+    const cleanup = observeExclusiveVideoPlayback(root);
+
+    firstPlayback.dispatchPlay();
+    firstPlayback.dispatchPause();
+    secondPlayback.dispatchPlay();
+
+    expect(firstPlayback.pauseMock).not.toHaveBeenCalled();
+
+    secondPlayback.dispatchEnded();
+    firstPlayback.dispatchPlay();
+
+    expect(secondPlayback.pauseMock).not.toHaveBeenCalled();
+
+    cleanup();
+  });
+
+  it('stops enforcing exclusive video playback after cleanup', () => {
+    const root = document.createElement('div');
+    const firstVideo = document.createElement('video');
+    const secondVideo = document.createElement('video');
+    const firstPlayback = mockVideoPlayback(firstVideo);
+    const secondPlayback = mockVideoPlayback(secondVideo);
+    root.append(firstVideo, secondVideo);
+
+    const cleanup = observeExclusiveVideoPlayback(root);
+
+    firstPlayback.dispatchPlay();
+    cleanup();
+    secondPlayback.dispatchPlay();
+
+    expect(firstPlayback.pauseMock).not.toHaveBeenCalled();
   });
 
   it('leaves offscreen iframe embeds suspended during visible-only restore until they intersect', async () => {

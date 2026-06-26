@@ -1,8 +1,16 @@
 import { useEffect } from 'react';
-import { observeOffscreenMediaPlayback } from '../lib/utils/media-playback-utils';
+import { observeExclusiveVideoPlayback, observeOffscreenMediaPlayback } from '../lib/utils/media-playback-utils';
 
 const useSuspendOffscreenMediaPlayback = () => {
-  useEffect(() => observeOffscreenMediaPlayback(document.body), []);
+  useEffect(() => {
+    const cleanupOffscreenPlayback = observeOffscreenMediaPlayback(document.body);
+    const cleanupExclusiveVideoPlayback = observeExclusiveVideoPlayback(document);
+
+    return () => {
+      cleanupExclusiveVideoPlayback();
+      cleanupOffscreenPlayback();
+    };
+  }, []);
 };
 
 export default useSuspendOffscreenMediaPlayback;
