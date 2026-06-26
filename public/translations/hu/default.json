@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Tiszta P2P böngésző mód",
   "advanced_options_saved_reloading": "Beállítások mentve, újratöltés...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Hiba a beállítások mentésekor: {{message}}"
+  "advanced_error_saving_options": "Hiba a beállítások mentésekor: {{message}}",
+  "advanced_settings_upgrade_available": "beállításfrissítés elérhető",
+  "advanced_settings_upgrade_tip": "Ezek olyan új 5chan-alapértelmezések, amelyek hiányoznak ebből a fiókból. Vegye ki a pipát mindenből, amit nem szeretne.",
+  "advanced_settings_upgrade_http_routers": "új HTTP routerek hozzáadása",
+  "advanced_settings_upgrade_http_router_aria": "{{router}} hozzáadása HTTP routerekhez",
+  "settings_upgrade_keep_current": "jelenlegi beállítások megtartása",
+  "settings_upgrade_apply_selected": "kiválasztott módosítások alkalmazása",
+  "settings_upgrade_error_saving": "A beállítások frissítése nem menthető el.",
+  "settings_upgrade_review_notice": "beállításfrissítés elérhető",
+  "settings_upgrade_review_button": "áttekintés",
+  "settings_upgrade_never_show_again": "ne jelenjen meg újra"
 }

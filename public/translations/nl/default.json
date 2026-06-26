@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Pure P2P-browsermodus",
   "advanced_options_saved_reloading": "Opties opgeslagen, opnieuw laden...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Fout bij het opslaan van opties: {{message}}"
+  "advanced_error_saving_options": "Fout bij het opslaan van opties: {{message}}",
+  "advanced_settings_upgrade_available": "instellingenupgrade beschikbaar",
+  "advanced_settings_upgrade_tip": "Dit zijn nieuwe 5chan-standaardinstellingen die in dit account ontbreken. Vink alles uit wat je niet wilt.",
+  "advanced_settings_upgrade_http_routers": "nieuwe HTTP-routers toevoegen",
+  "advanced_settings_upgrade_http_router_aria": "{{router}} toevoegen aan HTTP-routers",
+  "settings_upgrade_keep_current": "huidige instellingen behouden",
+  "settings_upgrade_apply_selected": "geselecteerde wijzigingen toepassen",
+  "settings_upgrade_error_saving": "De instellingenupgrade kon niet worden opgeslagen.",
+  "settings_upgrade_review_notice": "instellingenupgrade beschikbaar",
+  "settings_upgrade_review_button": "bekijken",
+  "settings_upgrade_never_show_again": "niet meer tonen"
 }

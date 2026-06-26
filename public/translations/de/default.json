@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Reiner P2P-Browsermodus",
   "advanced_options_saved_reloading": "Optionen gespeichert, wird neu geladen...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Fehler beim Speichern der Optionen: {{message}}"
+  "advanced_error_saving_options": "Fehler beim Speichern der Optionen: {{message}}",
+  "advanced_settings_upgrade_available": "Einstellungs-Upgrade verfügbar",
+  "advanced_settings_upgrade_tip": "Dies sind neue 5chan-Standardeinstellungen, die in diesem Konto fehlen. Deaktivieren Sie alles, was Sie nicht möchten.",
+  "advanced_settings_upgrade_http_routers": "neue HTTP-Router hinzufügen",
+  "advanced_settings_upgrade_http_router_aria": "{{router}} zu HTTP-Routern hinzufügen",
+  "settings_upgrade_keep_current": "aktuelle Einstellungen beibehalten",
+  "settings_upgrade_apply_selected": "ausgewählte Änderungen anwenden",
+  "settings_upgrade_error_saving": "Die Einstellungsaktualisierung konnte nicht gespeichert werden.",
+  "settings_upgrade_review_notice": "Einstellungs-Upgrade verfügbar",
+  "settings_upgrade_review_button": "überprüfen",
+  "settings_upgrade_never_show_again": "nie wieder anzeigen"
 }

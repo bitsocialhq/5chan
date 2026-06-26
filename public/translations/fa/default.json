@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "حالت مرورگر P2P خالص",
   "advanced_options_saved_reloading": "گزینه‌ها ذخیره شد، در حال بارگذاری مجدد...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "خطا در ذخیره گزینه‌ها: {{message}}"
+  "advanced_error_saving_options": "خطا در ذخیره گزینه‌ها: {{message}}",
+  "advanced_settings_upgrade_available": "ارتقای تنظیمات موجود است",
+  "advanced_settings_upgrade_tip": "این‌ها تنظیمات پیش‌فرض جدید 5chan هستند که در این حساب وجود ندارند. هر موردی را که نمی‌خواهید، از حالت انتخاب خارج کنید.",
+  "advanced_settings_upgrade_http_routers": "افزودن مسیریاب‌های HTTP جدید",
+  "advanced_settings_upgrade_http_router_aria": "افزودن {{router}} به مسیریاب‌های HTTP",
+  "settings_upgrade_keep_current": "حفظ تنظیمات فعلی",
+  "settings_upgrade_apply_selected": "اعمال تغییرات انتخاب‌شده",
+  "settings_upgrade_error_saving": "امکان ذخیرهٔ ارتقای تنظیمات وجود نداشت.",
+  "settings_upgrade_review_notice": "ارتقای تنظیمات موجود است",
+  "settings_upgrade_review_button": "بررسی",
+  "settings_upgrade_never_show_again": "دیگر نشان نده"
 }

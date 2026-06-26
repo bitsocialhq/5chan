@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Режим чистого P2P в браузере",
   "advanced_options_saved_reloading": "Настройки сохранены, перезагрузка...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Ошибка при сохранении параметров: {{message}}"
+  "advanced_error_saving_options": "Ошибка при сохранении параметров: {{message}}",
+  "advanced_settings_upgrade_available": "обновление настроек доступно",
+  "advanced_settings_upgrade_tip": "Это новые настройки 5chan по умолчанию, отсутствующие в этом аккаунте. Снимите галочку с того, что вам не нужно.",
+  "advanced_settings_upgrade_http_routers": "добавить новые HTTP-маршрутизаторы",
+  "advanced_settings_upgrade_http_router_aria": "Добавить {{router}} в HTTP-маршрутизаторы",
+  "settings_upgrade_keep_current": "сохранить текущие настройки",
+  "settings_upgrade_apply_selected": "применить выбранные изменения",
+  "settings_upgrade_error_saving": "Не удалось сохранить обновление настроек.",
+  "settings_upgrade_review_notice": "обновление настроек доступно",
+  "settings_upgrade_review_button": "просмотреть",
+  "settings_upgrade_never_show_again": "больше не показывать"
 }

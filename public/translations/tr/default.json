@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Saf P2P tarayıcı modu",
   "advanced_options_saved_reloading": "Seçenekler kaydedildi, yeniden yükleniyor...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Seçenekler kaydedilirken hata oluştu: {{message}}"
+  "advanced_error_saving_options": "Seçenekler kaydedilirken hata oluştu: {{message}}",
+  "advanced_settings_upgrade_available": "ayar yükseltmesi mevcut",
+  "advanced_settings_upgrade_tip": "Bunlar bu hesapta eksik olan yeni 5chan varsayılanlarıdır. İstemediğiniz her şeyin işaretini kaldırın.",
+  "advanced_settings_upgrade_http_routers": "yeni HTTP yönlendiricileri ekle",
+  "advanced_settings_upgrade_http_router_aria": "{{router}} adresini HTTP yönlendiricilerine ekle",
+  "settings_upgrade_keep_current": "mevcut ayarları koru",
+  "settings_upgrade_apply_selected": "seçili değişiklikleri uygula",
+  "settings_upgrade_error_saving": "Ayar yükseltmesi kaydedilemedi.",
+  "settings_upgrade_review_notice": "ayar yükseltmesi mevcut",
+  "settings_upgrade_review_button": "incele",
+  "settings_upgrade_never_show_again": "bir daha gösterme"
 }

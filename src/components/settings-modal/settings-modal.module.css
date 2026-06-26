@@ -99,6 +99,24 @@
   text-transform: capitalize;
 }
 
+.settingsUpgradeNotice {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 8px 0 0;
+  padding: 3px 5px;
+  background-color: #E62020;
+  color: white;
+  font-family: monospace;
+  font-size: 12px;
+  text-align: center;
+  text-shadow: 0 1px rgba(0, 0, 0, 0.20);
+  text-transform: none;
+}
+
 .expandAllSettings span, .expandAllSettings button {
   appearance: none;
   background: transparent;
@@ -109,8 +127,26 @@
   padding: 0;
 }
 
+.settingsUpgradeNotice button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  filter: none;
+  font: inherit;
+  margin: 0;
+  padding: 0;
+  text-decoration: underline;
+  text-transform: none;
+}
+
 .expandAllSettings span:hover, .expandAllSettings button:hover {
   color: var(--button-desktop-text-color-hover);
+  cursor: pointer;
+}
+
+.settingsUpgradeNotice button:hover {
+  color: inherit;
   cursor: pointer;
 }
 

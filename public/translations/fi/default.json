@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Puhdas P2P-selaimen tila",
   "advanced_options_saved_reloading": "Asetukset tallennettu, ladataan uudelleen...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Virhe asetusten tallennuksessa: {{message}}"
+  "advanced_error_saving_options": "Virhe asetusten tallennuksessa: {{message}}",
+  "advanced_settings_upgrade_available": "asetuspäivitys saatavilla",
+  "advanced_settings_upgrade_tip": "Nämä ovat uusia 5chan-oletusasetuksia, jotka puuttuvat tältä tililtä. Poista valinta kaikista, joita et halua.",
+  "advanced_settings_upgrade_http_routers": "lisää uudet HTTP-reitittimet",
+  "advanced_settings_upgrade_http_router_aria": "Lisää {{router}} HTTP-reitittimiin",
+  "settings_upgrade_keep_current": "säilytä nykyiset asetukset",
+  "settings_upgrade_apply_selected": "käytä valitut muutokset",
+  "settings_upgrade_error_saving": "Asetusten päivitystä ei voitu tallentaa.",
+  "settings_upgrade_review_notice": "asetuspäivitys saatavilla",
+  "settings_upgrade_review_button": "tarkista",
+  "settings_upgrade_never_show_again": "älä näytä uudelleen"
 }

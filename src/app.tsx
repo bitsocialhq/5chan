@@ -63,6 +63,7 @@ const DirectoryModal = lazy(() => import('./components/directory-modal'));
 const DisclaimerModal = lazy(() => import('./components/disclaimer-modal'));
 const ReplyModal = lazy(() => import('./components/reply-modal'));
 const SettingsModal = lazy(() => import('./components/settings-modal'));
+const SettingsUpgradeModal = lazy(() => import('./components/settings-upgrade-modal'));
 
 // Preload all theme assets (buttons, backgrounds) immediately on app load
 // to prevent visible loading delays when switching themes
@@ -224,6 +225,9 @@ const GlobalLayout = () => {
       <ExternalQuoteStatus />
       <Suspense fallback={null}>
         <ChallengeModal />
+      </Suspense>
+      <Suspense fallback={null}>
+        <SettingsUpgradeModal />
       </Suspense>
       {activeCid && threadCid && activeCommunityAddress && (
         <Suspense fallback={null}>

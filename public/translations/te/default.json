@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "శుద్ధ P2P బ్రౌజర్ మోడ్",
   "advanced_options_saved_reloading": "ఎంపికలు సేవ్ చేయబడ్డాయి, మళ్లీ లోడ్ అవుతోంది...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "ఎంపికలు సేవ్ చేయడంలో లోపం: {{message}}"
+  "advanced_error_saving_options": "ఎంపికలు సేవ్ చేయడంలో లోపం: {{message}}",
+  "advanced_settings_upgrade_available": "సెట్టింగ్‌ల అప్‌గ్రేడ్ అందుబాటులో ఉంది",
+  "advanced_settings_upgrade_tip": "ఇవి ఈ ఖాతాలో లేని కొత్త 5chan డిఫాల్ట్‌లు. మీకు కావనివి అన్చెక్ చేయండి.",
+  "advanced_settings_upgrade_http_routers": "నూతన HTTP రౌటర్‌లను జోడించండి",
+  "advanced_settings_upgrade_http_router_aria": "HTTP రౌటర్‌లకు {{router}} జోడించండి",
+  "settings_upgrade_keep_current": "ప్రస్తుత అమరికలను ఉంచండి",
+  "settings_upgrade_apply_selected": "ఎంచుకున్న మార్పులను వర్తింపజేయండి",
+  "settings_upgrade_error_saving": "సెట్టింగ్‌ల అప్‌గ్రేడ్‌ను సేవ్ చేయలేకపోయింది.",
+  "settings_upgrade_review_notice": "సెట్టింగ్‌ల అప్‌గ్రేడ్ అందుబాటులో ఉంది",
+  "settings_upgrade_review_button": "సమీక్షించు",
+  "settings_upgrade_never_show_again": "మళ్లీ చూపించవద్దు"
 }

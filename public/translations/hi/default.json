@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "शुद्ध P2P ब्राउज़र मोड",
   "advanced_options_saved_reloading": "विकल्प सहेजे गए, पुनः लोड हो रहा है...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "विकल्प सहेजने में त्रुटि: {{message}}"
+  "advanced_error_saving_options": "विकल्प सहेजने में त्रुटि: {{message}}",
+  "advanced_settings_upgrade_available": "सेटिंग्स अपग्रेड उपलब्ध",
+  "advanced_settings_upgrade_tip": "ये नए 5chan डिफ़ॉल्ट हैं जो इस खाते में नहीं हैं। जो आप नहीं चाहते, उसे अनचेक करें।",
+  "advanced_settings_upgrade_http_routers": "नए HTTP राउटर जोड़ें",
+  "advanced_settings_upgrade_http_router_aria": "HTTP राउटर में {{router}} जोड़ें",
+  "settings_upgrade_keep_current": "वर्तमान सेटिंग्स रखें",
+  "settings_upgrade_apply_selected": "चयनित परिवर्तन लागू करें",
+  "settings_upgrade_error_saving": "सेटिंग्स अपग्रेड सहेज नहीं सके।",
+  "settings_upgrade_review_notice": "सेटिंग्स अपग्रेड उपलब्ध",
+  "settings_upgrade_review_button": "समीक्षा करें",
+  "settings_upgrade_never_show_again": "फिर कभी न दिखाएँ"
 }

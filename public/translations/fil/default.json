@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Purong P2P browser mode",
   "advanced_options_saved_reloading": "Na-save ang mga opsyon, nagre-reload...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Error sa pag-save ng mga opsyon: {{message}}"
+  "advanced_error_saving_options": "Error sa pag-save ng mga opsyon: {{message}}",
+  "advanced_settings_upgrade_available": "may upgrade ng setting",
+  "advanced_settings_upgrade_tip": "Ito ang mga bagong default ng 5chan na wala sa account na ito. Alisin ang check sa anumang ayaw mo.",
+  "advanced_settings_upgrade_http_routers": "magdagdag ng mga bagong HTTP routers",
+  "advanced_settings_upgrade_http_router_aria": "Idagdag ang {{router}} sa HTTP routers",
+  "settings_upgrade_keep_current": "panatilihin ang kasalukuyang mga setting",
+  "settings_upgrade_apply_selected": "ilapat ang mga napiling pagbabago",
+  "settings_upgrade_error_saving": "Hindi ma-save ang upgrade ng mga setting.",
+  "settings_upgrade_review_notice": "may upgrade ng setting",
+  "settings_upgrade_review_button": "suriin",
+  "settings_upgrade_never_show_again": "huwag nang ipakita muli"
 }

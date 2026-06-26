@@ -1,0 +1,137 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.25);
+  z-index: 1200;
+}
+
+.backdropButton {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  cursor: default;
+}
+
+.dialog {
+  position: fixed;
+  top: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  width: 420px;
+  max-width: calc(100vw - 20px);
+  max-height: calc(100vh - 30px);
+  overflow-y: auto;
+  margin: 0;
+  padding: 2px;
+  background-color: var(--settings-modal-background-color);
+  border-top: var(--settings-modal-border-top);
+  border-right: var(--settings-modal-border-right);
+  border-bottom: var(--settings-modal-border-bottom);
+  border-left: var(--settings-modal-border-left);
+  color: inherit;
+  font-size: var(--settings-modal-font-size);
+  z-index: 1201;
+}
+
+.header {
+  position: relative;
+  margin: 5px 0;
+  padding-bottom: 5px;
+  text-align: center;
+  border-bottom: var(--settings-modal-header-border-bottom);
+}
+
+.header h2 {
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 14px;
+  text-transform: capitalize;
+}
+
+.closeButton {
+  appearance: none;
+  position: absolute;
+  top: -2px;
+  right: 3px;
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  background-image: var(--settings-modal-close-button-background-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+
+.body {
+  padding: 3px 5px 5px;
+}
+
+.tip {
+  margin: 0 0 8px;
+}
+
+.options {
+  margin: 0;
+  padding: 4px 5px 5px;
+  border: var(--settings-modal-border-bottom);
+}
+
+.options + .options {
+  margin-top: 6px;
+}
+
+.options legend {
+  padding: 0 2px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.option {
+  display: block;
+  margin-top: 4px;
+  font-family: monospace;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.option input {
+  margin: 0 5px 0 0;
+}
+
+.actions {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.actions button {
+  margin: 0 3px;
+  text-transform: capitalize;
+  cursor: pointer;
+}
+
+.neverShowAgainAction {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.neverShowAgainAction button {
+  margin: 0 3px;
+  text-transform: capitalize;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .dialog {
+    top: 20px;
+    width: calc(100vw - 20px);
+  }
+}

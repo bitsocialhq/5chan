@@ -133,6 +133,28 @@ describe('useBrowserPureP2PAccountUpgrade', () => {
     expect(reloadMock).toHaveBeenCalledOnce();
   });
 
+  it('upgrades imported accounts without protocol options to a reviewable router baseline', async () => {
+    testState.account = {
+      id: 'account-1',
+      name: 'Imported',
+    };
+    testState.accounts = [testState.account];
+
+    await renderHook();
+
+    expect(testState.setAccountMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'account-1',
+        pkcOptions: expect.objectContaining({
+          httpRoutersOptions: ['https://routing.lol', 'https://peers.pleb.bot', 'https://peers.plebpubsub.xyz', 'https://peers.forumindex.com'],
+          libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+          pkcRpcClientsOptions: undefined,
+        }),
+      }),
+    );
+    expect(reloadMock).toHaveBeenCalledOnce();
+  });
+
   it('does not upgrade browser full-node accounts', async () => {
     testState.account = {
       id: 'account-1',

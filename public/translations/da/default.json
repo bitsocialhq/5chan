@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "Ren P2P-browsertilstand",
   "advanced_options_saved_reloading": "Indstillinger gemt, genindlæser...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "Fejl ved lagring af indstillinger: {{message}}"
+  "advanced_error_saving_options": "Fejl ved lagring af indstillinger: {{message}}",
+  "advanced_settings_upgrade_available": "indstillingsopgradering tilgængelig",
+  "advanced_settings_upgrade_tip": "Dette er nye 5chan-standarder, der mangler på denne konto. Fjern markeringen for alt, du ikke ønsker.",
+  "advanced_settings_upgrade_http_routers": "tilføj nye HTTP-routere",
+  "advanced_settings_upgrade_http_router_aria": "Tilføj {{router}} til HTTP-routere",
+  "settings_upgrade_keep_current": "behold nuværende indstillinger",
+  "settings_upgrade_apply_selected": "anvend valgte ændringer",
+  "settings_upgrade_error_saving": "Kunne ikke gemme indstillingsopgraderingen.",
+  "settings_upgrade_review_notice": "indstillingsopgradering tilgængelig",
+  "settings_upgrade_review_button": "gennemgå",
+  "settings_upgrade_never_show_again": "vis aldrig igen"
 }

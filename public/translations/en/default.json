@@ -451,5 +451,15 @@
   "tex_preview_title": "<tex>TeX</tex> Preview",
   "tex_preview_protip": "Use [math][/math] tags for inline, and [eqn][/eqn] tags for block equations.",
   "tex_preview_input_label": "TeX source",
-  "preview_tex_equations": "Preview TeX equations"
+  "preview_tex_equations": "Preview TeX equations",
+  "advanced_settings_upgrade_available": "settings upgrade available",
+  "advanced_settings_upgrade_tip": "These are new 5chan defaults missing from this account. Uncheck anything you do not want.",
+  "advanced_settings_upgrade_http_routers": "add new HTTP routers",
+  "advanced_settings_upgrade_http_router_aria": "Add {{router}} to HTTP routers",
+  "settings_upgrade_keep_current": "keep current settings",
+  "settings_upgrade_apply_selected": "apply selected changes",
+  "settings_upgrade_error_saving": "Could not save the settings upgrade.",
+  "settings_upgrade_review_notice": "settings upgrade available",
+  "settings_upgrade_review_button": "review",
+  "settings_upgrade_never_show_again": "never show again"
 }

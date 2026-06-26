@@ -432,5 +432,15 @@
   "advanced_pure_p2p_browser_aria": "शुद्ध P2P ब्राउझर मोड",
   "advanced_options_saved_reloading": "पर्याय जतन केले, पुन्हा लोड होत आहे...",
   "advanced_p2p_rpc_placeholder": "ws://<IP>:<port>/<secretAuthKey>",
-  "advanced_error_saving_options": "पर्याय जतन करताना त्रुटी: {{message}}"
+  "advanced_error_saving_options": "पर्याय जतन करताना त्रुटी: {{message}}",
+  "advanced_settings_upgrade_available": "सेटिंग्ज अपग्रेड उपलब्ध",
+  "advanced_settings_upgrade_tip": "हे या खात्यात नसलेले नवीन 5chan डिफॉल्ट आहेत. जे तुम्हाला नको आहे ते अनचेक करा.",
+  "advanced_settings_upgrade_http_routers": "नवीन HTTP राऊटर जोडा",
+  "advanced_settings_upgrade_http_router_aria": "HTTP राऊटरमध्ये {{router}} जोडा",
+  "settings_upgrade_keep_current": "सध्याच्या सेटिंग्ज ठेवा",
+  "settings_upgrade_apply_selected": "निवडलेले बदल लागू करा",
+  "settings_upgrade_error_saving": "सेटिंग्ज अपग्रेड जतन करू शकले नाही.",
+  "settings_upgrade_review_notice": "सेटिंग्ज अपग्रेड उपलब्ध",
+  "settings_upgrade_review_button": "पुनरावलोकन",
+  "settings_upgrade_never_show_again": "पुन्हा दाखवू नका"
 }
