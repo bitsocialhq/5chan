@@ -216,6 +216,16 @@ describe('BoardsBar', () => {
     expect(testState.openDirectoryModalMock).toHaveBeenCalledTimes(1);
   });
 
+  it('links the feedback directory when /q/ is visible', async () => {
+    testState.directories = [{ address: '5chan-feedback.bso', title: '/q/ - 5chan Feedback' }];
+    testState.visibleDirectories = new Set(['q']);
+    testState.resolvedCommunityAddress = '5chan-feedback.bso';
+
+    await renderBoardsBar('/q');
+
+    expect(getLinkHref('q')).toBe('/q');
+  });
+
   it('opens the desktop search bar and submits entered board addresses', async () => {
     await renderBoardsBar('/mu');
 

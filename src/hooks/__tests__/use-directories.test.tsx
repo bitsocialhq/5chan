@@ -346,8 +346,11 @@ describe('use-directories', () => {
     const directoriesByCode = new Map(snapshot.directories.map((directory) => [directory.directoryCode, directory]));
     expect(directoriesByCode.get('mu')?.address).toBe('music-remote.bso');
     expect(directoriesByCode.get('biz')?.address).toBe('business-and-finance.bso');
+    expect(directoriesByCode.get('q')?.address).toBe('5chan-feedback.bso');
     expect(directoriesByCode.get('tv')?.address).toBe('television-and-film.bso');
     expect(snapshot.directory?.address).toBe('television-and-film.bso');
+    expect(snapshot.directoryDefaults.directories.q.title).toBe('/q/ - 5chan Feedback');
+    expect(snapshot.directoryDefaults.directories.q.rules).toContain('Board proposals should explain the intended audience, rules, and why the board helps 5chan grow.');
     expect(warnSpy.mock.calls.some((call: ConsoleWarnCall) => String(call[0]).includes('Failed to fetch directory list "biz"'))).toBe(true);
   });
 

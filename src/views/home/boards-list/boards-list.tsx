@@ -486,6 +486,12 @@ const BoardsList = ({ multisub }: { multisub: DirectoryCommunity[] }) => {
                     address={boardAddressesByName['Very Important Posts'] ?? null}
                     {...boardLinkProps}
                   />
+                  <BoardLink
+                    key={boardAddressesByName['5chan Feedback'] ?? '5chan Feedback'}
+                    boardName='5chan Feedback'
+                    address={boardAddressesByName['5chan Feedback'] ?? null}
+                    {...boardLinkProps}
+                  />
                 </ul>
               </>
             )}

@@ -224,6 +224,15 @@ export const getFallbackDirectoryDefaults = (): DirectoryDefaultsData => {
   return fallbackDirectoryDefaults;
 };
 
+const mergeDirectoryDefaults = (remote: DirectoryDefaultsData, fallback: DirectoryDefaultsData): DirectoryDefaultsData => ({
+  ...fallback,
+  ...remote,
+  directories: {
+    ...fallback.directories,
+    ...remote.directories,
+  },
+});
+
 export const getFallbackDirectoriesData = (): DirectoriesData => {
   if (fallbackDirectoriesData) return fallbackDirectoriesData;
   const normalized = normalizeDirectoriesData(directoryListsData as unknown);
@@ -364,7 +373,7 @@ const fetchDirectoryListFromGitHub = async (code: string, defaults: DirectoryDef
 };
 
 const fetchDirectoriesFromGitHub = async (): Promise<DirectoriesData> => {
-  const defaults = await fetchDirectoryDefaultsFromGitHub();
+  const defaults = mergeDirectoryDefaults(await fetchDirectoryDefaultsFromGitHub(), getFallbackDirectoryDefaults());
   const fallbackLists = getFallbackDirectoryLists(defaults);
   const fallbackListsByCode = new Map(fallbackLists.map((list) => [list.directoryCode, list]));
   const codes = [...new Set([...Object.keys(defaults.directories), ...fallbackLists.map((list) => list.directoryCode)])];
