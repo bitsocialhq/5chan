@@ -217,6 +217,8 @@ describe('catalog search route helpers', () => {
     expect(getCatalogSearchRoute('biz', 'test')).toBe('/biz/catalog#s=test');
     expect(getCatalogSearchRoute('biz', 'test', '', { settings: true })).toBe('/biz/catalog/settings#s=test');
     expect(getCatalogSearchRoute('biz', 'cats and dogs', '?t=1w')).toBe('/biz/catalog?t=1w#s=cats%20and%20dogs');
+    expect(getCatalogSearchHash('   ')).toBe('');
+    expect(getCatalogSearchRoute('biz', '')).toBe('/biz/catalog');
   });
 });
 
