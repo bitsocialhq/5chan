@@ -296,6 +296,12 @@ export const isValidCrossboardPattern = (pattern: string): boolean => {
     return true;
   }
 
+  // Check if it's a directory + catalog search pattern: >>>/biz/test
+  const directoryCatalogSearchMatch = pathPart.match(/^([a-zA-Z0-9]{1,10})\/([a-zA-Z0-9_-]+)$/);
+  if (directoryCatalogSearchMatch) {
+    return true;
+  }
+
   // Check if it's a full address + thread pattern: >>>/board.eth/fullCid
   const addressThreadMatch = pathPart.match(/^([^/]+)\/([a-zA-Z0-9]{46})$/);
   if (addressThreadMatch) {
@@ -308,6 +314,13 @@ export const isValidCrossboardPattern = (pattern: string): boolean => {
   const addressPostNumberMatch = pathPart.match(/^([^/]+)\/(\d+)$/);
   if (addressPostNumberMatch) {
     const [, address] = addressPostNumberMatch;
+    return isValidDomain(address) || isValidIPNSKey(address);
+  }
+
+  // Check if it's a full address + catalog search pattern: >>>/board.eth/test
+  const addressCatalogSearchMatch = pathPart.match(/^([^/]+)\/([a-zA-Z0-9_-]+)$/);
+  if (addressCatalogSearchMatch) {
+    const [, address] = addressCatalogSearchMatch;
     return isValidDomain(address) || isValidIPNSKey(address);
   }
 

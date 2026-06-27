@@ -278,6 +278,7 @@ vi.mock('../components/reply-modal', () => ({
   default: ({ parentCid, postCid }: { parentCid: string; postCid: string }) => createElement('div', { 'data-testid': 'reply-modal' }, `${parentCid}:${postCid}`),
 }));
 
+let latestHash = '';
 let latestLocation = '';
 let container: HTMLDivElement;
 let root: Root;
@@ -287,7 +288,8 @@ const LocationProbe = () => {
   const location = useLocation();
   React.useLayoutEffect(() => {
     latestLocation = `${location.pathname}${location.search}`;
-  }, [location.pathname, location.search]);
+    latestHash = location.hash;
+  }, [location.hash, location.pathname, location.search]);
   return null;
 };
 
@@ -304,6 +306,7 @@ const renderApp = async (initialEntry: string) => {
     App = (await import('../app')).default;
   }
 
+  latestHash = '';
   latestLocation = initialEntry;
   act(() => {
     root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(App!), createElement(LocationProbe)));
@@ -350,6 +353,7 @@ describe('App', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    latestHash = '';
     latestLocation = '';
     testState.account = { author: { address: '0x123' } };
     testState.accountComments = {};
@@ -443,6 +447,21 @@ describe('App', () => {
     expect(container.querySelector('[data-testid="not-found-view"]')).toBeNull();
   });
 
+  it('redirects unknown board subpaths to catalog search hashes', async () => {
+    await renderApp('/mu/test');
+
+    expect(latestLocation).toBe('/mu/catalog');
+    expect(latestHash).toBe('#s=test');
+  });
+
+  it('redirects unknown board settings subpaths to catalog search settings hashes', async () => {
+    await renderApp('/mu/test/settings');
+
+    expect(latestLocation).toBe('/mu/catalog/settings');
+    expect(latestHash).toBe('#s=test');
+    expect(container.querySelector('[data-testid="settings-modal"]')).toBeTruthy();
+  });
+
   it('redirects flash board catalog routes to not-found', async () => {
     testState.directories = [
       { address: 'music-posting.eth', title: '/mu/ - Music', nsfw: false },
@@ -484,6 +503,13 @@ describe('App', () => {
 
     expect(latestLocation).toBe('/mu/thread/comment-1?focus=1');
     expect(container.querySelector('[data-testid="post-view"]')).toBeTruthy();
+  });
+
+  it('canonicalizes board address catalog routes while preserving search hashes', async () => {
+    await renderApp('/music-posting.eth/catalog#s=test');
+
+    expect(latestLocation).toBe('/mu/catalog');
+    expect(latestHash).toBe('#s=test');
   });
 
   it('canonicalizes a direct route for the current resolved directory board', async () => {

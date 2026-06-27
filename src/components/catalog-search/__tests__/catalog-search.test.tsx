@@ -12,6 +12,7 @@ const testState = vi.hoisted(() => ({
   debounceCancelMock: vi.fn(),
   isMobile: false,
   location: {
+    hash: '',
     pathname: '/mu/catalog',
     search: '',
   },
@@ -92,6 +93,7 @@ describe('CatalogSearch', () => {
     testState.debounceCancelMock.mockReset();
     testState.isMobile = false;
     testState.location = {
+      hash: '',
       pathname: '/mu/catalog',
       search: '',
     };
@@ -108,10 +110,11 @@ describe('CatalogSearch', () => {
     container.remove();
   });
 
-  it('opens from the query param and seeds the catalog search filter', async () => {
+  it('opens from the search hash and seeds the catalog search filter', async () => {
     testState.location = {
+      hash: '#s=linux',
       pathname: '/mu/catalog',
-      search: '?q=linux',
+      search: '',
     };
 
     await renderSearch();
@@ -121,15 +124,43 @@ describe('CatalogSearch', () => {
     expect(queryInput()?.getAttribute('value')).toBe('linux');
   });
 
-  it('clears the catalog search filter when navigation removes the query param', async () => {
+  it('migrates the legacy query param to the search hash', async () => {
     testState.location = {
+      hash: '',
       pathname: '/mu/catalog',
       search: '?q=linux',
     };
 
     await renderSearch();
 
+    expect(testState.setSearchFilterMock).toHaveBeenCalledWith('linux');
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu/catalog#s=linux', { replace: true });
+  });
+
+  it('prefers the search hash when stripping a legacy query param', async () => {
     testState.location = {
+      hash: '#s=hash-value',
+      pathname: '/mu/catalog',
+      search: '?t=1w&q=query-value',
+    };
+
+    await renderSearch();
+
+    expect(testState.setSearchFilterMock).toHaveBeenCalledWith('hash-value');
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu/catalog?t=1w#s=hash-value', { replace: true });
+  });
+
+  it('clears the catalog search filter when navigation removes the search hash', async () => {
+    testState.location = {
+      hash: '#s=linux',
+      pathname: '/mu/catalog',
+      search: '',
+    };
+
+    await renderSearch();
+
+    testState.location = {
+      hash: '',
       pathname: '/mu/catalog',
       search: '',
     };
@@ -154,7 +185,7 @@ describe('CatalogSearch', () => {
     await dispatchInput(input, 'web3');
 
     expect(testState.setSearchFilterMock).toHaveBeenCalledWith('web3');
-    expect(testState.navigateMock).toHaveBeenCalledWith('/mu/catalog?q=web3', { replace: true });
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu/catalog#s=web3', { replace: true });
 
     await act(async () => {
       input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
