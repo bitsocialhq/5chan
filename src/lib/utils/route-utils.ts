@@ -215,10 +215,18 @@ export const isValidBoardModRoute = (pathname: string): boolean => {
   return VALID_BOARD_MOD_SUBPATHS.includes(subpath);
 };
 
-/** Page numbers 1–10 for board feed pagination */
+/** Page numbers 1-10 for board feed pagination */
 const BOARD_PAGE_REGEX = /^([1-9]|10)$/;
 
-const isBoardFeedPageNumber = (segment: string): boolean => BOARD_PAGE_REGEX.test(segment);
+export const isBoardFeedPageNumber = (segment: string): boolean => BOARD_PAGE_REGEX.test(segment);
+
+export const getCatalogSearchHash = (searchText: string): string => {
+  const trimmedSearchText = searchText.trim();
+  return trimmedSearchText ? `#s=${encodeURIComponent(trimmedSearchText)}` : '';
+};
+
+export const getCatalogSearchRoute = (boardIdentifier: string, searchText: string, search = ''): string =>
+  `/${boardIdentifier}/catalog${search}${getCatalogSearchHash(searchText)}`;
 
 /** Internal: check if segment is a multiboard root (all, subs, mod) */
 function isMultiboardRoot(segment: string): boolean {

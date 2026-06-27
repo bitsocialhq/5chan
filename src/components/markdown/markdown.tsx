@@ -21,6 +21,7 @@ import ReplyQuotePreview from '../reply-quote-preview/reply-quote-preview';
 import ExternalNumberQuoteLink from './external-number-quote-link';
 import { findDirectoryByAddress, useDirectories, type DirectoryCommunity } from '../../hooks/use-directories';
 import { getDirectoryCodeForBoardAddress } from '../../lib/utils/directory-list-lookup-utils';
+import { getCatalogSearchRoute } from '../../lib/utils/route-utils';
 import {
   createDiceRollMarkupRegex,
   createFortuneBbcodeRegex,
@@ -163,7 +164,7 @@ type Token =
 
 const SPOILER_REGEX = /\[[sS][pP][oO][iI][lL][eE][rR]\]([\s\S]*?)\[\/[sS][pP][oO][iI][lL][eE][rR]\]/;
 const MARKDOWN_LINK_REGEX = /(?<!!)\[([^\]\n]+)\]\(\s*([^\n)]*?)\s*\)/;
-const CROSSBOARD_REGEX = />>>\/((?:[a-zA-Z0-9]{1,10}\/(?:[a-zA-Z0-9]{46})?|[a-zA-Z0-9\-.]+(?:\/[a-zA-Z0-9]{46})?))[.,:;!?]*/;
+const CROSSBOARD_REGEX = />>>\/((?:[a-zA-Z0-9]{1,10}\/(?:[a-zA-Z0-9]{46}|[a-zA-Z0-9_-]+)?|[a-zA-Z0-9\-.]+(?:\/(?:[a-zA-Z0-9]{46}|[a-zA-Z0-9_-]+))?))[.,:;!?]*/;
 const QUOTE_LINK_REGEX = /(?<![>/\w])>>(\d+)(?![\d/])/;
 const URL_REGEX = /https?:\/\/[^\s<>[\]]+/;
 type QstBbcodeTag = 'b' | 'i' | 'red' | 'green' | 'blue';
@@ -283,9 +284,17 @@ function getCrossboardRoute(fullPattern: string): string | null {
     const [code, cid] = pathPart.split('/');
     return `/${code}/thread/${cid}`;
   }
+  if (/^[a-zA-Z0-9]{1,10}\/[a-zA-Z0-9_-]+$/.test(pathPart)) {
+    const [code, searchText] = pathPart.split('/');
+    return getCatalogSearchRoute(code, searchText);
+  }
   if (/^[^/]+\/[a-zA-Z0-9]{46}$/.test(pathPart)) {
     const [address, cid] = pathPart.split('/');
     return `/${address}/thread/${cid}`;
+  }
+  if (/^[^/]+\/[a-zA-Z0-9_-]+$/.test(pathPart)) {
+    const [address, searchText] = pathPart.split('/');
+    return getCatalogSearchRoute(address, searchText);
   }
   return `/${pathPart}`;
 }
@@ -833,9 +842,7 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
           return;
         }
         if (!segment.value) return;
-        elements.push(
-          <React.Fragment key={`text-${segment.start}`}>{renderTextLines(normalizeContent(segment.value), context, `${segment.start}:`)}</React.Fragment>,
-        );
+        elements.push(<React.Fragment key={`text-${segment.start}`}>{renderTextLines(normalizeContent(segment.value), context, `${segment.start}:`)}</React.Fragment>);
       });
       return elements;
     }

@@ -32,6 +32,8 @@ import {
   isValidBoardModRoute,
   isValidModRoute,
   isFlashBoardRoute,
+  isBoardFeedPageNumber,
+  getCatalogSearchRoute,
 } from './lib/utils/route-utils';
 import styles from './app.module.css';
 import { DesktopBoardButtons, MobileAllFeedFilter, MobileBoardButtons } from './components/board-buttons/board-buttons';
@@ -75,7 +77,7 @@ const getPostFormRouteKeyPath = (pathname: string) => pathname.replace(/\/settin
 const BoardLayout = () => {
   const params = useParams();
   const { accountCommentIndex, boardIdentifier, pageNumber } = params;
-  const { pathname, search } = useLocation();
+  const { pathname, search, hash } = useLocation();
   const isMobile = useIsMobile();
   const isInAllView = isAllView(pathname);
   const isInSubscriptionsView = isSubscriptionsView(pathname, useParams());
@@ -117,6 +119,10 @@ const BoardLayout = () => {
     return <Navigate to='/not-found' replace />;
   }
 
+  if (boardIdentifier && pageNumber && !isBoardFeedPageNumber(pageNumber)) {
+    return <Navigate to={getCatalogSearchRoute(boardIdentifier, pageNumber, search)} replace />;
+  }
+
   if (isCatalogView(pathname, params) && isFlashBoardRoute(boardIdentifier, directories)) {
     return <Navigate to='/not-found' replace />;
   }
@@ -140,7 +146,7 @@ const BoardLayout = () => {
     const canonicalBoardIdentifier = resolvedDirectoryBoardPath ?? (isDirectoryCandidate ? boardIdentifier : getBoardPath(boardIdentifier, directories));
     if (canonicalBoardIdentifier !== boardIdentifier) {
       const canonicalPath = pathname.replace(`/${boardIdentifier}`, `/${canonicalBoardIdentifier}`);
-      return <Navigate to={canonicalPath + (search || '')} replace />;
+      return <Navigate to={canonicalPath + (search || '') + (hash || '')} replace />;
     }
   }
 

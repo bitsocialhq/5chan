@@ -349,6 +349,17 @@ describe('Markdown', () => {
     expect(container.textContent).toBe('see >>>/fit/, next');
   });
 
+  it('renders board search paths as catalog search hash links', async () => {
+    await renderMarkdown({
+      content: 'see >>>/biz/test.',
+    });
+
+    const link = container.querySelector('a');
+    expect(link?.getAttribute('href')).toBe('/biz/catalog#s=test');
+    expect(link?.textContent).toBe('>>>/biz/test');
+    expect(container.textContent).toBe('see >>>/biz/test.');
+  });
+
   it('normalizes hash-routed 5chan links before passing them to React Router', async () => {
     testState.internalPathByHref = {
       'https://5chan.local/#/mu': '#/mu',

@@ -3,6 +3,8 @@ import {
   areSameBoardAddress,
   extractDirectoryFromTitle,
   getBoardPath,
+  getCatalogSearchHash,
+  getCatalogSearchRoute,
   getFeedCacheKey,
   getFeedType,
   getPageFromFeedPath,
@@ -206,6 +208,14 @@ describe('feed pagination helpers', () => {
     expect(getPageFromFeedPath('/biz/catalog/4/settings')).toBe(4);
     expect(getPageFromFeedPath('/biz/11')).toBe(1);
     expect(getPageFromFeedPath('/biz')).toBe(1);
+  });
+});
+
+describe('catalog search route helpers', () => {
+  it('formats catalog search routes with 4chan-style hash params', () => {
+    expect(getCatalogSearchHash('test')).toBe('#s=test');
+    expect(getCatalogSearchRoute('biz', 'test')).toBe('/biz/catalog#s=test');
+    expect(getCatalogSearchRoute('biz', 'cats and dogs', '?t=1w')).toBe('/biz/catalog?t=1w#s=cats%20and%20dogs');
   });
 });
 
