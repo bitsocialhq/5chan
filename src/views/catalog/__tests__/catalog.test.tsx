@@ -931,7 +931,7 @@ describe('Catalog', () => {
     testState.searchText = 'asddasd';
     testState.hasMore = false;
 
-    await renderCatalog({ initialEntry: '/mu/catalog?q=asddasd', routePath: '/:boardIdentifier/catalog' });
+    await renderCatalog({ initialEntry: '/mu/catalog#s=asddasd', routePath: '/:boardIdentifier/catalog' });
 
     expect(container.textContent).toContain('nothing_found');
     expect(container.textContent).not.toContain('no_threads');

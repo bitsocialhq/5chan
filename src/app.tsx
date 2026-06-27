@@ -32,6 +32,8 @@ import {
   isValidBoardModRoute,
   isValidModRoute,
   isFlashBoardRoute,
+  isBoardFeedPageNumber,
+  getCatalogSearchRoute,
 } from './lib/utils/route-utils';
 import styles from './app.module.css';
 import { DesktopBoardButtons, MobileAllFeedFilter, MobileBoardButtons } from './components/board-buttons/board-buttons';
@@ -119,6 +121,10 @@ const BoardLayout = () => {
     return <Navigate to={{ pathname: getPageOneCanonicalPath(boardIdentifier, pathname), search, hash }} replace />;
   }
 
+  if (boardIdentifier && pageNumber && !isBoardFeedPageNumber(pageNumber)) {
+    return <Navigate to={getCatalogSearchRoute(boardIdentifier, pageNumber, search, { settings: pathname.endsWith('/settings') })} replace />;
+  }
+
   if (isCatalogView(pathname, params) && isFlashBoardRoute(boardIdentifier, directories)) {
     return <Navigate to='/not-found' replace />;
   }
@@ -142,7 +148,7 @@ const BoardLayout = () => {
     const canonicalBoardIdentifier = resolvedDirectoryBoardPath ?? (isDirectoryCandidate ? boardIdentifier : getBoardPath(boardIdentifier, directories));
     if (canonicalBoardIdentifier !== boardIdentifier) {
       const canonicalPath = pathname.replace(`/${boardIdentifier}`, `/${canonicalBoardIdentifier}`);
-      return <Navigate to={canonicalPath + (search || '')} replace />;
+      return <Navigate to={canonicalPath + (search || '') + (hash || '')} replace />;
     }
   }
 
