@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This release fixes flag display on alternate /pol/ community pages opened by their direct board address.';
+  'This version adds a /q/ feedback directory, lets moderators edit their own posts, improves board route handling, and keeps other videos paused when a new one starts playing.';
 
 const releaseBody = `${oneLinerDescription}
 

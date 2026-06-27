@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.8",
+      "kind": "release",
+      "timestamp": 1782561600,
+      "message": "v0.9.8: Feedback board, smoother videos, moderator self-edits",
+      "version": "0.9.8"
+    },
+    {
       "id": "release-0.9.7",
       "kind": "release",
       "timestamp": 1782475200,

@@ -1,3 +1,23 @@
+## [0.9.8](https://github.com/bitsocialnet/5chan/compare/v0.9.7...v0.9.8) (2026-06-27)
+
+
+### Bug Fixes
+
+* **ai workflow:** align hook configs ([9e027a0](https://github.com/bitsocialnet/5chan/commit/9e027a01590ac7e38257e7df60d147737df45497))
+* **catalog:** use search hashes for board routes ([ecb7f9e](https://github.com/bitsocialnet/5chan/commit/ecb7f9e4ccbb44db43b7bd972d3b2450d045b567))
+* **edit-menu:** let moderators edit their own post content ([fa5320e](https://github.com/bitsocialnet/5chan/commit/fa5320e8347f0ed0793f8b2b11d4c6479ed206b5))
+* **favicon:** show dedicated icon on 404 pages ([f213d41](https://github.com/bitsocialnet/5chan/commit/f213d412966c0ed055745d850686c0b1906f1ae7))
+* **footer:** rename contact link to contributors ([292d3e3](https://github.com/bitsocialnet/5chan/commit/292d3e35a4771012caa145955c982c44388ea468))
+* **media:** pause other videos when a new one starts playing ([24e340e](https://github.com/bitsocialnet/5chan/commit/24e340e4b6f4e5952f1c79e7b21ad1ef69c230da))
+* **routing:** canonicalize board page 1 routes instead of not-found ([eacb422](https://github.com/bitsocialnet/5chan/commit/eacb422f405dae57f94c73ae52209c791b179330))
+
+
+### Features
+
+* **directories:** add /q/ feedback directory and link site footer ([51c0a16](https://github.com/bitsocialnet/5chan/commit/51c0a162494f79a908d395dfa81588b65454114a))
+
+
+
 ## [0.9.7](https://github.com/bitsocialnet/5chan/compare/v0.9.6...v0.9.7) (2026-06-26)
 
 
