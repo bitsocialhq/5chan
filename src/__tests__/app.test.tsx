@@ -431,11 +431,16 @@ describe('App', () => {
     expect(container.querySelector('[data-testid="board-blotter"]')).toBeTruthy();
   });
 
-  it('redirects board page 1 feeds to not-found', async () => {
-    await renderApp('/mu/1');
+  it.each([
+    ['/mu/1', '/mu'],
+    ['/mu/1?focus=1', '/mu?focus=1'],
+    ['/mu/1/settings?focus=1', '/mu/settings?focus=1'],
+  ])('canonicalizes board page 1 route %s to %s', async (initialEntry, expectedLocation) => {
+    await renderApp(initialEntry);
 
-    expect(latestLocation).toBe('/not-found');
-    expect(container.querySelector('[data-testid="not-found-view"]')).toBeTruthy();
+    expect(latestLocation).toBe(expectedLocation);
+    expect(container.querySelector('[data-testid="board-header"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="not-found-view"]')).toBeNull();
   });
 
   it('redirects flash board catalog routes to not-found', async () => {

@@ -72,10 +72,12 @@ preloadReplyModal();
 
 const getPostFormRouteKeyPath = (pathname: string) => pathname.replace(/\/settings$/, '').replace(/\/$/, '');
 
+const getPageOneCanonicalPath = (boardIdentifier: string, pathname: string) => `/${boardIdentifier}${pathname.endsWith('/settings') ? '/settings' : ''}`;
+
 const BoardLayout = () => {
   const params = useParams();
   const { accountCommentIndex, boardIdentifier, pageNumber } = params;
-  const { pathname, search } = useLocation();
+  const { pathname, search, hash } = useLocation();
   const isMobile = useIsMobile();
   const isInAllView = isAllView(pathname);
   const isInSubscriptionsView = isSubscriptionsView(pathname, useParams());
@@ -113,8 +115,8 @@ const BoardLayout = () => {
   // force rerender of post form when navigating between pages, except when opening settings modal in current view
   const key = `${communityAddress}-${getPostFormRouteKeyPath(pathname)}`;
 
-  if (pageNumber === '1') {
-    return <Navigate to='/not-found' replace />;
+  if (pageNumber === '1' && boardIdentifier) {
+    return <Navigate to={{ pathname: getPageOneCanonicalPath(boardIdentifier, pathname), search, hash }} replace />;
   }
 
   if (isCatalogView(pathname, params) && isFlashBoardRoute(boardIdentifier, directories)) {
