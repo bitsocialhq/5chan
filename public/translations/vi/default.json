@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Không thể lưu bản nâng cấp cài đặt.",
   "settings_upgrade_review_notice": "nâng cấp cài đặt có sẵn",
   "settings_upgrade_review_button": "xem lại",
-  "settings_upgrade_never_show_again": "không hiển thị lại"
+  "settings_upgrade_never_show_again": "không hiển thị lại",
+  "site_legal_meta_contributors_link": "Người đóng góp"
 }

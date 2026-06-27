@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Nu s-a putut salva actualizarea setărilor.",
   "settings_upgrade_review_notice": "actualizare setări disponibilă",
   "settings_upgrade_review_button": "revizuiește",
-  "settings_upgrade_never_show_again": "nu mai afișa"
+  "settings_upgrade_never_show_again": "nu mai afișa",
+  "site_legal_meta_contributors_link": "Contributori"
 }

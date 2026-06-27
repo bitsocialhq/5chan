@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Die Einstellungsaktualisierung konnte nicht gespeichert werden.",
   "settings_upgrade_review_notice": "Einstellungs-Upgrade verfügbar",
   "settings_upgrade_review_button": "überprüfen",
-  "settings_upgrade_never_show_again": "nie wieder anzeigen"
+  "settings_upgrade_never_show_again": "nie wieder anzeigen",
+  "site_legal_meta_contributors_link": "Mitwirkende"
 }

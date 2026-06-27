@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Impossible d'enregistrer la mise à niveau des paramètres.",
   "settings_upgrade_review_notice": "mise à jour des paramètres disponible",
   "settings_upgrade_review_button": "examiner",
-  "settings_upgrade_never_show_again": "ne plus afficher"
+  "settings_upgrade_never_show_again": "ne plus afficher",
+  "site_legal_meta_contributors_link": "Contributeurs"
 }

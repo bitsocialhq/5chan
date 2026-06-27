@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "לא ניתן לשמור את שדרוג ההגדרות.",
   "settings_upgrade_review_notice": "שדרוג הגדרות זמין",
   "settings_upgrade_review_button": "סקור",
-  "settings_upgrade_never_show_again": "לא להציג שוב"
+  "settings_upgrade_never_show_again": "לא להציג שוב",
+  "site_legal_meta_contributors_link": "תורמים"
 }

@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Impossibile salvare l'aggiornamento delle impostazioni.",
   "settings_upgrade_review_notice": "aggiornamento impostazioni disponibile",
   "settings_upgrade_review_button": "rivedi",
-  "settings_upgrade_never_show_again": "non mostrare più"
+  "settings_upgrade_never_show_again": "non mostrare più",
+  "site_legal_meta_contributors_link": "Collaboratori"
 }

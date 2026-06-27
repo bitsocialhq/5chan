@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "تعذر حفظ ترقية الإعدادات.",
   "settings_upgrade_review_notice": "ترقية الإعدادات متاحة",
   "settings_upgrade_review_button": "مراجعة",
-  "settings_upgrade_never_show_again": "لا تظهر مرة أخرى"
+  "settings_upgrade_never_show_again": "لا تظهر مرة أخرى",
+  "site_legal_meta_contributors_link": "المساهمون"
 }

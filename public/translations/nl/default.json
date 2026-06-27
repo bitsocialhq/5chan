@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "De instellingenupgrade kon niet worden opgeslagen.",
   "settings_upgrade_review_notice": "instellingenupgrade beschikbaar",
   "settings_upgrade_review_button": "bekijken",
-  "settings_upgrade_never_show_again": "niet meer tonen"
+  "settings_upgrade_never_show_again": "niet meer tonen",
+  "site_legal_meta_contributors_link": "Bijdragers"
 }

@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Nuk u ruajt përmirësimi i cilësimeve.",
   "settings_upgrade_review_notice": "përmirësim i cilësimeve i disponueshëm",
   "settings_upgrade_review_button": "shqyrto",
-  "settings_upgrade_never_show_again": "mos e shfaq më"
+  "settings_upgrade_never_show_again": "mos e shfaq më",
+  "site_legal_meta_contributors_link": "Kontribuesit"
 }

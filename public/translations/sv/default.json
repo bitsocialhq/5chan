@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Kunde inte spara inställningsuppgraderingen.",
   "settings_upgrade_review_notice": "inställningsuppgradering tillgänglig",
   "settings_upgrade_review_button": "granska",
-  "settings_upgrade_never_show_again": "visa inte igen"
+  "settings_upgrade_never_show_again": "visa inte igen",
+  "site_legal_meta_contributors_link": "Bidragsgivare"
 }

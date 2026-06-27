@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Kunne ikke lagre innstillingsoppgraderingen.",
   "settings_upgrade_review_notice": "innstillingsoppgradering tilgjengelig",
   "settings_upgrade_review_button": "se gjennom",
-  "settings_upgrade_never_show_again": "vis aldri igjen"
+  "settings_upgrade_never_show_again": "vis aldri igjen",
+  "site_legal_meta_contributors_link": "Bidragsytere"
 }

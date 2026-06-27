@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Nie udało się zapisać aktualizacji ustawień.",
   "settings_upgrade_review_notice": "aktualizacja ustawień dostępna",
   "settings_upgrade_review_button": "przejrzyj",
-  "settings_upgrade_never_show_again": "nie pokazuj ponownie"
+  "settings_upgrade_never_show_again": "nie pokazuj ponownie",
+  "site_legal_meta_contributors_link": "Współtwórcy"
 }

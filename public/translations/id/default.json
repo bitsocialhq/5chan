@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Pembaruan pengaturan tidak dapat disimpan.",
   "settings_upgrade_review_notice": "pembaruan pengaturan tersedia",
   "settings_upgrade_review_button": "tinjau",
-  "settings_upgrade_never_show_again": "jangan tampilkan lagi"
+  "settings_upgrade_never_show_again": "jangan tampilkan lagi",
+  "site_legal_meta_contributors_link": "Kontributor"
 }

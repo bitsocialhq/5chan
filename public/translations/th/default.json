@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "ไม่สามารถบันทึกการอัปเกรดการตั้งค่าได้",
   "settings_upgrade_review_notice": "มีการอัปเกรดการตั้งค่า",
   "settings_upgrade_review_button": "ตรวจสอบ",
-  "settings_upgrade_never_show_again": "ไม่ต้องแสดงอีก"
+  "settings_upgrade_never_show_again": "ไม่ต้องแสดงอีก",
+  "site_legal_meta_contributors_link": "ผู้มีส่วนร่วม"
 }

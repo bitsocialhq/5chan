@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Asetusten päivitystä ei voitu tallentaa.",
   "settings_upgrade_review_notice": "asetuspäivitys saatavilla",
   "settings_upgrade_review_button": "tarkista",
-  "settings_upgrade_never_show_again": "älä näytä uudelleen"
+  "settings_upgrade_never_show_again": "älä näytä uudelleen",
+  "site_legal_meta_contributors_link": "Avustajat"
 }

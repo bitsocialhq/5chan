@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "无法保存设置升级。",
   "settings_upgrade_review_notice": "设置升级可用",
   "settings_upgrade_review_button": "查看",
-  "settings_upgrade_never_show_again": "不再显示"
+  "settings_upgrade_never_show_again": "不再显示",
+  "site_legal_meta_contributors_link": "贡献者"
 }

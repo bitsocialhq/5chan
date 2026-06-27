@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Kunne ikke gemme indstillingsopgraderingen.",
   "settings_upgrade_review_notice": "indstillingsopgradering tilgængelig",
   "settings_upgrade_review_button": "gennemgå",
-  "settings_upgrade_never_show_again": "vis aldrig igen"
+  "settings_upgrade_never_show_again": "vis aldrig igen",
+  "site_legal_meta_contributors_link": "Bidragydere"
 }

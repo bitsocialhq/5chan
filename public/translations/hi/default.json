@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "सेटिंग्स अपग्रेड सहेज नहीं सके।",
   "settings_upgrade_review_notice": "सेटिंग्स अपग्रेड उपलब्ध",
   "settings_upgrade_review_button": "समीक्षा करें",
-  "settings_upgrade_never_show_again": "फिर कभी न दिखाएँ"
+  "settings_upgrade_never_show_again": "फिर कभी न दिखाएँ",
+  "site_legal_meta_contributors_link": "योगदानकर्ता"
 }

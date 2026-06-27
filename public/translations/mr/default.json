@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "सेटिंग्ज अपग्रेड जतन करू शकले नाही.",
   "settings_upgrade_review_notice": "सेटिंग्ज अपग्रेड उपलब्ध",
   "settings_upgrade_review_button": "पुनरावलोकन",
-  "settings_upgrade_never_show_again": "पुन्हा दाखवू नका"
+  "settings_upgrade_never_show_again": "पुन्हा दाखवू नका",
+  "site_legal_meta_contributors_link": "योगदानकर्ते"
 }

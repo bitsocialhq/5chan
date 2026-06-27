@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Nepodařilo se uložit upgrade nastavení.",
   "settings_upgrade_review_notice": "upgrade nastavení k dispozici",
   "settings_upgrade_review_button": "zkontrolovat",
-  "settings_upgrade_never_show_again": "už nezobrazovat"
+  "settings_upgrade_never_show_again": "už nezobrazovat",
+  "site_legal_meta_contributors_link": "Přispěvatelé"
 }

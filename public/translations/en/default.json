@@ -461,5 +461,6 @@
   "settings_upgrade_error_saving": "Could not save the settings upgrade.",
   "settings_upgrade_review_notice": "settings upgrade available",
   "settings_upgrade_review_button": "review",
-  "settings_upgrade_never_show_again": "never show again"
+  "settings_upgrade_never_show_again": "never show again",
+  "site_legal_meta_contributors_link": "Contributors"
 }

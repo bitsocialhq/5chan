@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "A beállítások frissítése nem menthető el.",
   "settings_upgrade_review_notice": "beállításfrissítés elérhető",
   "settings_upgrade_review_button": "áttekintés",
-  "settings_upgrade_never_show_again": "ne jelenjen meg újra"
+  "settings_upgrade_never_show_again": "ne jelenjen meg újra",
+  "site_legal_meta_contributors_link": "Közreműködők"
 }

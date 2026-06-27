@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import Version from '../version';
+import Version from '../version/version';
 
 type SiteLegalMetaOrder = 'version-first' | 'license-first';
 
@@ -15,18 +15,22 @@ const LicenseText = () => {
   return <span>{t('site_legal_meta_license_text')}</span>;
 };
 
-const VersionFeedbackContact = () => (
-  <>
-    <Version /> • <Link to='/q'>Feedback</Link> •{' '}
-    <a href='https://github.com/bitsocialnet/5chan/graphs/contributors' target='_blank' rel='noopener noreferrer'>
-      Contact
-    </a>
-  </>
-);
+const VersionFeedbackContributors = () => {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      <Version /> • <Link to='/q'>Feedback</Link> •{' '}
+      <a href='https://github.com/bitsocialnet/5chan/graphs/contributors' target='_blank' rel='noopener noreferrer'>
+        {t('site_legal_meta_contributors_link')}
+      </a>
+    </>
+  );
+};
 
 const SiteLegalMeta = ({ order = 'version-first' }: SiteLegalMetaProps) => {
-  const first = order === 'version-first' ? <VersionFeedbackContact /> : <LicenseText />;
-  const second = order === 'version-first' ? <LicenseText /> : <VersionFeedbackContact />;
+  const first = order === 'version-first' ? <VersionFeedbackContributors /> : <LicenseText />;
+  const second = order === 'version-first' ? <LicenseText /> : <VersionFeedbackContributors />;
 
   if (order === 'version-first') {
     return (

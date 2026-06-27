@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "No se pudo guardar la actualización de configuración.",
   "settings_upgrade_review_notice": "actualización de configuración disponible",
   "settings_upgrade_review_button": "revisar",
-  "settings_upgrade_never_show_again": "no volver a mostrar"
+  "settings_upgrade_never_show_again": "no volver a mostrar",
+  "site_legal_meta_contributors_link": "Colaboradores"
 }

@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Не удалось сохранить обновление настроек.",
   "settings_upgrade_review_notice": "обновление настроек доступно",
   "settings_upgrade_review_button": "просмотреть",
-  "settings_upgrade_never_show_again": "больше не показывать"
+  "settings_upgrade_never_show_again": "больше не показывать",
+  "site_legal_meta_contributors_link": "Участники"
 }

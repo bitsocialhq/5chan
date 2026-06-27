@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "సెట్టింగ్‌ల అప్‌గ్రేడ్‌ను సేవ్ చేయలేకపోయింది.",
   "settings_upgrade_review_notice": "సెట్టింగ్‌ల అప్‌గ్రేడ్ అందుబాటులో ఉంది",
   "settings_upgrade_review_button": "సమీక్షించు",
-  "settings_upgrade_never_show_again": "మళ్లీ చూపించవద్దు"
+  "settings_upgrade_never_show_again": "మళ్లీ చూపించవద్దు",
+  "site_legal_meta_contributors_link": "సహకారులు"
 }

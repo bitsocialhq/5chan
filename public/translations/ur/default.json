@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "ترتیبات اپ گریڈ محفوظ نہیں ہو سکی۔",
   "settings_upgrade_review_notice": "ترتیبات اپ گریڈ دستیاب",
   "settings_upgrade_review_button": "جائزہ لیں",
-  "settings_upgrade_never_show_again": "دوبارہ نہ دکھائیں"
+  "settings_upgrade_never_show_again": "دوبارہ نہ دکھائیں",
+  "site_legal_meta_contributors_link": "شراکت کنندگان"
 }

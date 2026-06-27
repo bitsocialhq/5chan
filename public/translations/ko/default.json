@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "설정 업그레이드를 저장할 수 없습니다.",
   "settings_upgrade_review_notice": "설정 업그레이드 사용 가능",
   "settings_upgrade_review_button": "검토",
-  "settings_upgrade_never_show_again": "다시 표시하지 않기"
+  "settings_upgrade_never_show_again": "다시 표시하지 않기",
+  "site_legal_meta_contributors_link": "기여자"
 }

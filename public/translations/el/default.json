@@ -442,5 +442,6 @@
   "settings_upgrade_error_saving": "Δεν ήταν δυνατή η αποθήκευση της αναβάθμισης ρυθμίσεων.",
   "settings_upgrade_review_notice": "αναβάθμιση ρυθμίσεων διαθέσιμη",
   "settings_upgrade_review_button": "έλεγχος",
-  "settings_upgrade_never_show_again": "να μην εμφανιστεί ξανά"
+  "settings_upgrade_never_show_again": "να μην εμφανιστεί ξανά",
+  "site_legal_meta_contributors_link": "Συνεισφέροντες"
 }
