@@ -6,6 +6,10 @@ type ParamsType = {
   commentCid?: string;
 };
 
+const STATIC_APP_ROUTES = new Set(['/faq', '/pass', '/rules', '/blotter', '/settings/account-data', '/not-allowed']);
+
+const isStaticAppRoute = (pathname: string): boolean => STATIC_APP_ROUTES.has(pathname);
+
 export const isAllView = (pathname: string): boolean => {
   return pathname.startsWith('/all');
 };
@@ -97,6 +101,7 @@ export const isNotFoundView = (pathname: string, params: ParamsType): boolean =>
     !isArchiveView(pathname, params) &&
     !isCatalogView(pathname, params) &&
     !isHomeView(pathname) &&
+    !isStaticAppRoute(pathname) &&
     !isPendingPostView(pathname, params) &&
     !isPostPageView(pathname, params) &&
     !isSettingsView(pathname, params) &&

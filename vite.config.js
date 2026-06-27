@@ -39,6 +39,7 @@ const neverPrecacheUrls = new Set(['index.html', 'version.json']);
 const vitePwaManagedAssetUrls = new Set([
   'manifest.webmanifest',
   'favicon.ico',
+  'favicon-404.ico',
   'favicon2.ico',
   'robots.txt',
   'apple-touch-icon.png',
@@ -50,6 +51,7 @@ const baselineAppShellUrls = new Set([
   'manifest.json',
   'manifest.webmanifest',
   'favicon.ico',
+  'favicon-404.ico',
   'favicon2.ico',
   'robots.txt',
   'apple-touch-icon.png',
@@ -393,7 +395,7 @@ export default defineConfig({
         enabled: true,
         type: 'module',
       },
-      includeAssets: ['favicon.ico', 'favicon2.ico', 'robots.txt', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.ico', 'favicon-404.ico', 'favicon2.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
         name: '5chan',
         short_name: '5chan',

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useAccountComment } from '@bitsocial/bitsocial-react-hooks';
-import { isAllView, isModView, isSubscriptionsView } from '../lib/utils/view-utils';
+import { isAllView, isModView, isNotFoundView, isSubscriptionsView } from '../lib/utils/view-utils';
 import useThemeStore from '../stores/use-theme-store';
 import { useDirectories } from './use-directories';
 import { useResolvedCommunityAddress } from './use-resolved-community-address';
@@ -22,9 +22,8 @@ const updateThemeClass = (newTheme: string) => {
 
 const useTheme = (): [string, (theme: string) => void] => {
   const location = useLocation();
-  const params = useParams<{ boardIdentifier?: string }>();
-  const pendingPostParams = useParams<{ accountCommentIndex?: string }>();
-  const pendingPost = useAccountComment({ commentIndex: normalizeAccountCommentIndex(pendingPostParams?.accountCommentIndex) });
+  const params = useParams<{ accountCommentIndex?: string; boardIdentifier?: string; commentCid?: string }>();
+  const pendingPost = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const pendingPostCommunityAddress = getCommentCommunityAddress(pendingPost);
 
   const { isEnabled, setIsEnabled } = useSpecialThemeStore();
@@ -36,6 +35,7 @@ const useTheme = (): [string, (theme: string) => void] => {
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInModView = isModView(location.pathname);
+  const isInNotFoundView = isNotFoundView(location.pathname, params);
   const routeIdentifier = params.boardIdentifier;
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || pendingPostCommunityAddress || routeIdentifier;
@@ -92,8 +92,8 @@ const useTheme = (): [string, (theme: string) => void] => {
   }, [currentTheme]);
 
   useEffect(() => {
-    updateFavicon(sfw);
-  }, [sfw]);
+    updateFavicon(isInNotFoundView ? 'not-found' : sfw);
+  }, [isInNotFoundView, sfw]);
 
   const setCommunityTheme = useCallback(
     async (newTheme: string) => {

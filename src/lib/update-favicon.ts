@@ -1,35 +1,50 @@
 const DEFAULT_FAVICON = '/favicon.ico?variant=nsfw';
 const SFW_FAVICON = '/favicon2.ico?variant=sfw';
+const NOT_FOUND_FAVICON = '/favicon-404.ico?variant=404';
 const FAVICON_RELS = ['icon', 'shortcut icon'] as const;
 const FAVICON_SELECTOR = ['link[data-fivechan-tab-favicon="true"]', ...FAVICON_RELS.map((rel) => `link[rel="${rel}"][sizes="16x16"]`)].join(', ');
+
+type FaviconVariant = 'default' | 'sfw' | 'not-found';
+
+const FAVICONS: Record<FaviconVariant, { href: string; type: string }> = {
+  default: { href: DEFAULT_FAVICON, type: 'image/png' },
+  sfw: { href: SFW_FAVICON, type: 'image/png' },
+  'not-found': { href: NOT_FOUND_FAVICON, type: 'image/x-icon' },
+};
 
 let currentHref: string | null = null;
 
 const hasExpectedFaviconLinks = (href: string): boolean =>
   FAVICON_RELS.every((rel) => document.querySelector(`link[rel="${rel}"][href="${href}"][data-fivechan-tab-favicon="true"]`));
 
-const createFaviconLink = (rel: (typeof FAVICON_RELS)[number], href: string): HTMLLinkElement => {
+const createFaviconLink = (rel: (typeof FAVICON_RELS)[number], favicon: (typeof FAVICONS)[FaviconVariant]): HTMLLinkElement => {
   const link = document.createElement('link');
   link.rel = rel;
-  link.type = 'image/png';
+  link.type = favicon.type;
   link.setAttribute('sizes', '16x16');
-  link.href = href;
+  link.href = favicon.href;
   link.dataset.fivechanTabFavicon = 'true';
   return link;
 };
 
+const getFaviconVariant = (variant: boolean | FaviconVariant): FaviconVariant => {
+  if (typeof variant === 'boolean') return variant ? 'sfw' : 'default';
+  return variant;
+};
+
 /**
- * Swap the tab favicon between the default (NSFW/home) and SFW variants.
+ * Swap the tab favicon between the default (NSFW/home), SFW, and 404 variants.
  * Uses remove-and-recreate plus cache-busted URLs to bypass sticky favicon caching.
  */
-export const updateFavicon = (isSfw: boolean): void => {
-  const href = isSfw ? SFW_FAVICON : DEFAULT_FAVICON;
+export const updateFavicon = (variant: boolean | FaviconVariant): void => {
+  const favicon = FAVICONS[getFaviconVariant(variant)];
+  const { href } = favicon;
   if (href === currentHref && hasExpectedFaviconLinks(href)) return;
   currentHref = href;
 
   document.querySelectorAll<HTMLLinkElement>(FAVICON_SELECTOR).forEach((link) => link.remove());
   FAVICON_RELS.forEach((rel) => {
-    document.head.appendChild(createFaviconLink(rel, href));
+    document.head.appendChild(createFaviconLink(rel, favicon));
   });
 };
 

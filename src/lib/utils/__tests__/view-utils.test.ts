@@ -22,6 +22,14 @@ describe('view-utils', () => {
     expect(isModQueueView('/music.eth/mod/queue')).toBe(true);
     expect(isSubscriptionsView('/subs/catalog/settings', {})).toBe(true);
     expect(isPendingPostView('/pending/42/settings', { accountCommentIndex: '42' })).toBe(true);
+    expect(isNotFoundView('/faq', {})).toBe(false);
+    expect(isNotFoundView('/pass', {})).toBe(false);
+    expect(isNotFoundView('/rules', {})).toBe(false);
+    expect(isNotFoundView('/blotter', {})).toBe(false);
+    expect(isNotFoundView('/settings/account-data', {})).toBe(false);
+    expect(isNotFoundView('/not-allowed', {})).toBe(false);
+    expect(isNotFoundView('/not-found', {})).toBe(true);
+    expect(isNotFoundView('/faq/missing', {})).toBe(true);
   });
 
   it('detects board, catalog, post, and settings routes using board params', () => {
