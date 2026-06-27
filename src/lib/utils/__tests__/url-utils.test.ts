@@ -112,6 +112,7 @@ describe('url-utils', () => {
     expect(isValidCrossboardPattern('>>>/board.eth/123')).toBe(true);
     expect(isValidCrossboardPattern('>>>/board.eth/test')).toBe(true);
     expect(isValidCrossboardPattern(`>>>/${ipnsKey}`)).toBe(true);
+    expect(isValidCrossboardPattern(`>>>/${ipnsKey}/test`)).toBe(true);
     expect(isValidCrossboardPattern('>>>/invalid/thread/extra')).toBe(false);
     expect(isValidCrossboardPattern('>>/biz/')).toBe(false);
   });
