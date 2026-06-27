@@ -10,7 +10,7 @@ __metadata:
   resolution: "5chan@workspace:."
   dependencies:
     "@bbob/parser": "npm:4.3.1"
-    "@bitsocial/bitsocial-react-hooks": "npm:0.1.22"
+    "@bitsocial/bitsocial-react-hooks": "npm:0.1.23"
     "@bitsocial/bso-resolver": "npm:0.0.8"
     "@capacitor/android": "npm:7.4.5"
     "@capacitor/app": "npm:7.0.1"
@@ -1582,12 +1582,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bitsocial/bitsocial-react-hooks@npm:0.1.22":
-  version: 0.1.22
-  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.22"
+"@bitsocial/bitsocial-react-hooks@npm:0.1.23":
+  version: 0.1.23
+  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.23"
   dependencies:
     "@bitsocial/bso-resolver": "npm:0.0.8"
-    "@pkcprotocol/pkc-js": "npm:0.0.53"
+    "@pkcprotocol/pkc-js": "npm:0.0.57"
     "@pkcprotocol/pkc-logger": "npm:0.1.0"
     assert: "npm:2.0.0"
     ethers: "npm:5.8.0"
@@ -1603,7 +1603,7 @@ __metadata:
     zustand: "npm:4.0.0"
   peerDependencies:
     react: ">=16.8"
-  checksum: 10c0/debb24cd5e9931c532e86c0f8c4abe7ffef92b26dff2cebbe40a65a59c682c92466deeca54d8cc8006399f2d8cc7e66fdf2cc612b935710377999f5093dff210
+  checksum: 10c0/33840261ce0fc4fd113b20e92e9bf38033294d8d195cd9ab97574fbcf117748da045c766d5323e2894fbea3bdb70f1fa8ce638bcbe22e4d1de5d49963350fee9
   languageName: node
   linkType: hard
 
@@ -6368,72 +6368,6 @@ __metadata:
     tslib: "npm:^2.8.1"
     tsyringe: "npm:^4.10.0"
   checksum: 10c0/bde17950e1dbfeb9f74f50c8dc55828590eba55e5fd1e39d7290dcdbc8401d96cd84b8b24faf763909136aba69256bad8d1aef08bb9fcf5670fb36e1b8c0e635
-  languageName: node
-  linkType: hard
-
-"@pkcprotocol/pkc-js@npm:0.0.53":
-  version: 0.0.53
-  resolution: "@pkcprotocol/pkc-js@npm:0.0.53"
-  dependencies:
-    "@enhances/with-resolvers": "npm:0.0.5"
-    "@helia/block-brokers": "npm:5.2.4"
-    "@helia/delegated-routing-v1-http-api-client": "npm:8.0.1"
-    "@helia/ipns": "npm:9.2.1"
-    "@helia/unixfs": "npm:7.2.1"
-    "@libp2p/crypto": "npm:5.1.19"
-    "@libp2p/fetch": "npm:4.1.6"
-    "@libp2p/gossipsub": "npm:16.0.2"
-    "@libp2p/identify": "npm:4.1.7"
-    "@libp2p/interface": "npm:3.2.3"
-    "@libp2p/peer-id": "npm:6.0.10"
-    "@multiformats/multiaddr": "npm:13.0.3"
-    "@noble/curves": "npm:2.2.0"
-    "@pkcprotocol/pkc-logger": "npm:0.1.0"
-    "@pkcprotocol/proper-lock-file": "npm:4.2.1"
-    assert: "npm:2.1.0"
-    better-sqlite3: "npm:12.9.0"
-    blockstore-core: "npm:7.0.1"
-    buffer: "npm:6.0.3"
-    cbor: "npm:10.0.11"
-    cborg: "npm:4.5.8"
-    debounce: "npm:1.2.1"
-    ext-name: "npm:5.0.0"
-    helia: "npm:6.1.4"
-    hpagent: "npm:1.2.0"
-    ipfs-unixfs-importer: "npm:17.0.1"
-    ipns: "npm:11.0.0"
-    it-all: "npm:3.0.6"
-    it-last: "npm:3.0.11"
-    js-sha256: "npm:0.11.1"
-    js-sha512: "npm:0.9.0"
-    kubo-rpc-client: "npm:7.1.0"
-    libp2p: "npm:3.3.3"
-    limiter-es6-compat: "npm:2.1.2"
-    localforage: "npm:1.10.0"
-    lodash.merge: "npm:4.6.2"
-    lru-cache: "npm:10.1.0"
-    multiformats: "npm:14.0.0"
-    node-forge: "npm:1.4.0"
-    open-graph-scraper: "npm:6.11.0"
-    p-limit: "npm:7.3.0"
-    p-retry: "npm:8.0.0"
-    p-timeout: "npm:7.0.1"
-    probe-image-size: "npm:7.2.3"
-    quick-lru: "npm:5.1.1"
-    remeda: "npm:1.57.0"
-    retry: "npm:0.13.1"
-    rpc-websockets: "npm:9.3.8"
-    safe-stable-stringify: "npm:2.4.3"
-    tiny-typed-emitter: "npm:2.1.0"
-    tinycache: "npm:1.1.2"
-    ts-custom-error: "npm:3.3.1"
-    typestub-ipfs-only-hash: "npm:4.0.0"
-    uint8arrays: "npm:6.1.1"
-    undici: "npm:7.24.7"
-    uuid: "npm:13.0.0"
-    ws: "npm:8.20.0"
-    zod: "npm:4.3.6"
-  checksum: 10c0/b3b0bb6a53c5d53dd7198745e4899d888919620c2b05dfeb5baf9d16499d50f22ea18955a658f290277354fe839890e5a4d939d802349bc373dc4f97d4a71161
   languageName: node
   linkType: hard
 
