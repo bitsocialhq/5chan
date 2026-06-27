@@ -1,36 +1,51 @@
 {
-  "version": 1,
   "hooks": {
-    "afterFileEdit": [
+    "PostToolUse": [
       {
-        "command": ".claude/hooks/format.sh",
-        "timeout": 10
-      },
-      {
-        "command": ".claude/hooks/yarn-install.sh",
-        "timeout": 120
-      },
-      {
-        "command": ".claude/hooks/react-pattern-review.sh",
-        "timeout": 10
+        "matcher": "Edit|Write|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/format.sh\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/yarn-install.sh\"",
+            "timeout": 120
+          },
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/react-pattern-review.sh\"",
+            "timeout": 10
+          }
+        ]
       }
     ],
-    "stop": [
+    "Stop": [
       {
-        "command": ".claude/hooks/sync-git-branches.sh",
-        "timeout": 60
-      },
-      {
-        "command": ".claude/hooks/react-pattern-review.sh",
-        "timeout": 10
-      },
-      {
-        "command": ".claude/hooks/code-quality-review-reminder.sh",
-        "timeout": 10
-      },
-      {
-        "command": ".claude/hooks/verify.sh",
-        "timeout": 60
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/sync-git-branches.sh\"",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/react-pattern-review.sh\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/code-quality-review-reminder.sh\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/verify.sh\"",
+            "timeout": 60
+          }
+        ]
       }
     ]
   }
