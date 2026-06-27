@@ -449,6 +449,14 @@ describe('App', () => {
     expect(latestHash).toBe('#s=test');
   });
 
+  it('redirects unknown board settings subpaths to catalog search settings hashes', async () => {
+    await renderApp('/mu/test/settings');
+
+    expect(latestLocation).toBe('/mu/catalog/settings');
+    expect(latestHash).toBe('#s=test');
+    expect(container.querySelector('[data-testid="settings-modal"]')).toBeTruthy();
+  });
+
   it('redirects flash board catalog routes to not-found', async () => {
     testState.directories = [
       { address: 'music-posting.eth', title: '/mu/ - Music', nsfw: false },

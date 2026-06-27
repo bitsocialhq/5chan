@@ -120,7 +120,7 @@ const BoardLayout = () => {
   }
 
   if (boardIdentifier && pageNumber && !isBoardFeedPageNumber(pageNumber)) {
-    return <Navigate to={getCatalogSearchRoute(boardIdentifier, pageNumber, search)} replace />;
+    return <Navigate to={getCatalogSearchRoute(boardIdentifier, pageNumber, search, { settings: pathname.endsWith('/settings') })} replace />;
   }
 
   if (isCatalogView(pathname, params) && isFlashBoardRoute(boardIdentifier, directories)) {

@@ -842,7 +842,9 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
           return;
         }
         if (!segment.value) return;
-        elements.push(<React.Fragment key={`text-${segment.start}`}>{renderTextLines(normalizeContent(segment.value), context, `${segment.start}:`)}</React.Fragment>);
+        elements.push(
+          <React.Fragment key={`text-${segment.start}`}>{renderTextLines(normalizeContent(segment.value), context, `${segment.start}:`)}</React.Fragment>,
+        );
       });
       return elements;
     }

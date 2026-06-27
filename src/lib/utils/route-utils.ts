@@ -225,8 +225,8 @@ export const getCatalogSearchHash = (searchText: string): string => {
   return trimmedSearchText ? `#s=${encodeURIComponent(trimmedSearchText)}` : '';
 };
 
-export const getCatalogSearchRoute = (boardIdentifier: string, searchText: string, search = ''): string =>
-  `/${boardIdentifier}/catalog${search}${getCatalogSearchHash(searchText)}`;
+export const getCatalogSearchRoute = (boardIdentifier: string, searchText: string, search = '', options?: { settings?: boolean }): string =>
+  `/${boardIdentifier}/catalog${options?.settings ? '/settings' : ''}${search}${getCatalogSearchHash(searchText)}`;
 
 /** Internal: check if segment is a multiboard root (all, subs, mod) */
 function isMultiboardRoot(segment: string): boolean {
