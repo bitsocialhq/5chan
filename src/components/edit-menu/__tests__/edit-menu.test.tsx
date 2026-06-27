@@ -376,6 +376,8 @@ describe('EditMenu', () => {
     await renderMenu(basePost);
     await openMenu();
 
+    expect(getLabelCheckbox('Edit?')).toBeNull();
+
     await click(getCheckbox('removed'));
     await click(getCheckbox('purged'));
     await click(getCheckbox('locked'));
@@ -446,6 +448,41 @@ describe('EditMenu', () => {
 
     expect(testState.publishCommentModerationMock).toHaveBeenCalledOnce();
     expect(testState.modOptions?.commentModeration?.author).toBeUndefined();
+  });
+
+  it('lets moderators edit their own post content from the mod menu', async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: true,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+
+    await renderMenu(basePost);
+    await openMenu();
+
+    const editCheckbox = getLabelCheckbox('Edit?');
+    expect(editCheckbox).not.toBeNull();
+
+    await click(editCheckbox);
+
+    const textarea = container.querySelector('textarea');
+    expect(textarea).not.toBeNull();
+
+    await dispatchInput(textarea as HTMLTextAreaElement, 'Updated by moderator');
+    await clickButton('save');
+
+    expect(testState.publishAuthorEditMock).toHaveBeenCalledOnce();
+    expect(testState.publishCommentModerationMock).toHaveBeenCalledOnce();
+    expect(testState.authorOptions).toMatchObject({
+      author: {
+        address: '0xauthor',
+        displayName: 'Alice',
+      },
+      commentCid: 'comment-1',
+      content: 'Updated by moderator',
+      deleted: false,
+      communityAddress: 'music-posting.eth',
+    });
   });
 
   it('does not enable purge when the confirmation is rejected', async () => {

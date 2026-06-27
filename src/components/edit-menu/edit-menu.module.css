@@ -42,7 +42,7 @@
 }
 
 
-.menuItem input[type="text"] {
+.menuItem input[type="text"], .editTextarea {
   padding: 2px;
   box-shadow: var(--box-shadow-input);
   margin-top: 2px;
@@ -50,18 +50,25 @@
   margin-bottom: 2px;
 }
 
-.menuItem input[type="text"], .menuItem input[type='number'] {
+.menuItem input[type="text"], .menuItem input[type='number'], .editTextarea {
   border: var(--post-form-field-input-border);
   outline: none;
 }
 
-.menuItem input[type="text"]:focus, .menuItem input[type='number']:focus {
+.menuItem input[type="text"]:focus, .menuItem input[type='number']:focus, .editTextarea:focus {
   border: var(--post-form-field-input-focus-border);
 }
 
 .bottom {
   clear: both;
   display: block;
+}
+
+.editTextarea {
+  width: calc(100% - 12px);
+  height: 100px;
+  margin-left: 3px;
+  font-family: inherit;
 }
 
 .bottom button {

@@ -34,7 +34,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const resolvedPost = withResolvedCommentCommunityAddress(post);
-  const { author, cid, deleted, locked, parentCid, pinned, postCid, reason, removed, spoiler } = resolvedPost || {};
+  const { author, cid, content, deleted, locked, parentCid, pinned, postCid, reason, removed, spoiler } = resolvedPost || {};
   const communityAddress = getCommentCommunityAddress(resolvedPost);
   const archived = isCommentArchived(resolvedPost);
   const authorDisplayName = resolvedPost?.author?.displayName;
@@ -52,7 +52,9 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const allowsPseudonymousDelete = pseudonymityMode !== undefined && pseudonymityMode !== 'none';
   const canAttemptAuthorDelete = isAccountCommentAuthor || allowsPseudonymousDelete;
   const canOpenEditMenu = isAccountMod || canAttemptAuthorDelete;
+  const canEditOwnModPost = isAccountMod && isAccountCommentAuthor;
   const signer = isAccountCommentAuthor ? account?.signer : undefined;
+  const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
   const latestPostRef = useRef(resolvedPost);
   useEffect(() => {
     latestPostRef.current = resolvedPost;
@@ -64,6 +66,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
       commentCid: cid,
       communityAddress,
       // Author edit properties
+      content: canEditOwnModPost ? content : undefined,
       deleted: canAttemptAuthorDelete ? (deleted ?? false) : undefined,
       // Mod edit properties
       commentModeration: isAccountMod
@@ -87,9 +90,11 @@ const EditMenu = ({ post }: { post: Comment }) => {
     };
   }, [
     isAccountMod,
+    canEditOwnModPost,
     canAttemptAuthorDelete,
     archived,
     cid,
+    content,
     deleted,
     locked,
     pinned,
@@ -109,6 +114,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
     const options: PublishCommentEditOptions = {
       commentCid: cid,
       communityAddress,
+      content: canEditOwnModPost ? publishCommentEditOptions.content : undefined,
       deleted: publishCommentEditOptions.deleted,
       onChallenge,
       onChallengeVerification: alertChallengeVerificationFailed,
@@ -127,7 +133,18 @@ const EditMenu = ({ post }: { post: Comment }) => {
       signer,
       author: signer?.address === author?.address ? { address: signer?.address, displayName: authorDisplayName } : account?.author,
     };
-  }, [publishCommentEditOptions, cid, communityAddress, isAccountCommentAuthor, signer, account?.author, author?.address, authorDisplayName, onChallenge]);
+  }, [
+    publishCommentEditOptions,
+    cid,
+    communityAddress,
+    canEditOwnModPost,
+    isAccountCommentAuthor,
+    signer,
+    account?.author,
+    author?.address,
+    authorDisplayName,
+    onChallenge,
+  ]);
 
   const modEditOptions = useMemo<PublishCommentModerationOptions>(
     () => ({
@@ -163,6 +180,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
 
   const resetMenuState = () => {
     setPublishCommentEditOptions(defaultPublishEditOptions);
+    setIsContentEditorOpen(false);
     setBanDuration(
       defaultPublishEditOptions.commentModeration?.author?.banExpiresAt ? timestampToDays(defaultPublishEditOptions.commentModeration.author.banExpiresAt) : 1,
     );
@@ -250,9 +268,10 @@ const EditMenu = ({ post }: { post: Comment }) => {
 
   const headingId = useId();
   const hasDeleteStateChanged = (deleted ?? false) !== (publishCommentEditOptions.deleted ?? false);
+  const hasContentStateChanged = canEditOwnModPost && (content ?? '') !== (publishCommentEditOptions.content ?? '');
 
   const _publishCommentEdit = async () => {
-    const shouldPublishAuthorEdit = canAttemptAuthorDelete && hasDeleteStateChanged;
+    const shouldPublishAuthorEdit = (canAttemptAuthorDelete && hasDeleteStateChanged) || hasContentStateChanged;
 
     try {
       if (shouldPublishAuthorEdit && isAccountMod) {
@@ -318,6 +337,35 @@ const EditMenu = ({ post }: { post: Comment }) => {
                 )}
                 {isAccountMod && (
                   <>
+                    {canEditOwnModPost && (
+                      <>
+                        <div className={styles.menuItem}>
+                          <label>
+                            [
+                            <input
+                              aria-label={capitalize(t('edit'))}
+                              type='checkbox'
+                              onChange={() => setIsContentEditorOpen((isOpen) => !isOpen)}
+                              checked={isContentEditorOpen}
+                            />
+                            {capitalize(t('edit'))}?]
+                          </label>
+                        </div>
+                        {isContentEditorOpen && (
+                          <div>
+                            <textarea
+                              className={styles.editTextarea}
+                              aria-label={capitalize(t('edit'))}
+                              value={publishCommentEditOptions.content || ''}
+                              onChange={(e) => {
+                                const newContent = e.target.value;
+                                setPublishCommentEditOptions((state) => ({ ...state, content: newContent }));
+                              }}
+                            />
+                          </div>
+                        )}
+                      </>
+                    )}
                     <div className={styles.menuItem}>
                       <label>
                         [
