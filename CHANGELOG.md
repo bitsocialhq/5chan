@@ -1,3 +1,15 @@
+## [0.9.9](https://github.com/bitsocialnet/5chan/compare/v0.9.8...v0.9.9) (2026-06-28)
+
+
+### Bug Fixes
+
+* **boards-bar:** group /q/ with r9k, s5s, and vip in top bar ([afb3e31](https://github.com/bitsocialnet/5chan/commit/afb3e31f0a075713d3b3b16cb8dd1f4d137f3322))
+* **markdown:** render code tags on code-enabled boards ([7258e21](https://github.com/bitsocialnet/5chan/commit/7258e21f6fc4d8f5b2c623534e47e3fd5a29931a))
+* **post-content:** keep visited link colors on theme palette ([64dd30f](https://github.com/bitsocialnet/5chan/commit/64dd30ff2474f25e6b793555d386287f2a4dd1aa))
+* **post-form:** enforce required post link board rules ([6b2b85f](https://github.com/bitsocialnet/5chan/commit/6b2b85f51e3f11386a4f8a4f1ee7cd79ee82327c))
+
+
+
 ## [0.9.8](https://github.com/bitsocialnet/5chan/compare/v0.9.7...v0.9.8) (2026-06-27)
 
 
@@ -65,7 +77,6 @@
 * **electron:** add BSO name resolvers for desktop board address resolution ([3a4a0d4](https://github.com/bitsocialnet/5chan/commit/3a4a0d413085892ec64071bb41268514d2c109b6))
 * **home:** point footer Blog link to bitsocial.net ([d2f058a](https://github.com/bitsocialnet/5chan/commit/d2f058a5ede54220384e4aa0efd8aeac7494ba54))
 * **p2p:** disable browser pure P2P by default ([1c14003](https://github.com/bitsocialnet/5chan/commit/1c140035b46d7477272234169017e03e182aabb2))
-* show loaded empty boards instead of a stuck loading state ([#1175](https://github.com/bitsocialnet/5chan/issues/1175)) ([eb47214](https://github.com/bitsocialnet/5chan/commit/eb47214f08b09cef3559d8f00bd03d2138905b50))
 * **post:** restore thread author controls after publish navigation ([6297edb](https://github.com/bitsocialnet/5chan/commit/6297edb49fdb7eba392a8165706b0ade47b84269))
 * **posts:** hide stale initializing footer ([fb1a61e](https://github.com/bitsocialnet/5chan/commit/fb1a61eacea0efd8c2ce09ed4c51ecf93594ff45))
 * **replies:** keep fresh replies scoped to thread ([#1174](https://github.com/bitsocialnet/5chan/issues/1174)) ([9896c44](https://github.com/bitsocialnet/5chan/commit/9896c4400bceab98575cfc4553c12665e05b4374))

@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.9",
+      "kind": "release",
+      "timestamp": 1782648000,
+      "message": "v0.9.9: Steadier board loading, code tags on code-enabled boards",
+      "version": "0.9.9"
+    },
+    {
       "id": "release-0.9.8",
       "kind": "release",
       "timestamp": 1782561600,

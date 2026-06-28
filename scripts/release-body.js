@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version adds a /q/ feedback directory, lets moderators edit their own posts, improves board route handling, and keeps other videos paused when a new one starts playing.';
+  'This version fixes boards that could stay stuck loading, restores code tags on code-enabled boards, and improves board route and link behavior.';
 
 const releaseBody = `${oneLinerDescription}
 
