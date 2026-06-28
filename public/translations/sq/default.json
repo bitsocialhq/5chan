@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "mos e shfaq më",
   "site_legal_meta_contributors_link": "Kontribuesit",
   "post_link_required_alert": "Duhet të postosh një lidhje.",
-  "post_media_link_required_alert": "Duhet të postosh një lidhje imazhi ose videoje."
+  "post_media_link_required_alert": "Duhet të postosh një lidhje imazhi ose videoje.",
+  "post_form_code_tags_prompt": "Mund të theksosh sintaksën dhe të ruash hapësirat duke përdorur etiketat [code]."
 }

@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "nu mai afișa",
   "site_legal_meta_contributors_link": "Contributori",
   "post_link_required_alert": "Trebuie să postezi un link.",
-  "post_media_link_required_alert": "Trebuie să postezi un link către o imagine sau un videoclip."
+  "post_media_link_required_alert": "Trebuie să postezi un link către o imagine sau un videoclip.",
+  "post_form_code_tags_prompt": "Puteți evidenția sintaxa și păstra spațiile albe folosind tag-uri [code]."
 }

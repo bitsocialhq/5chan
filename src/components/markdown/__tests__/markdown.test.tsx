@@ -318,7 +318,22 @@ describe('Markdown', () => {
     expect(container.textContent).toContain('after');
   });
 
-  it('renders [code] as literal text off /g/', async () => {
+  it('renders [code] blocks as syntax-highlighted code on /q/', async () => {
+    await renderMarkdown(
+      {
+        content: '[code]>not a quote\nconst x = 1;[/code]',
+        communityAddress: 'site-feedback.bso',
+      },
+      '/q/thread/post-1',
+    );
+
+    const code = container.querySelector('code');
+    expect(code).not.toBeNull();
+    expect(code?.textContent).toBe('>not a quote\nconst x = 1;');
+    expect(container.querySelector('.greentext')).toBeNull();
+  });
+
+  it('renders [code] as literal text off code-tag boards', async () => {
     await renderMarkdown({
       content: '[code]const x = 1;[/code]',
     });

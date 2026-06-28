@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "nie wieder anzeigen",
   "site_legal_meta_contributors_link": "Mitwirkende",
   "post_link_required_alert": "Du musst einen Link posten.",
-  "post_media_link_required_alert": "Du musst einen Bild- oder Videolink posten."
+  "post_media_link_required_alert": "Du musst einen Bild- oder Videolink posten.",
+  "post_form_code_tags_prompt": "Sie können Syntax hervorheben und Leerzeichen beibehalten, indem Sie [code]-Tags verwenden."
 }

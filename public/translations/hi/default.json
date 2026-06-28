@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "फिर कभी न दिखाएँ",
   "site_legal_meta_contributors_link": "योगदानकर्ता",
   "post_link_required_alert": "आपको एक लिंक पोस्ट करना होगा।",
-  "post_media_link_required_alert": "आपको एक छवि या वीडियो लिंक पोस्ट करना होगा।"
+  "post_media_link_required_alert": "आपको एक छवि या वीडियो लिंक पोस्ट करना होगा।",
+  "post_form_code_tags_prompt": "आप [code] टैग का उपयोग करके सिंटैक्स को हाइलाइट कर सकते हैं और व्हाइटस्पेस को संरक्षित कर सकते हैं।"
 }

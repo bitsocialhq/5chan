@@ -98,6 +98,7 @@ vi.mock('react-i18next', async () => {
     useTranslation: () => ({
       t: (key: string, options?: Record<string, unknown>) => {
         if (key === 'choose_one') return 'Choose one:';
+        if (key === 'post_form_code_tags_prompt') return 'You may highlight syntax and preserve whitespace by using [code] tags.';
         if (typeof options?.count !== 'undefined') return `${key}:${options.count}`;
         return options?.domain ? `${key}:${options.domain}` : key;
       },
@@ -554,6 +555,8 @@ describe('PostForm', () => {
         features: { postFlairs: true, requirePostFlairs: true, requirePostLink: true, requirePostLinkIsMedia: false },
         title: '/f/ - Flash',
       },
+      { address: 'technology-posting.bso', directoryCode: 'g', features: {}, title: '/g/ - Technology' },
+      { address: 'site-feedback.bso', directoryCode: 'q', features: {}, title: '/q/ - 5chan Feedback' },
       { address: 'silly-stuff.bso', features: {}, title: '/s5s/ - Silly Stuff' },
       { address: 'traditional-games.bso', features: {}, title: '/tg/ - Traditional Games' },
       { address: 'mod.eth', features: {}, title: '/mod/ - Moderation' },
@@ -1592,6 +1595,33 @@ describe('PostForm', () => {
     expect(promptRow?.querySelector('ul')?.className).toBe('rules');
     expect(links.map((link) => link.textContent)).toEqual(['Rules', 'FAQ']);
     expect(links.map((link) => link.getAttribute('href'))).toEqual(['/rules#mu', '/faq']);
+  });
+
+  it('shows the code tag prompt on /g/ forms', async () => {
+    testState.resolvedCommunityAddress = 'technology-posting.bso';
+    await renderPostForm('/g');
+    await clickByText(container, 'start_new_thread');
+
+    const rulesItems = Array.from(container.querySelectorAll('tr.rules li')).map((item) => item.textContent);
+    expect(rulesItems).toEqual(['Please read the Rules and FAQ before posting.', 'You may highlight syntax and preserve whitespace by using [code] tags.']);
+  });
+
+  it('shows the code tag prompt on /q/ forms', async () => {
+    testState.resolvedCommunityAddress = 'site-feedback.bso';
+    await renderPostForm('/q');
+    await clickByText(container, 'start_new_thread');
+
+    const rulesItems = Array.from(container.querySelectorAll('tr.rules li')).map((item) => item.textContent);
+    expect(rulesItems).toEqual(['Please read the Rules and FAQ before posting.', 'You may highlight syntax and preserve whitespace by using [code] tags.']);
+  });
+
+  it('does not show the code tag prompt off code-tag boards', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const rulesItems = Array.from(container.querySelectorAll('tr.rules li')).map((item) => item.textContent);
+    expect(rulesItems).toEqual(['Please read the Rules and FAQ before posting.']);
   });
 
   it('uses the plain rules page link for custom boards without a directory hash', async () => {

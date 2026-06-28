@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "دیگر نشان نده",
   "site_legal_meta_contributors_link": "مشارکت‌کنندگان",
   "post_link_required_alert": "باید یک پیوند ارسال کنید.",
-  "post_media_link_required_alert": "باید پیوند یک تصویر یا ویدیو را ارسال کنید."
+  "post_media_link_required_alert": "باید پیوند یک تصویر یا ویدیو را ارسال کنید.",
+  "post_form_code_tags_prompt": "می‌توانید با استفاده از برچسب‌های [code] نحو را برجسته کرده و فاصله‌ها را حفظ کنید."
 }

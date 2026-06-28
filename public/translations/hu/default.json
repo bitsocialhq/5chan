@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "ne jelenjen meg újra",
   "site_legal_meta_contributors_link": "Közreműködők",
   "post_link_required_alert": "Közzé kell tenned egy linket.",
-  "post_media_link_required_alert": "Közzé kell tenned egy kép- vagy videólinket."
+  "post_media_link_required_alert": "Közzé kell tenned egy kép- vagy videólinket.",
+  "post_form_code_tags_prompt": "A szintaxis kiemelhető és a szóközök megőrizhetők a [code] címkék használatával."
 }

@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "לא להציג שוב",
   "site_legal_meta_contributors_link": "תורמים",
   "post_link_required_alert": "עליך לפרסם קישור.",
-  "post_media_link_required_alert": "עליך לפרסם קישור לתמונה או לסרטון."
+  "post_media_link_required_alert": "עליך לפרסם קישור לתמונה או לסרטון.",
+  "post_form_code_tags_prompt": "ניתן להדגיש תחביר ולשמור על רווחים לבנים באמצעות תגיות [code]."
 }

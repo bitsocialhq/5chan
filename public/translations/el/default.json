@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "να μην εμφανιστεί ξανά",
   "site_legal_meta_contributors_link": "Συνεισφέροντες",
   "post_link_required_alert": "Πρέπει να δημοσιεύσετε έναν σύνδεσμο.",
-  "post_media_link_required_alert": "Πρέπει να δημοσιεύσετε σύνδεσμο εικόνας ή βίντεο."
+  "post_media_link_required_alert": "Πρέπει να δημοσιεύσετε σύνδεσμο εικόνας ή βίντεο.",
+  "post_form_code_tags_prompt": "Μπορείτε να επισημάνετε τη σύνταξη και να διατηρήσετε τα κενά χρησιμοποιώντας ετικέτες [code]."
 }

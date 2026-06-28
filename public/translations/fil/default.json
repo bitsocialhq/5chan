@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "huwag nang ipakita muli",
   "site_legal_meta_contributors_link": "Mga Kontribyutor",
   "post_link_required_alert": "Kailangan mong mag-post ng link.",
-  "post_media_link_required_alert": "Kailangan mong mag-post ng link ng larawan o video."
+  "post_media_link_required_alert": "Kailangan mong mag-post ng link ng larawan o video.",
+  "post_form_code_tags_prompt": "Maaari mong i-highlight ang syntax at panatilihin ang whitespace gamit ang [code] tags."
 }

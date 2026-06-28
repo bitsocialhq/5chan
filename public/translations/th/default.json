@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "ไม่ต้องแสดงอีก",
   "site_legal_meta_contributors_link": "ผู้มีส่วนร่วม",
   "post_link_required_alert": "คุณต้องโพสต์ลิงก์",
-  "post_media_link_required_alert": "คุณต้องโพสต์ลิงก์รูปภาพหรือวิดีโอ"
+  "post_media_link_required_alert": "คุณต้องโพสต์ลิงก์รูปภาพหรือวิดีโอ",
+  "post_form_code_tags_prompt": "คุณสามารถไฮไลต์ไวยากรณ์และรักษาช่องว่างได้โดยใช้แท็ก [code]"
 }

@@ -19,8 +19,7 @@ import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bit
 import { useComment } from '@bitsocial/bitsocial-react-hooks';
 import ReplyQuotePreview from '../reply-quote-preview/reply-quote-preview';
 import ExternalNumberQuoteLink from './external-number-quote-link';
-import { findDirectoryByAddress, useDirectories, type DirectoryCommunity } from '../../hooks/use-directories';
-import { getDirectoryCodeForBoardAddress } from '../../lib/utils/directory-list-lookup-utils';
+import { useDirectories, type DirectoryCommunity } from '../../hooks/use-directories';
 import { getCatalogSearchRoute } from '../../lib/utils/route-utils';
 import {
   createDiceRollMarkupRegex,
@@ -30,6 +29,7 @@ import {
   isFortuneDirectoryCode,
 } from '../../lib/utils/post-options-utils';
 import { HAS_MATH_TAG_REGEX, isMathDirectoryCode, splitMathSegments } from '../../lib/math-tags';
+import { HAS_CODE_TAG_REGEX, getDirectoryCodeForIdentifier, getRouteBoardIdentifier, isCodeTagsEnabledForContext, splitCodeTagSegments } from '../../lib/code-tags';
 
 const safeParseUrl = (href: string): URL | null => {
   try {
@@ -179,25 +179,6 @@ const QST_BBCODE_COLOR_STYLES = {
   green: { color: QST_BBCODE_COLORS.green },
   blue: { color: QST_BBCODE_COLORS.blue },
 } satisfies Record<Extract<QstBbcodeTag, 'red' | 'green' | 'blue'>, React.CSSProperties>;
-
-const getDirectoryCodeFromDirectory = (directory: Pick<DirectoryCommunity, 'directoryCode' | 'title'> | undefined): string | undefined =>
-  directory?.directoryCode?.trim().toLowerCase() || directory?.title?.match(/^\/([^/]+)\//)?.[1]?.toLowerCase();
-
-const getRouteBoardIdentifier = (pathname: string): string | undefined => pathname.split('/').filter(Boolean)[0]?.toLowerCase();
-
-const getDirectoryCodeForIdentifier = (identifier: string | undefined, directories: DirectoryCommunity[]): string | undefined => {
-  if (!identifier) return undefined;
-
-  const normalizedIdentifier = identifier.trim().toLowerCase();
-  if (!normalizedIdentifier) return undefined;
-
-  const matchingDirectory = directories.find((directory) => getDirectoryCodeFromDirectory(directory) === normalizedIdentifier);
-  if (matchingDirectory) {
-    return getDirectoryCodeFromDirectory(matchingDirectory);
-  }
-
-  return getDirectoryCodeFromDirectory(findDirectoryByAddress(directories, identifier)) ?? getDirectoryCodeForBoardAddress(identifier) ?? normalizedIdentifier;
-};
 
 const getActiveDirectoryCode = (pathname: string, communityAddress: string | undefined, directories: DirectoryCommunity[]): string | undefined => {
   const routeDirectoryCode = getDirectoryCodeForIdentifier(getRouteBoardIdentifier(pathname), directories);
@@ -747,36 +728,8 @@ const renderLineContent = (line: string, context: RenderContext): React.ReactNod
   return elements;
 };
 
-// [code]...[/code] blocks (4chan rule 4 of /g/): rendered literally, never parsed for
+// [code]...[/code] blocks: rendered literally, never parsed for
 // greentext/quotelinks/spoilers, and syntax-highlighted via <CodeBlock>.
-const CODE_TAG_REGEX = /\[code\]([\s\S]*?)\[\/code\]/gi;
-const HAS_CODE_TAG_REGEX = /\[code\]/i;
-const CODE_DIRECTORY_CODE = 'g';
-
-type ContentSegment = { type: 'text' | 'code'; value: string; start: number };
-
-const splitCodeSegments = (raw: string): ContentSegment[] => {
-  const segments: ContentSegment[] = [];
-  const regex = new RegExp(CODE_TAG_REGEX.source, 'gi');
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = regex.exec(raw)) !== null) {
-    if (match.index > lastIndex) {
-      segments.push({ type: 'text', value: raw.slice(lastIndex, match.index), start: lastIndex });
-    }
-    // Drop one leading/trailing newline so [code]\n...\n[/code] has no blank first/last line.
-    segments.push({ type: 'code', value: match[1].replace(/^\n/, '').replace(/\n$/, ''), start: match.index });
-    lastIndex = regex.lastIndex;
-  }
-
-  if (lastIndex < raw.length) {
-    segments.push({ type: 'text', value: raw.slice(lastIndex), start: lastIndex });
-  }
-
-  return segments;
-};
-
 const renderTextLines = (normalized: string, context: RenderContext, keyPrefix: string): React.ReactNode[] => {
   const lines = normalized.split('\n');
   const elements: React.ReactNode[] = [];
@@ -818,11 +771,9 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
   const enableQstBbcode = location.pathname.split('/').filter(Boolean)[0] === 'qst';
   const activeDirectoryCode = getActiveDirectoryCode(location.pathname, communityAddress, directories);
   const enableFortuneMarkup = isFortuneDirectoryCode(activeDirectoryCode);
-  // [code] tags are a /g/ feature (4chan rule 4): enabled when the post's board or the current
-  // route resolves to /g/, and rendered as literal text everywhere else.
-  const enableCodeTags =
-    getDirectoryCodeForIdentifier(getRouteBoardIdentifier(location.pathname), directories) === CODE_DIRECTORY_CODE ||
-    getDirectoryCodeForIdentifier(communityAddress, directories) === CODE_DIRECTORY_CODE;
+  // [code] tags are board-scoped: enabled when the post's board or the current route resolves to
+  // a code-tag board, and rendered as literal text everywhere else.
+  const enableCodeTags = isCodeTagsEnabledForContext(location.pathname, communityAddress, directories);
   // [math]/[eqn] TeX tags are a /sci/ feature (like 4chan). The catalog is excluded, matching
   // 4chan, where teasers show the raw tags and MathJax only runs on board and thread pages.
   const enableMathTags =
@@ -842,9 +793,8 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
           return;
         }
         if (!segment.value) return;
-        elements.push(
-          <React.Fragment key={`text-${segment.start}`}>{renderTextLines(normalizeContent(segment.value), context, `${segment.start}:`)}</React.Fragment>,
-        );
+        const textElements = renderTextLines(normalizeContent(segment.value), context, `${segment.start}:`);
+        elements.push(<React.Fragment key={`text-${segment.start}`}>{textElements}</React.Fragment>);
       });
       return elements;
     }
@@ -854,13 +804,14 @@ const Markdown = ({ content, title, postCid, communityAddress, parseSpoilers = t
     }
 
     const elements: React.ReactNode[] = [];
-    splitCodeSegments(raw).forEach((segment) => {
+    splitCodeTagSegments(raw).forEach((segment) => {
       if (segment.type === 'code') {
         elements.push(<CodeBlock key={`code-${segment.start}`} source={segment.value} />);
         return;
       }
       if (!segment.value) return;
-      elements.push(<React.Fragment key={`text-${segment.start}`}>{renderTextLines(normalizeContent(segment.value), context, `${segment.start}:`)}</React.Fragment>);
+      const textElements = renderTextLines(normalizeContent(segment.value), context, `${segment.start}:`);
+      elements.push(<React.Fragment key={`text-${segment.start}`}>{textElements}</React.Fragment>);
     });
 
     return elements;

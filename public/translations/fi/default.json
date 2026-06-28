@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "älä näytä uudelleen",
   "site_legal_meta_contributors_link": "Avustajat",
   "post_link_required_alert": "Sinun on julkaistava linkki.",
-  "post_media_link_required_alert": "Sinun on julkaistava kuva- tai videolinkki."
+  "post_media_link_required_alert": "Sinun on julkaistava kuva- tai videolinkki.",
+  "post_form_code_tags_prompt": "Voit korostaa syntaksia ja säilyttää välilyönnit käyttämällä [code]-tageja."
 }

@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "vis aldri igjen",
   "site_legal_meta_contributors_link": "Bidragsytere",
   "post_link_required_alert": "Du må poste en lenke.",
-  "post_media_link_required_alert": "Du må poste en bilde- eller videolenke."
+  "post_media_link_required_alert": "Du må poste en bilde- eller videolenke.",
+  "post_form_code_tags_prompt": "Du kan fremheve syntaks og bevare mellomrom ved å bruke [code]-tagger."
 }

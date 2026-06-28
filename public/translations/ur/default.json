@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "دوبارہ نہ دکھائیں",
   "site_legal_meta_contributors_link": "شراکت کنندگان",
   "post_link_required_alert": "آپ کو ایک لنک پوسٹ کرنا ہوگا۔",
-  "post_media_link_required_alert": "آپ کو تصویر یا ویڈیو کا لنک پوسٹ کرنا ہوگا۔"
+  "post_media_link_required_alert": "آپ کو تصویر یا ویڈیو کا لنک پوسٹ کرنا ہوگا۔",
+  "post_form_code_tags_prompt": "آپ [code] ٹیگز استعمال کر کے نحو کو نمایاں کر سکتے ہیں اور خالی جگہ کو محفوظ رکھ سکتے ہیں۔"
 }

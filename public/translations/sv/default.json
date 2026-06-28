@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "visa inte igen",
   "site_legal_meta_contributors_link": "Bidragsgivare",
   "post_link_required_alert": "Du måste posta en länk.",
-  "post_media_link_required_alert": "Du måste posta en bild- eller videolänk."
+  "post_media_link_required_alert": "Du måste posta en bild- eller videolänk.",
+  "post_form_code_tags_prompt": "Du kan markera syntax och bevara mellanslag genom att använda [code]-taggar."
 }
