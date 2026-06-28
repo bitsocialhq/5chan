@@ -1,19 +1,23 @@
-.markdown a {
+.markdown a,
+.markdown a:visited {
   color: var(--post-link-text-color);
   text-decoration: var(--post-content-link-text-decoration);
 }
 
-.markdown a:hover {
+.markdown a:hover,
+.markdown a:visited:hover {
   color: var(--post-link-text-color-hover);
   text-decoration: var(--post-content-link-text-decoration-hover);
 }
 
-.markdown .inlineQuoteLink a {
+.markdown .inlineQuoteLink a,
+.markdown .inlineQuoteLink a:visited {
   color: var(--post-quotelink-text-color);
   text-decoration: var(--post-quotelink-text-decoration);
 }
 
-.markdown .inlineQuoteLink a:hover {
+.markdown .inlineQuoteLink a:hover,
+.markdown .inlineQuoteLink a:visited:hover {
   color: var(--post-quotelink-text-color-hover);
   text-decoration: var(--post-quotelink-text-decoration-hover);
 }
