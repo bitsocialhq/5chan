@@ -6,13 +6,8 @@ import { Comment, setAccount, useAccount, useAccountComment, useEditedComment } 
 import getShortAddress from '../../lib/get-short-address';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { getDisplayMediaInfoType, getLinkMediaInfo, getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
-import {
-  getExpiringMediaLinkAlert,
-  getPublishFileDisplayName,
-  getPublishLinkOptions,
-  isPublishFileMediaLink,
-  isPublishFileMediaType,
-} from '../../lib/utils/media-link-validation-utils';
+import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions, isPublishFileMediaType } from '../../lib/utils/media-link-validation-utils';
+import { getEffectivePublishLinkFeatures, getPublishLinkValidationError, getRequirePostLink, getRequirePostLinkIsMedia } from '../../lib/utils/publish-link-requirements';
 import {
   type DiceRoll,
   type FortuneEntry,
@@ -27,7 +22,7 @@ import {
   isPostOptionsValidationError,
 } from '../../lib/utils/post-options-utils';
 import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
-import { isValidPublishURL, isValidURL } from '../../lib/utils/url-utils';
+import { isValidURL } from '../../lib/utils/url-utils';
 import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
@@ -577,8 +572,10 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const showSpoilerForReply = directoryEntry?.features?.noSpoilerReplies !== true;
   const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
   const showOekakiControls = postOptionsDirectoryCode === 'i' || directoryEntry?.directoryCode === 'i';
-  const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
-  const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
+  const communityFeatures = useCommunityField(effectiveBoardAddress, (community) => community?.features);
+  const publishLinkFeatures = getEffectivePublishLinkFeatures(communityFeatures, directoryEntry?.features);
+  const requirePostLink = getRequirePostLink(publishLinkFeatures);
+  const requirePostLinkIsMedia = getRequirePostLinkIsMedia(publishLinkFeatures, isInAllView || isInSubscriptionsView);
   const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
   const showFlashUploadPrompt = isFlashDirectoryCode(postOptionsDirectoryCode);
   const showFlashTagSelector = showFlashUploadPrompt && !isInPostView;
@@ -680,12 +677,14 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
         setFormError(`${t('error')}: ${t('empty_comment_alert')}`);
         return;
       }
-      if (currentUrl && !isValidPublishURL(currentUrl)) {
-        setFormError(`${t('error')}: ${t('invalid_url_alert')}`);
-        return;
-      }
-      if (currentUrl && requirePostLinkIsMedia && !isPublishFileMediaLink(currentUrl)) {
-        setFormError(`${t('error')}: ${t('link_not_image_or_video_alert')}`);
+      const linkValidationError = getPublishLinkValidationError({
+        link: currentUrl,
+        requireLink: requirePostLink,
+        requireMedia: requirePostLinkIsMedia,
+        t,
+      });
+      if (linkValidationError) {
+        setFormError(linkValidationError);
         return;
       }
       const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
@@ -809,12 +808,14 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
         return;
       }
 
-      if (currentUrl && !isValidPublishURL(currentUrl)) {
-        setFormError(`${t('error')}: ${t('invalid_url_alert')}`);
-        return;
-      }
-      if (currentUrl && requirePostLinkIsMedia && !isPublishFileMediaLink(currentUrl)) {
-        setFormError(`${t('error')}: ${t('link_not_image_or_video_alert')}`);
+      const linkValidationError = getPublishLinkValidationError({
+        link: currentUrl,
+        requireLink: requirePostLink,
+        requireMedia: requirePostLinkIsMedia,
+        t,
+      });
+      if (linkValidationError) {
+        setFormError(linkValidationError);
         return;
       }
       const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;

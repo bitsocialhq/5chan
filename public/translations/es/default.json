@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "actualización de configuración disponible",
   "settings_upgrade_review_button": "revisar",
   "settings_upgrade_never_show_again": "no volver a mostrar",
-  "site_legal_meta_contributors_link": "Colaboradores"
+  "site_legal_meta_contributors_link": "Colaboradores",
+  "post_link_required_alert": "Debes publicar un enlace.",
+  "post_media_link_required_alert": "Debes publicar un enlace a una imagen o un video."
 }

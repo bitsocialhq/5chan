@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "设置升级可用",
   "settings_upgrade_review_button": "查看",
   "settings_upgrade_never_show_again": "不再显示",
-  "site_legal_meta_contributors_link": "贡献者"
+  "site_legal_meta_contributors_link": "贡献者",
+  "post_link_required_alert": "你必须发布一个链接。",
+  "post_media_link_required_alert": "你必须发布图片或视频链接。"
 }

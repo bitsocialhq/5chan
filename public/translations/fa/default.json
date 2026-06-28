@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "ارتقای تنظیمات موجود است",
   "settings_upgrade_review_button": "بررسی",
   "settings_upgrade_never_show_again": "دیگر نشان نده",
-  "site_legal_meta_contributors_link": "مشارکت‌کنندگان"
+  "site_legal_meta_contributors_link": "مشارکت‌کنندگان",
+  "post_link_required_alert": "باید یک پیوند ارسال کنید.",
+  "post_media_link_required_alert": "باید پیوند یک تصویر یا ویدیو را ارسال کنید."
 }

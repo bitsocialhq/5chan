@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "সেটিংস আপগ্রেড উপলব্ধ",
   "settings_upgrade_review_button": "পর্যালোচনা",
   "settings_upgrade_never_show_again": "আর দেখাবেন না",
-  "site_legal_meta_contributors_link": "অবদানকারীরা"
+  "site_legal_meta_contributors_link": "অবদানকারীরা",
+  "post_link_required_alert": "আপনাকে একটি লিঙ্ক পোস্ট করতে হবে।",
+  "post_media_link_required_alert": "আপনাকে একটি ছবি বা ভিডিওর লিঙ্ক পোস্ট করতে হবে।"
 }

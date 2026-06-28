@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "обновление настроек доступно",
   "settings_upgrade_review_button": "просмотреть",
   "settings_upgrade_never_show_again": "больше не показывать",
-  "site_legal_meta_contributors_link": "Участники"
+  "site_legal_meta_contributors_link": "Участники",
+  "post_link_required_alert": "Вы должны опубликовать ссылку.",
+  "post_media_link_required_alert": "Вы должны опубликовать ссылку на изображение или видео."
 }

@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "upgrade nastavení k dispozici",
   "settings_upgrade_review_button": "zkontrolovat",
   "settings_upgrade_never_show_again": "už nezobrazovat",
-  "site_legal_meta_contributors_link": "Přispěvatelé"
+  "site_legal_meta_contributors_link": "Přispěvatelé",
+  "post_link_required_alert": "Musíte přidat odkaz.",
+  "post_media_link_required_alert": "Musíte přidat odkaz na obrázek nebo video."
 }

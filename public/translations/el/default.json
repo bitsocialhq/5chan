@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "αναβάθμιση ρυθμίσεων διαθέσιμη",
   "settings_upgrade_review_button": "έλεγχος",
   "settings_upgrade_never_show_again": "να μην εμφανιστεί ξανά",
-  "site_legal_meta_contributors_link": "Συνεισφέροντες"
+  "site_legal_meta_contributors_link": "Συνεισφέροντες",
+  "post_link_required_alert": "Πρέπει να δημοσιεύσετε έναν σύνδεσμο.",
+  "post_media_link_required_alert": "Πρέπει να δημοσιεύσετε σύνδεσμο εικόνας ή βίντεο."
 }

@@ -3,8 +3,9 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
-import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions, isPublishFileMediaLink } from '../../lib/utils/media-link-validation-utils';
+import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions } from '../../lib/utils/media-link-validation-utils';
 import { getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
+import { getEffectivePublishLinkFeatures, getPublishLinkValidationError, getRequirePostLink, getRequirePostLinkIsMedia } from '../../lib/utils/publish-link-requirements';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory } from '../../lib/comment-flag-selection';
 import {
   type DiceRoll,
@@ -18,7 +19,6 @@ import {
   hasNonokoOption,
   isPostOptionsValidationError,
 } from '../../lib/utils/post-options-utils';
-import { isValidPublishURL } from '../../lib/utils/url-utils';
 import { isMathDirectoryCode } from '../../lib/math-tags';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
@@ -78,8 +78,10 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
   const showOekakiControls = postOptionsDirectoryCode === 'i' || directoryEntry?.directoryCode === 'i';
   const showTexButton = isMathDirectoryCode(postOptionsDirectoryCode) || isMathDirectoryCode(directoryEntry?.directoryCode);
-  const requirePostLinkIsMediaFeature = directoryEntry?.features?.requirePostLinkIsMedia;
-  const requirePostLinkIsMedia = requirePostLinkIsMediaFeature === true || (requirePostLinkIsMediaFeature === undefined && (isInAllView || isInSubscriptionsView));
+  const communityFeatures = useCommunityField(communityAddress, (community) => community?.features);
+  const publishLinkFeatures = getEffectivePublishLinkFeatures(communityFeatures, directoryEntry?.features);
+  const requirePostLink = getRequirePostLink(publishLinkFeatures);
+  const requirePostLinkIsMedia = getRequirePostLinkIsMedia(publishLinkFeatures, isInAllView || isInSubscriptionsView);
   const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
   const { isResolvingExternalQuotes, publishReply, publishReplyError, publishReplyStateMessage, resetPublishReplyOptions, replyIndex, setPublishReplyOptions } =
     usePublishReply({
@@ -184,12 +186,14 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
         return;
       }
 
-      if (currentUrl && !isValidPublishURL(currentUrl)) {
-        setError(t('error') + ': ' + t('invalid_url_alert'));
-        return;
-      }
-      if (currentUrl && requirePostLinkIsMedia && !isPublishFileMediaLink(currentUrl)) {
-        setError(t('error') + ': ' + t('link_not_image_or_video_alert'));
+      const linkValidationError = getPublishLinkValidationError({
+        link: currentUrl,
+        requireLink: requirePostLink,
+        requireMedia: requirePostLinkIsMedia,
+        t,
+      });
+      if (linkValidationError) {
+        setError(linkValidationError);
         return;
       }
       const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;

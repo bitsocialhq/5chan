@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "ayar yükseltmesi mevcut",
   "settings_upgrade_review_button": "incele",
   "settings_upgrade_never_show_again": "bir daha gösterme",
-  "site_legal_meta_contributors_link": "Katkıda Bulunanlar"
+  "site_legal_meta_contributors_link": "Katkıda Bulunanlar",
+  "post_link_required_alert": "Bir bağlantı paylaşmalısınız.",
+  "post_media_link_required_alert": "Bir görsel veya video bağlantısı paylaşmalısınız."
 }

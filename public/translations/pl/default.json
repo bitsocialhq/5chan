@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "aktualizacja ustawień dostępna",
   "settings_upgrade_review_button": "przejrzyj",
   "settings_upgrade_never_show_again": "nie pokazuj ponownie",
-  "site_legal_meta_contributors_link": "Współtwórcy"
+  "site_legal_meta_contributors_link": "Współtwórcy",
+  "post_link_required_alert": "Musisz opublikować link.",
+  "post_media_link_required_alert": "Musisz opublikować link do obrazu lub filmu."
 }

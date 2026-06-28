@@ -170,8 +170,17 @@ vi.mock('../../../hooks/use-resolved-community-address', () => ({
 }));
 
 vi.mock('../../../hooks/use-stable-community', () => ({
-  useCommunityField: <T,>(communityAddress: string | undefined, selector: (community?: { roles?: Record<string, { role?: string }> }) => T) =>
-    selector(communityAddress ? { roles: testState.rolesByCommunity[communityAddress] } : undefined),
+  useCommunityField: <T,>(communityAddress: string | undefined, selector: (community?: Record<string, unknown> & { roles?: Record<string, { role?: string }> }) => T) => {
+    const community = communityAddress ? (testState.communities[communityAddress] as Record<string, unknown> | undefined) : undefined;
+    return selector(
+      communityAddress
+        ? ({
+            ...community,
+            roles: testState.rolesByCommunity[communityAddress],
+          } as Record<string, unknown> & { roles?: Record<string, { role?: string }> })
+        : undefined,
+    );
+  },
 }));
 
 vi.mock('../../../hooks/use-fetch-gif-first-frame', () => ({
@@ -763,6 +772,109 @@ describe('PostForm', () => {
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.publishedPostOptions?.link).toBe(thumbnailLink);
     expect(testState.publishedPostOptions?.content).toBe(youtubeLink);
+  });
+
+  it('requires a link when live community features require post links', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.communities['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { requirePostLink: true },
+    };
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const linkInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[3];
+
+    await dispatchInput(textarea, 'Link required thread');
+    await clickByText(table, 'post');
+
+    expect(container.textContent).toContain('error: post_link_required_alert');
+    const linkRequiredError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'error: post_link_required_alert');
+    expect(linkRequiredError?.className).toContain('error');
+    expect(linkRequiredError?.className).toContain('formError');
+    expect(linkRequiredError?.closest('tfoot')).toBeTruthy();
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+
+    await dispatchInput(linkInput, 'https://example.com/thread');
+    await clickByText(table, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishedPostOptions?.link).toBe('https://example.com/thread');
+  });
+
+  it('requires a media link when live community features require post links to be media', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.communities['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { requirePostLink: true, requirePostLinkIsMedia: true },
+    };
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const linkInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[3];
+
+    await dispatchInput(textarea, 'Media required thread');
+    await clickByText(table, 'post');
+
+    expect(container.textContent).toContain('error: post_media_link_required_alert');
+    const mediaRequiredError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'error: post_media_link_required_alert');
+    expect(mediaRequiredError?.className).toContain('error');
+    expect(mediaRequiredError?.className).toContain('formError');
+    expect(mediaRequiredError?.closest('tfoot')).toBeTruthy();
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+
+    await dispatchInput(linkInput, 'https://example.com/page');
+    await clickByText(table, 'post');
+
+    expect(container.textContent).toContain('error: link_not_image_or_video_alert');
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+
+    await dispatchInput(linkInput, 'https://example.com/image.jpg');
+    await clickByText(table, 'post');
+
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishedPostOptions?.link).toBe('https://example.com/image.jpg');
+  });
+
+  it('does not require an empty link when only media links are constrained', async () => {
+    testState.resolvedCommunityAddress = 'current-news.bso';
+    testState.directories.push({
+      address: 'current-news.bso',
+      directoryCode: 'news',
+      features: { requirePostLink: false, requirePostLinkIsMedia: true },
+      title: '/news/ - Current News',
+    });
+    testState.communities['current-news.bso'] = {
+      address: 'current-news.bso',
+      features: { requirePostLink: false, requirePostLinkIsMedia: true },
+    };
+
+    await renderPostForm('/news');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const linkInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[3];
+
+    await dispatchInput(textarea, 'News body with source in text');
+    await clickByText(table, 'post');
+
+    expect(container.textContent).not.toContain('post_media_link_required_alert');
+    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishedPostOptions?.link).toBeUndefined();
+
+    testState.publishPostMock.mockClear();
+    await dispatchInput(linkInput, 'https://example.com/article');
+    await clickByText(table, 'post');
+
+    expect(container.textContent).toContain('error: link_not_image_or_video_alert');
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
   });
 
   it('ignores duplicate post clicks while youtube thumbnail resolution is pending', async () => {

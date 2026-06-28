@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "設定のアップグレードが利用可能",
   "settings_upgrade_review_button": "確認",
   "settings_upgrade_never_show_again": "今後表示しない",
-  "site_legal_meta_contributors_link": "貢献者"
+  "site_legal_meta_contributors_link": "貢献者",
+  "post_link_required_alert": "リンクを投稿する必要があります。",
+  "post_media_link_required_alert": "画像または動画のリンクを投稿する必要があります。"
 }

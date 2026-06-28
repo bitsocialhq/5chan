@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "सेटिंग्ज अपग्रेड उपलब्ध",
   "settings_upgrade_review_button": "पुनरावलोकन",
   "settings_upgrade_never_show_again": "पुन्हा दाखवू नका",
-  "site_legal_meta_contributors_link": "योगदानकर्ते"
+  "site_legal_meta_contributors_link": "योगदानकर्ते",
+  "post_link_required_alert": "तुम्हाला एक लिंक पोस्ट करावी लागेल.",
+  "post_media_link_required_alert": "तुम्हाला प्रतिमा किंवा व्हिडिओची लिंक पोस्ट करावी लागेल."
 }

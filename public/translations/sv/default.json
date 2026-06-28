@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "inställningsuppgradering tillgänglig",
   "settings_upgrade_review_button": "granska",
   "settings_upgrade_never_show_again": "visa inte igen",
-  "site_legal_meta_contributors_link": "Bidragsgivare"
+  "site_legal_meta_contributors_link": "Bidragsgivare",
+  "post_link_required_alert": "Du måste posta en länk.",
+  "post_media_link_required_alert": "Du måste posta en bild- eller videolänk."
 }

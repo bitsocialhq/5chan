@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "instellingenupgrade beschikbaar",
   "settings_upgrade_review_button": "bekijken",
   "settings_upgrade_never_show_again": "niet meer tonen",
-  "site_legal_meta_contributors_link": "Bijdragers"
+  "site_legal_meta_contributors_link": "Bijdragers",
+  "post_link_required_alert": "Je moet een link plaatsen.",
+  "post_media_link_required_alert": "Je moet een afbeelding- of videolink plaatsen."
 }

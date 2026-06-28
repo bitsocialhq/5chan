@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "may upgrade ng setting",
   "settings_upgrade_review_button": "suriin",
   "settings_upgrade_never_show_again": "huwag nang ipakita muli",
-  "site_legal_meta_contributors_link": "Mga Kontribyutor"
+  "site_legal_meta_contributors_link": "Mga Kontribyutor",
+  "post_link_required_alert": "Kailangan mong mag-post ng link.",
+  "post_media_link_required_alert": "Kailangan mong mag-post ng link ng larawan o video."
 }

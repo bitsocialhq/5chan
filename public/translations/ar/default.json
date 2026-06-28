@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "ترقية الإعدادات متاحة",
   "settings_upgrade_review_button": "مراجعة",
   "settings_upgrade_never_show_again": "لا تظهر مرة أخرى",
-  "site_legal_meta_contributors_link": "المساهمون"
+  "site_legal_meta_contributors_link": "المساهمون",
+  "post_link_required_alert": "يجب أن تنشر رابطًا.",
+  "post_media_link_required_alert": "يجب أن تنشر رابط صورة أو فيديو."
 }

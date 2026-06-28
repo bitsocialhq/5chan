@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "సెట్టింగ్‌ల అప్‌గ్రేడ్ అందుబాటులో ఉంది",
   "settings_upgrade_review_button": "సమీక్షించు",
   "settings_upgrade_never_show_again": "మళ్లీ చూపించవద్దు",
-  "site_legal_meta_contributors_link": "సహకారులు"
+  "site_legal_meta_contributors_link": "సహకారులు",
+  "post_link_required_alert": "మీరు ఒక లింక్ పోస్ట్ చేయాలి.",
+  "post_media_link_required_alert": "మీరు చిత్రం లేదా వీడియో లింక్ పోస్ట్ చేయాలి."
 }

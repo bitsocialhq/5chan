@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "שדרוג הגדרות זמין",
   "settings_upgrade_review_button": "סקור",
   "settings_upgrade_never_show_again": "לא להציג שוב",
-  "site_legal_meta_contributors_link": "תורמים"
+  "site_legal_meta_contributors_link": "תורמים",
+  "post_link_required_alert": "עליך לפרסם קישור.",
+  "post_media_link_required_alert": "עליך לפרסם קישור לתמונה או לסרטון."
 }

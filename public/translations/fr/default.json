@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "mise à jour des paramètres disponible",
   "settings_upgrade_review_button": "examiner",
   "settings_upgrade_never_show_again": "ne plus afficher",
-  "site_legal_meta_contributors_link": "Contributeurs"
+  "site_legal_meta_contributors_link": "Contributeurs",
+  "post_link_required_alert": "Vous devez publier un lien.",
+  "post_media_link_required_alert": "Vous devez publier un lien vers une image ou une vidéo."
 }

@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "ترتیبات اپ گریڈ دستیاب",
   "settings_upgrade_review_button": "جائزہ لیں",
   "settings_upgrade_never_show_again": "دوبارہ نہ دکھائیں",
-  "site_legal_meta_contributors_link": "شراکت کنندگان"
+  "site_legal_meta_contributors_link": "شراکت کنندگان",
+  "post_link_required_alert": "آپ کو ایک لنک پوسٹ کرنا ہوگا۔",
+  "post_media_link_required_alert": "آپ کو تصویر یا ویڈیو کا لنک پوسٹ کرنا ہوگا۔"
 }

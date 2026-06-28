@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "indstillingsopgradering tilgængelig",
   "settings_upgrade_review_button": "gennemgå",
   "settings_upgrade_never_show_again": "vis aldrig igen",
-  "site_legal_meta_contributors_link": "Bidragydere"
+  "site_legal_meta_contributors_link": "Bidragydere",
+  "post_link_required_alert": "Du skal poste et link.",
+  "post_media_link_required_alert": "Du skal poste et billed- eller videolink."
 }

@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "Einstellungs-Upgrade verfügbar",
   "settings_upgrade_review_button": "überprüfen",
   "settings_upgrade_never_show_again": "nie wieder anzeigen",
-  "site_legal_meta_contributors_link": "Mitwirkende"
+  "site_legal_meta_contributors_link": "Mitwirkende",
+  "post_link_required_alert": "Du musst einen Link posten.",
+  "post_media_link_required_alert": "Du musst einen Bild- oder Videolink posten."
 }

@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "pembaruan pengaturan tersedia",
   "settings_upgrade_review_button": "tinjau",
   "settings_upgrade_never_show_again": "jangan tampilkan lagi",
-  "site_legal_meta_contributors_link": "Kontributor"
+  "site_legal_meta_contributors_link": "Kontributor",
+  "post_link_required_alert": "Anda harus memposting tautan.",
+  "post_media_link_required_alert": "Anda harus memposting tautan gambar atau video."
 }

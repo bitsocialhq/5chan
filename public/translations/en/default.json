@@ -462,5 +462,7 @@
   "settings_upgrade_review_notice": "settings upgrade available",
   "settings_upgrade_review_button": "review",
   "settings_upgrade_never_show_again": "never show again",
-  "site_legal_meta_contributors_link": "Contributors"
+  "site_legal_meta_contributors_link": "Contributors",
+  "post_link_required_alert": "You must post a link.",
+  "post_media_link_required_alert": "You must post an image or video link."
 }

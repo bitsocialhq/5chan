@@ -443,5 +443,7 @@
   "settings_upgrade_review_notice": "asetuspäivitys saatavilla",
   "settings_upgrade_review_button": "tarkista",
   "settings_upgrade_never_show_again": "älä näytä uudelleen",
-  "site_legal_meta_contributors_link": "Avustajat"
+  "site_legal_meta_contributors_link": "Avustajat",
+  "post_link_required_alert": "Sinun on julkaistava linkki.",
+  "post_media_link_required_alert": "Sinun on julkaistava kuva- tai videolinkki."
 }
