@@ -302,7 +302,7 @@ describe('Markdown', () => {
   it('renders [code] blocks as syntax-highlighted code on /g/', async () => {
     await renderMarkdown(
       {
-        content: 'before\n[code]>not a quote\nconst x = 1;[/code]\nafter',
+        content: 'before\r\n[code]\r\n>not a quote\r\nconst x = 1;\r\n[/code]\r\nafter',
         communityAddress: 'technology-posting.bso',
       },
       '/g/thread/post-1',
@@ -310,7 +310,7 @@ describe('Markdown', () => {
 
     const code = container.querySelector('code');
     expect(code).not.toBeNull();
-    expect(code?.textContent).toBe('>not a quote\nconst x = 1;');
+    expect(code?.textContent).toBe('>not a quote\r\nconst x = 1;');
     // Code contents are tokenized into spans and never parsed as greentext.
     expect(code?.querySelectorAll('span').length).toBeGreaterThan(0);
     expect(container.querySelector('.greentext')).toBeNull();

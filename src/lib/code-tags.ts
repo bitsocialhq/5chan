@@ -20,7 +20,7 @@ export const splitCodeTagSegments = (raw: string): CodeTagSegment[] => {
     if (match.index > lastIndex) {
       segments.push({ type: 'text', value: raw.slice(lastIndex, match.index), start: lastIndex });
     }
-    segments.push({ type: 'code', value: match[1].replace(/^\n/, '').replace(/\n$/, ''), start: match.index });
+    segments.push({ type: 'code', value: match[1].replace(/^\r?\n/, '').replace(/\r?\n$/, ''), start: match.index });
     lastIndex = regex.lastIndex;
   }
 
