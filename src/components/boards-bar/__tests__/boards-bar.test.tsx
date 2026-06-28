@@ -226,6 +226,22 @@ describe('BoardsBar', () => {
     expect(getLinkHref('q')).toBe('/q');
   });
 
+  it('renders /q/ in the same desktop bracket group as /r9k/, /s5s/, and /vip/', async () => {
+    testState.accountCommunityAddresses = [];
+    testState.directories = [
+      { address: 'robot9002.bso', title: '/r9k/ - ROBOT9002' },
+      { address: 'shit-5chan-says.bso', title: '/s5s/ - Shit 5chan Says' },
+      { address: 'very-important-posts.bso', title: '/vip/ - Very Important Posts' },
+      { address: '5chan-feedback.bso', title: '/q/ - 5chan Feedback' },
+    ];
+    testState.showSubscriptionsInBoardsBar = false;
+    testState.visibleDirectories = new Set(['r9k', 's5s', 'vip', 'q']);
+
+    await renderBoardsBar('/q');
+
+    expect(container.textContent).toContain('[r9k / s5s / vip / q]');
+  });
+
   it('opens the desktop search bar and submits entered board addresses', async () => {
     await renderBoardsBar('/mu');
 
