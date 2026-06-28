@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "niet meer tonen",
   "site_legal_meta_contributors_link": "Bijdragers",
   "post_link_required_alert": "Je moet een link plaatsen.",
-  "post_media_link_required_alert": "Je moet een afbeelding- of videolink plaatsen."
+  "post_media_link_required_alert": "Je moet een afbeelding- of videolink plaatsen.",
+  "post_form_code_tags_prompt": "U kunt syntaxis markeren en witruimte behouden door [code]-tags te gebruiken."
 }

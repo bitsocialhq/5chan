@@ -30,6 +30,7 @@ import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, is
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
 import { FLASH_TAG_OPTIONS, getFlashTagPublishOptionsForDirectoryCode, isFlashDirectoryCode, type FlashTagOption } from '../../lib/flash-tags';
 import { isMathDirectoryCode } from '../../lib/math-tags';
+import { isCodeTagDirectoryCode } from '../../lib/code-tags';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories } from '../../hooks/use-directories';
 import { useDirectoryEntry } from '../../hooks/use-directory-entry';
@@ -182,6 +183,7 @@ interface PostFormFieldsProps {
   showFlashTagSelector: boolean;
   showFlashUploadPrompt: boolean;
   showMathTagsPrompt: boolean;
+  showCodeTagsPrompt: boolean;
   showBbcodeToolbar: boolean;
   onBbcodePreviewToggle: () => void;
   onPublishReply: () => void | Promise<void>;
@@ -236,6 +238,7 @@ const PostFormFields = ({
   showFlashTagSelector,
   showFlashUploadPrompt,
   showMathTagsPrompt,
+  showCodeTagsPrompt,
   showBbcodeToolbar,
   onBbcodePreviewToggle,
   onPublishReply,
@@ -492,6 +495,7 @@ const PostFormFields = ({
               }}
             />
           </li>
+          {showCodeTagsPrompt ? <li>{t('post_form_code_tags_prompt')}</li> : null}
           {showFlashUploadPrompt && (
             <li>
               <Trans
@@ -580,6 +584,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const showFlashUploadPrompt = isFlashDirectoryCode(postOptionsDirectoryCode);
   const showFlashTagSelector = showFlashUploadPrompt && !isInPostView;
   const showMathTagsPrompt = isMathDirectoryCode(postOptionsDirectoryCode) || isMathDirectoryCode(directoryEntry?.directoryCode);
+  const showCodeTagsPrompt =
+    isCodeTagDirectoryCode(postOptionsDirectoryCode) || isCodeTagDirectoryCode(directoryEntry?.directoryCode) || isCodeTagDirectoryCode(params?.boardIdentifier);
 
   const accountCommunityAddresses = useAccountCommunityAddresses();
   const accountAddress = account?.author?.address;
@@ -971,6 +977,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             showFlashTagSelector={showFlashTagSelector}
             showFlashUploadPrompt={showFlashUploadPrompt}
             showMathTagsPrompt={showMathTagsPrompt}
+            showCodeTagsPrompt={showCodeTagsPrompt}
             showBbcodeToolbar={showBbcodeToolbar}
             onBbcodePreviewToggle={handleBbcodePreviewToggle}
             onPublishReply={onPublishReply}

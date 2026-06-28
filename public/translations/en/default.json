@@ -464,5 +464,6 @@
   "settings_upgrade_never_show_again": "never show again",
   "site_legal_meta_contributors_link": "Contributors",
   "post_link_required_alert": "You must post a link.",
-  "post_media_link_required_alert": "You must post an image or video link."
+  "post_media_link_required_alert": "You must post an image or video link.",
+  "post_form_code_tags_prompt": "You may highlight syntax and preserve whitespace by using [code] tags."
 }

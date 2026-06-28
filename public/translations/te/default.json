@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "మళ్లీ చూపించవద్దు",
   "site_legal_meta_contributors_link": "సహకారులు",
   "post_link_required_alert": "మీరు ఒక లింక్ పోస్ట్ చేయాలి.",
-  "post_media_link_required_alert": "మీరు చిత్రం లేదా వీడియో లింక్ పోస్ట్ చేయాలి."
+  "post_media_link_required_alert": "మీరు చిత్రం లేదా వీడియో లింక్ పోస్ట్ చేయాలి.",
+  "post_form_code_tags_prompt": "మీరు [code] ట్యాగ్‌లను ఉపయోగించి సింటాక్స్‌ను హైలైట్ చేయవచ్చు మరియు ఖాళీ స్థలాలను కాపాడవచ్చు."
 }

@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "không hiển thị lại",
   "site_legal_meta_contributors_link": "Người đóng góp",
   "post_link_required_alert": "Bạn phải đăng một liên kết.",
-  "post_media_link_required_alert": "Bạn phải đăng liên kết hình ảnh hoặc video."
+  "post_media_link_required_alert": "Bạn phải đăng liên kết hình ảnh hoặc video.",
+  "post_form_code_tags_prompt": "Bạn có thể tô sáng cú pháp và giữ nguyên khoảng trắng bằng cách sử dụng thẻ [code]."
 }

@@ -1211,6 +1211,35 @@ describe('ReplyModal', () => {
     expect(container.textContent).not.toContain('warning: posting as admin');
   });
 
+  it('renders [code] blocks in the BBCode reply preview on /q/', async () => {
+    testState.account = { author: { address: 'mod.eth', displayName: 'Alice' } };
+    testState.directoryByAddress['site-feedback.bso'] = {
+      address: 'site-feedback.bso',
+      directoryCode: 'q',
+      features: {},
+      title: '/q/ - 5chan Feedback',
+    };
+    testState.rolesByCommunity = {
+      'site-feedback.bso': {
+        'mod.eth': { role: 'admin' },
+      },
+    };
+    testState.openEmpty = true;
+    testState.selectedText = '';
+
+    await renderReplyModal('/q/thread/post-1', 'site-feedback.bso');
+
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea');
+    await dispatchInput(textarea as HTMLTextAreaElement, 'test [code]bitsocial[/code]');
+    await clickButtonByText('Preview');
+
+    const preview = container.querySelector('[aria-label="BBCode preview"]');
+    const code = preview?.querySelector('code');
+    expect(code?.textContent).toBe('bitsocial');
+    expect(preview?.textContent).toContain('test');
+    expect(preview?.textContent).not.toContain('[code]');
+  });
+
   it('updates account state, applies upload completions, and closes once publishing succeeds', async () => {
     await renderReplyModal('/mu/thread/post-1');
 

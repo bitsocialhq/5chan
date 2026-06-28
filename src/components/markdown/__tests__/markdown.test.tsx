@@ -302,7 +302,7 @@ describe('Markdown', () => {
   it('renders [code] blocks as syntax-highlighted code on /g/', async () => {
     await renderMarkdown(
       {
-        content: 'before\n[code]>not a quote\nconst x = 1;[/code]\nafter',
+        content: 'before\r\n[code]\r\n>not a quote\r\nconst x = 1;\r\n[/code]\r\nafter',
         communityAddress: 'technology-posting.bso',
       },
       '/g/thread/post-1',
@@ -310,7 +310,7 @@ describe('Markdown', () => {
 
     const code = container.querySelector('code');
     expect(code).not.toBeNull();
-    expect(code?.textContent).toBe('>not a quote\nconst x = 1;');
+    expect(code?.textContent).toBe('>not a quote\r\nconst x = 1;');
     // Code contents are tokenized into spans and never parsed as greentext.
     expect(code?.querySelectorAll('span').length).toBeGreaterThan(0);
     expect(container.querySelector('.greentext')).toBeNull();
@@ -318,7 +318,22 @@ describe('Markdown', () => {
     expect(container.textContent).toContain('after');
   });
 
-  it('renders [code] as literal text off /g/', async () => {
+  it('renders [code] blocks as syntax-highlighted code on /q/', async () => {
+    await renderMarkdown(
+      {
+        content: '[code]>not a quote\nconst x = 1;[/code]',
+        communityAddress: 'site-feedback.bso',
+      },
+      '/q/thread/post-1',
+    );
+
+    const code = container.querySelector('code');
+    expect(code).not.toBeNull();
+    expect(code?.textContent).toBe('>not a quote\nconst x = 1;');
+    expect(container.querySelector('.greentext')).toBeNull();
+  });
+
+  it('renders [code] as literal text off code-tag boards', async () => {
     await renderMarkdown({
       content: '[code]const x = 1;[/code]',
     });

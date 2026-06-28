@@ -43,6 +43,10 @@ const testState = vi.hoisted(() => ({
   commentsByCid: {} as Record<string, TestComment>,
   formattedDate: '2024-01-01 12:00:00',
   formattedTimeAgo: '2 hours ago',
+  directories: [
+    { address: 'site-feedback.bso', directoryCode: 'q', title: '/q/ - 5chan Feedback' },
+    { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+  ],
   isMobile: false,
   params: {} as Record<string, string>,
   pathname: '/mu',
@@ -130,6 +134,10 @@ vi.mock('../../../lib/utils/quote-link-utils', () => ({
 
 vi.mock('../../../hooks/use-is-mobile', () => ({
   default: () => testState.isMobile,
+}));
+
+vi.mock('../../../hooks/use-directories', () => ({
+  useDirectories: () => testState.directories,
 }));
 
 vi.mock('../../../hooks/use-state-string', () => ({
@@ -337,6 +345,28 @@ describe('CommentContent', () => {
 
     expect(container.querySelector('strong')).toBeNull();
     expect(queryMarkdownText()).toEqual(['[b]plain[/b]']);
+  });
+
+  it('renders code blocks for moderator authors on code-enabled boards', async () => {
+    testState.pathname = '/q/thread/post-1';
+
+    await renderContent(
+      {
+        author: { address: '0xmod' },
+        cid: 'post-1',
+        communityAddress: 'site-feedback.bso',
+        content: 'test [code]bitsocial[/code]',
+        postCid: 'post-1',
+      },
+      {
+        '0xmod': { role: 'admin' },
+      },
+    );
+
+    const code = container.querySelector('code');
+    expect(code?.textContent).toBe('bitsocial');
+    expect(container.textContent).toContain('test');
+    expect(container.textContent).not.toContain('[code]');
   });
 
   it('waits for role data before rendering role-sensitive BBCode content', async () => {

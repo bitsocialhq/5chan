@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "nie pokazuj ponownie",
   "site_legal_meta_contributors_link": "Współtwórcy",
   "post_link_required_alert": "Musisz opublikować link.",
-  "post_media_link_required_alert": "Musisz opublikować link do obrazu lub filmu."
+  "post_media_link_required_alert": "Musisz opublikować link do obrazu lub filmu.",
+  "post_form_code_tags_prompt": "Możesz podświetlać składnię i zachować spacje, używając tagów [code]."
 }

@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "už nezobrazovat",
   "site_legal_meta_contributors_link": "Přispěvatelé",
   "post_link_required_alert": "Musíte přidat odkaz.",
-  "post_media_link_required_alert": "Musíte přidat odkaz na obrázek nebo video."
+  "post_media_link_required_alert": "Musíte přidat odkaz na obrázek nebo video.",
+  "post_form_code_tags_prompt": "Syntax můžete zvýraznit a zachovat mezery pomocí značek [code]."
 }

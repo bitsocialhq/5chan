@@ -445,5 +445,6 @@
   "settings_upgrade_never_show_again": "більше не показувати",
   "site_legal_meta_contributors_link": "Учасники",
   "post_link_required_alert": "Потрібно опублікувати посилання.",
-  "post_media_link_required_alert": "Потрібно опублікувати посилання на зображення або відео."
+  "post_media_link_required_alert": "Потрібно опублікувати посилання на зображення або відео.",
+  "post_form_code_tags_prompt": "Ви можете підсвічувати синтаксис і зберігати пробіли, використовуючи теги [code]."
 }
