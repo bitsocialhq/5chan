@@ -227,6 +227,7 @@ Desktop and mobile intentionally differ: desktop stays maximally compact, while 
 - **Replies:** theme-colored blocks with square borders and minimal padding.
 - **Greentext and quote links:** preserve classic color behavior and hover states.
 - **Media:** thumbnails should fit the existing imageboard layout and should not create modern card previews unless the current surface already uses that pattern.
+- **Emoji and text faces:** pass post text through as raw Unicode. Do not add an emoji picker, shortcode/emote system, or Twemoji-style emoji rendering. Kaomoji and ASCII / Shift-JIS art are the native text-face vocabulary; preserve them and their alignment where used. See `PRODUCT.md` → Text and Expression for the rationale.
 
 ### Modals And Popovers
 
@@ -253,3 +254,4 @@ Desktop and mobile intentionally differ: desktop stays maximally compact, while 
 - Do not replace compact text links with large icon-button toolbars unless the existing surface already uses that pattern.
 - Do not introduce a new design system that competes with Yotsuba, Yotsuba B, Futaba, or the existing theme variable model.
 - Do not make Bitsocial, crypto, or decentralization visuals dominate routine browsing.
+- Do not add an emoji picker, emoji shortcode/emote system, or Twemoji-style emoji rendering; emoji pass through as raw Unicode only.

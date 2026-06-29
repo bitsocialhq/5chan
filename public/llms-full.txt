@@ -481,6 +481,14 @@ Do not modernize classic imageboard affordances unless there is a concrete usabi
 
 Do not imply official affiliation with any existing imageboard. The design goal is alignment with long-standing imageboard user expectations, not brand ownership or endorsement.
 
+## Text and Expression
+
+5chan adds no emoji affordances: no emoji picker, no shortcode or custom-emote system, and no Twemoji-style emoji styling. Emoji a user types or pastes pass through as raw, unstyled Unicode, neither encouraged nor blocked — the same posture 4chan itself takes, which renders Unicode but ships no emoji tooling.
+
+This is deliberate. On imageboards the expressive vocabulary is greentext, reaction images, and text faces (kaomoji and ASCII / Shift-JIS art), not graphical emoji. Heavy emoji use reads as an outsider, other-platform, or phone-poster marker, and persistent personal-expression tokens cut against the anonymous, no-personal-branding norm the format depends on. The native surfaces — greentext, image replies, and plain-Unicode text faces — already do what emoji do elsewhere.
+
+It is also strategic. 5chan improves on classic imageboards structurally — independent board ownership, no global admins, the Bitsocial protocol underneath — not by modernizing the posting experience. Imageboard history is consistent: "more modern UX" does not win users and erodes the authenticity that does, and an emoji picker is exactly that kind of modernization. With no global admins to run wordfilters or per-board character rules, the norm holds simply by not building the affordances and by leaving emoji as plain Unicode; board-level moderation can address the rest.
+
 ## Design Principles
 
 1. Classic parity first. For boards, threads, posts, replies, catalogs, post forms, navigation, and theme behavior, familiar imageboard behavior is the baseline.
@@ -732,6 +740,7 @@ Desktop and mobile intentionally differ: desktop stays maximally compact, while 
 - **Replies:** theme-colored blocks with square borders and minimal padding.
 - **Greentext and quote links:** preserve classic color behavior and hover states.
 - **Media:** thumbnails should fit the existing imageboard layout and should not create modern card previews unless the current surface already uses that pattern.
+- **Emoji and text faces:** pass post text through as raw Unicode. Do not add an emoji picker, shortcode/emote system, or Twemoji-style emoji rendering. Kaomoji and ASCII / Shift-JIS art are the native text-face vocabulary; preserve them and their alignment where used. See `PRODUCT.md` → Text and Expression for the rationale.
 
 ### Modals And Popovers
 
@@ -758,6 +767,7 @@ Desktop and mobile intentionally differ: desktop stays maximally compact, while 
 - Do not replace compact text links with large icon-button toolbars unless the existing surface already uses that pattern.
 - Do not introduce a new design system that competes with Yotsuba, Yotsuba B, Futaba, or the existing theme variable model.
 - Do not make Bitsocial, crypto, or decentralization visuals dominate routine browsing.
+- Do not add an emoji picker, emoji shortcode/emote system, or Twemoji-style emoji rendering; emoji pass through as raw Unicode only.
 ```
 
 ---
