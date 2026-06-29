@@ -1,3 +1,12 @@
+## [0.9.10](https://github.com/bitsocialnet/5chan/compare/v0.9.9...v0.9.10) (2026-06-29)
+
+
+### Bug Fixes
+
+* **post form:** respect reply link rules ([69ba4ac](https://github.com/bitsocialnet/5chan/commit/69ba4ace7aec46c858f07c44a45015eddb34e41a))
+
+
+
 ## [0.9.9](https://github.com/bitsocialnet/5chan/compare/v0.9.8...v0.9.9) (2026-06-28)
 
 

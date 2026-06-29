@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version fixes boards that could stay stuck loading, restores code tags on code-enabled boards, and improves board route and link behavior.';
+  "This release makes reply forms follow each board's link rules, including boards that require file links or block links in replies.";
 
 const releaseBody = `${oneLinerDescription}
 

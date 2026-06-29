@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.10",
+      "kind": "release",
+      "timestamp": 1782734400,
+      "message": "v0.9.10: Reply forms follow each board's link and file rules",
+      "version": "0.9.10"
+    },
+    {
       "id": "release-0.9.9",
       "kind": "release",
       "timestamp": 1782648000,
