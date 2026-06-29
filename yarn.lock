@@ -10,7 +10,7 @@ __metadata:
   resolution: "5chan@workspace:."
   dependencies:
     "@bbob/parser": "npm:4.3.1"
-    "@bitsocial/bitsocial-react-hooks": "npm:0.1.25"
+    "@bitsocial/bitsocial-react-hooks": "npm:0.1.26"
     "@bitsocial/bso-resolver": "npm:0.0.8"
     "@capacitor/android": "npm:7.4.5"
     "@capacitor/app": "npm:7.0.1"
@@ -26,7 +26,7 @@ __metadata:
     "@electron-forge/maker-zip": "npm:7.8.0"
     "@electron/rebuild": "npm:3.7.2"
     "@floating-ui/react": "npm:0.26.1"
-    "@pkcprotocol/pkc-js": "npm:0.0.59"
+    "@pkcprotocol/pkc-js": "npm:0.0.62"
     "@react-spring/web": "npm:10.0.3"
     "@reforged/maker-appimage": "npm:5.1.1"
     "@ruffle-rs/ruffle": "npm:0.2.0"
@@ -1582,12 +1582,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bitsocial/bitsocial-react-hooks@npm:0.1.25":
-  version: 0.1.25
-  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.25"
+"@bitsocial/bitsocial-react-hooks@npm:0.1.26":
+  version: 0.1.26
+  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.26"
   dependencies:
     "@bitsocial/bso-resolver": "npm:0.0.8"
-    "@pkcprotocol/pkc-js": "npm:0.0.59"
+    "@pkcprotocol/pkc-js": "npm:0.0.62"
     "@pkcprotocol/pkc-logger": "npm:0.1.0"
     assert: "npm:2.0.0"
     ethers: "npm:5.8.0"
@@ -1603,7 +1603,7 @@ __metadata:
     zustand: "npm:4.0.0"
   peerDependencies:
     react: ">=16.8"
-  checksum: 10c0/5a5f9be5e1ac3d269fe90935c9241d51bca40abbc956b529bedee5cb3d4d08737a834004660d4b8ad9020d18b17690b09e3d1d3d08c8c96d65141d35afa12c8a
+  checksum: 10c0/d6b2d08e4815e49c17775a4ff4a2850af1daea8da638f5d88408e5e168ea9dc27bbdd4f71712c70149073c05eef1a0e577faeae6b068e784cf88f191dce97cff
   languageName: node
   linkType: hard
 
@@ -6371,9 +6371,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pkcprotocol/pkc-js@npm:0.0.59":
-  version: 0.0.59
-  resolution: "@pkcprotocol/pkc-js@npm:0.0.59"
+"@pkcprotocol/pkc-js@npm:0.0.62":
+  version: 0.0.62
+  resolution: "@pkcprotocol/pkc-js@npm:0.0.62"
   dependencies:
     "@enhances/with-resolvers": "npm:0.0.5"
     "@helia/block-brokers": "npm:5.2.4"
@@ -6434,7 +6434,7 @@ __metadata:
     uuid: "npm:13.0.0"
     ws: "npm:8.20.0"
     zod: "npm:4.3.6"
-  checksum: 10c0/5c7a701c131af7e44789f54539b7844f583025ccd4034a3f75ae72e6e69da138038db62062fb7e6fb031162368bbfbd54edb41b2d74682d0d8e40e9d497e984c
+  checksum: 10c0/c55f2b5e3d52a4716124228bf9fc51cb949aff44a8d9404b4bd870367ef5c27d4cc98a2521054f2d8d008fc90977ac9a74d44e6cc619d4c4280c12128dabce9a
   languageName: node
   linkType: hard
 
