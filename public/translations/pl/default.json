@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "Współtwórcy",
   "post_link_required_alert": "Musisz opublikować link.",
   "post_media_link_required_alert": "Musisz opublikować link do obrazu lub filmu.",
-  "post_form_code_tags_prompt": "Możesz podświetlać składnię i zachować spacje, używając tagów [code]."
+  "post_form_code_tags_prompt": "Możesz podświetlać składnię i zachować spacje, używając tagów [code].",
+  "reply_link_required_alert": "Musisz odpowiedzieć linkiem.",
+  "reply_media_link_required_alert": "Musisz odpowiedzieć linkiem do obrazu lub filmu.",
+  "reply_links_not_allowed_alert": "Linki w odpowiedziach nie są dozwolone na tej tablicy."
 }

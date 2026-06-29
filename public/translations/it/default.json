@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "Collaboratori",
   "post_link_required_alert": "Devi pubblicare un link.",
   "post_media_link_required_alert": "Devi pubblicare un link a un'immagine o a un video.",
-  "post_form_code_tags_prompt": "Puoi evidenziare la sintassi e preservare gli spazi bianchi usando i tag [code]."
+  "post_form_code_tags_prompt": "Puoi evidenziare la sintassi e preservare gli spazi bianchi usando i tag [code].",
+  "reply_link_required_alert": "Devi rispondere con un link.",
+  "reply_media_link_required_alert": "Devi rispondere con un link a un'immagine o a un video.",
+  "reply_links_not_allowed_alert": "I link nelle risposte non sono consentiti su questa board."
 }

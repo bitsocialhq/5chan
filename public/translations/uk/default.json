@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "Учасники",
   "post_link_required_alert": "Потрібно опублікувати посилання.",
   "post_media_link_required_alert": "Потрібно опублікувати посилання на зображення або відео.",
-  "post_form_code_tags_prompt": "Ви можете підсвічувати синтаксис і зберігати пробіли, використовуючи теги [code]."
+  "post_form_code_tags_prompt": "Ви можете підсвічувати синтаксис і зберігати пробіли, використовуючи теги [code].",
+  "reply_link_required_alert": "Ви маєте відповісти посиланням.",
+  "reply_media_link_required_alert": "Ви маєте відповісти посиланням на зображення або відео.",
+  "reply_links_not_allowed_alert": "Посилання у відповідях на цій дошці заборонені."
 }

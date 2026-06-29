@@ -7,7 +7,16 @@ import getShortAddress from '../../lib/get-short-address';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { getDisplayMediaInfoType, getLinkMediaInfo, getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
 import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions, isPublishFileMediaType } from '../../lib/utils/media-link-validation-utils';
-import { getEffectivePublishLinkFeatures, getPublishLinkValidationError, getRequirePostLink, getRequirePostLinkIsMedia } from '../../lib/utils/publish-link-requirements';
+import {
+  getEffectivePostLinkFeatures,
+  getEffectiveReplyLinkFeatures,
+  getNoReplyLinks,
+  getPublishLinkValidationError,
+  getRequirePostLink,
+  getRequirePostLinkIsMedia,
+  getRequireReplyLink,
+  getRequireReplyLinkIsMedia,
+} from '../../lib/utils/publish-link-requirements';
 import {
   type DiceRoll,
   type FortuneEntry,
@@ -177,7 +186,7 @@ interface PostFormFieldsProps {
   subscriptions: string[];
   communityAddress: string | undefined;
   rulesPath: string;
-  requirePostLinkIsMedia: boolean;
+  requireCurrentLinkIsMedia: boolean;
   flagOptions: CommentFlagSelectOption[];
   flashTagOptions: FlashTagOption[];
   showFlashTagSelector: boolean;
@@ -232,7 +241,7 @@ const PostFormFields = ({
   subscriptions,
   communityAddress,
   rulesPath,
-  requirePostLinkIsMedia,
+  requireCurrentLinkIsMedia,
   flagOptions,
   flashTagOptions,
   showFlashTagSelector,
@@ -367,15 +376,15 @@ const PostFormFields = ({
       </tr>
     )}
     <tr>
-      <td>{requirePostLinkIsMedia ? t('link_to_file') : t('link')}</td>
+      <td>{requireCurrentLinkIsMedia ? t('link_to_file') : t('link')}</td>
       <td className={styles.linkField}>
         <input
           type='text'
-          aria-label={requirePostLinkIsMedia ? t('link_to_file') : t('link')}
+          aria-label={requireCurrentLinkIsMedia ? t('link_to_file') : t('link')}
           autoCorrect='off'
           autoComplete='off'
           spellCheck='false'
-          placeholder={requirePostLinkIsMedia ? FILE_LINK_PLACEHOLDER : undefined}
+          placeholder={requireCurrentLinkIsMedia ? FILE_LINK_PLACEHOLDER : undefined}
           ref={urlRef}
           disabled={disableLinkInput}
           onChange={(e) => {
@@ -383,7 +392,7 @@ const PostFormFields = ({
           }}
           onBlur={handleLinkBlur}
         />
-        <span className={styles.linkType}> {url && <LinkTypePreviewer link={url} requireFile={requirePostLinkIsMedia} />}</span>
+        <span className={styles.linkType}> {url && <LinkTypePreviewer link={url} requireFile={requireCurrentLinkIsMedia} />}</span>
       </td>
     </tr>
     {showUploadControls && (
@@ -402,8 +411,12 @@ const PostFormFields = ({
             isUploading={isUploading}
             showUploadControls={showUploadControls}
           />
-          <span title={getPublishFileDisplayName(url, uploadedFileName, requirePostLinkIsMedia) || undefined}>
-            {isUploading ? <LoadingEllipsis string={t('uploading')} /> : getPostFormFileDisplayLabel(url, uploadedFileName, t('no_file_chosen'), requirePostLinkIsMedia)}
+          <span title={getPublishFileDisplayName(url, uploadedFileName, requireCurrentLinkIsMedia) || undefined}>
+            {isUploading ? (
+              <LoadingEllipsis string={t('uploading')} />
+            ) : (
+              getPostFormFileDisplayLabel(url, uploadedFileName, t('no_file_chosen'), requireCurrentLinkIsMedia)
+            )}
           </span>
         </td>
       </tr>
@@ -577,9 +590,14 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const postOptionsDirectoryCode = getPostOptionsDirectoryCode(directoryEntry, location.pathname);
   const showOekakiControls = postOptionsDirectoryCode === 'i' || directoryEntry?.directoryCode === 'i';
   const communityFeatures = useCommunityField(effectiveBoardAddress, (community) => community?.features);
-  const publishLinkFeatures = getEffectivePublishLinkFeatures(communityFeatures, directoryEntry?.features);
-  const requirePostLink = getRequirePostLink(publishLinkFeatures);
-  const requirePostLinkIsMedia = getRequirePostLinkIsMedia(publishLinkFeatures, isInAllView || isInSubscriptionsView);
+  const postLinkFeatures = getEffectivePostLinkFeatures(communityFeatures, directoryEntry?.features);
+  const replyLinkFeatures = getEffectiveReplyLinkFeatures(communityFeatures, directoryEntry?.features);
+  const requirePostLink = getRequirePostLink(postLinkFeatures);
+  const requirePostLinkIsMedia = getRequirePostLinkIsMedia(postLinkFeatures, isInAllView || isInSubscriptionsView);
+  const requireReplyLink = getRequireReplyLink(replyLinkFeatures);
+  const requireReplyLinkIsMedia = getRequireReplyLinkIsMedia(replyLinkFeatures, isInAllView || isInSubscriptionsView);
+  const noReplyLinks = getNoReplyLinks(replyLinkFeatures);
+  const requireCurrentLinkIsMedia = isInPostView ? requireReplyLinkIsMedia : requirePostLinkIsMedia;
   const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
   const showFlashUploadPrompt = isFlashDirectoryCode(postOptionsDirectoryCode);
   const showFlashTagSelector = showFlashUploadPrompt && !isInPostView;
@@ -687,6 +705,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
         link: currentUrl,
         requireLink: requirePostLink,
         requireMedia: requirePostLinkIsMedia,
+        requiredLinkAlertKey: 'post_link_required_alert',
+        requiredMediaLinkAlertKey: 'post_media_link_required_alert',
         t,
       });
       if (linkValidationError) {
@@ -816,8 +836,12 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
 
       const linkValidationError = getPublishLinkValidationError({
         link: currentUrl,
-        requireLink: requirePostLink,
-        requireMedia: requirePostLinkIsMedia,
+        noLinks: noReplyLinks,
+        requireLink: requireReplyLink,
+        requireMedia: requireReplyLinkIsMedia,
+        requiredLinkAlertKey: 'reply_link_required_alert',
+        requiredMediaLinkAlertKey: 'reply_media_link_required_alert',
+        noLinksAlertKey: 'reply_links_not_allowed_alert',
         t,
       });
       if (linkValidationError) {
@@ -856,7 +880,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     noticeCountdown: youtubeThumbnailConversionCountdown,
     queueLinkConversion,
   } = useYouTubeThumbnailLinkConversion({
-    enabled: requirePostLinkIsMedia,
+    enabled: requireCurrentLinkIsMedia && !(isInPostView && noReplyLinks),
     onContentChange: handleContentValueChange,
     onLinkChange: setLinkValue,
     textRef,
@@ -954,13 +978,13 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             handleLinkChange={handleLinkChange}
             handleLinkBlur={handleLinkBlur}
             handleOptionsChange={handleOptionsChange}
-            disableLinkInput={isUploading || youtubeThumbnailConversionCountdown !== null}
+            disableLinkInput={isUploading || youtubeThumbnailConversionCountdown !== null || (isInPostView && noReplyLinks)}
             setPublishPostOptions={setPublishPostOptions}
             setPublishReplyOptions={setPublishReplyOptions}
             isUploading={isUploading}
             uploadedFileName={uploadedFileName}
-            showUploadControls={showUploadControls}
-            showOekakiControls={showOekakiControls}
+            showUploadControls={showUploadControls && !(isInPostView && noReplyLinks)}
+            showOekakiControls={showOekakiControls && !(isInPostView && noReplyLinks)}
             showSpoilerForPost={showSpoilerForPost}
             showSpoilerForReply={showSpoilerForReply}
             isInAllView={isInAllView}
@@ -971,7 +995,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             subscriptions={subscriptions}
             communityAddress={communityAddress}
             rulesPath={rulesPath}
-            requirePostLinkIsMedia={requirePostLinkIsMedia}
+            requireCurrentLinkIsMedia={requireCurrentLinkIsMedia}
             flagOptions={flagOptions}
             flashTagOptions={FLASH_TAG_OPTIONS}
             showFlashTagSelector={showFlashTagSelector}

@@ -9,6 +9,9 @@ interface DirectoryFeatures {
   hasFlags?: boolean;
   requirePostLink?: boolean;
   requirePostLinkIsMedia?: boolean;
+  requireReplyLink?: boolean;
+  requireReplyLinkIsMedia?: boolean;
+  noReplyLinks?: boolean;
   [key: string]: unknown;
 }
 

@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "Avustajat",
   "post_link_required_alert": "Sinun on julkaistava linkki.",
   "post_media_link_required_alert": "Sinun on julkaistava kuva- tai videolinkki.",
-  "post_form_code_tags_prompt": "Voit korostaa syntaksia ja säilyttää välilyönnit käyttämällä [code]-tageja."
+  "post_form_code_tags_prompt": "Voit korostaa syntaksia ja säilyttää välilyönnit käyttämällä [code]-tageja.",
+  "reply_link_required_alert": "Sinun on vastattava linkillä.",
+  "reply_media_link_required_alert": "Sinun on vastattava kuva- tai videolinkillä.",
+  "reply_links_not_allowed_alert": "Vastauslinkit eivät ole sallittuja tällä laudalla."
 }

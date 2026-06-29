@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "Người đóng góp",
   "post_link_required_alert": "Bạn phải đăng một liên kết.",
   "post_media_link_required_alert": "Bạn phải đăng liên kết hình ảnh hoặc video.",
-  "post_form_code_tags_prompt": "Bạn có thể tô sáng cú pháp và giữ nguyên khoảng trắng bằng cách sử dụng thẻ [code]."
+  "post_form_code_tags_prompt": "Bạn có thể tô sáng cú pháp và giữ nguyên khoảng trắng bằng cách sử dụng thẻ [code].",
+  "reply_link_required_alert": "Bạn phải trả lời bằng một liên kết.",
+  "reply_media_link_required_alert": "Bạn phải trả lời bằng một liên kết hình ảnh hoặc video.",
+  "reply_links_not_allowed_alert": "Liên kết trong trả lời không được phép trên bảng này."
 }

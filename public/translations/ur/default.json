@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "شراکت کنندگان",
   "post_link_required_alert": "آپ کو ایک لنک پوسٹ کرنا ہوگا۔",
   "post_media_link_required_alert": "آپ کو تصویر یا ویڈیو کا لنک پوسٹ کرنا ہوگا۔",
-  "post_form_code_tags_prompt": "آپ [code] ٹیگز استعمال کر کے نحو کو نمایاں کر سکتے ہیں اور خالی جگہ کو محفوظ رکھ سکتے ہیں۔"
+  "post_form_code_tags_prompt": "آپ [code] ٹیگز استعمال کر کے نحو کو نمایاں کر سکتے ہیں اور خالی جگہ کو محفوظ رکھ سکتے ہیں۔",
+  "reply_link_required_alert": "آپ کو ایک لنک کے ساتھ جواب دینا ہوگا۔",
+  "reply_media_link_required_alert": "آپ کو تصویر یا ویڈیو کے لنک کے ساتھ جواب دینا ہوگا۔",
+  "reply_links_not_allowed_alert": "اس بورڈ پر جوابات میں لنکس کی اجازت نہیں ہے۔"
 }

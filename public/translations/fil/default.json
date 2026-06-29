@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "Mga Kontribyutor",
   "post_link_required_alert": "Kailangan mong mag-post ng link.",
   "post_media_link_required_alert": "Kailangan mong mag-post ng link ng larawan o video.",
-  "post_form_code_tags_prompt": "Maaari mong i-highlight ang syntax at panatilihin ang whitespace gamit ang [code] tags."
+  "post_form_code_tags_prompt": "Maaari mong i-highlight ang syntax at panatilihin ang whitespace gamit ang [code] tags.",
+  "reply_link_required_alert": "Kailangan mong tumugon gamit ang isang link.",
+  "reply_media_link_required_alert": "Kailangan mong tumugon gamit ang link ng larawan o video.",
+  "reply_links_not_allowed_alert": "Hindi pinapayagan ang mga link sa tugon sa board na ito."
 }

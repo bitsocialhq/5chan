@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "Bidragydere",
   "post_link_required_alert": "Du skal poste et link.",
   "post_media_link_required_alert": "Du skal poste et billed- eller videolink.",
-  "post_form_code_tags_prompt": "Du kan fremhæve syntaks og bevare mellemrum ved at bruge [code]-tags."
+  "post_form_code_tags_prompt": "Du kan fremhæve syntaks og bevare mellemrum ved at bruge [code]-tags.",
+  "reply_link_required_alert": "Du skal svare med et link.",
+  "reply_media_link_required_alert": "Du skal svare med et billed- eller videolink.",
+  "reply_links_not_allowed_alert": "Svarlinks er ikke tilladt på dette board."
 }

@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "Mitwirkende",
   "post_link_required_alert": "Du musst einen Link posten.",
   "post_media_link_required_alert": "Du musst einen Bild- oder Videolink posten.",
-  "post_form_code_tags_prompt": "Sie können Syntax hervorheben und Leerzeichen beibehalten, indem Sie [code]-Tags verwenden."
+  "post_form_code_tags_prompt": "Sie können Syntax hervorheben und Leerzeichen beibehalten, indem Sie [code]-Tags verwenden.",
+  "reply_link_required_alert": "Du musst mit einem Link antworten.",
+  "reply_media_link_required_alert": "Du musst mit einem Bild- oder Videolink antworten.",
+  "reply_links_not_allowed_alert": "Antwortlinks sind auf diesem Board nicht erlaubt."
 }

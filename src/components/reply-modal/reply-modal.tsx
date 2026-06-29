@@ -5,7 +5,13 @@ import type { TFunction } from 'i18next';
 import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions } from '../../lib/utils/media-link-validation-utils';
 import { getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
-import { getEffectivePublishLinkFeatures, getPublishLinkValidationError, getRequirePostLink, getRequirePostLinkIsMedia } from '../../lib/utils/publish-link-requirements';
+import {
+  getEffectiveReplyLinkFeatures,
+  getNoReplyLinks,
+  getPublishLinkValidationError,
+  getRequireReplyLink,
+  getRequireReplyLinkIsMedia,
+} from '../../lib/utils/publish-link-requirements';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory } from '../../lib/comment-flag-selection';
 import {
   type DiceRoll,
@@ -79,9 +85,10 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const showOekakiControls = postOptionsDirectoryCode === 'i' || directoryEntry?.directoryCode === 'i';
   const showTexButton = isMathDirectoryCode(postOptionsDirectoryCode) || isMathDirectoryCode(directoryEntry?.directoryCode);
   const communityFeatures = useCommunityField(communityAddress, (community) => community?.features);
-  const publishLinkFeatures = getEffectivePublishLinkFeatures(communityFeatures, directoryEntry?.features);
-  const requirePostLink = getRequirePostLink(publishLinkFeatures);
-  const requirePostLinkIsMedia = getRequirePostLinkIsMedia(publishLinkFeatures, isInAllView || isInSubscriptionsView);
+  const replyLinkFeatures = getEffectiveReplyLinkFeatures(communityFeatures, directoryEntry?.features);
+  const requireReplyLink = getRequireReplyLink(replyLinkFeatures);
+  const requireReplyLinkIsMedia = getRequireReplyLinkIsMedia(replyLinkFeatures, isInAllView || isInSubscriptionsView);
+  const noReplyLinks = getNoReplyLinks(replyLinkFeatures);
   const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
   const { isResolvingExternalQuotes, publishReply, publishReplyError, publishReplyStateMessage, resetPublishReplyOptions, replyIndex, setPublishReplyOptions } =
     usePublishReply({
@@ -188,8 +195,12 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
       const linkValidationError = getPublishLinkValidationError({
         link: currentUrl,
-        requireLink: requirePostLink,
-        requireMedia: requirePostLinkIsMedia,
+        noLinks: noReplyLinks,
+        requireLink: requireReplyLink,
+        requireMedia: requireReplyLinkIsMedia,
+        requiredLinkAlertKey: 'reply_link_required_alert',
+        requiredMediaLinkAlertKey: 'reply_media_link_required_alert',
+        noLinksAlertKey: 'reply_links_not_allowed_alert',
         t,
       });
       if (linkValidationError) {
@@ -444,7 +455,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     noticeCountdown: youtubeThumbnailConversionCountdown,
     queueLinkConversion,
   } = useYouTubeThumbnailLinkConversion({
-    enabled: requirePostLinkIsMedia,
+    enabled: requireReplyLinkIsMedia && !noReplyLinks,
     onContentChange: handleConvertedContentChange,
     onLinkChange: setLinkValue,
     textRef,
@@ -538,7 +549,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   };
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode, isWebRuntime());
-  const displayedFileName = getPublishFileDisplayName(url, uploadedFileName, requirePostLinkIsMedia);
+  const displayedFileName = getPublishFileDisplayName(url, uploadedFileName, requireReplyLinkIsMedia);
   const youtubeThumbnailConversionNotice =
     youtubeThumbnailConversionCountdown !== null ? t('youtube_thumbnail_link_conversion_notice', { count: youtubeThumbnailConversionCountdown }) : null;
 
@@ -652,22 +663,22 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           <input
             type='text'
             ref={urlRef}
-            aria-label={requirePostLinkIsMedia ? t('link_to_file') : t('link')}
-            placeholder={requirePostLinkIsMedia ? FILE_LINK_PLACEHOLDER : capitalize(t('link'))}
-            disabled={isUploading}
+            aria-label={requireReplyLinkIsMedia ? t('link_to_file') : t('link')}
+            placeholder={requireReplyLinkIsMedia ? FILE_LINK_PLACEHOLDER : capitalize(t('link'))}
+            disabled={isUploading || noReplyLinks}
             onChange={(e) => {
               handleLinkChange(e.target.value);
             }}
             onBlur={handleLinkBlur}
           />
         </div>
-        {showOekakiControls && (
+        {showOekakiControls && !noReplyLinks && (
           <div className={styles.oekakiRow}>
             <span className={styles.oekakiLabel}>Draw</span>
             <OekakiDrawingControls className={styles.oekakiControls} disabled={isUploading} uploadFile={uploadFile} onClearUploadedUrl={handleOekakiClearUploadedUrl} />
           </div>
         )}
-        {showOekakiControls && isWebRuntime() ? <div className={styles.oekakiWarning}>{OEKAKI_WEB_WARNING_TEXT}</div> : null}
+        {showOekakiControls && !noReplyLinks && isWebRuntime() ? <div className={styles.oekakiWarning}>{OEKAKI_WEB_WARNING_TEXT}</div> : null}
         {flagOptions.length > 0 && (
           <div>
             <select
@@ -687,7 +698,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
           </div>
         )}
         <div className={styles.footer}>
-          {showUploadControls && (
+          {showUploadControls && !noReplyLinks && (
             <span className={styles.uploadContainer}>
               <span className={styles.uploadButton}>
                 <button type='button' onClick={handleUpload} disabled={isUploading}>

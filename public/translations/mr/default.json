@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "योगदानकर्ते",
   "post_link_required_alert": "तुम्हाला एक लिंक पोस्ट करावी लागेल.",
   "post_media_link_required_alert": "तुम्हाला प्रतिमा किंवा व्हिडिओची लिंक पोस्ट करावी लागेल.",
-  "post_form_code_tags_prompt": "आप [code] टॅग वापरून सिंटॅक्स हायलाइट करू शकता आणि व्हाइटस्पेस जतन करू शकता."
+  "post_form_code_tags_prompt": "आप [code] टॅग वापरून सिंटॅक्स हायलाइट करू शकता आणि व्हाइटस्पेस जतन करू शकता.",
+  "reply_link_required_alert": "तुम्ही दुव्यासह उत्तर देणे आवश्यक आहे.",
+  "reply_media_link_required_alert": "तुम्ही प्रतिमा किंवा व्हिडिओ दुव्यासह उत्तर देणे आवश्यक आहे.",
+  "reply_links_not_allowed_alert": "या बोर्डवर उत्तरांमधील दुवे परवानगी नाहीत."
 }

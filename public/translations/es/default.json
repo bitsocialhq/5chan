@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "Colaboradores",
   "post_link_required_alert": "Debes publicar un enlace.",
   "post_media_link_required_alert": "Debes publicar un enlace a una imagen o un video.",
-  "post_form_code_tags_prompt": "Puede resaltar la sintaxis y conservar los espacios en blanco usando etiquetas [code]."
+  "post_form_code_tags_prompt": "Puede resaltar la sintaxis y conservar los espacios en blanco usando etiquetas [code].",
+  "reply_link_required_alert": "Debes responder con un enlace.",
+  "reply_media_link_required_alert": "Debes responder con un enlace a una imagen o un video.",
+  "reply_links_not_allowed_alert": "Los enlaces en respuestas no están permitidos en este tablón."
 }

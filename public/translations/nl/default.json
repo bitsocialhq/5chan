@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "Bijdragers",
   "post_link_required_alert": "Je moet een link plaatsen.",
   "post_media_link_required_alert": "Je moet een afbeelding- of videolink plaatsen.",
-  "post_form_code_tags_prompt": "U kunt syntaxis markeren en witruimte behouden door [code]-tags te gebruiken."
+  "post_form_code_tags_prompt": "U kunt syntaxis markeren en witruimte behouden door [code]-tags te gebruiken.",
+  "reply_link_required_alert": "Je moet antwoorden met een link.",
+  "reply_media_link_required_alert": "Je moet antwoorden met een afbeeldings- of videolink.",
+  "reply_links_not_allowed_alert": "Antwoordlinks zijn niet toegestaan op dit bord."
 }

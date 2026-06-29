@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "貢献者",
   "post_link_required_alert": "リンクを投稿する必要があります。",
   "post_media_link_required_alert": "画像または動画のリンクを投稿する必要があります。",
-  "post_form_code_tags_prompt": "[code] タグを使用して、構文をハイライトし、空白を保持できます。"
+  "post_form_code_tags_prompt": "[code] タグを使用して、構文をハイライトし、空白を保持できます。",
+  "reply_link_required_alert": "リンク付きで返信する必要があります。",
+  "reply_media_link_required_alert": "画像または動画のリンク付きで返信する必要があります。",
+  "reply_links_not_allowed_alert": "この板では返信リンクは許可されていません。"
 }

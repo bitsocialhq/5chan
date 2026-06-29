@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "Bidragsytere",
   "post_link_required_alert": "Du må poste en lenke.",
   "post_media_link_required_alert": "Du må poste en bilde- eller videolenke.",
-  "post_form_code_tags_prompt": "Du kan fremheve syntaks og bevare mellomrom ved å bruke [code]-tagger."
+  "post_form_code_tags_prompt": "Du kan fremheve syntaks og bevare mellomrom ved å bruke [code]-tagger.",
+  "reply_link_required_alert": "Du må svare med en lenke.",
+  "reply_media_link_required_alert": "Du må svare med en bilde- eller videolenke.",
+  "reply_links_not_allowed_alert": "Svarlenker er ikke tillatt på dette forumet."
 }

@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "תורמים",
   "post_link_required_alert": "עליך לפרסם קישור.",
   "post_media_link_required_alert": "עליך לפרסם קישור לתמונה או לסרטון.",
-  "post_form_code_tags_prompt": "ניתן להדגיש תחביר ולשמור על רווחים לבנים באמצעות תגיות [code]."
+  "post_form_code_tags_prompt": "ניתן להדגיש תחביר ולשמור על רווחים לבנים באמצעות תגיות [code].",
+  "reply_link_required_alert": "עליך להשיב עם קישור.",
+  "reply_media_link_required_alert": "עליך להשיב עם קישור לתמונה או לסרטון.",
+  "reply_links_not_allowed_alert": "קישורים בתגובות אינם מותרים בלוח הזה."
 }

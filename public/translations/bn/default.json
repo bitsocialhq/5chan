@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "অবদানকারীরা",
   "post_link_required_alert": "আপনাকে একটি লিঙ্ক পোস্ট করতে হবে।",
   "post_media_link_required_alert": "আপনাকে একটি ছবি বা ভিডিওর লিঙ্ক পোস্ট করতে হবে।",
-  "post_form_code_tags_prompt": "আপনি [code] ট্যাগ ব্যবহার করে সিনট্যাক্স হাইলাইট করতে এবং সাদা স্থান সংরক্ষণ করতে পারেন।"
+  "post_form_code_tags_prompt": "আপনি [code] ট্যাগ ব্যবহার করে সিনট্যাক্স হাইলাইট করতে এবং সাদা স্থান সংরক্ষণ করতে পারেন।",
+  "reply_link_required_alert": "আপনাকে একটি লিঙ্ক দিয়ে উত্তর দিতে হবে।",
+  "reply_media_link_required_alert": "আপনাকে একটি ছবি বা ভিডিও লিঙ্ক দিয়ে উত্তর দিতে হবে।",
+  "reply_links_not_allowed_alert": "এই বোর্ডে উত্তরের লিঙ্ক অনুমোদিত নয়।"
 }

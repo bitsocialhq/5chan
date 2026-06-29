@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "ผู้มีส่วนร่วม",
   "post_link_required_alert": "คุณต้องโพสต์ลิงก์",
   "post_media_link_required_alert": "คุณต้องโพสต์ลิงก์รูปภาพหรือวิดีโอ",
-  "post_form_code_tags_prompt": "คุณสามารถไฮไลต์ไวยากรณ์และรักษาช่องว่างได้โดยใช้แท็ก [code]"
+  "post_form_code_tags_prompt": "คุณสามารถไฮไลต์ไวยากรณ์และรักษาช่องว่างได้โดยใช้แท็ก [code]",
+  "reply_link_required_alert": "คุณต้องตอบกลับพร้อมลิงก์",
+  "reply_media_link_required_alert": "คุณต้องตอบกลับพร้อมลิงก์รูปภาพหรือวิดีโอ",
+  "reply_links_not_allowed_alert": "ไม่อนุญาตให้ใส่ลิงก์ในคำตอบบนบอร์ดนี้"
 }

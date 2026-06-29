@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "기여자",
   "post_link_required_alert": "링크를 게시해야 합니다.",
   "post_media_link_required_alert": "이미지 또는 동영상 링크를 게시해야 합니다.",
-  "post_form_code_tags_prompt": "[code] 태그를 사용하여 구문을 강조 표시하고 공백을 유지할 수 있습니다."
+  "post_form_code_tags_prompt": "[code] 태그를 사용하여 구문을 강조 표시하고 공백을 유지할 수 있습니다.",
+  "reply_link_required_alert": "링크를 포함해 답글을 달아야 합니다.",
+  "reply_media_link_required_alert": "이미지 또는 동영상 링크를 포함해 답글을 달아야 합니다.",
+  "reply_links_not_allowed_alert": "이 게시판에서는 답글 링크가 허용되지 않습니다."
 }

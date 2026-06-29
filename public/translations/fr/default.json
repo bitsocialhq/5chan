@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "Contributeurs",
   "post_link_required_alert": "Vous devez publier un lien.",
   "post_media_link_required_alert": "Vous devez publier un lien vers une image ou une vidéo.",
-  "post_form_code_tags_prompt": "Vous pouvez surligner la syntaxe et préserver les espaces en utilisant des balises [code]."
+  "post_form_code_tags_prompt": "Vous pouvez surligner la syntaxe et préserver les espaces en utilisant des balises [code].",
+  "reply_link_required_alert": "Vous devez répondre avec un lien.",
+  "reply_media_link_required_alert": "Vous devez répondre avec un lien d'image ou de vidéo.",
+  "reply_links_not_allowed_alert": "Les liens dans les réponses ne sont pas autorisés sur ce board."
 }

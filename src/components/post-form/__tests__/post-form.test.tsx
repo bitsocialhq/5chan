@@ -1783,6 +1783,93 @@ describe('PostForm', () => {
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
   });
 
+  it('does not require an inline reply link when only post links are required', async () => {
+    testState.comments = {
+      'thread-cid': {
+        postCid: 'thread-cid',
+      },
+    };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.communities['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { requirePostLink: true },
+    };
+
+    await renderPostForm('/mu/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+
+    await dispatchInput(textarea, 'Reply body');
+    await clickByText(table, 'post');
+
+    expect(container.textContent).not.toContain('post_link_required_alert');
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('requires an inline reply link when reply links are required', async () => {
+    testState.comments = {
+      'thread-cid': {
+        postCid: 'thread-cid',
+      },
+    };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.communities['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { requireReplyLink: true },
+    };
+
+    await renderPostForm('/mu/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const linkInput = table.querySelector<HTMLInputElement>('input[aria-label="link"]') as HTMLInputElement;
+
+    await dispatchInput(textarea, 'Reply body');
+    await clickByText(table, 'post');
+
+    expect(container.textContent).toContain('error: reply_link_required_alert');
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+
+    await dispatchInput(linkInput, 'https://example.com/reply');
+    await clickByText(table, 'post');
+
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ link: 'https://example.com/reply' });
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ content: 'Reply body' }));
+  });
+
+  it('rejects inline reply links when reply links are disabled', async () => {
+    testState.comments = {
+      'thread-cid': {
+        postCid: 'thread-cid',
+      },
+    };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.communities['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { noReplyLinks: true },
+    };
+
+    await renderPostForm('/mu/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const linkInput = table.querySelector<HTMLInputElement>('input[aria-label="link"]') as HTMLInputElement;
+    expect(linkInput.disabled).toBe(true);
+
+    linkInput.disabled = false;
+    await dispatchInput(textarea, 'Reply body');
+    await dispatchInput(linkInput, 'https://example.com/reply.png');
+    await clickByText(table, 'post');
+
+    expect(container.textContent).toContain('error: reply_links_not_allowed_alert');
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+  });
+
   it('publishes known twimg query-format reply links with a path extension without editing the field', async () => {
     const twimgLink = 'https://pbs.twimg.com/media/HJxnhNKWMAAhqFU?format=jpg&name=medium';
     const publishLink = 'https://pbs.twimg.com/media/HJxnhNKWMAAhqFU.jpg';

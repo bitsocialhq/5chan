@@ -446,5 +446,8 @@
   "site_legal_meta_contributors_link": "المساهمون",
   "post_link_required_alert": "يجب أن تنشر رابطًا.",
   "post_media_link_required_alert": "يجب أن تنشر رابط صورة أو فيديو.",
-  "post_form_code_tags_prompt": "يمكنك تمييز بناء الجملة والحفاظ على المسافات البيضاء باستخدام وسوم [code]."
+  "post_form_code_tags_prompt": "يمكنك تمييز بناء الجملة والحفاظ على المسافات البيضاء باستخدام وسوم [code].",
+  "reply_link_required_alert": "يجب عليك الرد برابط.",
+  "reply_media_link_required_alert": "يجب عليك الرد برابط لصورة أو فيديو.",
+  "reply_links_not_allowed_alert": "لا يُسمح بروابط الردود في هذه اللوحة."
 }

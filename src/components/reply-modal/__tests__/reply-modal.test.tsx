@@ -530,7 +530,7 @@ describe('ReplyModal', () => {
     testState.directoryByAddress['oekaki-posting.bso'] = {
       address: 'oekaki-posting.bso',
       directoryCode: 'i',
-      features: { requirePostLink: true, requirePostLinkIsMedia: true },
+      features: { requireReplyLink: true, requireReplyLinkIsMedia: true },
       title: '/i/ - Oekaki',
     };
     testState.communities['oekaki-posting.bso'] = { address: 'oekaki-posting.bso' };
@@ -765,7 +765,7 @@ describe('ReplyModal', () => {
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
   });
 
-  it('requires a link when live community features require post links', async () => {
+  it('does not require a reply link when only live community features require post links', async () => {
     testState.openEmpty = true;
     testState.selectedText = 'Reply body';
     testState.communities['music-posting.eth'] = {
@@ -777,8 +777,24 @@ describe('ReplyModal', () => {
 
     await clickButtonByText('post');
 
-    expect(container.textContent).toContain('error: post_link_required_alert');
-    const linkRequiredError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'error: post_link_required_alert');
+    expect(container.textContent).not.toContain('post_link_required_alert');
+    expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('requires a link when live community features require reply links', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = 'Reply body';
+    testState.communities['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { requireReplyLink: true },
+    };
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    await clickButtonByText('post');
+
+    expect(container.textContent).toContain('error: reply_link_required_alert');
+    const linkRequiredError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'error: reply_link_required_alert');
     expect(linkRequiredError?.className).toContain('error');
     expect(testState.publishReplyMock).not.toHaveBeenCalled();
 
@@ -790,20 +806,20 @@ describe('ReplyModal', () => {
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
   });
 
-  it('requires a media link when live community features require post links to be media', async () => {
+  it('requires a media link when live community features require reply links to be media', async () => {
     testState.openEmpty = true;
     testState.selectedText = 'Reply body';
     testState.communities['music-posting.eth'] = {
       address: 'music-posting.eth',
-      features: { requirePostLink: true, requirePostLinkIsMedia: true },
+      features: { requireReplyLink: true, requireReplyLinkIsMedia: true },
     };
 
     await renderReplyModal('/mu/thread/post-1');
 
     await clickButtonByText('post');
 
-    expect(container.textContent).toContain('error: post_media_link_required_alert');
-    const mediaRequiredError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'error: post_media_link_required_alert');
+    expect(container.textContent).toContain('error: reply_media_link_required_alert');
+    const mediaRequiredError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'error: reply_media_link_required_alert');
     expect(mediaRequiredError?.className).toContain('error');
     expect(testState.publishReplyMock).not.toHaveBeenCalled();
 
@@ -826,14 +842,14 @@ describe('ReplyModal', () => {
     testState.selectedText = 'Reply body';
     testState.communities['music-posting.eth'] = {
       address: 'music-posting.eth',
-      features: { requirePostLink: false, requirePostLinkIsMedia: true },
+      features: { requireReplyLink: false, requireReplyLinkIsMedia: true },
     };
 
     await renderReplyModal('/mu/thread/post-1');
 
     await clickButtonByText('post');
 
-    expect(container.textContent).not.toContain('post_media_link_required_alert');
+    expect(container.textContent).not.toContain('reply_media_link_required_alert');
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
 
     testState.publishReplyMock.mockClear();
@@ -842,6 +858,27 @@ describe('ReplyModal', () => {
     await clickButtonByText('post');
 
     expect(container.textContent).toContain('error: link_not_image_or_video_alert');
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects reply links when live community features disallow reply links', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = 'Reply body';
+    testState.communities['music-posting.eth'] = {
+      address: 'music-posting.eth',
+      features: { noReplyLinks: true },
+    };
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+    expect(linkInput.disabled).toBe(true);
+
+    linkInput.disabled = false;
+    await dispatchInput(linkInput, 'https://example.com/reply.png');
+    await clickButtonByText('post');
+
+    expect(container.textContent).toContain('error: reply_links_not_allowed_alert');
     expect(testState.publishReplyMock).not.toHaveBeenCalled();
   });
 
@@ -887,7 +924,7 @@ describe('ReplyModal', () => {
     testState.selectedText = 'reply body';
     testState.directoryByAddress['music-posting.eth'] = {
       address: 'music-posting.eth',
-      features: { requirePostLinkIsMedia: true },
+      features: { requireReplyLinkIsMedia: true },
       title: '/mu/ - Music',
     };
 
@@ -930,7 +967,7 @@ describe('ReplyModal', () => {
     testState.selectedText = 'reply body';
     testState.directoryByAddress['music-posting.eth'] = {
       address: 'music-posting.eth',
-      features: { requirePostLinkIsMedia: true },
+      features: { requireReplyLinkIsMedia: true },
       title: '/mu/ - Music',
     };
 
@@ -960,7 +997,7 @@ describe('ReplyModal', () => {
     testState.selectedText = 'reply body';
     testState.directoryByAddress['music-posting.eth'] = {
       address: 'music-posting.eth',
-      features: { requirePostLinkIsMedia: true },
+      features: { requireReplyLinkIsMedia: true },
       title: '/mu/ - Music',
     };
 
