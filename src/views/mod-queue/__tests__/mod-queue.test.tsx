@@ -283,13 +283,29 @@ vi.mock('../../../components/tooltip/tooltip', () => ({
 }));
 
 vi.mock('../../post/post', () => ({
-  Post: ({ isModQueue, onTransfer, post, showReplies }: { isModQueue?: boolean; onTransfer?: () => void; post?: TestComment; showReplies?: boolean }) =>
+  Post: ({
+    isModQueue,
+    isPublishing,
+    modQueueStatus,
+    onTransfer,
+    post,
+    showReplies,
+  }: {
+    isModQueue?: boolean;
+    isPublishing?: boolean;
+    modQueueStatus?: string | null;
+    onTransfer?: () => void;
+    post?: TestComment;
+    showReplies?: boolean;
+  }) =>
     createElement(
       'div',
       {
         'data-cid': post?.cid,
         'data-content': post?.content,
         'data-is-mod-queue': String(Boolean(isModQueue)),
+        'data-is-publishing': String(Boolean(isPublishing)),
+        'data-mod-queue-status': modQueueStatus ?? '',
         'data-show-replies': String(Boolean(showReplies)),
         'data-testid': 'mod-queue-feed-post',
       },
@@ -673,6 +689,17 @@ describe('ModQueueView', () => {
     expect(dialog?.textContent).toContain('modQueue.transferSuccess');
     expect(submitButton?.disabled).toBe(true);
     expect(targetSelect?.disabled).toBe(true);
+    expect(testState.rememberCommentsInQueueMock).toHaveBeenCalledWith([
+      expect.objectContaining({
+        approved: false,
+        cid: 'wrong-board-post',
+        pendingApproval: false,
+      }),
+    ]);
+    expect(container.textContent).toContain('rejected');
+    expect(
+      Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => ['approve', 'reject', 'transfer'].includes(button.textContent ?? '')),
+    ).toBe(false);
 
     await act(async () => {
       submitButton?.click();
@@ -764,6 +791,10 @@ describe('ModQueueView', () => {
       submitButton?.click();
       await Promise.resolve();
     });
+    expect(container.textContent).toContain('publishing');
+    expect(
+      Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => ['approve', 'reject', 'transfer'].includes(button.textContent ?? '')),
+    ).toBe(false);
 
     const temporaryAccountName = testState.createAccountMock.mock.calls[0][0];
     const [payload] = testState.publishCommentMock.mock.calls[0];
@@ -782,6 +813,7 @@ describe('ModQueueView', () => {
     expect(testState.deleteCommentMock).toHaveBeenCalledWith(12, temporaryAccountName);
     expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);
     expect(dialog?.textContent).toContain('Transfer challenge was abandoned.');
+    expect(container.textContent).not.toContain('publishing');
     const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
     expect(closeButton?.disabled).toBe(false);
     expect(submitButton?.disabled).toBe(false);
@@ -821,6 +853,59 @@ describe('ModQueueView', () => {
     });
 
     expect(document.body.querySelector('[role="dialog"][aria-labelledby="post-transfer-title"]')).toBeNull();
+  });
+
+  it('locks feed-mode actions while transfer publishes and marks success as rejected', async () => {
+    testState.viewMode = 'feed';
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    const feedPost = container.querySelector('[data-testid="mod-queue-feed-post"]');
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
+    await act(async () => {
+      if (targetSelect) {
+        targetSelect.value = 'tech-posting.eth';
+        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    expect(feedPost?.getAttribute('data-is-publishing')).toBe('true');
+
+    const [payload] = testState.publishCommentMock.mock.calls[0];
+    await act(async () => {
+      await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post' } }, { cid: 'transferred-post' });
+      await Promise.resolve();
+    });
+
+    expect(feedPost?.getAttribute('data-is-publishing')).toBe('false');
+    expect(feedPost?.getAttribute('data-mod-queue-status')).toBe('rejected');
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'transfer')).toBe(false);
   });
 
   it('keeps the transfer modal non-blocking and closes it with Escape', async () => {

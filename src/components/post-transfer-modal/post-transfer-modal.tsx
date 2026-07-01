@@ -28,7 +28,7 @@ import {
   type PostTransferFields,
 } from '../../lib/comment-transfer';
 
-type TransferState = 'idle' | 'publishing' | 'succeeded' | 'failed';
+export type PostTransferState = 'idle' | 'publishing' | 'succeeded' | 'failed';
 type CreateAccountAction = (accountName?: string) => Promise<void>;
 type PublishCommentAction = (publishCommentOptions: Record<string, unknown>, accountName?: string) => Promise<{ index?: number } | undefined>;
 type DeleteCommentAction = (commentCidOrAccountCommentIndex: string | number, accountName?: string) => Promise<void>;
@@ -38,7 +38,7 @@ type PublishCommentModerationAction = (publishCommentModerationOptions: Record<s
 interface TransferModalState {
   targetBoardAddress: string;
   selectedFields: PostTransferFields;
-  transferState: TransferState;
+  transferState: PostTransferState;
   transferError?: unknown;
   transferredIndex?: number;
 }
@@ -53,6 +53,8 @@ type TransferModalAction =
 interface PostTransferModalProps {
   comment: Comment;
   onClose: () => void;
+  onTransferStateChange?: (state: PostTransferState) => void;
+  onTransferSuccess?: () => void;
 }
 
 const getInitialTransferModalState = (comment: Comment): TransferModalState => ({
@@ -110,7 +112,7 @@ const getInitialTransferModalPosition = () => {
   };
 };
 
-const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
+const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransferSuccess }: PostTransferModalProps) => {
   const { t } = useTranslation();
   const nodeRef = useRef<HTMLDivElement>(null);
   const finalizedTransferRef = useRef(false);
@@ -260,6 +262,7 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
       }
     };
     finalizedTransferRef.current = false;
+    onTransferStateChange?.('publishing');
     dispatchModalState({ type: 'publishStarted' });
 
     try {
@@ -275,6 +278,7 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
           onChallenge: async (...args: any[]) => {
             useChallengesStore.getState().addChallenge([...args, comment], async () => {
               await cleanupTemporaryAccount({ deletePendingComment: true });
+              onTransferStateChange?.('failed');
               dispatchModalState({ type: 'publishFailed', error: new Error('Transfer challenge was abandoned.') });
             });
           },
@@ -314,16 +318,24 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
               });
 
               await cleanupTemporaryAccount();
+              try {
+                onTransferSuccess?.();
+              } catch (error) {
+                console.error('Transfer success callback failed:', error);
+              }
+              onTransferStateChange?.('succeeded');
               dispatchModalState({ type: 'publishSucceeded', transferredIndex: pendingIndex });
             } catch (error) {
               console.error('Transfer finalization failed:', error);
               await cleanupTemporaryAccount();
+              onTransferStateChange?.('failed');
               dispatchModalState({ type: 'publishFailed', error });
             }
           },
           onError: (error: Error & { details?: unknown }) => {
             console.error('Transfer failed:', error, error.details);
             void cleanupTemporaryAccount({ deletePendingComment: true });
+            onTransferStateChange?.('failed');
             dispatchModalState({ type: 'publishFailed', error });
           },
         },
@@ -332,6 +344,7 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
     } catch (error) {
       console.error('Transfer failed:', error);
       await cleanupTemporaryAccount({ deletePendingComment: true });
+      onTransferStateChange?.('failed');
       dispatchModalState({ type: 'publishFailed', error });
     }
   };

@@ -45,7 +45,7 @@ import lowerCase from 'lodash/lowerCase';
 import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '../../components/footer/footer';
 import footerStyles from '../../components/footer/footer.module.css';
 import { useModeratedCommunityAddressInputs, useModeratedCommunityAddressesForInputs } from '../../hooks/use-moderated-community-addresses';
-import PostTransferModal from '../../components/post-transfer-modal/post-transfer-modal';
+import PostTransferModal, { type PostTransferState } from '../../components/post-transfer-modal/post-transfer-modal';
 import { canTransferComment } from '../../lib/comment-transfer';
 
 /** Path for display: directory code, or full address if has TLD, or shortened for long IPNS keys (no dot) */
@@ -271,17 +271,32 @@ const ModQueueExcerptPreviewLink = ({ comment, excerpt, postUrl, postUrlState }:
 
 const useModQueueTransfer = (comment: Comment) => {
   const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [transferState, setTransferState] = useState<PostTransferState>('idle');
+  const rememberCommentsInQueue = useModQueueStore((state) => state.rememberCommentsInQueue);
   const canTransfer = canTransferComment(comment);
+  const isTransferPublishing = transferState === 'publishing';
+  const isTransferSucceeded = transferState === 'succeeded';
   const handleTransfer = useCallback(() => {
-    if (canTransfer) {
+    if (canTransfer && !isTransferSucceeded) {
       setIsTransferOpen(true);
     }
-  }, [canTransfer]);
+  }, [canTransfer, isTransferSucceeded]);
   const handleCloseTransfer = useCallback(() => setIsTransferOpen(false), []);
+  const handleTransferSuccess = useCallback(() => {
+    const rejectedSnapshot = getQueuedCommentSnapshot({ ...comment, approved: false, pendingApproval: false });
+    if (rejectedSnapshot) {
+      rememberCommentsInQueue([rejectedSnapshot]);
+    }
+  }, [comment, rememberCommentsInQueue]);
 
   return {
-    handleTransfer: canTransfer ? handleTransfer : undefined,
-    transferModal: canTransfer && isTransferOpen ? <PostTransferModal comment={comment} onClose={handleCloseTransfer} /> : null,
+    handleTransfer: canTransfer && !isTransferSucceeded ? handleTransfer : undefined,
+    isTransferPublishing,
+    isTransferSucceeded,
+    transferModal:
+      canTransfer && isTransferOpen ? (
+        <PostTransferModal comment={comment} onClose={handleCloseTransfer} onTransferStateChange={setTransferState} onTransferSuccess={handleTransferSuccess} />
+      ) : null,
   };
 };
 
@@ -438,7 +453,7 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
   // session, so combine that baseline with the live action-derived status.
   const status = alreadyApproved || actionStatus === 'approved' ? 'approved' : alreadyRejected || actionStatus === 'rejected' ? 'rejected' : actionStatus;
 
-  return { status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove: status ? handleRemove : undefined };
+  return { status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove };
 };
 
 const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath, boardDisplayPath }: ModQueueRowProps) => {
@@ -480,7 +495,9 @@ const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath
   const postUrlState = getQueuedCommentRouteState(comment);
 
   const modQueueUrl = boardPath ? `/${boardPath}/mod/queue` : undefined;
-  const { handleTransfer, transferModal } = useModQueueTransfer(displayComment);
+  const { handleTransfer, isTransferPublishing, isTransferSucceeded, transferModal } = useModQueueTransfer(displayComment);
+  const displayStatus = isTransferSucceeded ? 'rejected' : status;
+  const displayIsPublishing = isPublishing || isTransferPublishing;
 
   return (
     <>
@@ -521,14 +538,14 @@ const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath
         <div className={styles.image}>{hasThumbnail ? t('yes') : t('no')}</div>
         <div className={styles.actions}>
           <ModQueueActions
-            status={status}
+            status={displayStatus}
             error={error}
             errorMessage={errorMessage}
-            isPublishing={isPublishing}
+            isPublishing={displayIsPublishing}
             handleApprove={handleApprove}
             handleReject={handleReject}
             handleTransfer={handleTransfer}
-            handleRemove={handleRemove}
+            handleRemove={displayStatus ? handleRemove : undefined}
             variant='row'
           />
         </div>
@@ -583,7 +600,9 @@ const ModQueueCard = memo(({ comment, showBoard = false, boardPath, boardDisplay
   const postUrlState = getQueuedCommentRouteState(comment);
 
   const modQueueUrl = boardPath ? `/${boardPath}/mod/queue` : undefined;
-  const { handleTransfer, transferModal } = useModQueueTransfer(displayComment);
+  const { handleTransfer, isTransferPublishing, isTransferSucceeded, transferModal } = useModQueueTransfer(displayComment);
+  const displayStatus = isTransferSucceeded ? 'rejected' : status;
+  const displayIsPublishing = isPublishing || isTransferPublishing;
 
   return (
     <>
@@ -613,14 +632,14 @@ const ModQueueCard = memo(({ comment, showBoard = false, boardPath, boardDisplay
           {isReply ? t('reply') : t('post')} / {capitalize(t('image'))}: {hasThumbnail ? lowerCase(t('yes')) : lowerCase(t('no'))}
         </div>
         <ModQueueActions
-          status={status}
+          status={displayStatus}
           error={error}
           errorMessage={errorMessage}
-          isPublishing={isPublishing}
+          isPublishing={displayIsPublishing}
           handleApprove={handleApprove}
           handleReject={handleReject}
           handleTransfer={handleTransfer}
-          handleRemove={handleRemove}
+          handleRemove={displayStatus ? handleRemove : undefined}
           variant='card'
         />
       </div>
@@ -634,7 +653,9 @@ const ModQueueFeedPost = memo(({ comment }: { comment: Comment }) => {
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
   const { status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove } = useModQueueActions(comment);
-  const { handleTransfer, transferModal } = useModQueueTransfer(displayComment);
+  const { handleTransfer, isTransferPublishing, isTransferSucceeded, transferModal } = useModQueueTransfer(displayComment);
+  const displayStatus = isTransferSucceeded ? 'rejected' : status;
+  const displayIsPublishing = isPublishing || isTransferPublishing;
 
   return (
     <>
@@ -643,13 +664,13 @@ const ModQueueFeedPost = memo(({ comment }: { comment: Comment }) => {
         showAllReplies={false}
         showReplies={false}
         isModQueue={true}
-        modQueueStatus={status}
+        modQueueStatus={displayStatus}
         modQueueError={error || errorMessage}
-        isPublishing={isPublishing}
+        isPublishing={displayIsPublishing}
         onApprove={handleApprove}
         onReject={handleReject}
         onTransfer={handleTransfer}
-        onRemoveFromModQueue={handleRemove}
+        onRemoveFromModQueue={displayStatus ? handleRemove : undefined}
       />
       {transferModal}
     </>
