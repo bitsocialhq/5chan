@@ -33,6 +33,22 @@
   cursor: pointer;
 }
 
+.menuButton {
+  margin: 0;
+  padding: 0;
+  color: var(--button-desktop-text-color);
+  font: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-transform: inherit;
+  text-decoration: var(--button-text-decoration);
+}
+
+.menuButton:hover {
+  color: var(--button-desktop-text-color-hover);
+}
+
 .menuReason {
   padding-bottom: 2px;
 }

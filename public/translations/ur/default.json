@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "آپ [code] ٹیگز استعمال کر کے نحو کو نمایاں کر سکتے ہیں اور خالی جگہ کو محفوظ رکھ سکتے ہیں۔",
   "reply_link_required_alert": "آپ کو ایک لنک کے ساتھ جواب دینا ہوگا۔",
   "reply_media_link_required_alert": "آپ کو تصویر یا ویڈیو کے لنک کے ساتھ جواب دینا ہوگا۔",
-  "reply_links_not_allowed_alert": "اس بورڈ پر جوابات میں لنکس کی اجازت نہیں ہے۔"
+  "reply_links_not_allowed_alert": "اس بورڈ پر جوابات میں لنکس کی اجازت نہیں ہے۔",
+  "transfer": "منتقل کریں",
+  "modQueue.transferTitle": "پوسٹ منتقل کریں",
+  "modQueue.transferSource": "سے",
+  "modQueue.transferTarget": "بورڈ پر",
+  "modQueue.transferFields": "فیلڈز کاپی کریں",
+  "modQueue.transferNoFields": "کاپی کرنے کے لیے کم از کم ایک فیلڈ منتخب کریں۔",
+  "modQueue.transferSuccess": "منتقل کر دیا گیا۔ اصل پوسٹ اب نئے بورڈ کی طرف اشارہ کرتی ہے۔",
+  "transferred": "منتقل شدہ",
+  "modQueue.transferTitleWithNumber": "پوسٹ No.{{number}} منتقل کریں",
+  "modQueue.transferRecreateNotice": "یہ حقیقی پروٹوکول ٹرانسفر نہیں ہے۔ 5chan منتخب بورڈ پر پوسٹ دوبارہ بناتا ہے اور اصل پوسٹ ہٹا دیتا ہے۔",
+  "modQueue.transferRepliesNotice": "جوابات منتقل نہیں ہوں گے۔ وہ اصل پوسٹ کے ساتھ حذف ہو جائیں گے۔",
+  "modQueue.transferTemporaryAccountNotice": "5chan صرف اس کاپی شدہ پوسٹ کے لیے ایک نیا عارضی اکاؤنٹ بنائے گا، پھر شائع ہونے کے بعد اسے حذف کر دے گا۔"
 }

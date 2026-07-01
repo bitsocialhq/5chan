@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "Вы можете выделять синтаксис и сохранять пробелы с помощью тегов [code].",
   "reply_link_required_alert": "Вы должны ответить ссылкой.",
   "reply_media_link_required_alert": "Вы должны ответить ссылкой на изображение или видео.",
-  "reply_links_not_allowed_alert": "Ссылки в ответах на этой доске запрещены."
+  "reply_links_not_allowed_alert": "Ссылки в ответах на этой доске запрещены.",
+  "transfer": "Перенести",
+  "modQueue.transferTitle": "Перенести пост",
+  "modQueue.transferSource": "Из",
+  "modQueue.transferTarget": "На форум",
+  "modQueue.transferFields": "Копировать поля",
+  "modQueue.transferNoFields": "Выберите хотя бы одно поле для копирования.",
+  "modQueue.transferSuccess": "Перенесено. Исходный пост теперь указывает на новую доску.",
+  "transferred": "Перенесено",
+  "modQueue.transferTitleWithNumber": "Перенести пост No.{{number}}",
+  "modQueue.transferRecreateNotice": "Это не настоящий перенос на уровне протокола. 5chan заново создаёт пост на выбранной доске и удаляет оригинал.",
+  "modQueue.transferRepliesNotice": "Ответы не переносятся. Они будут удалены вместе с исходным постом.",
+  "modQueue.transferTemporaryAccountNotice": "5chan создаст новый временный аккаунт только для этой скопированной публикации, а затем удалит его после публикации."
 }

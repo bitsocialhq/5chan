@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "[code] etiketlerini kullanarak sözdizimini vurgulayabilir ve boşlukları koruyabilirsiniz.",
   "reply_link_required_alert": "Bir bağlantıyla yanıt vermelisiniz.",
   "reply_media_link_required_alert": "Bir görsel veya video bağlantısıyla yanıt vermelisiniz.",
-  "reply_links_not_allowed_alert": "Bu panoda yanıt bağlantılarına izin verilmiyor."
+  "reply_links_not_allowed_alert": "Bu panoda yanıt bağlantılarına izin verilmiyor.",
+  "transfer": "Aktar",
+  "modQueue.transferTitle": "Gönderiyi aktar",
+  "modQueue.transferSource": "Kaynak",
+  "modQueue.transferTarget": "Foruma",
+  "modQueue.transferFields": "Alanları kopyala",
+  "modQueue.transferNoFields": "Kopyalamak için en az bir alan seçin.",
+  "modQueue.transferSuccess": "Aktarıldı. Orijinal gönderi artık yeni panoya işaret ediyor.",
+  "transferred": "Aktarıldı",
+  "modQueue.transferTitleWithNumber": "No.{{number}} gönderisini aktar",
+  "modQueue.transferRecreateNotice": "Bu gerçek bir protokol aktarımı değildir. 5chan gönderiyi seçilen panoda yeniden oluşturur ve orijinali kaldırır.",
+  "modQueue.transferRepliesNotice": "Yanıtlar aktarılmaz. Orijinal gönderiyle birlikte silinirler.",
+  "modQueue.transferTemporaryAccountNotice": "5chan yalnızca bu kopyalanan gönderi için yeni bir geçici hesap oluşturacak, yayımladıktan sonra da silecek."
 }

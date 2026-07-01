@@ -111,6 +111,18 @@ vi.mock('../../../hooks/use-board-pseudonymity-mode', () => ({
   useBoardPseudonymityMode: () => testState.pseudonymityMode,
 }));
 
+vi.mock('../../post-transfer-modal/post-transfer-modal', () => ({
+  default: ({ comment, onClose }: { comment: Record<string, unknown>; onClose: () => void }) =>
+    createElement(
+      'div',
+      {
+        'data-cid': comment.cid,
+        'data-testid': 'post-transfer-modal',
+      },
+      createElement('button', { onClick: onClose, type: 'button' }, 'close'),
+    ),
+}));
+
 vi.mock('../../../stores/use-challenges-store', () => {
   const hook = () => ({ challenges: [] });
   return {
@@ -419,6 +431,20 @@ describe('EditMenu', () => {
         banExpiresAt: Math.floor(new Date('2026-03-15T00:00:00Z').getTime() / 1000),
       },
     });
+  });
+
+  it('lets moderators transfer top-level published posts from the edit menu', async () => {
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+
+    await renderMenu(basePost);
+    await openMenu();
+    await clickButton('transfer');
+
+    expect(container.querySelector('[data-testid="post-transfer-modal"]')?.getAttribute('data-cid')).toBe('comment-1');
   });
 
   it('lets moderators clear an existing canonical author ban', async () => {

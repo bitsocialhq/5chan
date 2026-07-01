@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { getCommentFlagFlairs, getAuthorFlagViewModels } from '../lib/comment-flags';
+import { hasTransferredCommentMarker } from '../lib/comment-transfer';
 import styles from '../views/post/post.module.css';
 
 interface PostAuthorFlagsProps {
@@ -14,7 +15,7 @@ const transparentPixelSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/
 const PostAuthorFlags = ({ author, comment, enabled }: PostAuthorFlagsProps) => {
   const { t } = useTranslation();
 
-  if (!enabled) return null;
+  if (!enabled || hasTransferredCommentMarker(comment)) return null;
 
   const flags = getAuthorFlagViewModels(getCommentFlagFlairs(comment, author));
   if (flags.length === 0) return null;

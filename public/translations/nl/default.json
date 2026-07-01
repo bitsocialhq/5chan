@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "U kunt syntaxis markeren en witruimte behouden door [code]-tags te gebruiken.",
   "reply_link_required_alert": "Je moet antwoorden met een link.",
   "reply_media_link_required_alert": "Je moet antwoorden met een afbeeldings- of videolink.",
-  "reply_links_not_allowed_alert": "Antwoordlinks zijn niet toegestaan op dit bord."
+  "reply_links_not_allowed_alert": "Antwoordlinks zijn niet toegestaan op dit bord.",
+  "transfer": "Overdragen",
+  "modQueue.transferTitle": "Bericht overdragen",
+  "modQueue.transferSource": "Van",
+  "modQueue.transferTarget": "Naar forum",
+  "modQueue.transferFields": "Velden kopiëren",
+  "modQueue.transferNoFields": "Kies minimaal één veld om te kopiëren.",
+  "modQueue.transferSuccess": "Overgezet. Het oorspronkelijke bericht verwijst nu naar het nieuwe board.",
+  "transferred": "Overgezet",
+  "modQueue.transferTitleWithNumber": "Bericht No.{{number}} overzetten",
+  "modQueue.transferRecreateNotice": "Dit is geen echte protocoloverdracht. 5chan maakt het bericht opnieuw op het gekozen board en verwijdert het origineel.",
+  "modQueue.transferRepliesNotice": "Reacties worden niet overgezet. Ze worden samen met het oorspronkelijke bericht verwijderd.",
+  "modQueue.transferTemporaryAccountNotice": "5chan maakt alleen voor dit gekopieerde bericht een nieuw tijdelijk account aan en verwijdert het na publicatie."
 }

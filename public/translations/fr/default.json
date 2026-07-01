@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "Vous pouvez surligner la syntaxe et préserver les espaces en utilisant des balises [code].",
   "reply_link_required_alert": "Vous devez répondre avec un lien.",
   "reply_media_link_required_alert": "Vous devez répondre avec un lien d'image ou de vidéo.",
-  "reply_links_not_allowed_alert": "Les liens dans les réponses ne sont pas autorisés sur ce board."
+  "reply_links_not_allowed_alert": "Les liens dans les réponses ne sont pas autorisés sur ce board.",
+  "transfer": "Transférer",
+  "modQueue.transferTitle": "Transférer la publication",
+  "modQueue.transferSource": "De",
+  "modQueue.transferTarget": "Au forum",
+  "modQueue.transferFields": "Copier les champs",
+  "modQueue.transferNoFields": "Choisissez au moins un champ à copier.",
+  "modQueue.transferSuccess": "Transféré. Le message d’origine pointe maintenant vers le nouveau board.",
+  "transferred": "Transféré",
+  "modQueue.transferTitleWithNumber": "Transférer le message No.{{number}}",
+  "modQueue.transferRecreateNotice": "Ce n’est pas un vrai transfert au niveau du protocole. 5chan recrée le message sur le board choisi et retire l’original.",
+  "modQueue.transferRepliesNotice": "Les réponses ne sont pas transférées. Elles sont supprimées avec le message d’origine.",
+  "modQueue.transferTemporaryAccountNotice": "5chan créera un nouveau compte temporaire uniquement pour ce message copié, puis le supprimera après publication."
 }

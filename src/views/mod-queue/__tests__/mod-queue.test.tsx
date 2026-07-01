@@ -10,30 +10,46 @@ const act = (React as { act?: (callback: () => void | Promise<void>) => void | P
 
 type TestComment = {
   approved?: boolean;
+  author?: { displayName?: string };
   cid: string;
   content?: string;
   communityAddress?: string;
+  flairs?: Array<Record<string, unknown>>;
+  link?: string;
   number?: number;
+  parentCid?: string;
   pendingApproval?: boolean;
+  spoiler?: boolean;
   timestamp?: number;
+  title?: string;
 };
 
 const testState = vi.hoisted(() => ({
-  account: { author: { address: '0x123' }, id: 'account' },
+  account: { author: { address: '0x123', shortAddress: '0x123' }, id: 'account', name: 'main' },
+  accounts: [
+    { author: { address: '0x123', shortAddress: '0x123' }, id: 'account', name: 'main' },
+    { author: { address: '0x999', shortAddress: '0x999' }, id: 'throwaway-account', name: 'throwaway' },
+  ],
   accountCommunityAddresses: ['music-posting.eth'],
   addChallengeMock: vi.fn(),
   communityError: null as Error | null,
+  createAccountMock: vi.fn(),
+  deleteAccountMock: vi.fn(),
+  deleteCommentMock: vi.fn(),
   directories: [{ address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' }],
   dismissedCommentCids: [] as string[],
   feed: [] as TestComment[],
   hasMore: false,
   isMobile: false,
   loadMoreMock: vi.fn(),
+  publishCommentMock: vi.fn(),
+  publishCommentModerationActionMock: vi.fn(),
   publishCommentModerationMock: vi.fn(),
   queuedCommentHistory: [] as TestComment[],
   rememberCommentsInQueueMock: vi.fn(),
   resetMock: vi.fn(),
   setResetFunctionMock: vi.fn(),
+  springStartMock: vi.fn(),
   viewMode: 'compact' as 'compact' | 'feed',
 }));
 
@@ -55,12 +71,13 @@ useModQueueStoreMock.getState = getModQueueState;
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string, options?: Record<string, unknown>) => (key === 'modQueue.transferTitleWithNumber' ? `Transfer Post No.${options?.number}` : key),
   }),
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
+  useAccounts: () => ({ accounts: testState.accounts }),
   useCommunity: () => ({
     error: testState.communityError,
     roles: {
@@ -98,12 +115,26 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js', () => 
   default: (
     selector: (state: {
       accounts: Record<string, typeof testState.account>;
+      accountsActions: {
+        createAccount: typeof testState.createAccountMock;
+        deleteAccount: typeof testState.deleteAccountMock;
+        deleteComment: typeof testState.deleteCommentMock;
+        publishComment: typeof testState.publishCommentMock;
+        publishCommentModeration: typeof testState.publishCommentModerationActionMock;
+      };
       accountsEditsSummaries: Record<string, Record<string, unknown>>;
       activeAccountId: string;
     }) => unknown,
   ) =>
     selector({
       accounts: { account: testState.account },
+      accountsActions: {
+        createAccount: testState.createAccountMock,
+        deleteAccount: testState.deleteAccountMock,
+        deleteComment: testState.deleteCommentMock,
+        publishComment: testState.publishCommentMock,
+        publishCommentModeration: testState.publishCommentModerationActionMock,
+      },
       accountsEditsSummaries: { account: {} },
       activeAccountId: 'account',
     }),
@@ -123,6 +154,40 @@ vi.mock('@floating-ui/react', () => ({
     },
     update: vi.fn(),
   }),
+}));
+
+vi.mock('@react-spring/web', async () => {
+  const React = await vi.importActual<typeof import('react')>('react');
+  const normalizeStyle = (style: Record<string, unknown> | undefined) =>
+    style
+      ? Object.fromEntries(
+          Object.entries(style).map(([key, value]) => [
+            key,
+            typeof value === 'object' && value !== null && 'get' in value && typeof (value as { get: unknown }).get === 'function'
+              ? (value as { get: () => unknown }).get()
+              : value,
+          ]),
+        )
+      : undefined;
+
+  return {
+    animated: {
+      div: React.forwardRef(({ style, ...props }: any, ref) => React.createElement('div', { ...props, ref, style: normalizeStyle(style) })),
+    },
+    useSpring: () => [
+      {
+        left: { get: () => 120 },
+        top: { get: () => 50 },
+      },
+      {
+        start: testState.springStartMock,
+      },
+    ],
+  };
+});
+
+vi.mock('@use-gesture/react', () => ({
+  useDrag: () => () => ({}),
 }));
 
 vi.mock('react-virtuoso', () => ({
@@ -181,6 +246,7 @@ vi.mock('../../../hooks/use-directories', () => ({
         (value) => typeof value === 'string' && value.replace(/(\.bso|\.eth)$/, '') === address.replace(/(\.bso|\.eth)$/, ''),
       ),
     ),
+  getFallbackDirectoriesData: () => ({ communities: testState.directories }),
   normalizeBoardAddress: (address: string) => address.replace(/(\.bso|\.eth)$/, ''),
   useDirectories: () => testState.directories,
 }));
@@ -270,6 +336,11 @@ const renderModQueueWithOtherRoute = async () => {
 describe('ModQueueView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    testState.account = { author: { address: '0x123', shortAddress: '0x123' }, id: 'account', name: 'main' };
+    testState.accounts = [
+      { author: { address: '0x123', shortAddress: '0x123' }, id: 'account', name: 'main' },
+      { author: { address: '0x999', shortAddress: '0x999' }, id: 'throwaway-account', name: 'throwaway' },
+    ];
     testState.accountCommunityAddresses = ['music-posting.eth'];
     testState.communityError = null;
     testState.directories = [{ address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' }];
@@ -277,7 +348,12 @@ describe('ModQueueView', () => {
     testState.feed = [];
     testState.hasMore = false;
     testState.isMobile = false;
+    testState.createAccountMock.mockResolvedValue(undefined);
+    testState.deleteAccountMock.mockResolvedValue(undefined);
+    testState.publishCommentMock.mockResolvedValue({ index: 12 });
+    testState.publishCommentModerationActionMock.mockResolvedValue(undefined);
     testState.queuedCommentHistory = [];
+    testState.springStartMock.mockReset();
     testState.viewMode = 'compact';
 
     container = document.createElement('div');
@@ -463,6 +539,174 @@ describe('ModQueueView', () => {
     // mod-queue feed layout (no leading <hr>, no inline approve/reject buttons).
     expect(previewPost?.getAttribute('data-is-mod-queue')).toBe('false');
     expect(previewPost?.getAttribute('data-show-replies')).toBe('false');
+  });
+
+  it('transfers a queued post to another board with a temporary account', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+      { address: 'anime-posting.eth', directoryCode: 'a', title: '/a/ - Anime & Manga' },
+    ];
+    testState.feed = [
+      {
+        author: { displayName: 'Original name' },
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        flairs: [{ text: 'flag:country:auto', type: 'country' }, { text: 'flash:loop' }],
+        link: 'https://example.com/image.png',
+        number: 8,
+        pendingApproval: true,
+        spoiler: true,
+        timestamp: 90_000,
+        title: 'Wrong board',
+      },
+    ];
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    expect(transferButton).toBeTruthy();
+
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    expect(dialog?.textContent).toContain('Transfer Post No.8');
+    expect(dialog?.textContent).toContain('/g/ - Technology');
+    expect(dialog?.textContent).toContain('modQueue.transferRecreateNotice');
+    expect(dialog?.textContent).toContain('modQueue.transferRepliesNotice');
+    expect(dialog?.textContent).toContain('modQueue.transferTemporaryAccountNotice');
+    expect(dialog?.textContent).not.toContain('modQueue.transferAccount');
+    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
+    expect(Array.from(targetSelect?.options ?? []).map((option) => option.value)).toEqual(['', 'anime-posting.eth', 'tech-posting.eth']);
+
+    await act(async () => {
+      if (targetSelect) {
+        targetSelect.value = 'tech-posting.eth';
+        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    expect(testState.createAccountMock).toHaveBeenCalledTimes(1);
+    const temporaryAccountName = testState.createAccountMock.mock.calls[0][0];
+    expect(temporaryAccountName).toEqual(expect.stringMatching(/^5chan-transfer-wrong-bo-/));
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+    const [payload, accountName] = testState.publishCommentMock.mock.calls[0];
+    expect(accountName).toBe(temporaryAccountName);
+    expect(payload).toMatchObject({
+      communityAddress: 'tech-posting.eth',
+      content: 'belongs on tech',
+      flairs: [{ text: 'flash:loop' }],
+      link: 'https://example.com/image.png',
+      spoiler: true,
+      title: 'Wrong board',
+    });
+    expect(payload.author).toBeUndefined();
+    expect(typeof payload.onChallengeVerification).toBe('function');
+
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    await act(async () => {
+      await payload.onChallengeVerification({ challengeSuccess: false, reason: 'try again' }, { cid: 'retry-post', communityAddress: 'tech-posting.eth' });
+      await Promise.resolve();
+    });
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    expect(testState.publishCommentModerationActionMock).not.toHaveBeenCalled();
+    expect(testState.deleteAccountMock).not.toHaveBeenCalled();
+    expect(dialog?.textContent).toContain('publishing');
+    alertSpy.mockRestore();
+
+    await act(async () => {
+      await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post' } }, { cid: 'transferred-post' });
+      await Promise.resolve();
+    });
+
+    expect(testState.publishCommentModerationActionMock).toHaveBeenCalledTimes(2);
+    expect(testState.publishCommentModerationActionMock.mock.calls[0][0]).toMatchObject({
+      commentCid: 'transferred-post',
+      communityAddress: 'tech-posting.eth',
+      commentModeration: {
+        flairs: [{ text: 'flash:loop' }, { text: '5chan:transferred' }],
+      },
+    });
+    expect(testState.publishCommentModerationActionMock.mock.calls[1][0]).toMatchObject({
+      commentCid: 'wrong-board-post',
+      communityAddress: 'music-posting.eth',
+      commentModeration: {
+        approved: false,
+        reason: 'Moved to >>>/g/. Please read the rules.',
+      },
+    });
+    expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);
+    expect(dialog?.textContent).toContain('modQueue.transferSuccess');
+  });
+
+  it('does not show transfer for queued replies', async () => {
+    testState.feed = [
+      {
+        cid: 'pending-reply',
+        communityAddress: 'music-posting.eth',
+        content: 'pending reply body',
+        number: 7,
+        parentCid: 'thread-cid',
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'transfer')).toBe(false);
+  });
+
+  it('keeps the transfer modal non-blocking and closes it with Escape', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    expect(dialog?.textContent).toContain('Transfer Post No.8');
+
+    await act(async () => {
+      dialog?.querySelector('form')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(document.body.querySelector('[role="dialog"][aria-labelledby="post-transfer-title"]')).toBe(dialog);
+
+    await act(async () => {
+      document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(document.body.querySelector('[role="dialog"][aria-labelledby="post-transfer-title"]')).toBe(dialog);
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    expect(document.body.querySelector('[role="dialog"][aria-labelledby="post-transfer-title"]')).toBeNull();
   });
 
   it('caps long content in the floating preview so the hover card stays compact', async () => {

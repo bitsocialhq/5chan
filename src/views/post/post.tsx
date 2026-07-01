@@ -205,6 +205,7 @@ export interface PostProps {
   isPublishing?: boolean;
   onApprove?: () => void;
   onReject?: () => void;
+  onTransfer?: () => void;
   onRemoveFromModQueue?: () => void;
   quotedByMap?: Map<string, Comment[]>;
 }
@@ -221,6 +222,7 @@ export const Post = memo(
     isPublishing,
     onApprove,
     onReject,
+    onTransfer,
     onRemoveFromModQueue,
     feedVirtualizationModeOverride,
     replyPaginationOverride,
@@ -259,6 +261,7 @@ export const Post = memo(
               isPublishing={isPublishing}
               onApprove={onApprove}
               onReject={onReject}
+              onTransfer={onTransfer}
               onRemoveFromModQueue={onRemoveFromModQueue}
             />
           ) : (
@@ -277,6 +280,7 @@ export const Post = memo(
               isPublishing={isPublishing}
               onApprove={onApprove}
               onReject={onReject}
+              onTransfer={onTransfer}
               onRemoveFromModQueue={onRemoveFromModQueue}
             />
           )}
@@ -321,6 +325,7 @@ export const Post = memo(
       prevProps.isPublishing === nextProps.isPublishing &&
       prevProps.onApprove === nextProps.onApprove &&
       prevProps.onReject === nextProps.onReject &&
+      prevProps.onTransfer === nextProps.onTransfer &&
       prevProps.onRemoveFromModQueue === nextProps.onRemoveFromModQueue
     );
   },

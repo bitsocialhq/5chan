@@ -33,6 +33,7 @@ import { canEmbed } from '../embed/embed-utils';
 import LoadingEllipsis from '../loading-ellipsis/loading-ellipsis';
 import PostAuthorFlags from '../post-author-flags';
 import PostFlashTag from '../post-flash-tag';
+import PostTransferredTag from '../post-transferred-tag';
 import PostMenuDesktop from './post-menu-desktop/post-menu-desktop';
 import ReplyQuotePreview from '../reply-quote-preview/reply-quote-preview';
 import Tooltip from '../tooltip/tooltip';
@@ -156,6 +157,7 @@ const PostInfo = ({
   isPublishing,
   onApprove,
   onReject,
+  onTransfer,
   onRemoveFromModQueue,
   quotedByMap,
   directRepliesByParentCid,
@@ -349,6 +351,7 @@ const PostInfo = ({
           )}
         </span>
         <PostAuthorFlags author={author} comment={post} enabled={showAuthorFlags} />
+        <PostTransferredTag comment={post} />
         <PostFlashTag comment={post} directory={directoryEntry} />
         <span className={styles.dateTime}>
           {isInModQueueView && isOverThreshold ? (
@@ -465,6 +468,15 @@ const PostInfo = ({
                     </button>
                     ]
                   </span>
+                  {onTransfer && (
+                    <span className={styles.modQueueButtonWrapper}>
+                      [
+                      <button type='button' className={styles.modQueueActionButton} onClick={onTransfer} disabled={isPublishing}>
+                        {t('transfer')}
+                      </button>
+                      ]
+                    </span>
+                  )}
                 </>
               )}
             </span>
@@ -784,6 +796,7 @@ const PostDesktop = ({
   isPublishing,
   onApprove,
   onReject,
+  onTransfer,
   onRemoveFromModQueue,
 }: PostProps) => {
   const { t } = useTranslation();
@@ -1139,6 +1152,7 @@ const PostDesktop = ({
             isPublishing={isPublishing}
             onApprove={onApprove}
             onReject={onReject}
+            onTransfer={onTransfer}
             onRemoveFromModQueue={onRemoveFromModQueue}
             quotedByMap={quotedByMap}
             directRepliesByParentCid={directRepliesByParentCid}

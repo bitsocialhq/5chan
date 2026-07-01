@@ -66,6 +66,12 @@ const normalizeFlairsContainer = (flairs: unknown): unknown => {
   return isRecord(flairs) && Array.isArray(flairs.author) ? flairs.author : undefined;
 };
 
+export const isCommentFlagFlair = (flair: unknown): boolean => {
+  if (!isRecord(flair)) return false;
+
+  return Boolean(parseStructuredFlagSource(flair as AuthorFlairLike) ?? parseTextFlagSource(toString(flair.text)));
+};
+
 export const getAuthorFlagFlairs = (author: unknown): unknown => {
   if (!isRecord(author)) return undefined;
 

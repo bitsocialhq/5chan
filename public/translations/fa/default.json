@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "می‌توانید با استفاده از برچسب‌های [code] نحو را برجسته کرده و فاصله‌ها را حفظ کنید.",
   "reply_link_required_alert": "باید با یک پیوند پاسخ دهید.",
   "reply_media_link_required_alert": "باید با یک پیوند تصویر یا ویدیو پاسخ دهید.",
-  "reply_links_not_allowed_alert": "پیوندها در پاسخ‌ها در این برد مجاز نیستند."
+  "reply_links_not_allowed_alert": "پیوندها در پاسخ‌ها در این برد مجاز نیستند.",
+  "transfer": "انتقال",
+  "modQueue.transferTitle": "انتقال پست",
+  "modQueue.transferSource": "از",
+  "modQueue.transferTarget": "به تالار",
+  "modQueue.transferFields": "کپی فیلدها",
+  "modQueue.transferNoFields": "حداقل یک فیلد برای کپی انتخاب کنید.",
+  "modQueue.transferSuccess": "منتقل شد. پست اصلی اکنون به برد جدید اشاره می‌کند.",
+  "transferred": "منتقل شد",
+  "modQueue.transferTitleWithNumber": "انتقال پست شماره {{number}}",
+  "modQueue.transferRecreateNotice": "این یک انتقال واقعی در سطح پروتکل نیست. 5chan پست را در برد انتخاب‌شده دوباره می‌سازد و نسخه اصلی را حذف می‌کند.",
+  "modQueue.transferRepliesNotice": "پاسخ‌ها منتقل نمی‌شوند. آن‌ها همراه با پست اصلی حذف می‌شوند.",
+  "modQueue.transferTemporaryAccountNotice": "5chan فقط برای این پست کپی‌شده یک حساب موقت جدید می‌سازد و پس از انتشار آن را حذف می‌کند."
 }

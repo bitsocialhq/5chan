@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "Puede resaltar la sintaxis y conservar los espacios en blanco usando etiquetas [code].",
   "reply_link_required_alert": "Debes responder con un enlace.",
   "reply_media_link_required_alert": "Debes responder con un enlace a una imagen o un video.",
-  "reply_links_not_allowed_alert": "Los enlaces en respuestas no están permitidos en este tablón."
+  "reply_links_not_allowed_alert": "Los enlaces en respuestas no están permitidos en este tablón.",
+  "transfer": "Transferir",
+  "modQueue.transferTitle": "Transferir publicación",
+  "modQueue.transferSource": "De",
+  "modQueue.transferTarget": "Al foro",
+  "modQueue.transferFields": "Copiar campos",
+  "modQueue.transferNoFields": "Elige al menos un campo para copiar.",
+  "modQueue.transferSuccess": "Transferido. La publicación original ahora apunta al nuevo foro.",
+  "transferred": "Transferido",
+  "modQueue.transferTitleWithNumber": "Transferir publicación No.{{number}}",
+  "modQueue.transferRecreateNotice": "Esto no es una transferencia real del protocolo. 5chan vuelve a crear la publicación en el foro seleccionado y elimina la original.",
+  "modQueue.transferRepliesNotice": "Las respuestas no se transfieren. Se eliminan junto con la publicación original.",
+  "modQueue.transferTemporaryAccountNotice": "5chan creará una nueva cuenta temporal solo para esta publicación copiada y la eliminará después de publicarla."
 }

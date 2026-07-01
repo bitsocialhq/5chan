@@ -1,0 +1,158 @@
+.transferModal {
+  box-sizing: border-box;
+  position: fixed;
+  display: block;
+  z-index: 998;
+  width: 430px;
+  max-width: calc(100vw - 20px);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  margin: 0;
+  padding: 2px;
+  color: inherit;
+  color-scheme: var(--color-scheme, light);
+  font-size: var(--settings-modal-font-size);
+  background-color: var(--settings-modal-background-color);
+  border-top: var(--settings-modal-border-top);
+  border-right: var(--settings-modal-border-right);
+  border-bottom: var(--settings-modal-border-bottom);
+  border-left: var(--settings-modal-border-left);
+  will-change: left, top;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.transferModal input {
+  filter: var(--filter80);
+}
+
+.transferHeader {
+  position: relative;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 14px;
+  margin: 5px 0;
+  padding: 0 22px 5px;
+  text-align: center;
+  text-transform: capitalize;
+  border-bottom: var(--settings-modal-header-border-bottom);
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.transferCloseButton {
+  appearance: none;
+  position: absolute;
+  top: -3px;
+  right: 3px;
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  background-image: var(--settings-modal-close-button-background-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+
+.transferCloseButton:disabled {
+  cursor: not-allowed;
+}
+
+.transferBody {
+  display: grid;
+  gap: 8px;
+  padding: 6px;
+}
+
+.transferRow {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+}
+
+.transferRow select {
+  min-width: 0;
+}
+
+.transferLabel {
+  font-weight: 700;
+}
+
+.transferHint {
+  font-size: 9pt;
+  color: var(--settings-modal-alt-text-color, inherit);
+}
+
+.transferAlert {
+  color: var(--mod-queue-alert-color, #d00);
+  font-weight: 700;
+}
+
+.transferFields {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 5px;
+  border: var(--settings-modal-border-bottom);
+}
+
+.transferFields legend {
+  padding: 0 3px;
+  font-weight: 700;
+}
+
+.transferField {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.transferError {
+  color: var(--text-danger, #d00);
+  font-weight: 700;
+}
+
+.transferSuccess {
+  color: var(--text-success, #117743);
+  font-weight: 700;
+}
+
+.transferFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 6px;
+  border-top: var(--settings-modal-header-border-bottom);
+}
+
+.transferFooter button {
+  cursor: pointer;
+}
+
+.transferFooter button:disabled {
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .transferModal {
+    width: calc(100vw - 12px);
+    max-width: calc(100vw - 12px);
+  }
+
+  .transferRow {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .transferHint {
+    font-size: 10pt;
+  }
+}
