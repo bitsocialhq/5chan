@@ -66,9 +66,11 @@ const resetTransferResult = (state: TransferModalState): TransferModalState =>
 
 const transferModalReducer = (state: TransferModalState, action: TransferModalAction): TransferModalState => {
   if (action.type === 'field') {
+    if (state.transferState === 'succeeded') return state;
     return resetTransferResult({ ...state, selectedFields: { ...state.selectedFields, [action.field]: action.checked } });
   }
   if (action.type === 'targetBoard') {
+    if (state.transferState === 'succeeded') return state;
     return resetTransferResult({ ...state, targetBoardAddress: action.value });
   }
   if (action.type === 'publishStarted') {
@@ -143,8 +145,10 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
   }, [sourceBoard, sourceCommunityAddress]);
   const transferTitle = comment.number !== undefined ? t('modQueue.transferTitleWithNumber', { number: comment.number }) : t('modQueue.transferTitle');
   const isPublishingTransfer = transferState === 'publishing';
+  const isTransferComplete = transferState === 'succeeded';
   const canSubmit =
     !isPublishingTransfer &&
+    !isTransferComplete &&
     Boolean(targetBoardAddress) &&
     Boolean(sourceCommunityAddress) &&
     Boolean(sourceCommentCid) &&
@@ -366,7 +370,7 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
             <select
               value={targetBoardAddress}
               onChange={(event) => dispatchModalState({ type: 'targetBoard', value: event.target.value })}
-              disabled={isPublishingTransfer}
+              disabled={isPublishingTransfer || isTransferComplete}
             >
               <option value='' disabled>
                 {t('choose_one')}
@@ -388,7 +392,7 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
                     type='checkbox'
                     checked={selectedFields[field]}
                     onChange={(event) => dispatchModalState({ type: 'field', field, checked: event.target.checked })}
-                    disabled={isPublishingTransfer}
+                    disabled={isPublishingTransfer || isTransferComplete}
                   />
                   {getTransferFieldLabel(field, t)}
                 </label>

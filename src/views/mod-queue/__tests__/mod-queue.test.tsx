@@ -671,6 +671,17 @@ describe('ModQueueView', () => {
     });
     expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);
     expect(dialog?.textContent).toContain('modQueue.transferSuccess');
+    expect(submitButton?.disabled).toBe(true);
+    expect(targetSelect?.disabled).toBe(true);
+
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    expect(testState.createAccountMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishCommentModerationActionMock).toHaveBeenCalledTimes(2);
   });
 
   it('does not show transfer for queued replies', async () => {
