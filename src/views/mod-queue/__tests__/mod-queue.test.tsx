@@ -712,6 +712,188 @@ describe('ModQueueView', () => {
     expect(testState.publishCommentModerationActionMock).toHaveBeenCalledTimes(2);
   });
 
+  it('keeps post-acceptance transfer finalization failures from being retried', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+    testState.publishCommentModerationActionMock.mockRejectedValueOnce(new Error('target marker failed'));
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
+    await act(async () => {
+      if (targetSelect) {
+        targetSelect.value = 'tech-posting.eth';
+        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    const [payload] = testState.publishCommentMock.mock.calls[0];
+    await act(async () => {
+      await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post' } }, { cid: 'transferred-post' });
+      await Promise.resolve();
+    });
+
+    expect(dialog?.querySelector('[data-testid="error-display"]')?.textContent).toBe('target marker failed');
+    expect(submitButton?.disabled).toBe(true);
+    expect(targetSelect?.disabled).toBe(true);
+    expect(testState.deleteAccountMock).toHaveBeenCalled();
+
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+
+    const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
+    await act(async () => {
+      closeButton?.click();
+    });
+
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'transfer')).toBe(false);
+  });
+
+  it('awaits transfer publish rollback before enabling retry', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+    let resolveDeleteAccount: () => void = () => undefined;
+    testState.deleteAccountMock.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveDeleteAccount = resolve;
+        }),
+    );
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
+    await act(async () => {
+      if (targetSelect) {
+        targetSelect.value = 'tech-posting.eth';
+        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    const temporaryAccountName = testState.createAccountMock.mock.calls[0][0];
+    const [payload] = testState.publishCommentMock.mock.calls[0];
+    payload._onPendingCommentIndex(12);
+    let onErrorPromise: Promise<void> | undefined;
+    await act(async () => {
+      onErrorPromise = payload.onError(new Error('publish failed'));
+      await Promise.resolve();
+    });
+
+    expect(testState.deleteCommentMock).toHaveBeenCalledWith(12, temporaryAccountName);
+    expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);
+    expect(dialog?.textContent).toContain('publishing');
+    expect(submitButton?.disabled).toBe(true);
+
+    await act(async () => {
+      resolveDeleteAccount();
+      await onErrorPromise;
+      await Promise.resolve();
+    });
+
+    expect(dialog?.querySelector('[data-testid="error-display"]')?.textContent).toBe('publish failed');
+    expect(dialog?.textContent).not.toContain('publishing');
+    expect(submitButton?.disabled).toBe(false);
+  });
+
+  it('only allows one transfer modal to be open from the mod queue', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+      {
+        cid: 'also-wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'also belongs on tech',
+        number: 9,
+        pendingApproval: true,
+        timestamp: 91_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    let transferButtons = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer');
+    expect(transferButtons).toHaveLength(2);
+
+    await act(async () => {
+      transferButtons[0]?.click();
+    });
+
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(1);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer')).toHaveLength(0);
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
+    await act(async () => {
+      closeButton?.click();
+    });
+
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(0);
+    transferButtons = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer');
+    expect(transferButtons).toHaveLength(2);
+  });
+
   it('does not show transfer for queued replies', async () => {
     testState.feed = [
       {

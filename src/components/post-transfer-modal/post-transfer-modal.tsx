@@ -28,7 +28,7 @@ import {
   type PostTransferFields,
 } from '../../lib/comment-transfer';
 
-export type PostTransferState = 'idle' | 'publishing' | 'succeeded' | 'failed';
+export type PostTransferState = 'idle' | 'publishing' | 'succeeded' | 'failed' | 'finalizationFailed';
 type CreateAccountAction = (accountName?: string) => Promise<void>;
 type PublishCommentAction = (publishCommentOptions: Record<string, unknown>, accountName?: string) => Promise<{ index?: number } | undefined>;
 type DeleteCommentAction = (commentCidOrAccountCommentIndex: string | number, accountName?: string) => Promise<void>;
@@ -47,6 +47,7 @@ type TransferModalAction =
   | { type: 'targetBoard'; value: string }
   | { type: 'publishStarted' }
   | { type: 'publishSucceeded' }
+  | { type: 'publishFinalizationFailed'; error: unknown }
   | { type: 'publishFailed'; error: unknown };
 
 interface PostTransferModalProps {
@@ -65,13 +66,15 @@ const getInitialTransferModalState = (comment: Comment): TransferModalState => (
 const resetTransferResult = (state: TransferModalState): TransferModalState =>
   state.transferState === 'idle' ? state : { ...state, transferState: 'idle', transferError: undefined };
 
+const isTerminalTransferState = (state: PostTransferState): boolean => state === 'succeeded' || state === 'finalizationFailed';
+
 const transferModalReducer = (state: TransferModalState, action: TransferModalAction): TransferModalState => {
   if (action.type === 'field') {
-    if (state.transferState === 'succeeded') return state;
+    if (isTerminalTransferState(state.transferState)) return state;
     return resetTransferResult({ ...state, selectedFields: { ...state.selectedFields, [action.field]: action.checked } });
   }
   if (action.type === 'targetBoard') {
-    if (state.transferState === 'succeeded') return state;
+    if (isTerminalTransferState(state.transferState)) return state;
     return resetTransferResult({ ...state, targetBoardAddress: action.value });
   }
   if (action.type === 'publishStarted') {
@@ -79,6 +82,9 @@ const transferModalReducer = (state: TransferModalState, action: TransferModalAc
   }
   if (action.type === 'publishSucceeded') {
     return { ...state, transferState: 'succeeded' };
+  }
+  if (action.type === 'publishFinalizationFailed') {
+    return { ...state, transferState: 'finalizationFailed', transferError: action.error };
   }
   return { ...state, transferState: 'failed', transferError: action.error };
 };
@@ -146,7 +152,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
   }, [sourceBoard, sourceCommunityAddress]);
   const transferTitle = comment.number !== undefined ? t('modQueue.transferTitleWithNumber', { number: comment.number }) : t('modQueue.transferTitle');
   const isPublishingTransfer = transferState === 'publishing';
-  const isTransferComplete = transferState === 'succeeded';
+  const isTransferComplete = isTerminalTransferState(transferState);
   const canSubmit =
     !isPublishingTransfer &&
     !isTransferComplete &&
@@ -327,13 +333,13 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
             } catch (error) {
               console.error('Transfer finalization failed:', error);
               await cleanupTemporaryAccount();
-              onTransferStateChange?.('failed');
-              dispatchModalState({ type: 'publishFailed', error });
+              onTransferStateChange?.('finalizationFailed');
+              dispatchModalState({ type: 'publishFinalizationFailed', error });
             }
           },
-          onError: (error: Error & { details?: unknown }) => {
+          onError: async (error: Error & { details?: unknown }) => {
             console.error('Transfer failed:', error, error.details);
-            void cleanupTemporaryAccount({ deletePendingComment: true });
+            await cleanupTemporaryAccount({ deletePendingComment: true });
             onTransferStateChange?.('failed');
             dispatchModalState({ type: 'publishFailed', error });
           },
@@ -417,7 +423,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
           {availableFields.length > 0 && !hasSelectedTransferFields(selectedFields, availableFields) && (
             <div className={styles.transferError}>{t('modQueue.transferNoFields')}</div>
           )}
-          {transferState === 'failed' && transferError !== undefined && (
+          {(transferState === 'failed' || transferState === 'finalizationFailed') && transferError !== undefined && (
             <div className={styles.transferError}>
               <ErrorDisplay error={transferError} inline={true} showImmediately={true} />
             </div>
