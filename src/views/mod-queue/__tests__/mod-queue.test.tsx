@@ -680,6 +680,59 @@ describe('ModQueueView', () => {
     expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'transfer')).toBe(false);
   });
 
+  it('cleans up the temporary account and unlocks the transfer modal when the challenge is abandoned', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    const temporaryAccountName = testState.createAccountMock.mock.calls[0][0];
+    const [payload] = testState.publishCommentMock.mock.calls[0];
+    payload._onPendingCommentIndex(12);
+
+    await act(async () => {
+      await payload.onChallenge({ type: 'text-math' }, { cid: 'pending-transfer-post' });
+    });
+
+    const abandonTransferChallenge = testState.addChallengeMock.mock.calls[0][1];
+    await act(async () => {
+      await abandonTransferChallenge();
+      await Promise.resolve();
+    });
+
+    expect(testState.deleteCommentMock).toHaveBeenCalledWith(12, temporaryAccountName);
+    expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);
+    expect(dialog?.textContent).toContain('Transfer challenge was abandoned.');
+    const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
+    expect(closeButton?.disabled).toBe(false);
+    expect(submitButton?.disabled).toBe(false);
+  });
+
   it('keeps the transfer modal non-blocking and closes it with Escape', async () => {
     testState.directories = [
       { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },

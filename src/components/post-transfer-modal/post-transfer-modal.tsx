@@ -271,6 +271,7 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
           onChallenge: async (...args: any[]) => {
             useChallengesStore.getState().addChallenge([...args, comment], async () => {
               await cleanupTemporaryAccount({ deletePendingComment: true });
+              dispatchModalState({ type: 'publishFailed', error: new Error('Transfer challenge was abandoned.') });
             });
           },
           onChallengeVerification: async (challengeVerification: ChallengeVerification, challengeComment: Comment) => {
@@ -287,27 +288,26 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
                 throw new Error('Transferred post was accepted, but no target CID was returned.');
               }
 
-              await Promise.all([
-                publishCommentModeration({
-                  commentCid: targetCommentCid,
-                  communityAddress: resolvedTargetBoardAddress,
-                  commentModeration: {
-                    flairs: getTargetTransferModerationFlairs(comment, selectedFields),
-                  },
-                  ...getTransferModerationCallbacks('Transfer target moderation failed:'),
-                }),
-                publishCommentModeration({
-                  commentCid: sourceCommentCid,
-                  communityAddress: sourceCommunityAddress,
-                  commentModeration: getTransferSourceModeration(
-                    comment,
-                    getTransferBoardReference(resolvedTargetBoard, resolvedTargetBoardAddress),
-                    getTransferSourceBoardReference(sourceBoard, sourceCommunityAddress),
-                    getTransferSourceBoardRulesLink(sourceBoard),
-                  ),
-                  ...getTransferModerationCallbacks('Transfer source moderation failed:'),
-                }),
-              ]);
+              // Queue the target marker first so a target moderation failure does not remove the original post.
+              await publishCommentModeration({
+                commentCid: targetCommentCid,
+                communityAddress: resolvedTargetBoardAddress,
+                commentModeration: {
+                  flairs: getTargetTransferModerationFlairs(comment, selectedFields),
+                },
+                ...getTransferModerationCallbacks('Transfer target moderation failed:'),
+              });
+              await publishCommentModeration({
+                commentCid: sourceCommentCid,
+                communityAddress: sourceCommunityAddress,
+                commentModeration: getTransferSourceModeration(
+                  comment,
+                  getTransferBoardReference(resolvedTargetBoard, resolvedTargetBoardAddress),
+                  getTransferSourceBoardReference(sourceBoard, sourceCommunityAddress),
+                  getTransferSourceBoardRulesLink(sourceBoard),
+                ),
+                ...getTransferModerationCallbacks('Transfer source moderation failed:'),
+              });
 
               await cleanupTemporaryAccount();
               dispatchModalState({ type: 'publishSucceeded', transferredIndex: pendingIndex });
