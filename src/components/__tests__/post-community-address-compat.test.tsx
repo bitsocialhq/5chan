@@ -163,8 +163,10 @@ vi.mock('../../lib/utils/media-utils', () => ({
   getDisplayMediaInfoType: (type?: string) => type ?? 'unknown',
   getHasThumbnail: () => true,
   getMediaDimensions: () => '100x100',
-  getPostMediaTypeLabel: (_commentMediaInfo: unknown, resolvedType?: string) => resolvedType ?? '',
-  getYouTubeEmbedPostMediaFileLink: () => undefined,
+  getPostMediaTypeLabel: (commentMediaInfo: { url?: string } | undefined, resolvedType?: string) =>
+    commentMediaInfo?.url?.includes('youtube.com') ? 'YouTube video' : (resolvedType ?? ''),
+  getYouTubeEmbedPostMediaFileLink: (commentMediaInfo: { url?: string } | undefined) =>
+    commentMediaInfo?.url?.includes('youtube.com') ? 'https://img.youtube.com/vi/abc123/maxresdefault.jpg' : undefined,
 }));
 
 vi.mock('../../lib/utils/post-utils', () => ({
@@ -227,7 +229,14 @@ vi.mock('../../hooks/use-author-address-click', () => ({
 }));
 
 vi.mock('../../hooks/use-comment-media-info', () => ({
-  useCommentMediaInfo: (link?: string) => (link ? { type: 'image', url: link } : undefined),
+  useCommentMediaInfo: (link?: string) =>
+    link
+      ? {
+          patternThumbnailUrl: link.includes('youtube.com') ? 'https://img.youtube.com/vi/abc123/maxresdefault.jpg' : undefined,
+          type: link.includes('youtube.com') ? 'iframe' : 'image',
+          url: link,
+        }
+      : undefined,
 }));
 
 vi.mock('../../hooks/use-count-links-in-replies', () => ({
@@ -493,6 +502,18 @@ describe('post community address compatibility', () => {
     expect(document.body.querySelector('a[href="/mu"]')?.textContent).toContain('mu');
     expect(container.querySelector('[data-testid="comment-media"]')).toBeTruthy();
     expect(container.textContent).toContain('reply-1');
+  });
+
+  it('renders YouTube media labels without splitting the brand name on desktop', async () => {
+    const post = {
+      ...makeLegacyThreadWithoutReplies(),
+      link: 'https://www.youtube.com/watch?v=abc123',
+    };
+
+    await renderWithRoute(createElement(PostDesktop, { post }), '/mu/thread/post-1');
+
+    expect(container.textContent).toContain('(youtube video, 100x100)');
+    expect(container.textContent).not.toContain('you tube video');
   });
 
   it('renders mobile multiboard posts with only communityAddress and still fetches replies', async () => {

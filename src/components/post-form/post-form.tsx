@@ -787,6 +787,13 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     checkContentLength(publishContent, t, options, postOptionsDirectoryCode);
   };
 
+  const handleConvertedContentChange = (content: string, selectionStart: number, selectionEnd: number) => {
+    if (textRef.current) {
+      textRef.current.setSelectionRange(selectionStart, selectionEnd);
+    }
+    handleContentValueChange(content);
+  };
+
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     handleContentValueChange(e.target.value);
   };
@@ -881,7 +888,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
     queueLinkConversion,
   } = useYouTubeThumbnailLinkConversion({
     enabled: requireCurrentLinkIsMedia && !(isInPostView && noReplyLinks),
-    onContentChange: handleContentValueChange,
+    onContentChange: handleConvertedContentChange,
     onLinkChange: setLinkValue,
     textRef,
     urlRef,

@@ -735,6 +735,8 @@ describe('PostForm', () => {
 
     vi.useFakeTimers();
     try {
+      await dispatchInput(textarea, 'test');
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
       await dispatchInput(linkInput, youtubeLink);
 
       expect(linkInput.value).toBe(youtubeLink);
@@ -763,7 +765,7 @@ describe('PostForm', () => {
 
       expect(linkInput.value).toBe(thumbnailLink);
       expect(linkInput.disabled).toBe(false);
-      expect(textarea.value).toBe(youtubeLink);
+      expect(textarea.value).toBe(`test ${youtubeLink}`);
       expect(container.textContent).not.toContain('youtube_thumbnail_link_conversion_notice');
     } finally {
       vi.clearAllTimers();
@@ -774,7 +776,7 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.publishedPostOptions?.link).toBe(thumbnailLink);
-    expect(testState.publishedPostOptions?.content).toBe(youtubeLink);
+    expect(testState.publishedPostOptions?.content).toBe(`test ${youtubeLink}`);
   });
 
   it('requires a link when live community features require post links', async () => {
@@ -901,6 +903,7 @@ describe('PostForm', () => {
 
     await dispatchChange(select, 'music-posting.eth');
     await dispatchInput(textarea, 'Video body');
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
     await dispatchInput(linkInput, youtubeLink);
 
     await clickByText(table, 'post');
@@ -918,7 +921,7 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.publishedPostOptions?.link).toBe(thumbnailLink);
-    expect(testState.publishedPostOptions?.content).toBe(`${youtubeLink}\nVideo body`);
+    expect(testState.publishedPostOptions?.content).toBe(`Video body ${youtubeLink}`);
   });
 
   it('ignores duplicate post clicks while publish is pending', async () => {

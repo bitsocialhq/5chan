@@ -441,12 +441,11 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     setPublishReplyOptions({ link: nextUrl });
   };
 
-  const handleConvertedContentChange = (content: string) => {
-    const nextSelection = content.length;
+  const handleConvertedContentChange = (content: string, selectionStart: number, selectionEnd: number) => {
     if (textRef.current) {
-      textRef.current.setSelectionRange(nextSelection, nextSelection);
+      textRef.current.setSelectionRange(selectionStart, selectionEnd);
     }
-    handleContentValueChange(content, nextSelection, nextSelection);
+    handleContentValueChange(content, selectionStart, selectionEnd);
   };
 
   const {
@@ -455,7 +454,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     noticeCountdown: youtubeThumbnailConversionCountdown,
     queueLinkConversion,
   } = useYouTubeThumbnailLinkConversion({
-    enabled: requireReplyLinkIsMedia && !noReplyLinks,
+    enabled: !noReplyLinks,
     onContentChange: handleConvertedContentChange,
     onLinkChange: setLinkValue,
     textRef,
@@ -665,7 +664,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             ref={urlRef}
             aria-label={requireReplyLinkIsMedia ? t('link_to_file') : t('link')}
             placeholder={requireReplyLinkIsMedia ? FILE_LINK_PLACEHOLDER : capitalize(t('link'))}
-            disabled={isUploading || noReplyLinks}
+            disabled={isUploading || youtubeThumbnailConversionCountdown !== null || noReplyLinks}
             onChange={(e) => {
               handleLinkChange(e.target.value);
             }}

@@ -40,7 +40,6 @@ import TimeAgoTooltip from '../time-ago-tooltip';
 import { PostProps } from '../../views/post/post';
 import { create } from 'zustand';
 import capitalize from 'lodash/capitalize';
-import lowerCase from 'lodash/lowerCase';
 import { shouldShowSnow } from '../../lib/snow';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
@@ -582,7 +581,7 @@ const PostMedia = ({
   const directoryEntry = findDirectoryByAddress(directories, communityAddress);
   const requirePostLinkIsMedia = directoryEntry?.features?.requirePostLinkIsMedia === true;
   const fileLabel = youtubeFileLink || requirePostLinkIsMedia ? t('file') : t('link');
-  const mediaTypeLabel = type ? lowerCase(getPostMediaTypeLabel(commentMediaInfo, type, t)) : '';
+  const mediaTypeLabel = type ? getPostMediaTypeLabel(commentMediaInfo, type, t).toLowerCase() : '';
   const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
   const displayBoardPath =
     boardPath && communityAddress && boardPath !== communityAddress

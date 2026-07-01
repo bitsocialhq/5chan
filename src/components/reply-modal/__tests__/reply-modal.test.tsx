@@ -938,6 +938,9 @@ describe('ReplyModal', () => {
         .reverse()
         .find((element) => element.textContent?.includes('youtube_thumbnail_link_conversion_notice'));
 
+    const insertionPoint = 'reply'.length;
+    textarea.setSelectionRange(insertionPoint, insertionPoint);
+
     await dispatchInput(linkInput, youtubeLink);
 
     expect(linkInput.value).toBe(youtubeLink);
@@ -948,11 +951,62 @@ describe('ReplyModal', () => {
     await clickButtonByText('post');
 
     expect(linkInput.value).toBe(thumbnailLink);
-    expect(textarea.value).toBe(`${youtubeLink}\nreply body`);
+    expect(textarea.value).toBe(`reply ${youtubeLink} body`);
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
-      content: `${youtubeLink}\nreply body`,
+      content: `reply ${youtubeLink} body`,
       link: thumbnailLink,
     });
+  });
+
+  it('automatically moves YouTube links into reply content when reply media links are optional', async () => {
+    const youtubeLink = 'https://youtu.be/replyoptional';
+    const thumbnailLink = 'https://img.youtube.com/vi/replyoptional/maxresdefault.jpg';
+    testState.openEmpty = true;
+    testState.selectedText = 'reply body';
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement;
+    const linkInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+
+    vi.useFakeTimers();
+    try {
+      await dispatchInput(linkInput, youtubeLink);
+
+      expect(linkInput.value).toBe(youtubeLink);
+      expect(linkInput.disabled).toBe(true);
+      expect(container.textContent).toContain('youtube_thumbnail_link_conversion_notice:{"count":3}');
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+        await Promise.resolve();
+      });
+      expect(container.textContent).toContain('youtube_thumbnail_link_conversion_notice:{"count":2}');
+      expect(linkInput.disabled).toBe(true);
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+        await Promise.resolve();
+      });
+      expect(container.textContent).toContain('youtube_thumbnail_link_conversion_notice:{"count":1}');
+      expect(linkInput.disabled).toBe(true);
+
+      await act(async () => {
+        vi.advanceTimersByTime(1000);
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      expect(linkInput.value).toBe(thumbnailLink);
+      expect(linkInput.disabled).toBe(false);
+      expect(textarea.value).toBe(`reply body ${youtubeLink}`);
+      expect(container.textContent).not.toContain('youtube_thumbnail_link_conversion_notice');
+      expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ link: thumbnailLink });
+      expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: `reply body ${youtubeLink}` });
+    } finally {
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    }
   });
 
   it('rejects unresolved YouTube links on media-only reply modal boards', async () => {
@@ -1028,7 +1082,7 @@ describe('ReplyModal', () => {
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
-      content: `${youtubeLink}\nreply body`,
+      content: `reply body ${youtubeLink}`,
       link: thumbnailLink,
     });
   });

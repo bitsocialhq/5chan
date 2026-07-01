@@ -15,16 +15,32 @@ interface PendingYouTubeThumbnailLinkConversion {
 
 interface UseYouTubeThumbnailLinkConversionOptions {
   enabled: boolean;
-  onContentChange: (content: string) => void;
+  onContentChange: (content: string, selectionStart: number, selectionEnd: number) => void;
   onLinkChange: (link: string) => void;
   textRef: ElementRef<HTMLTextAreaElement>;
   urlRef: ElementRef<HTMLInputElement>;
 }
 
-const getContentWithYouTubeLinkAtTop = (content: string, youtubeLink: string): string => {
-  if (!content) return youtubeLink;
-  if (content === youtubeLink || content.startsWith(`${youtubeLink}\n`) || content.startsWith(`${youtubeLink}\r\n`)) return content;
-  return `${youtubeLink}\n${content}`;
+const clampSelectionPosition = (position: number | null | undefined, contentLength: number): number => {
+  if (typeof position !== 'number' || Number.isNaN(position)) return contentLength;
+  return Math.max(0, Math.min(position, contentLength));
+};
+
+const getContentWithInsertedYouTubeLink = (content: string, youtubeLink: string, selectionStart?: number | null, selectionEnd?: number | null) => {
+  const start = clampSelectionPosition(selectionStart, content.length);
+  const end = Math.max(start, clampSelectionPosition(selectionEnd, content.length));
+  const before = content.slice(0, start);
+  const after = content.slice(end);
+  const leadingSeparator = before && !/\s$/.test(before) ? ' ' : '';
+  const trailingSeparator = after && !/^\s/.test(after) ? ' ' : '';
+  const insertedText = `${leadingSeparator}${youtubeLink}${trailingSeparator}`;
+  const nextSelection = before.length + insertedText.length;
+
+  return {
+    content: `${before}${insertedText}${after}`,
+    selectionEnd: nextSelection,
+    selectionStart: nextSelection,
+  };
 };
 
 const getPendingConversion = (link: string): PendingYouTubeThumbnailLinkConversion | null => {
@@ -80,17 +96,19 @@ export const useYouTubeThumbnailLinkConversion = ({ enabled, onContentChange, on
     pendingConversionRef.current = null;
     setNoticeCountdown(null);
 
-    const currentContent = textRef.current?.value || '';
-    const nextContent = getContentWithYouTubeLinkAtTop(currentContent, pendingConversion.youtubeLink);
+    const textarea = textRef.current;
+    const currentContent = textarea?.value || '';
+    const nextContent = getContentWithInsertedYouTubeLink(currentContent, pendingConversion.youtubeLink, textarea?.selectionStart, textarea?.selectionEnd);
 
-    if (textRef.current) {
-      textRef.current.value = nextContent;
+    if (textarea) {
+      textarea.value = nextContent.content;
+      textarea.setSelectionRange(nextContent.selectionStart, nextContent.selectionEnd);
     }
     if (urlRef.current) {
       urlRef.current.value = thumbnailLink;
     }
 
-    onContentChange(nextContent);
+    onContentChange(nextContent.content, nextContent.selectionStart, nextContent.selectionEnd);
     onLinkChange(thumbnailLink);
     return true;
   }, [cancelPendingConversion, clearCountdownTimer, enabled, onContentChange, onLinkChange, textRef, urlRef]);
