@@ -131,8 +131,8 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
   const [modalState, dispatchModalState] = useReducer(transferModalReducer, comment, getInitialTransferModalState);
   const { targetBoardAddress, selectedFields, transferState, transferError, transferredIndex } = modalState;
 
-  const resolvedTargetBoardAddress = targetBoardAddress || boardOptions[0]?.address || '';
-  const resolvedTargetBoard = boardOptions.find((community) => community.address === resolvedTargetBoardAddress);
+  const resolvedTargetBoardAddress = targetBoardAddress;
+  const resolvedTargetBoard = boardOptions.find((community) => community.address === targetBoardAddress);
   const availableFields = useMemo(() => getAvailableTransferFields(comment), [comment]);
   const sourceBoard = useMemo(
     () => (sourceCommunityAddress ? directories.find((community) => areSameBoardAddress(community.address, sourceCommunityAddress)) : undefined),
@@ -145,7 +145,7 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
   const isPublishingTransfer = transferState === 'publishing';
   const canSubmit =
     !isPublishingTransfer &&
-    Boolean(resolvedTargetBoardAddress) &&
+    Boolean(targetBoardAddress) &&
     Boolean(sourceCommunityAddress) &&
     Boolean(sourceCommentCid) &&
     typeof createAccount === 'function' &&
@@ -364,7 +364,7 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
           <label className={styles.transferRow}>
             <span className={styles.transferLabel}>{t('modQueue.transferTarget')}</span>
             <select
-              value={resolvedTargetBoardAddress}
+              value={targetBoardAddress}
               onChange={(event) => dispatchModalState({ type: 'targetBoard', value: event.target.value })}
               disabled={isPublishingTransfer}
             >

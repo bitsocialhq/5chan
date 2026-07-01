@@ -242,6 +242,7 @@ export const Post = memo(
     // handle pending mod or author edit
     const { editedComment } = useEditedComment({ comment });
     comment = mergeCommentFallback(editedComment as CommentWithRefresh | undefined, comment as CommentWithRefresh | undefined);
+    const transferHandler = comment?.parentCid ? undefined : onTransfer;
 
     return (
       <div className={styles.thread}>
@@ -262,7 +263,7 @@ export const Post = memo(
               isPublishing={isPublishing}
               onApprove={onApprove}
               onReject={onReject}
-              onTransfer={onTransfer}
+              onTransfer={transferHandler}
               onRemoveFromModQueue={onRemoveFromModQueue}
             />
           ) : (
@@ -281,7 +282,7 @@ export const Post = memo(
               isPublishing={isPublishing}
               onApprove={onApprove}
               onReject={onReject}
-              onTransfer={onTransfer}
+              onTransfer={transferHandler}
               onRemoveFromModQueue={onRemoveFromModQueue}
             />
           )}
@@ -295,6 +296,7 @@ export const Post = memo(
     return (
       prev?.cid === next?.cid &&
       prev?.number === next?.number &&
+      prev?.parentCid === next?.parentCid &&
       prev?.postNumber === next?.postNumber &&
       prev?.replyCount === next?.replyCount &&
       prev?.updatedAt === next?.updatedAt &&

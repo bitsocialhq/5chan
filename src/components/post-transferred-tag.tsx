@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { hasTransferredCommentMarker } from '../lib/comment-transfer';
-import styles from '../views/post/post.module.css';
+import styles from './post-transferred-tag.module.css';
 
 interface PostTransferredTagProps {
   comment: unknown;

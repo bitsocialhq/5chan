@@ -91,6 +91,10 @@ const enrichAccountCommentAuthor = (comment: TestComment | undefined): TestComme
   };
 };
 
+function hasTransferredMarker(post?: TestComment): boolean {
+  return post?.commentModeration?.flairs?.some((flair) => flair.text === '5chan:transferred') ?? false;
+}
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -196,11 +200,13 @@ vi.mock('../../../components/post-desktop/post-desktop', () => ({
     roles,
     targetReplyCid,
     replyPaginationOverride,
+    onTransfer,
   }: {
     post?: TestComment;
     roles?: Record<string, unknown>;
     targetReplyCid?: string;
     replyPaginationOverride?: { replies?: TestComment[] };
+    onTransfer?: () => void;
   }) =>
     createElement(
       'div',
@@ -212,7 +218,8 @@ vi.mock('../../../components/post-desktop/post-desktop', () => ({
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
         'data-roles-present': String(roles !== undefined),
-        'data-transferred': String(post?.commentModeration?.flairs?.some((flair) => flair.text === '5chan:transferred') ?? false),
+        'data-transfer-enabled': String(typeof onTransfer === 'function'),
+        'data-transferred': String(hasTransferredMarker(post)),
       },
       createElement('div', { 'data-thread-container-cid': post?.cid }),
       createElement('div', { 'data-post-info-cid': post?.cid }),
@@ -226,11 +233,13 @@ vi.mock('../../../components/post-mobile/post-mobile', () => ({
     roles,
     targetReplyCid,
     replyPaginationOverride,
+    onTransfer,
   }: {
     post?: TestComment;
     roles?: Record<string, unknown>;
     targetReplyCid?: string;
     replyPaginationOverride?: { replies?: TestComment[] };
+    onTransfer?: () => void;
   }) =>
     createElement(
       'div',
@@ -242,7 +251,8 @@ vi.mock('../../../components/post-mobile/post-mobile', () => ({
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
         'data-roles-present': String(roles !== undefined),
-        'data-transferred': String(post?.commentModeration?.flairs?.some((flair) => flair.text === '5chan:transferred') ?? false),
+        'data-transfer-enabled': String(typeof onTransfer === 'function'),
+        'data-transferred': String(hasTransferredMarker(post)),
       },
       createElement('div', { 'data-thread-container-cid': post?.cid }),
       createElement('div', { 'data-post-info-cid': post?.cid }),
@@ -542,6 +552,43 @@ describe('Post', () => {
     });
 
     expect(container.querySelector('[data-testid="post-desktop"]')?.getAttribute('data-transferred')).toBe('true');
+  });
+
+  it('only forwards transfer handlers for top-level posts', async () => {
+    const handleTransfer = vi.fn();
+
+    await act(async () => {
+      root.render(
+        createElement(Post, {
+          onTransfer: handleTransfer,
+          post: {
+            cid: 'post-transfer-handler',
+            communityAddress: 'music-posting.eth',
+            content: 'body',
+            replyCount: 0,
+          },
+        }),
+      );
+    });
+
+    expect(container.querySelector('[data-testid="post-desktop"]')?.getAttribute('data-transfer-enabled')).toBe('true');
+
+    await act(async () => {
+      root.render(
+        createElement(Post, {
+          onTransfer: handleTransfer,
+          post: {
+            cid: 'post-transfer-handler',
+            communityAddress: 'music-posting.eth',
+            content: 'body',
+            parentCid: 'thread-cid',
+            replyCount: 0,
+          },
+        }),
+      );
+    });
+
+    expect(container.querySelector('[data-testid="post-desktop"]')?.getAttribute('data-transfer-enabled')).toBe('false');
   });
 
   it('hydrates thread pages from cached feed data, sets the document title, and renders thread footers', async () => {

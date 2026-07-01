@@ -275,7 +275,7 @@ vi.mock('../../../components/tooltip/tooltip', () => ({
 }));
 
 vi.mock('../../post/post', () => ({
-  Post: ({ isModQueue, post, showReplies }: { isModQueue?: boolean; post?: TestComment; showReplies?: boolean }) =>
+  Post: ({ isModQueue, onTransfer, post, showReplies }: { isModQueue?: boolean; onTransfer?: () => void; post?: TestComment; showReplies?: boolean }) =>
     createElement(
       'div',
       {
@@ -286,6 +286,7 @@ vi.mock('../../post/post', () => ({
         'data-testid': 'mod-queue-feed-post',
       },
       post?.cid ?? 'missing',
+      onTransfer ? createElement('button', { type: 'button', onClick: onTransfer }, 'transfer') : null,
     ),
 }));
 
@@ -594,6 +595,8 @@ describe('ModQueueView', () => {
     expect(dialog?.textContent).not.toContain('modQueue.transferAccount');
     const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
     expect(Array.from(targetSelect?.options ?? []).map((option) => option.value)).toEqual(['', 'anime-posting.eth', 'tech-posting.eth']);
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+    expect(submitButton?.disabled).toBe(true);
 
     await act(async () => {
       if (targetSelect) {
@@ -602,7 +605,7 @@ describe('ModQueueView', () => {
       }
     });
 
-    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+    expect(submitButton?.disabled).toBe(false);
     await act(async () => {
       submitButton?.click();
       await Promise.resolve();
@@ -704,6 +707,13 @@ describe('ModQueueView', () => {
     });
 
     const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
+    await act(async () => {
+      if (targetSelect) {
+        targetSelect.value = 'tech-posting.eth';
+        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
     const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
 
     await act(async () => {
@@ -731,6 +741,42 @@ describe('ModQueueView', () => {
     const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
     expect(closeButton?.disabled).toBe(false);
     expect(submitButton?.disabled).toBe(false);
+  });
+
+  it('opens and closes the transfer modal from feed mode', async () => {
+    testState.viewMode = 'feed';
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    expect(container.querySelector('[data-testid="mod-queue-feed-post"]')?.getAttribute('data-cid')).toBe('wrong-board-post');
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    expect(dialog?.textContent).toContain('Transfer Post No.8');
+
+    const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
+    await act(async () => {
+      closeButton?.click();
+    });
+
+    expect(document.body.querySelector('[role="dialog"][aria-labelledby="post-transfer-title"]')).toBeNull();
   });
 
   it('keeps the transfer modal non-blocking and closes it with Escape', async () => {

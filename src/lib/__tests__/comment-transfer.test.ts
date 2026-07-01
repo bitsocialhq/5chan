@@ -44,6 +44,35 @@ describe('comment-transfer', () => {
     });
   });
 
+  it('copies selected comment body text verbatim while still ignoring blank bodies', () => {
+    expect(
+      getTransferPublishPayload(
+        {
+          cid: 'source',
+          communityAddress: 'music-posting.eth',
+          content: '\n  wrong board  \n',
+        } as never,
+        selectedFields,
+        'tech-posting.eth',
+      ),
+    ).toMatchObject({
+      communityAddress: 'tech-posting.eth',
+      content: '\n  wrong board  \n',
+    });
+
+    expect(
+      getTransferPublishPayload(
+        {
+          cid: 'source',
+          communityAddress: 'music-posting.eth',
+          content: '   ',
+        } as never,
+        selectedFields,
+        'tech-posting.eth',
+      ),
+    ).not.toHaveProperty('content');
+  });
+
   it('adds the transferred marker to target moderation flairs after safe copied tags', () => {
     const flairs = getTargetTransferModerationFlairs(
       {

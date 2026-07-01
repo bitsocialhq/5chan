@@ -16,6 +16,7 @@ export const TRANSFERRED_COMMENT_FLAIR = { text: TRANSFERRED_COMMENT_FLAIR_TEXT 
 export const TRANSFER_FIELD_KEYS: PostTransferField[] = ['displayName', 'title', 'content', 'link', 'spoiler', 'flairs'];
 
 const getTextField = (value: unknown): string | undefined => (typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined);
+const getVerbatimTextField = (value: unknown): string | undefined => (typeof value === 'string' && value.trim().length > 0 ? value : undefined);
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
@@ -52,7 +53,7 @@ export const getTransferPublishPayload = (comment: Comment, fields: PostTransfer
   };
   const displayName = getCommentDisplayName(comment);
   const title = getTextField(comment.title);
-  const content = getTextField(comment.content);
+  const content = getVerbatimTextField(comment.content);
   const link = getTextField(comment.link);
   const flairs = getTransferableCommentFlairs(comment);
 
