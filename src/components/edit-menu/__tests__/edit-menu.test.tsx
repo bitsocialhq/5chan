@@ -195,6 +195,8 @@ const clickButton = async (text: string) => {
   await click(button);
 };
 
+const hasButton = (text: string) => Array.from(container.querySelectorAll('button')).some((candidate) => candidate.textContent === text);
+
 describe('EditMenu', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -445,6 +447,29 @@ describe('EditMenu', () => {
     await clickButton('transfer');
 
     expect(container.querySelector('[data-testid="post-transfer-modal"]')?.getAttribute('data-cid')).toBe('comment-1');
+  });
+
+  it.each([
+    ['deleted', { deleted: true }],
+    ['removed', { removed: true }],
+    ['moderation removed', { commentModeration: { removed: true } }],
+    ['purged', { commentModeration: { purged: true } }],
+    ['archived', { archived: true }],
+    ['moderation archived', { commentModeration: { archived: true } }],
+  ])('does not let moderators transfer %s posts from the edit menu', async (_label, postPatch) => {
+    testState.privileges = {
+      isAccountCommentAuthor: false,
+      isAccountMod: true,
+      isCommentAuthorMod: false,
+    };
+
+    await renderMenu({
+      ...basePost,
+      ...postPatch,
+    });
+    await openMenu();
+
+    expect(hasButton('transfer')).toBe(false);
   });
 
   it('lets moderators clear an existing canonical author ban', async () => {

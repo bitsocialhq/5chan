@@ -1,5 +1,6 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { isCommentFlagFlair } from './comment-flags';
+import { isCommentArchived } from './utils/comment-moderation-utils';
 import { normalizePublishURL } from './utils/url-utils';
 
 export type PostTransferField = 'displayName' | 'title' | 'content' | 'link' | 'spoiler' | 'flairs';
@@ -30,6 +31,20 @@ export const getTransferableCommentFlairs = (comment: Comment): unknown[] =>
   getFlairs(comment.flairs).filter((flair) => !isCommentFlagFlair(flair) && !isTransferredCommentFlair(flair));
 
 export const hasTransferableCommentFlairs = (comment: Comment): boolean => getTransferableCommentFlairs(comment).length > 0;
+
+export const canTransferComment = (comment: Comment | undefined): boolean => {
+  if (!comment?.cid || comment.parentCid) {
+    return false;
+  }
+
+  return (
+    comment.deleted !== true &&
+    comment.removed !== true &&
+    comment.commentModeration?.removed !== true &&
+    comment.commentModeration?.purged !== true &&
+    !isCommentArchived(comment)
+  );
+};
 
 export const getInitialTransferFields = (comment: Comment): PostTransferFields => ({
   displayName: false,

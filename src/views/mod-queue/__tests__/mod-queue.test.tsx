@@ -10,15 +10,23 @@ const act = (React as { act?: (callback: () => void | Promise<void>) => void | P
 
 type TestComment = {
   approved?: boolean;
+  archived?: boolean;
   author?: { displayName?: string };
   cid: string;
+  commentModeration?: {
+    archived?: boolean;
+    purged?: boolean;
+    removed?: boolean;
+  };
   content?: string;
   communityAddress?: string;
+  deleted?: boolean;
   flairs?: Array<Record<string, unknown>>;
   link?: string;
   number?: number;
   parentCid?: string;
   pendingApproval?: boolean;
+  removed?: boolean;
   spoiler?: boolean;
   timestamp?: number;
   title?: string;
@@ -675,6 +683,31 @@ describe('ModQueueView', () => {
         parentCid: 'thread-cid',
         pendingApproval: true,
         timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'transfer')).toBe(false);
+  });
+
+  it.each([
+    ['deleted', { deleted: true }],
+    ['removed', { removed: true }],
+    ['moderation removed', { commentModeration: { removed: true } }],
+    ['purged', { commentModeration: { purged: true } }],
+    ['archived', { archived: true }],
+    ['moderation archived', { commentModeration: { archived: true } }],
+  ])('does not show transfer for %s queued posts', async (_label, commentPatch) => {
+    testState.feed = [
+      {
+        cid: 'unavailable-post',
+        communityAddress: 'music-posting.eth',
+        content: 'already unavailable',
+        number: 7,
+        pendingApproval: true,
+        timestamp: 90_000,
+        ...commentPatch,
       },
     ];
 

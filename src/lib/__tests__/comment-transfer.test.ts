@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  canTransferComment,
   getTargetTransferModerationFlairs,
   getTransferPublishPayload,
   getTransferSourceBoardReference,
@@ -18,6 +19,18 @@ describe('comment-transfer', () => {
     spoiler: true,
     flairs: true,
   };
+
+  it('only allows available top-level posts to transfer', () => {
+    expect(canTransferComment({ cid: 'source' } as never)).toBe(true);
+    expect(canTransferComment({ cid: 'reply', parentCid: 'source' } as never)).toBe(false);
+    expect(canTransferComment({ cid: '' } as never)).toBe(false);
+    expect(canTransferComment({ cid: 'source', deleted: true } as never)).toBe(false);
+    expect(canTransferComment({ cid: 'source', removed: true } as never)).toBe(false);
+    expect(canTransferComment({ cid: 'source', commentModeration: { removed: true } } as never)).toBe(false);
+    expect(canTransferComment({ cid: 'source', commentModeration: { purged: true } } as never)).toBe(false);
+    expect(canTransferComment({ cid: 'source', archived: true } as never)).toBe(false);
+    expect(canTransferComment({ cid: 'source', commentModeration: { archived: true } } as never)).toBe(false);
+  });
 
   it('copies selected post fields while excluding flag and transferred flairs', () => {
     const payload = getTransferPublishPayload(

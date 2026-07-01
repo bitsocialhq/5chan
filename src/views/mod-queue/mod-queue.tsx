@@ -46,6 +46,7 @@ import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '..
 import footerStyles from '../../components/footer/footer.module.css';
 import { useModeratedCommunityAddressInputs, useModeratedCommunityAddressesForInputs } from '../../hooks/use-moderated-community-addresses';
 import PostTransferModal from '../../components/post-transfer-modal/post-transfer-modal';
+import { canTransferComment } from '../../lib/comment-transfer';
 
 /** Path for display: directory code, or full address if has TLD, or shortened for long IPNS keys (no dot) */
 const getBoardDisplayPath = (address: string, path: string): string => {
@@ -270,7 +271,7 @@ const ModQueueExcerptPreviewLink = ({ comment, excerpt, postUrl, postUrlState }:
 
 const useModQueueTransfer = (comment: Comment) => {
   const [isTransferOpen, setIsTransferOpen] = useState(false);
-  const canTransfer = Boolean(comment.cid) && !comment.parentCid;
+  const canTransfer = canTransferComment(comment);
   const handleTransfer = useCallback(() => {
     if (canTransfer) {
       setIsTransferOpen(true);
