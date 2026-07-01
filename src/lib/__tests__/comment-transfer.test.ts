@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   getTargetTransferModerationFlairs,
   getTransferPublishPayload,
+  getTransferSourceBoardReference,
+  getTransferSourceBoardRulesLink,
   getTransferSourceModeration,
   hasTransferredCommentMarker,
   TRANSFERRED_COMMENT_FLAIR,
@@ -55,14 +57,21 @@ describe('comment-transfer', () => {
   });
 
   it('marks pending source comments as rejected and published source comments as removed', () => {
-    expect(getTransferSourceModeration({ pendingApproval: true } as never, '>>>/g/')).toEqual({
+    expect(getTransferSourceModeration({ pendingApproval: true } as never, '>>>/g/', '/mu/', '[rules](/rules#mu)')).toEqual({
       approved: false,
-      reason: 'Moved to >>>/g/. Please read the rules.',
+      reason: 'Moved to >>>/g/, this post did not belong to /mu/ ([rules](/rules#mu))',
     });
-    expect(getTransferSourceModeration({ pendingApproval: false } as never, '>>>/g/')).toEqual({
+    expect(getTransferSourceModeration({ pendingApproval: false } as never, '>>>/g/', '/mu/', '[rules](/rules#mu)')).toEqual({
       removed: true,
-      reason: 'Moved to >>>/g/. Please read the rules.',
+      reason: 'Moved to >>>/g/, this post did not belong to /mu/ ([rules](/rules#mu))',
     });
+  });
+
+  it('formats source board references and rules links from directory metadata', () => {
+    expect(getTransferSourceBoardReference({ address: 'japanese-culture.eth', directoryCode: 'jp', title: '/jp/ - Otaku Culture' }, 'fallback.eth')).toBe('/jp/');
+    expect(getTransferSourceBoardRulesLink({ address: 'japanese-culture.eth', directoryCode: 'jp', title: '/jp/ - Otaku Culture' })).toBe('[rules](/rules#jp)');
+    expect(getTransferSourceBoardReference(undefined, 'source-board.eth')).toBe('source-board.eth');
+    expect(getTransferSourceBoardRulesLink(undefined)).toBe('the rules');
   });
 
   it('only treats moderation/update flairs as the transferred marker', () => {

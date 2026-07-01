@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useReducer, useRef } from 'react';
+import React, { useEffect, useEffectEvent, useMemo, useReducer, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSpring, animated } from '@react-spring/web';
@@ -19,6 +19,8 @@ import {
   getTargetTransferModerationFlairs,
   getTransferBoardReference,
   getTransferPublishPayload,
+  getTransferSourceBoardReference,
+  getTransferSourceBoardRulesLink,
   getTransferSourceModeration,
   getTransferredCommentCid,
   hasSelectedTransferFields,
@@ -100,10 +102,9 @@ const getInitialTransferModalPosition = () => {
     return { left: 0, top: 0 };
   }
 
-  const modalWidth = Math.min(430, Math.max(0, window.innerWidth - 20));
   return {
-    left: Math.max(6, Math.round(window.innerWidth / 2 - modalWidth / 2)),
-    top: window.innerWidth <= 640 ? 20 : 50,
+    left: Math.round(window.innerWidth / 2),
+    top: Math.round(window.innerHeight / 2),
   };
 };
 
@@ -133,10 +134,13 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
   const resolvedTargetBoardAddress = targetBoardAddress || boardOptions[0]?.address || '';
   const resolvedTargetBoard = boardOptions.find((community) => community.address === resolvedTargetBoardAddress);
   const availableFields = useMemo(() => getAvailableTransferFields(comment), [comment]);
+  const sourceBoard = useMemo(
+    () => (sourceCommunityAddress ? directories.find((community) => areSameBoardAddress(community.address, sourceCommunityAddress)) : undefined),
+    [directories, sourceCommunityAddress],
+  );
   const sourceBoardLabel = useMemo(() => {
-    const sourceDirectory = sourceCommunityAddress ? directories.find((community) => areSameBoardAddress(community.address, sourceCommunityAddress)) : undefined;
-    return sourceDirectory ? getTransferBoardLabel(sourceDirectory) : sourceCommunityAddress || 'N/A';
-  }, [directories, sourceCommunityAddress]);
+    return sourceBoard ? getTransferBoardLabel(sourceBoard) : sourceCommunityAddress || 'N/A';
+  }, [sourceBoard, sourceCommunityAddress]);
   const transferTitle = comment.number !== undefined ? t('modQueue.transferTitleWithNumber', { number: comment.number }) : t('modQueue.transferTitle');
   const isPublishingTransfer = transferState === 'publishing';
   const canSubmit =
@@ -196,19 +200,25 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
     },
   );
 
+  const closeTransferModalOnEscape = useEffectEvent(() => {
+    if (!isPublishingTransfer) {
+      onClose();
+    }
+  });
+
   useEffect(() => {
-    const closeTransferModalOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !isPublishingTransfer) {
-        onClose();
+    const handleTransferModalKeydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeTransferModalOnEscape();
       }
     };
 
-    document.addEventListener('keydown', closeTransferModalOnEscape);
+    document.addEventListener('keydown', handleTransferModalKeydown);
     return () => {
-      document.removeEventListener('keydown', closeTransferModalOnEscape);
+      document.removeEventListener('keydown', handleTransferModalKeydown);
       restoreBodyTextSelection();
     };
-  }, [isPublishingTransfer, onClose]);
+  }, []);
 
   const getTransferModerationCallbacks = (message: string) => ({
     onChallenge: async (...args: any[]) => {
@@ -277,21 +287,27 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
                 throw new Error('Transferred post was accepted, but no target CID was returned.');
               }
 
-              await publishCommentModeration({
-                commentCid: targetCommentCid,
-                communityAddress: resolvedTargetBoardAddress,
-                commentModeration: {
-                  flairs: getTargetTransferModerationFlairs(comment, selectedFields),
-                },
-                ...getTransferModerationCallbacks('Transfer target moderation failed:'),
-              });
-
-              await publishCommentModeration({
-                commentCid: sourceCommentCid,
-                communityAddress: sourceCommunityAddress,
-                commentModeration: getTransferSourceModeration(comment, getTransferBoardReference(resolvedTargetBoard, resolvedTargetBoardAddress)),
-                ...getTransferModerationCallbacks('Transfer source moderation failed:'),
-              });
+              await Promise.all([
+                publishCommentModeration({
+                  commentCid: targetCommentCid,
+                  communityAddress: resolvedTargetBoardAddress,
+                  commentModeration: {
+                    flairs: getTargetTransferModerationFlairs(comment, selectedFields),
+                  },
+                  ...getTransferModerationCallbacks('Transfer target moderation failed:'),
+                }),
+                publishCommentModeration({
+                  commentCid: sourceCommentCid,
+                  communityAddress: sourceCommunityAddress,
+                  commentModeration: getTransferSourceModeration(
+                    comment,
+                    getTransferBoardReference(resolvedTargetBoard, resolvedTargetBoardAddress),
+                    getTransferSourceBoardReference(sourceBoard, sourceCommunityAddress),
+                    getTransferSourceBoardRulesLink(sourceBoard),
+                  ),
+                  ...getTransferModerationCallbacks('Transfer source moderation failed:'),
+                }),
+              ]);
 
               await cleanupTemporaryAccount();
               dispatchModalState({ type: 'publishSucceeded', transferredIndex: pendingIndex });
@@ -323,7 +339,7 @@ const PostTransferModal = ({ comment, onClose }: PostTransferModalProps) => {
   return createPortal(
     <animated.div ref={nodeRef} className={styles.transferModal} role='dialog' aria-modal='false' aria-labelledby='post-transfer-title' style={{ left, top }}>
       <form onSubmit={handleSubmit}>
-        <div className={styles.transferHeader} {...bind()}>
+        <div className={`replyModalHandle ${styles.transferHeader}`} {...bind()}>
           <span id='post-transfer-title'>{transferTitle}</span>
           <button
             type='button'

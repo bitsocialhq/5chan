@@ -27,6 +27,7 @@ import PostDesktop from '../../components/post-desktop/post-desktop';
 import PostMobile from '../../components/post-mobile/post-mobile';
 import { getRequestedThreadTopCid, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import { evictThreadRefreshCaches } from '../../lib/utils/thread-refresh-cache-utils';
+import { hasTransferredCommentMarker } from '../../lib/comment-transfer';
 import { REPLIES_PER_PAGE } from '../../lib/constants';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import type { QueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
@@ -313,6 +314,7 @@ export const Post = memo(
       prev?.deleted === next?.deleted &&
       prev?.reason === next?.reason &&
       prev?.commentModeration?.purged === next?.commentModeration?.purged &&
+      hasTransferredCommentMarker(prev) === hasTransferredCommentMarker(next) &&
       prevProps.showAllReplies === nextProps.showAllReplies &&
       prevProps.showReplies === nextProps.showReplies &&
       prevProps.targetReplyCid === nextProps.targetReplyCid &&

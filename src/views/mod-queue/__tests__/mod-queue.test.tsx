@@ -50,6 +50,7 @@ const testState = vi.hoisted(() => ({
   resetMock: vi.fn(),
   setResetFunctionMock: vi.fn(),
   springStartMock: vi.fn(),
+  useSpringMock: vi.fn(),
   viewMode: 'compact' as 'compact' | 'feed',
 }));
 
@@ -174,7 +175,7 @@ vi.mock('@react-spring/web', async () => {
     animated: {
       div: React.forwardRef(({ style, ...props }: any, ref) => React.createElement('div', { ...props, ref, style: normalizeStyle(style) })),
     },
-    useSpring: () => [
+    useSpring: testState.useSpringMock.mockImplementation(() => [
       {
         left: { get: () => 120 },
         top: { get: () => 50 },
@@ -182,7 +183,7 @@ vi.mock('@react-spring/web', async () => {
       {
         start: testState.springStartMock,
       },
-    ],
+    ]),
   };
 });
 
@@ -354,6 +355,16 @@ describe('ModQueueView', () => {
     testState.publishCommentModerationActionMock.mockResolvedValue(undefined);
     testState.queuedCommentHistory = [];
     testState.springStartMock.mockReset();
+    testState.useSpringMock.mockReset();
+    testState.useSpringMock.mockImplementation(() => [
+      {
+        left: { get: () => 120 },
+        top: { get: () => 50 },
+      },
+      {
+        start: testState.springStartMock,
+      },
+    ]);
     testState.viewMode = 'compact';
 
     container = document.createElement('div');
@@ -366,6 +377,8 @@ describe('ModQueueView', () => {
       root.unmount();
     });
     container.remove();
+    document.body.style.userSelect = '';
+    document.body.style.webkitUserSelect = '';
   });
 
   it('keeps the compact table visible with the empty state while an empty mod queue continues loading', async () => {
@@ -642,7 +655,7 @@ describe('ModQueueView', () => {
       communityAddress: 'music-posting.eth',
       commentModeration: {
         approved: false,
-        reason: 'Moved to >>>/g/. Please read the rules.',
+        reason: 'Moved to >>>/g/, this post did not belong to /mu/ ([rules](/rules#mu))',
       },
     });
     expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);
@@ -707,6 +720,47 @@ describe('ModQueueView', () => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
     expect(document.body.querySelector('[role="dialog"][aria-labelledby="post-transfer-title"]')).toBeNull();
+  });
+
+  it('opens transfer modals centered in the viewport', async () => {
+    const originalInnerWidth = window.innerWidth;
+    const originalInnerHeight = window.innerHeight;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 900 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 640 });
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    try {
+      await renderModQueue();
+
+      const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+      await act(async () => {
+        transferButton?.click();
+      });
+
+      const [configFactory] = testState.useSpringMock.mock.calls[0] as [() => Record<string, unknown>, unknown[]];
+      expect(configFactory()).toEqual({
+        from: {
+          left: 450,
+          top: 320,
+        },
+      });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalInnerWidth });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: originalInnerHeight });
+    }
   });
 
   it('caps long content in the floating preview so the hover card stays compact', async () => {

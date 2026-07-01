@@ -467,11 +467,11 @@ describe('CommentContent', () => {
       cid: 'post-2',
       content: 'ignored',
       postCid: 'post-2',
-      reason: 'duplicate of >>96',
+      reason: 'Moved to >>>/int/, this post did not belong to /jp/ ([rules](/rules#jp))',
       removed: true,
     });
     expect(container.textContent).toContain('this_post_was_removed');
-    expect(queryMarkdownText()).toEqual(['Reason: duplicate of >>96']);
+    expect(queryMarkdownText()).toEqual(['Reason: Moved to >>>/int/, this post did not belong to /jp/ ([rules](/rules#jp))']);
 
     await renderContent({
       cid: 'post-3',

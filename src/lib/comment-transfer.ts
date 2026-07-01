@@ -89,8 +89,24 @@ export const getTransferBoardReference = (targetBoard: TransferBoardLike | undef
   return getTextField(targetBoard?.address) ?? targetBoardAddress;
 };
 
-export const getTransferSourceModeration = (comment: Comment, targetBoardReference: string): Record<string, unknown> => {
-  const reason = `Moved to ${targetBoardReference}. Please read the rules.`;
+export const getTransferSourceBoardReference = (sourceBoard: TransferBoardLike | undefined, sourceBoardAddress: string | undefined): string => {
+  const directoryCode = getTextField(sourceBoard?.directoryCode);
+  if (directoryCode) return `/${directoryCode}/`;
+  return getTextField(sourceBoard?.address) ?? getTextField(sourceBoardAddress) ?? 'this board';
+};
+
+export const getTransferSourceBoardRulesLink = (sourceBoard: TransferBoardLike | undefined): string => {
+  const directoryCode = getTextField(sourceBoard?.directoryCode);
+  return directoryCode ? `[rules](/rules#${directoryCode})` : 'the rules';
+};
+
+export const getTransferSourceModeration = (
+  comment: Comment,
+  targetBoardReference: string,
+  sourceBoardReference = 'this board',
+  sourceBoardRulesLink = 'the rules',
+): Record<string, unknown> => {
+  const reason = `Moved to ${targetBoardReference}, this post did not belong to ${sourceBoardReference} (${sourceBoardRulesLink})`;
   return comment.pendingApproval === true ? { approved: false, reason } : { removed: true, reason };
 };
 

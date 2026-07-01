@@ -21,6 +21,8 @@ type TestComment = {
   error?: Error;
   commentModeration?: {
     archived?: boolean;
+    flairs?: Array<{ text?: string }>;
+    purged?: boolean;
   };
   locked?: boolean;
   number?: number;
@@ -210,6 +212,7 @@ vi.mock('../../../components/post-desktop/post-desktop', () => ({
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
         'data-roles-present': String(roles !== undefined),
+        'data-transferred': String(post?.commentModeration?.flairs?.some((flair) => flair.text === '5chan:transferred') ?? false),
       },
       createElement('div', { 'data-thread-container-cid': post?.cid }),
       createElement('div', { 'data-post-info-cid': post?.cid }),
@@ -239,6 +242,7 @@ vi.mock('../../../components/post-mobile/post-mobile', () => ({
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
         'data-roles-present': String(roles !== undefined),
+        'data-transferred': String(post?.commentModeration?.flairs?.some((flair) => flair.text === '5chan:transferred') ?? false),
       },
       createElement('div', { 'data-thread-container-cid': post?.cid }),
       createElement('div', { 'data-post-info-cid': post?.cid }),
@@ -503,6 +507,41 @@ describe('Post', () => {
     });
 
     expect(container.querySelector('[data-testid="post-desktop"]')?.getAttribute('data-author-address')).toBe('account-author');
+  });
+
+  it('rerenders posts when a transferred moderation marker appears', async () => {
+    await act(async () => {
+      root.render(
+        createElement(Post, {
+          post: {
+            cid: 'post-transferred',
+            communityAddress: 'music-posting.eth',
+            content: 'body',
+            replyCount: 0,
+          },
+        }),
+      );
+    });
+
+    expect(container.querySelector('[data-testid="post-desktop"]')?.getAttribute('data-transferred')).toBe('false');
+
+    await act(async () => {
+      root.render(
+        createElement(Post, {
+          post: {
+            cid: 'post-transferred',
+            commentModeration: {
+              flairs: [{ text: '5chan:transferred' }],
+            },
+            communityAddress: 'music-posting.eth',
+            content: 'body',
+            replyCount: 0,
+          },
+        }),
+      );
+    });
+
+    expect(container.querySelector('[data-testid="post-desktop"]')?.getAttribute('data-transferred')).toBe('true');
   });
 
   it('hydrates thread pages from cached feed data, sets the document title, and renders thread footers', async () => {

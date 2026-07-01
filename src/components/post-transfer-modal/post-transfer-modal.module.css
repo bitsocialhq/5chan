@@ -11,12 +11,10 @@
   padding: 2px;
   color: inherit;
   color-scheme: var(--color-scheme, light);
-  font-size: var(--settings-modal-font-size);
-  background-color: var(--settings-modal-background-color);
-  border-top: var(--settings-modal-border-top);
-  border-right: var(--settings-modal-border-right);
-  border-bottom: var(--settings-modal-border-bottom);
-  border-left: var(--settings-modal-border-left);
+  font-size: 10pt;
+  background-color: var(--challenge-modal-background-color);
+  border: var(--challenge-modal-border);
+  transform: translate(-50%, -50%);
   will-change: left, top;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -27,15 +25,16 @@
 }
 
 .transferHeader {
-  position: relative;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 14px;
-  margin: 5px 0;
-  padding: 0 22px 5px;
+  height: 18px;
+  margin: 0 0 1px;
+  padding: 0;
+  color: var(--challenge-modal-title-text-color);
+  font-size: var(--challenge-modal-title-font-size);
+  font-weight: var(--challenge-modal-title-font-weight);
+  line-height: 18px;
   text-align: center;
-  text-transform: capitalize;
-  border-bottom: var(--settings-modal-header-border-bottom);
+  background-color: var(--challenge-modal-title-background-color);
+  border: var(--challenge-modal-title-border);
   cursor: move;
   user-select: none;
   -webkit-user-select: none;
@@ -43,22 +42,15 @@
 }
 
 .transferCloseButton {
-  appearance: none;
-  position: absolute;
-  top: -3px;
-  right: 3px;
-  display: block;
+  all: unset;
+  float: right;
+  cursor: pointer;
+  margin-bottom: -4px;
   width: 18px;
   height: 18px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background-color: transparent;
-  background-image: var(--settings-modal-close-button-background-image);
-  background-position: center;
-  background-repeat: no-repeat;
+  border: none;
   image-rendering: pixelated;
-  cursor: pointer;
+  background-image: var(--close-button-background-image);
 }
 
 .transferCloseButton:disabled {
@@ -130,7 +122,6 @@
   justify-content: flex-end;
   gap: 6px;
   padding: 6px;
-  border-top: var(--settings-modal-header-border-bottom);
 }
 
 .transferFooter button {
