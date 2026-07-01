@@ -4,7 +4,7 @@
   align-items: center;
   gap: 2px;
   margin-bottom: 2px;
-  max-width: 420px;
+  max-width: var(--bbcode-editor-width, 420px);
 }
 
 .toolbar .toolbarButton {
@@ -26,10 +26,8 @@
   opacity: 0.6;
 }
 
-.toolbarSelect {
-  height: 20px;
-  max-width: 74px;
-  font-size: 10pt;
+.toolbar .toolbarSelect.toolbarSelect {
+  all: revert;
 }
 
 .boldButton {
@@ -55,12 +53,14 @@
 
 .preview {
   box-sizing: border-box;
-  width: min(100%, 420px);
+  width: var(--bbcode-preview-width, min(100%, var(--bbcode-editor-width, 420px)));
   min-height: 72px;
   margin-bottom: 2px;
   padding: 3px 4px;
   border: 1px inset;
   background: var(--post-form-field-input-background-color, revert);
   font-weight: normal;
+  resize: both;
+  overflow: auto;
   overflow-wrap: anywhere;
 }
