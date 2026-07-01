@@ -88,8 +88,11 @@
 
 .content {
   position: relative;
-  width: 316px;
-  --bbcode-editor-width: 316px;
+  display: inline-block;
+  width: fit-content;
+  min-width: 304px;
+  --bbcode-editor-width: 304px;
+  --bbcode-preview-width: 304px;
 }
 
 .content textarea {
@@ -99,7 +102,7 @@
 .footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 
 .footer button {
@@ -124,6 +127,7 @@
 
 .publishButton {
   width: 75px;
+  margin-left: auto;
   filter: var(--filter80);
 }
 
