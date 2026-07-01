@@ -4,7 +4,7 @@
   align-items: center;
   gap: 2px;
   margin-bottom: 2px;
-  max-width: 420px;
+  max-width: var(--bbcode-editor-width, 420px);
 }
 
 .toolbar .toolbarButton {
@@ -55,7 +55,7 @@
 
 .preview {
   box-sizing: border-box;
-  width: min(100%, 420px);
+  width: min(100%, var(--bbcode-editor-width, 420px));
   min-height: 72px;
   margin-bottom: 2px;
   padding: 3px 4px;

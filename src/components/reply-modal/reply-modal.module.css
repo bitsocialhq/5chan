@@ -88,6 +88,8 @@
 
 .content {
   position: relative;
+  width: 316px;
+  --bbcode-editor-width: 316px;
 }
 
 .content textarea {
