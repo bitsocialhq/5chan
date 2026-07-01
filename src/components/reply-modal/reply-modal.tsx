@@ -58,6 +58,53 @@ import { useSpring, animated } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 
 const FILE_LINK_PLACEHOLDER = 'https://website.com/image.jpg';
+const REPLY_MODAL_POSITION_SESSION_STORAGE_KEY = '5chan:reply-modal-position';
+
+type ReplyModalPosition = {
+  left: number;
+  top: number;
+};
+
+const getCenteredReplyModalPosition = (): ReplyModalPosition => ({
+  left: Math.round(window.innerWidth / 2 - 150),
+  top: Math.round(window.innerHeight / 2 - 200),
+});
+
+const readReplyModalPosition = (): ReplyModalPosition | null => {
+  try {
+    const storedPosition = window.sessionStorage.getItem(REPLY_MODAL_POSITION_SESSION_STORAGE_KEY);
+    if (!storedPosition) return null;
+
+    const parsedPosition = JSON.parse(storedPosition) as Partial<ReplyModalPosition>;
+    if (typeof parsedPosition.left !== 'number' || typeof parsedPosition.top !== 'number') return null;
+    if (!Number.isFinite(parsedPosition.left) || !Number.isFinite(parsedPosition.top)) return null;
+
+    return {
+      left: Math.round(parsedPosition.left),
+      top: Math.round(parsedPosition.top),
+    };
+  } catch (error) {
+    console.warn('Failed to read reply modal position from sessionStorage:', error);
+    return null;
+  }
+};
+
+const writeReplyModalPosition = (position: ReplyModalPosition) => {
+  try {
+    window.sessionStorage.setItem(REPLY_MODAL_POSITION_SESSION_STORAGE_KEY, JSON.stringify(position));
+  } catch (error) {
+    console.warn('Failed to save reply modal position to sessionStorage:', error);
+  }
+};
+
+const shouldUseStoredReplyModalPosition = () => window.innerWidth >= 640;
+
+const getInitialReplyModalPosition = (): ReplyModalPosition => {
+  const centeredPosition = getCenteredReplyModalPosition();
+  if (!shouldUseStoredReplyModalPosition()) return centeredPosition;
+
+  return readReplyModalPosition() ?? centeredPosition;
+};
 
 interface ReplyModalProps {
   closeModal: () => void;
@@ -239,13 +286,11 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
   const nodeRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const [initialModalPosition] = useState(getInitialReplyModalPosition);
 
   const [{ left, top }, api] = useSpring(
     () => ({
-      from: {
-        left: Math.round(window.innerWidth / 2 - 150),
-        top: Math.round(window.innerHeight / 2 - 200),
-      },
+      from: initialModalPosition,
     }),
     [],
   );
@@ -281,6 +326,9 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
         disableBodyTextSelection();
       } else {
         restoreBodyTextSelection();
+        if (!isMobile) {
+          writeReplyModalPosition({ left: nextLeft, top: nextTop });
+        }
       }
       api.start({ left: nextLeft, top: nextTop, immediate: true });
     },

@@ -9,6 +9,7 @@ import { POST_OPTIONS_VALIDATION_DELAY_MS } from '../../../lib/utils/post-option
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
+const REPLY_MODAL_POSITION_SESSION_STORAGE_KEY = '5chan:reply-modal-position';
 
 const testState = vi.hoisted(() => ({
   account: { author: { address: 'alice.eth', displayName: 'Alice' } } as { author?: { address?: string; displayName?: string } },
@@ -486,6 +487,7 @@ describe('ReplyModal', () => {
     testState.uploadedFileName = null;
     testState.uploadMode = 'always';
     testState.mediaHostingRuntime = 'web';
+    window.sessionStorage.clear();
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -496,6 +498,7 @@ describe('ReplyModal', () => {
     container.remove();
     document.body.style.userSelect = '';
     document.body.style.webkitUserSelect = '';
+    window.sessionStorage.clear();
     vi.unstubAllGlobals();
   });
 
@@ -1446,6 +1449,64 @@ describe('ReplyModal', () => {
     expect(modal?.style.top).toBe('80px');
     expect(modal?.style.transform).toBe('');
     expect(modal?.style.touchAction).toBe('none');
+  });
+
+  it('reopens desktop reply modals at the last dragged session position', async () => {
+    await renderReplyModal('/mu/thread/post-1');
+
+    await act(async () => {
+      testState.dragHandler?.({
+        active: true,
+        event: { preventDefault: vi.fn() },
+        offset: [232.4, 146.6],
+      });
+      testState.dragHandler?.({
+        active: false,
+        event: { preventDefault: vi.fn() },
+        offset: [232.4, 146.6],
+      });
+    });
+
+    expect(JSON.parse(window.sessionStorage.getItem(REPLY_MODAL_POSITION_SESSION_STORAGE_KEY) ?? '{}')).toEqual({ left: 232, top: 147 });
+
+    await act(async () => {
+      root.render(createElement(React.Fragment));
+    });
+
+    testState.useSpringMock.mockClear();
+    await renderReplyModal('/b/thread/post-2', 'random-nsfw.bso');
+
+    const [configFactory] = testState.useSpringMock.mock.calls[0] as [() => Record<string, unknown>, unknown[]];
+    expect(configFactory()).toEqual({
+      from: {
+        left: 232,
+        top: 147,
+      },
+    });
+  });
+
+  it('ignores the stored desktop position when first opened in a mobile viewport', async () => {
+    const originalInnerWidth = window.innerWidth;
+    const originalInnerHeight = window.innerHeight;
+    testState.isMobile = true;
+    window.sessionStorage.setItem(REPLY_MODAL_POSITION_SESSION_STORAGE_KEY, JSON.stringify({ left: 500, top: 210 }));
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 760 });
+
+    try {
+      await renderReplyModal('/mu/thread/post-1');
+
+      const [configFactory] = testState.useSpringMock.mock.calls[0] as [() => Record<string, unknown>, unknown[]];
+      expect(configFactory()).toEqual({
+        from: {
+          left: 45,
+          top: 180,
+        },
+      });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalInnerWidth });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: originalInnerHeight });
+    }
   });
 
   it('closes with Escape from the document on desktop', async () => {
