@@ -687,6 +687,7 @@ describe('ModQueueView', () => {
     });
     expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);
     expect(dialog?.textContent).toContain('modQueue.transferSuccess');
+    expect(dialog?.textContent).not.toContain('#12');
     expect(submitButton?.disabled).toBe(true);
     expect(targetSelect?.disabled).toBe(true);
     expect(testState.rememberCommentsInQueueMock).toHaveBeenCalledWith([

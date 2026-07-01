@@ -40,14 +40,13 @@ interface TransferModalState {
   selectedFields: PostTransferFields;
   transferState: PostTransferState;
   transferError?: unknown;
-  transferredIndex?: number;
 }
 
 type TransferModalAction =
   | { type: 'field'; field: PostTransferField; checked: boolean }
   | { type: 'targetBoard'; value: string }
   | { type: 'publishStarted' }
-  | { type: 'publishSucceeded'; transferredIndex?: number }
+  | { type: 'publishSucceeded' }
   | { type: 'publishFailed'; error: unknown };
 
 interface PostTransferModalProps {
@@ -64,7 +63,7 @@ const getInitialTransferModalState = (comment: Comment): TransferModalState => (
 });
 
 const resetTransferResult = (state: TransferModalState): TransferModalState =>
-  state.transferState === 'idle' ? state : { ...state, transferState: 'idle', transferError: undefined, transferredIndex: undefined };
+  state.transferState === 'idle' ? state : { ...state, transferState: 'idle', transferError: undefined };
 
 const transferModalReducer = (state: TransferModalState, action: TransferModalAction): TransferModalState => {
   if (action.type === 'field') {
@@ -76,10 +75,10 @@ const transferModalReducer = (state: TransferModalState, action: TransferModalAc
     return resetTransferResult({ ...state, targetBoardAddress: action.value });
   }
   if (action.type === 'publishStarted') {
-    return { ...state, transferState: 'publishing', transferError: undefined, transferredIndex: undefined };
+    return { ...state, transferState: 'publishing', transferError: undefined };
   }
   if (action.type === 'publishSucceeded') {
-    return { ...state, transferState: 'succeeded', transferredIndex: action.transferredIndex };
+    return { ...state, transferState: 'succeeded' };
   }
   return { ...state, transferState: 'failed', transferError: action.error };
 };
@@ -133,7 +132,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
     [directories, sourceCommunityAddress],
   );
   const [modalState, dispatchModalState] = useReducer(transferModalReducer, comment, getInitialTransferModalState);
-  const { targetBoardAddress, selectedFields, transferState, transferError, transferredIndex } = modalState;
+  const { targetBoardAddress, selectedFields, transferState, transferError } = modalState;
 
   const resolvedTargetBoardAddress = targetBoardAddress;
   const resolvedTargetBoard = boardOptions.find((community) => community.address === targetBoardAddress);
@@ -324,7 +323,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
                 console.error('Transfer success callback failed:', error);
               }
               onTransferStateChange?.('succeeded');
-              dispatchModalState({ type: 'publishSucceeded', transferredIndex: pendingIndex });
+              dispatchModalState({ type: 'publishSucceeded' });
             } catch (error) {
               console.error('Transfer finalization failed:', error);
               await cleanupTemporaryAccount();
@@ -423,12 +422,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
               <ErrorDisplay error={transferError} inline={true} showImmediately={true} />
             </div>
           )}
-          {transferState === 'succeeded' && (
-            <div className={styles.transferSuccess}>
-              {t('modQueue.transferSuccess')}
-              {transferredIndex !== undefined ? ` #${transferredIndex}` : ''}
-            </div>
-          )}
+          {transferState === 'succeeded' && <div className={styles.transferSuccess}>{t('modQueue.transferSuccess')}</div>}
         </div>
 
         <div className={styles.transferFooter}>
