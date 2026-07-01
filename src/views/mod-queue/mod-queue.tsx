@@ -1092,16 +1092,12 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     () => filterVisibleModQueueFeed(feedWithHistory, selectedBoardFilter, dismissedCommentCidSet, selectedBoardFilterAddresses),
     [feedWithHistory, selectedBoardFilter, dismissedCommentCidSet, selectedBoardFilterAddresses],
   );
-  const activeTransferCommentIsVisible = useMemo(
-    () => activeTransferCommentCid !== null && filteredFeed.some((comment) => comment.cid === activeTransferCommentCid),
-    [activeTransferCommentCid, filteredFeed],
-  );
   const transferControls = useMemo(
     () => ({
-      activeTransferCommentCid: activeTransferCommentIsVisible ? activeTransferCommentCid : null,
+      activeTransferCommentCid,
       setActiveTransferCommentCid,
     }),
-    [activeTransferCommentCid, activeTransferCommentIsVisible],
+    [activeTransferCommentCid],
   );
   const handleSetSelectedBoardFilter = useCallback((boardFilter: string | null) => {
     setActiveTransferCommentCid(null);

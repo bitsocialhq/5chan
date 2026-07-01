@@ -894,6 +894,45 @@ describe('ModQueueView', () => {
     expect(transferButtons).toHaveLength(2);
   });
 
+  it('keeps the transfer lock when the active item leaves the visible queue', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    const activeComment = {
+      cid: 'wrong-board-post',
+      communityAddress: 'music-posting.eth',
+      content: 'belongs on tech',
+      number: 8,
+      pendingApproval: true,
+      timestamp: 90_000,
+    };
+    const remainingComment = {
+      cid: 'also-wrong-board-post',
+      communityAddress: 'music-posting.eth',
+      content: 'also belongs on tech',
+      number: 9,
+      pendingApproval: true,
+      timestamp: 91_000,
+    };
+    testState.feed = [activeComment, remainingComment];
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(1);
+
+    testState.feed = [remainingComment];
+    await renderModQueue();
+
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(0);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer')).toHaveLength(0);
+  });
+
   it('does not show transfer for queued replies', async () => {
     testState.feed = [
       {
