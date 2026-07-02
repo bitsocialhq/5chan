@@ -30,6 +30,7 @@ import FailedPublishNotice from '../failed-publish-notice';
 import LoadingEllipsis from '../loading-ellipsis/loading-ellipsis';
 import PostAuthorFlags from '../post-author-flags';
 import PostFlashTag from '../post-flash-tag';
+import PostTransferredTag from '../post-transferred-tag';
 import PostMenuMobile from './post-menu-mobile/post-menu-mobile';
 import ReplyQuotePreview from '../reply-quote-preview/reply-quote-preview';
 import Tooltip from '../tooltip/tooltip';
@@ -282,6 +283,7 @@ const PostInfoAndMedia = ({
               </>
             )}
             <PostAuthorFlags author={author} comment={resolvedPost} enabled={showAuthorFlags} />
+            <PostTransferredTag comment={resolvedPost} />
             <PostFlashTag comment={resolvedPost} directory={directoryEntry} />
             {pinned && (
               <span className={styles.stickyIconWrapper}>
@@ -535,6 +537,7 @@ const PostMobile = ({
   isPublishing,
   onApprove,
   onReject,
+  onTransfer,
   onRemoveFromModQueue,
 }: PostProps) => {
   const { t } = useTranslation();
@@ -857,6 +860,11 @@ const PostMobile = ({
                           <button type='button' className={`button ${styles.rejectButton}`} onClick={onReject} disabled={isPublishing}>
                             {t('reject')}
                           </button>
+                          {onTransfer && (
+                            <button type='button' className='button' onClick={onTransfer} disabled={isPublishing}>
+                              {t('transfer')}
+                            </button>
+                          )}
                         </>
                       )}
                     </div>

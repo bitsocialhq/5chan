@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { autoUpdate, FloatingFocusManager, FloatingPortal, offset, shift, useDismiss, useFloating, useId, useInteractions, useRole } from '@floating-ui/react';
 import {
@@ -18,6 +18,8 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import useAuthorPrivileges from '../../hooks/use-author-privileges';
 import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
+import { canTransferComment } from '../../lib/comment-transfer';
+import PostTransferModal from '../post-transfer-modal/post-transfer-modal';
 
 const daysToTimestampInSeconds = (days: number) => {
   const now = new Date();
@@ -30,6 +32,40 @@ const timestampToDays = (timestamp: number) => {
   return Math.max(1, Math.floor((timestamp - now) / (24 * 60 * 60)));
 };
 
+interface EditMenuUiState {
+  isEditMenuOpen: boolean;
+  isContentEditorOpen: boolean;
+  isTransferOpen: boolean;
+}
+
+type EditMenuUiAction =
+  | { type: 'set-edit-menu-open'; open: boolean }
+  | { type: 'toggle-content-editor' }
+  | { type: 'close-content-editor' }
+  | { type: 'open-transfer' }
+  | { type: 'close-transfer' };
+
+const initialEditMenuUiState: EditMenuUiState = {
+  isEditMenuOpen: false,
+  isContentEditorOpen: false,
+  isTransferOpen: false,
+};
+
+const editMenuUiReducer = (state: EditMenuUiState, action: EditMenuUiAction): EditMenuUiState => {
+  switch (action.type) {
+    case 'set-edit-menu-open':
+      return { ...state, isEditMenuOpen: action.open };
+    case 'toggle-content-editor':
+      return { ...state, isContentEditorOpen: !state.isContentEditorOpen };
+    case 'close-content-editor':
+      return { ...state, isContentEditorOpen: false };
+    case 'open-transfer':
+      return { ...state, isEditMenuOpen: false, isTransferOpen: true };
+    case 'close-transfer':
+      return { ...state, isTransferOpen: false };
+  }
+};
+
 const EditMenu = ({ post }: { post: Comment }) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -40,7 +76,8 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const authorDisplayName = resolvedPost?.author?.displayName;
   const modBanExpiresAt = resolvedPost?.author?.community?.banExpiresAt ?? resolvedPost?.commentModeration?.author?.banExpiresAt;
   const purged = resolvedPost?.commentModeration?.purged ?? false;
-  const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
+  const [uiState, dispatchUiState] = useReducer(editMenuUiReducer, initialEditMenuUiState);
+  const { isEditMenuOpen, isContentEditorOpen, isTransferOpen } = uiState;
 
   const account = useAccount();
   const { isCommentAuthorMod, isAccountMod, isAccountCommentAuthor } = useAuthorPrivileges({
@@ -53,8 +90,8 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const canAttemptAuthorDelete = isAccountCommentAuthor || allowsPseudonymousDelete;
   const canOpenEditMenu = isAccountMod || canAttemptAuthorDelete;
   const canEditOwnModPost = isAccountMod && isAccountCommentAuthor;
+  const canTransferPost = isAccountMod && canTransferComment(resolvedPost);
   const signer = isAccountCommentAuthor ? account?.signer : undefined;
-  const [isContentEditorOpen, setIsContentEditorOpen] = useState(false);
   const latestPostRef = useRef(resolvedPost);
   useEffect(() => {
     latestPostRef.current = resolvedPost;
@@ -180,10 +217,10 @@ const EditMenu = ({ post }: { post: Comment }) => {
 
   const resetMenuState = () => {
     setPublishCommentEditOptions(defaultPublishEditOptions);
-    setIsContentEditorOpen(false);
     setBanDuration(
       defaultPublishEditOptions.commentModeration?.author?.banExpiresAt ? timestampToDays(defaultPublishEditOptions.commentModeration.author.banExpiresAt) : 1,
     );
+    dispatchUiState({ type: 'close-content-editor' });
   };
 
   const onCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -256,7 +293,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const { refs, floatingStyles, context } = useFloating({
     placement: 'bottom-start',
     open: isEditMenuOpen,
-    onOpenChange: setIsEditMenuOpen,
+    onOpenChange: (open) => dispatchUiState({ type: 'set-edit-menu-open', open }),
     middleware: [offset(2), shift()],
     whileElementsMounted: autoUpdate,
   });
@@ -288,7 +325,11 @@ const EditMenu = ({ post }: { post: Comment }) => {
         alert(error.message);
       }
     }
-    setIsEditMenuOpen(false);
+    dispatchUiState({ type: 'set-edit-menu-open', open: false });
+  };
+
+  const openTransfer = () => {
+    dispatchUiState({ type: 'open-transfer' });
   };
 
   return (
@@ -301,12 +342,12 @@ const EditMenu = ({ post }: { post: Comment }) => {
             if (cid && canOpenEditMenu) {
               if (!isEditMenuOpen) {
                 resetMenuState();
-                setIsEditMenuOpen(true);
+                dispatchUiState({ type: 'set-edit-menu-open', open: true });
               } else {
-                setIsEditMenuOpen(false);
+                dispatchUiState({ type: 'set-edit-menu-open', open: false });
               }
             } else {
-              setIsEditMenuOpen(false);
+              dispatchUiState({ type: 'set-edit-menu-open', open: false });
               alert(parentCid ? t('cannot_edit_reply') : t('cannot_edit_thread'));
             }
           }}
@@ -345,7 +386,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
                             <input
                               aria-label={capitalize(t('edit'))}
                               type='checkbox'
-                              onChange={() => setIsContentEditorOpen((isOpen) => !isOpen)}
+                              onChange={() => dispatchUiState({ type: 'toggle-content-editor' })}
                               checked={isContentEditorOpen}
                             />
                             {capitalize(t('edit'))}?]
@@ -507,6 +548,15 @@ const EditMenu = ({ post }: { post: Comment }) => {
                         />
                       </label>
                     </div>
+                    {canTransferPost && (
+                      <div className={styles.menuItem}>
+                        [
+                        <button type='button' className={styles.menuButton} onClick={openTransfer}>
+                          {t('transfer')}
+                        </button>
+                        ?]
+                      </div>
+                    )}
                   </>
                 )}
                 <div className={styles.bottom}>
@@ -519,6 +569,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
           </FloatingFocusManager>
         </FloatingPortal>
       )}
+      {canTransferPost && isTransferOpen && <PostTransferModal comment={resolvedPost} onClose={() => dispatchUiState({ type: 'close-transfer' })} />}
     </>
   );
 };

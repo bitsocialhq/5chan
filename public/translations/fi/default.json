@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "Voit korostaa syntaksia ja säilyttää välilyönnit käyttämällä [code]-tageja.",
   "reply_link_required_alert": "Sinun on vastattava linkillä.",
   "reply_media_link_required_alert": "Sinun on vastattava kuva- tai videolinkillä.",
-  "reply_links_not_allowed_alert": "Vastauslinkit eivät ole sallittuja tällä laudalla."
+  "reply_links_not_allowed_alert": "Vastauslinkit eivät ole sallittuja tällä laudalla.",
+  "transfer": "Siirrä",
+  "modQueue.transferTitle": "Siirrä viesti",
+  "modQueue.transferSource": "Mistä",
+  "modQueue.transferTarget": "Foorumille",
+  "modQueue.transferFields": "Kopioi kentät",
+  "modQueue.transferNoFields": "Valitse vähintään yksi kopioitava kenttä.",
+  "modQueue.transferSuccess": "Siirretty. Alkuperäinen viesti osoittaa nyt uudelle laudalle.",
+  "transferred": "Siirretty",
+  "modQueue.transferTitleWithNumber": "Siirrä viesti No.{{number}}",
+  "modQueue.transferRecreateNotice": "Tämä ei ole oikea protokollatason siirto. 5chan luo viestin uudelleen valitulle laudalle ja poistaa alkuperäisen.",
+  "modQueue.transferRepliesNotice": "Vastauksia ei siirretä. Ne poistetaan alkuperäisen viestin mukana.",
+  "modQueue.transferTemporaryAccountNotice": "5chan luo uuden väliaikaisen tilin vain tätä kopioitua viestiä varten ja poistaa sen julkaisun jälkeen."
 }

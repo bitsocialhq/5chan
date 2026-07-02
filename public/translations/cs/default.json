@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "Syntax můžete zvýraznit a zachovat mezery pomocí značek [code].",
   "reply_link_required_alert": "Musíte odpovědět odkazem.",
   "reply_media_link_required_alert": "Musíte odpovědět odkazem na obrázek nebo video.",
-  "reply_links_not_allowed_alert": "Odkazy v odpovědích nejsou na této nástěnce povoleny."
+  "reply_links_not_allowed_alert": "Odkazy v odpovědích nejsou na této nástěnce povoleny.",
+  "transfer": "Přesunout",
+  "modQueue.transferTitle": "Přesunout příspěvek",
+  "modQueue.transferSource": "Od",
+  "modQueue.transferTarget": "Do fóra",
+  "modQueue.transferFields": "Kopírovat pole",
+  "modQueue.transferNoFields": "Vyberte alespoň jedno pole ke kopírování.",
+  "modQueue.transferSuccess": "Přesunuto. Původní příspěvek teď odkazuje na novou nástěnku.",
+  "transferred": "Přesunuto",
+  "modQueue.transferTitleWithNumber": "Přesunout příspěvek č. {{number}}",
+  "modQueue.transferRecreateNotice": "Toto není skutečný protokolový přesun. 5chan příspěvek znovu vytvoří na vybrané nástěnce a původní odstraní.",
+  "modQueue.transferRepliesNotice": "Odpovědi se nepřesunou. Budou odstraněny spolu s původním příspěvkem.",
+  "modQueue.transferTemporaryAccountNotice": "5chan vytvoří nový dočasný účet jen pro tento zkopírovaný příspěvek a po zveřejnění ho smaže."
 }

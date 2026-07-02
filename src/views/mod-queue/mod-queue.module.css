@@ -102,7 +102,7 @@
 }
 
 .actionsHeader {
-  width: 150px;
+  width: 220px;
   flex-shrink: 0;
   text-align: right;
 }
@@ -283,7 +283,7 @@
 }
 
 .actions {
-  width: 150px;
+  width: 220px;
   flex-shrink: 0;
   display: flex;
   gap: 4px;
@@ -354,6 +354,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 /* Mobile compact view: match feed view approve/reject button styling */

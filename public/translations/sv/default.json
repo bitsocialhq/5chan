@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "Du kan markera syntax och bevara mellanslag genom att använda [code]-taggar.",
   "reply_link_required_alert": "Du måste svara med en länk.",
   "reply_media_link_required_alert": "Du måste svara med en bild- eller videolänk.",
-  "reply_links_not_allowed_alert": "Svarslänkar är inte tillåtna på detta bräde."
+  "reply_links_not_allowed_alert": "Svarslänkar är inte tillåtna på detta bräde.",
+  "transfer": "Överför",
+  "modQueue.transferTitle": "Överför inlägg",
+  "modQueue.transferSource": "Från",
+  "modQueue.transferTarget": "Till forum",
+  "modQueue.transferFields": "Kopiera fält",
+  "modQueue.transferNoFields": "Välj minst ett fält att kopiera.",
+  "modQueue.transferSuccess": "Överfört. Det ursprungliga inlägget pekar nu till den nya boarden.",
+  "transferred": "Överfört",
+  "modQueue.transferTitleWithNumber": "Överför inlägg No.{{number}}",
+  "modQueue.transferRecreateNotice": "Det här är inte en riktig protokollöverföring. 5chan återskapar inlägget på vald board och tar bort originalet.",
+  "modQueue.transferRepliesNotice": "Svar överförs inte. De raderas tillsammans med det ursprungliga inlägget.",
+  "modQueue.transferTemporaryAccountNotice": "5chan skapar ett nytt tillfälligt konto bara för det här kopierade inlägget och raderar det efter publicering."
 }

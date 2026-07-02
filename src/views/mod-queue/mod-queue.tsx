@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, memo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
@@ -45,6 +45,8 @@ import lowerCase from 'lodash/lowerCase';
 import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '../../components/footer/footer';
 import footerStyles from '../../components/footer/footer.module.css';
 import { useModeratedCommunityAddressInputs, useModeratedCommunityAddressesForInputs } from '../../hooks/use-moderated-community-addresses';
+import PostTransferModal, { type PostTransferState } from '../../components/post-transfer-modal/post-transfer-modal';
+import { canTransferComment } from '../../lib/comment-transfer';
 
 /** Path for display: directory code, or full address if has TLD, or shortened for long IPNS keys (no dot) */
 const getBoardDisplayPath = (address: string, path: string): string => {
@@ -138,10 +140,16 @@ interface ModQueueRowProps {
   comment: Comment;
   isOdd?: boolean;
   showBoard?: boolean;
+  transferControls: ModQueueTransferControls;
   /** Board path for URLs (directory code or full address) */
   boardPath: string | undefined;
   /** Board path for display (shortened when long IPNS key with no TLD) */
   boardDisplayPath: string | undefined;
+}
+
+interface ModQueueTransferControls {
+  activeTransferCommentCid: string | null;
+  setActiveTransferCommentCid: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 interface ModQueueActionState {
@@ -151,6 +159,7 @@ interface ModQueueActionState {
   isPublishing: boolean;
   handleApprove: () => Promise<void>;
   handleReject: () => Promise<void>;
+  handleTransfer?: () => void;
   handleRemove?: () => void;
 }
 
@@ -161,6 +170,7 @@ interface ModQueueActionsProps {
   isPublishing: boolean;
   handleApprove: () => Promise<void>;
   handleReject: () => Promise<void>;
+  handleTransfer?: () => void;
   handleRemove?: () => void;
   variant: 'row' | 'card';
 }
@@ -265,7 +275,69 @@ const ModQueueExcerptPreviewLink = ({ comment, excerpt, postUrl, postUrlState }:
   );
 };
 
-const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove, variant }: ModQueueActionsProps) => {
+const useModQueueTransfer = (comment: Comment, transferControls: ModQueueTransferControls) => {
+  const [transferState, setTransferState] = useState<PostTransferState>('idle');
+  const transferStateRef = useRef<PostTransferState>('idle');
+  const isMountedRef = useRef(true);
+  const rememberCommentsInQueue = useModQueueStore((state) => state.rememberCommentsInQueue);
+  const { activeTransferCommentCid, setActiveTransferCommentCid } = transferControls;
+  const transferCommentCid = comment.cid;
+  const canTransfer = canTransferComment(comment);
+  const isTransferOpen = Boolean(transferCommentCid && activeTransferCommentCid === transferCommentCid);
+  const isTransferPublishing = transferState === 'publishing';
+  const isTransferSucceeded = transferState === 'succeeded';
+  const isTransferTerminal = isTransferSucceeded || transferState === 'finalizationFailed';
+  const canOpenTransfer = canTransfer && !isTransferTerminal && !activeTransferCommentCid && Boolean(transferCommentCid);
+  const handleTransfer = useCallback(() => {
+    if (canOpenTransfer && transferCommentCid) {
+      setActiveTransferCommentCid(transferCommentCid);
+    }
+  }, [canOpenTransfer, setActiveTransferCommentCid, transferCommentCid]);
+  const handleCloseTransfer = useCallback(() => {
+    setActiveTransferCommentCid((currentCommentCid) => (currentCommentCid === transferCommentCid ? null : currentCommentCid));
+  }, [setActiveTransferCommentCid, transferCommentCid]);
+  const handleTransferStateChange = useCallback(
+    (nextTransferState: PostTransferState) => {
+      transferStateRef.current = nextTransferState;
+      if (isMountedRef.current) {
+        setTransferState(nextTransferState);
+        return;
+      }
+      if (nextTransferState !== 'publishing') {
+        handleCloseTransfer();
+      }
+    },
+    [handleCloseTransfer],
+  );
+  const handleTransferSuccess = useCallback(() => {
+    const rejectedSnapshot = getQueuedCommentSnapshot({ ...comment, approved: false, pendingApproval: false });
+    if (rejectedSnapshot) {
+      rememberCommentsInQueue([rejectedSnapshot]);
+    }
+  }, [comment, rememberCommentsInQueue]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (transferStateRef.current !== 'publishing') {
+        handleCloseTransfer();
+      }
+    };
+  }, [handleCloseTransfer]);
+
+  return {
+    handleTransfer: canOpenTransfer ? handleTransfer : undefined,
+    isTransferPublishing,
+    isTransferSucceeded,
+    transferModal:
+      canTransfer && isTransferOpen ? (
+        <PostTransferModal comment={comment} onClose={handleCloseTransfer} onTransferStateChange={handleTransferStateChange} onTransferSuccess={handleTransferSuccess} />
+      ) : null,
+  };
+};
+
+const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleApprove, handleReject, handleTransfer, handleRemove, variant }: ModQueueActionsProps) => {
   const { t } = useTranslation();
   const displayError = error || errorMessage;
 
@@ -345,6 +417,15 @@ const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleAppr
           </button>
           ]
         </span>
+        {handleTransfer && (
+          <span className={styles.buttonWrapper}>
+            [
+            <button type='button' className={styles.button} onClick={handleTransfer} disabled={isPublishing}>
+              {t('transfer')}
+            </button>
+            ]
+          </span>
+        )}
       </div>
     ) : (
       <div className={styles.cardActions}>
@@ -354,6 +435,11 @@ const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleAppr
         <button type='button' className={`button ${styles.cardRejectButton}`} onClick={handleReject} disabled={isPublishing}>
           {t('reject')}
         </button>
+        {handleTransfer && (
+          <button type='button' className='button' onClick={handleTransfer} disabled={isPublishing}>
+            {t('transfer')}
+          </button>
+        )}
       </div>
     );
 
@@ -404,10 +490,10 @@ const useModQueueActions = (comment: Comment): ModQueueActionState => {
   // session, so combine that baseline with the live action-derived status.
   const status = alreadyApproved || actionStatus === 'approved' ? 'approved' : alreadyRejected || actionStatus === 'rejected' ? 'rejected' : actionStatus;
 
-  return { status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove: status ? handleRemove : undefined };
+  return { status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove };
 };
 
-const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath, boardDisplayPath }: ModQueueRowProps) => {
+const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, transferControls, boardPath, boardDisplayPath }: ModQueueRowProps) => {
   const { t } = useTranslation();
   const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const isMobile = useIsMobile();
@@ -446,56 +532,63 @@ const ModQueueRow = memo(({ comment, isOdd = false, showBoard = false, boardPath
   const postUrlState = getQueuedCommentRouteState(comment);
 
   const modQueueUrl = boardPath ? `/${boardPath}/mod/queue` : undefined;
+  const { handleTransfer, isTransferPublishing, isTransferSucceeded, transferModal } = useModQueueTransfer(displayComment, transferControls);
+  const displayStatus = isTransferSucceeded ? 'rejected' : status;
+  const displayIsPublishing = isPublishing || isTransferPublishing;
 
   return (
-    <div className={`${styles.row} ${isOdd ? styles.rowOdd : ''}`}>
-      <div className={styles.number}>{number ?? 'N/A'}</div>
-      {showBoard && (
-        <div className={styles.board}>{modQueueUrl ? <Link to={modQueueUrl}>/{boardDisplayPath ?? '—'}/</Link> : <span>/{boardDisplayPath ?? '—'}/</span>}</div>
-      )}
-      <div className={styles.excerpt}>
-        <ModQueueExcerptPreviewLink comment={displayComment} excerpt={excerpt} postUrl={postUrl} postUrlState={postUrlState} />
-      </div>
-      <div className={styles.time}>
-        {isMobile ? (
-          // On mobile, show shorter time ago format without tooltip
+    <>
+      <div className={`${styles.row} ${isOdd ? styles.rowOdd : ''}`}>
+        <div className={styles.number}>{number ?? 'N/A'}</div>
+        {showBoard && (
+          <div className={styles.board}>{modQueueUrl ? <Link to={modQueueUrl}>/{boardDisplayPath ?? '—'}/</Link> : <span>/{boardDisplayPath ?? '—'}/</span>}</div>
+        )}
+        <div className={styles.excerpt}>
+          <ModQueueExcerptPreviewLink comment={displayComment} excerpt={excerpt} postUrl={postUrl} postUrlState={postUrlState} />
+        </div>
+        <div className={styles.time}>
+          {isMobile ? (
+            // On mobile, show shorter time ago format without tooltip
+            isAwaitingApproval && isOverThreshold ? (
+              <span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>
+            ) : (
+              <span>{getFormattedTimeAgo(timestamp)}</span>
+            )
+          ) : // On desktop, show full date with tooltip
           isAwaitingApproval && isOverThreshold ? (
-            <span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>
+            <>
+              <Tooltip content={getFormattedTimeAgo(timestamp)}>
+                <span>{getFormattedDate(timestamp)}</span>
+              </Tooltip>
+              <span className={styles.alertWrapper}>
+                {' '}
+                (<span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>)
+              </span>
+            </>
           ) : (
-            <span>{getFormattedTimeAgo(timestamp)}</span>
-          )
-        ) : // On desktop, show full date with tooltip
-        isAwaitingApproval && isOverThreshold ? (
-          <>
             <Tooltip content={getFormattedTimeAgo(timestamp)}>
               <span>{getFormattedDate(timestamp)}</span>
             </Tooltip>
-            <span className={styles.alertWrapper}>
-              {' '}
-              (<span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>)
-            </span>
-          </>
-        ) : (
-          <Tooltip content={getFormattedTimeAgo(timestamp)}>
-            <span>{getFormattedDate(timestamp)}</span>
-          </Tooltip>
-        )}
+          )}
+        </div>
+        <div className={styles.type}>{isReply ? capitalize(t('reply')) : capitalize(t('post'))}</div>
+        <div className={styles.image}>{hasThumbnail ? t('yes') : t('no')}</div>
+        <div className={styles.actions}>
+          <ModQueueActions
+            status={displayStatus}
+            error={error}
+            errorMessage={errorMessage}
+            isPublishing={displayIsPublishing}
+            handleApprove={handleApprove}
+            handleReject={handleReject}
+            handleTransfer={handleTransfer}
+            handleRemove={displayStatus ? handleRemove : undefined}
+            variant='row'
+          />
+        </div>
       </div>
-      <div className={styles.type}>{isReply ? capitalize(t('reply')) : capitalize(t('post'))}</div>
-      <div className={styles.image}>{hasThumbnail ? t('yes') : t('no')}</div>
-      <div className={styles.actions}>
-        <ModQueueActions
-          status={status}
-          error={error}
-          errorMessage={errorMessage}
-          isPublishing={isPublishing}
-          handleApprove={handleApprove}
-          handleReject={handleReject}
-          handleRemove={handleRemove}
-          variant='row'
-        />
-      </div>
-    </div>
+      {transferModal}
+    </>
   );
 });
 ModQueueRow.displayName = 'ModQueueRow';
@@ -503,13 +596,14 @@ ModQueueRow.displayName = 'ModQueueRow';
 interface ModQueueCardProps {
   comment: Comment;
   showBoard?: boolean;
+  transferControls: ModQueueTransferControls;
   /** Board path for URLs (directory code or full address) */
   boardPath: string | undefined;
   /** Board path for display (shortened when long IPNS key with no TLD) */
   boardDisplayPath: string | undefined;
 }
 
-const ModQueueCard = memo(({ comment, showBoard = false, boardPath, boardDisplayPath }: ModQueueCardProps) => {
+const ModQueueCard = memo(({ comment, showBoard = false, transferControls, boardPath, boardDisplayPath }: ModQueueCardProps) => {
   const { t } = useTranslation();
   const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const currentTime = useCurrentTime();
@@ -544,66 +638,80 @@ const ModQueueCard = memo(({ comment, showBoard = false, boardPath, boardDisplay
   const postUrlState = getQueuedCommentRouteState(comment);
 
   const modQueueUrl = boardPath ? `/${boardPath}/mod/queue` : undefined;
+  const { handleTransfer, isTransferPublishing, isTransferSucceeded, transferModal } = useModQueueTransfer(displayComment, transferControls);
+  const displayStatus = isTransferSucceeded ? 'rejected' : status;
+  const displayIsPublishing = isPublishing || isTransferPublishing;
 
   return (
-    <div className={styles.mobileCard}>
-      <div className={styles.cardHeader}>
-        <span className={styles.cardHeaderLeft}>
-          <span className={styles.cardNumber}>No. {number ?? 'N/A'}</span>
-          {showBoard && boardPath && (
-            <>
-              <span className={styles.cardBoardSeparator}> - </span>
-              <span className={styles.cardBoard}>{modQueueUrl ? <Link to={modQueueUrl}>/{boardDisplayPath}/</Link> : <span>/{boardDisplayPath}/</span>}</span>
-            </>
-          )}
-        </span>
-        <span className={styles.cardTime}>
-          {isAwaitingApproval && isOverThreshold ? (
-            <>
-              {getFormattedDate(timestamp)} (<span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>)
-            </>
-          ) : (
-            getFormattedDate(timestamp)
-          )}
-        </span>
+    <>
+      <div className={styles.mobileCard}>
+        <div className={styles.cardHeader}>
+          <span className={styles.cardHeaderLeft}>
+            <span className={styles.cardNumber}>No. {number ?? 'N/A'}</span>
+            {showBoard && boardPath && (
+              <>
+                <span className={styles.cardBoardSeparator}> - </span>
+                <span className={styles.cardBoard}>{modQueueUrl ? <Link to={modQueueUrl}>/{boardDisplayPath}/</Link> : <span>/{boardDisplayPath}/</span>}</span>
+              </>
+            )}
+          </span>
+          <span className={styles.cardTime}>
+            {isAwaitingApproval && isOverThreshold ? (
+              <>
+                {getFormattedDate(timestamp)} (<span className={styles.alert}>{getFormattedTimeAgo(timestamp)}</span>)
+              </>
+            ) : (
+              getFormattedDate(timestamp)
+            )}
+          </span>
+        </div>
+        <div className={styles.cardContent}>
+          {t('excerpt')}: <ModQueueExcerptPreviewLink comment={displayComment} excerpt={excerpt} postUrl={postUrl} postUrlState={postUrlState} /> / {t('type')}:{' '}
+          {isReply ? t('reply') : t('post')} / {capitalize(t('image'))}: {hasThumbnail ? lowerCase(t('yes')) : lowerCase(t('no'))}
+        </div>
+        <ModQueueActions
+          status={displayStatus}
+          error={error}
+          errorMessage={errorMessage}
+          isPublishing={displayIsPublishing}
+          handleApprove={handleApprove}
+          handleReject={handleReject}
+          handleTransfer={handleTransfer}
+          handleRemove={displayStatus ? handleRemove : undefined}
+          variant='card'
+        />
       </div>
-      <div className={styles.cardContent}>
-        {t('excerpt')}: <ModQueueExcerptPreviewLink comment={displayComment} excerpt={excerpt} postUrl={postUrl} postUrlState={postUrlState} /> / {t('type')}:{' '}
-        {isReply ? t('reply') : t('post')} / {capitalize(t('image'))}: {hasThumbnail ? lowerCase(t('yes')) : lowerCase(t('no'))}
-      </div>
-      <ModQueueActions
-        status={status}
-        error={error}
-        errorMessage={errorMessage}
-        isPublishing={isPublishing}
-        handleApprove={handleApprove}
-        handleReject={handleReject}
-        handleRemove={handleRemove}
-        variant='card'
-      />
-    </div>
+      {transferModal}
+    </>
   );
 });
 ModQueueCard.displayName = 'ModQueueCard';
 
-const ModQueueFeedPost = memo(({ comment }: { comment: Comment }) => {
+const ModQueueFeedPost = memo(({ comment, transferControls }: { comment: Comment; transferControls: ModQueueTransferControls }) => {
   const { editedComment } = useEditedComment({ comment });
   const displayComment = editedComment || comment;
   const { status, error, errorMessage, isPublishing, handleApprove, handleReject, handleRemove } = useModQueueActions(comment);
+  const { handleTransfer, isTransferPublishing, isTransferSucceeded, transferModal } = useModQueueTransfer(displayComment, transferControls);
+  const displayStatus = isTransferSucceeded ? 'rejected' : status;
+  const displayIsPublishing = isPublishing || isTransferPublishing;
 
   return (
-    <Post
-      post={displayComment}
-      showAllReplies={false}
-      showReplies={false}
-      isModQueue={true}
-      modQueueStatus={status}
-      modQueueError={error || errorMessage}
-      isPublishing={isPublishing}
-      onApprove={handleApprove}
-      onReject={handleReject}
-      onRemoveFromModQueue={handleRemove}
-    />
+    <>
+      <Post
+        post={displayComment}
+        showAllReplies={false}
+        showReplies={false}
+        isModQueue={true}
+        modQueueStatus={displayStatus}
+        modQueueError={error || errorMessage}
+        isPublishing={displayIsPublishing}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        onTransfer={handleTransfer}
+        onRemoveFromModQueue={displayStatus ? handleRemove : undefined}
+      />
+      {transferModal}
+    </>
   );
 });
 ModQueueFeedPost.displayName = 'ModQueueFeedPost';
@@ -748,8 +856,9 @@ interface ModQueueContentProps {
   loadMore: () => void;
   resolvedAddress: string | undefined;
   selectedBoardFilter: string | null;
-  setSelectedBoardFilter: React.Dispatch<React.SetStateAction<string | null>>;
+  setSelectedBoardFilter: (boardAddress: string | null) => void;
   showBoardColumn: boolean;
+  transferControls: ModQueueTransferControls;
   viewMode: 'compact' | 'feed';
   virtuosoFooterContext: ModQueueVirtuosoFooterContext | null;
 }
@@ -774,6 +883,7 @@ const ModQueueContent = memo(
     selectedBoardFilter,
     setSelectedBoardFilter,
     showBoardColumn,
+    transferControls,
     viewMode,
     virtuosoFooterContext,
   }: ModQueueContentProps) => {
@@ -833,6 +943,7 @@ const ModQueueContent = memo(
                         comment={comment}
                         isOdd={index % 2 === 0}
                         showBoard={showBoardColumn}
+                        transferControls={transferControls}
                         boardPath={path}
                         boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
                       />
@@ -875,6 +986,7 @@ const ModQueueContent = memo(
                         key={comment.cid}
                         comment={comment}
                         showBoard={showBoardColumn}
+                        transferControls={transferControls}
                         boardPath={path}
                         boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
                       />
@@ -909,7 +1021,7 @@ const ModQueueContent = memo(
               ) : (
                 <>
                   {filteredFeed.map((comment) => (
-                    <ModQueueFeedPost key={comment.cid} comment={comment} />
+                    <ModQueueFeedPost key={comment.cid} comment={comment} transferControls={transferControls} />
                   ))}
                   {communityError?.message && feedLength === 0 && (
                     <div className={styles.error}>
@@ -932,6 +1044,7 @@ ModQueueContent.displayName = 'ModQueueContent';
 const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProps) => {
   const params = useParams();
   const [selectedBoardFilter, setSelectedBoardFilter] = useState<string | null>(null);
+  const [activeTransferCommentCid, setActiveTransferCommentCid] = useState<string | null>(null);
   const viewMode = useModQueueStore((state) => state.viewMode);
   const dismissedCommentCids = useModQueueStore((state) => state.dismissedCommentCids);
   const queuedCommentHistory = useModQueueStore((state) => state.queuedCommentHistory);
@@ -1004,6 +1117,17 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     () => filterVisibleModQueueFeed(feedWithHistory, selectedBoardFilter, dismissedCommentCidSet, selectedBoardFilterAddresses),
     [feedWithHistory, selectedBoardFilter, dismissedCommentCidSet, selectedBoardFilterAddresses],
   );
+  const transferControls = useMemo(
+    () => ({
+      activeTransferCommentCid,
+      setActiveTransferCommentCid,
+    }),
+    [activeTransferCommentCid],
+  );
+  const handleSetSelectedBoardFilter = useCallback((boardFilter: string | null) => {
+    setActiveTransferCommentCid(null);
+    setSelectedBoardFilter(boardFilter);
+  }, []);
   const hasVisibleComments = filteredFeed.length > 0;
 
   const addressToPathMap = useMemo(() => {
@@ -1025,12 +1149,13 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
           comment={comment}
           isOdd={index % 2 === 0}
           showBoard={showBoardColumn}
+          transferControls={transferControls}
           boardPath={path}
           boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
         />
       );
     },
-    [addressToPathMap, showBoardColumn, directories],
+    [addressToPathMap, showBoardColumn, transferControls, directories],
   );
   const compactCardItemContent = useCallback(
     (_index: number, comment: Comment) => {
@@ -1041,14 +1166,18 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
           key={comment.cid}
           comment={comment}
           showBoard={showBoardColumn}
+          transferControls={transferControls}
           boardPath={path}
           boardDisplayPath={path && commentCommunityAddress ? getBoardDisplayPath(commentCommunityAddress, path) : undefined}
         />
       );
     },
-    [addressToPathMap, showBoardColumn, directories],
+    [addressToPathMap, showBoardColumn, transferControls, directories],
   );
-  const feedPostItemContent = useCallback((_index: number, comment: Comment) => <ModQueueFeedPost key={comment.cid} comment={comment} />, []);
+  const feedPostItemContent = useCallback(
+    (_index: number, comment: Comment) => <ModQueueFeedPost key={comment.cid} comment={comment} transferControls={transferControls} />,
+    [transferControls],
+  );
 
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
   useEffect(() => {
@@ -1092,8 +1221,9 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
         loadMore={visibleLoadMore}
         resolvedAddress={resolvedAddress}
         selectedBoardFilter={selectedBoardFilter}
-        setSelectedBoardFilter={setSelectedBoardFilter}
+        setSelectedBoardFilter={handleSetSelectedBoardFilter}
         showBoardColumn={showBoardColumn}
+        transferControls={transferControls}
         viewMode={viewMode}
         virtuosoFooterContext={visibleVirtuosoFooterContext}
       />

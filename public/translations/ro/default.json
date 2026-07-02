@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "Puteți evidenția sintaxa și păstra spațiile albe folosind tag-uri [code].",
   "reply_link_required_alert": "Trebuie să răspunzi cu un link.",
   "reply_media_link_required_alert": "Trebuie să răspunzi cu un link de imagine sau video.",
-  "reply_links_not_allowed_alert": "Linkurile în răspunsuri nu sunt permise pe acest board."
+  "reply_links_not_allowed_alert": "Linkurile în răspunsuri nu sunt permise pe acest board.",
+  "transfer": "Transferă",
+  "modQueue.transferTitle": "Transferă postarea",
+  "modQueue.transferSource": "De la",
+  "modQueue.transferTarget": "La forum",
+  "modQueue.transferFields": "Copiază câmpurile",
+  "modQueue.transferNoFields": "Alege cel puțin un câmp de copiat.",
+  "modQueue.transferSuccess": "Transferat. Postarea originală trimite acum la noul board.",
+  "transferred": "Transferat",
+  "modQueue.transferTitleWithNumber": "Transferă postarea No.{{number}}",
+  "modQueue.transferRecreateNotice": "Acesta nu este un transfer real la nivel de protocol. 5chan recreează postarea pe boardul ales și elimină originalul.",
+  "modQueue.transferRepliesNotice": "Răspunsurile nu sunt transferate. Vor fi șterse odată cu postarea originală.",
+  "modQueue.transferTemporaryAccountNotice": "5chan va crea un cont temporar nou doar pentru această postare copiată, apoi îl va șterge după publicare."
 }

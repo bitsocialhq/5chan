@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "आप [code] टैग का उपयोग करके सिंटैक्स को हाइलाइट कर सकते हैं और व्हाइटस्पेस को संरक्षित कर सकते हैं।",
   "reply_link_required_alert": "आपको एक लिंक के साथ जवाब देना होगा।",
   "reply_media_link_required_alert": "आपको किसी छवि या वीडियो लिंक के साथ जवाब देना होगा।",
-  "reply_links_not_allowed_alert": "इस बोर्ड पर जवाबों में लिंक की अनुमति नहीं है।"
+  "reply_links_not_allowed_alert": "इस बोर्ड पर जवाबों में लिंक की अनुमति नहीं है।",
+  "transfer": "स्थानांतरित करें",
+  "modQueue.transferTitle": "पोस्ट स्थानांतरित करें",
+  "modQueue.transferSource": "से",
+  "modQueue.transferTarget": "फोरम पर",
+  "modQueue.transferFields": "फ़ील्ड कॉपी करें",
+  "modQueue.transferNoFields": "कॉपी करने के लिए कम से कम एक फ़ील्ड चुनें।",
+  "modQueue.transferSuccess": "स्थानांतरित हो गया। मूल पोस्ट अब नए बोर्ड की ओर इशारा करती है।",
+  "transferred": "स्थानांतरित",
+  "modQueue.transferTitleWithNumber": "पोस्ट No.{{number}} स्थानांतरित करें",
+  "modQueue.transferRecreateNotice": "यह असली प्रोटोकॉल ट्रांसफर नहीं है। 5chan चुने गए बोर्ड पर पोस्ट को फिर से बनाता है और मूल पोस्ट हटा देता है।",
+  "modQueue.transferRepliesNotice": "जवाब स्थानांतरित नहीं होंगे। वे मूल पोस्ट के साथ हटा दिए जाएंगे।",
+  "modQueue.transferTemporaryAccountNotice": "5chan सिर्फ इस कॉपी किए गए पोस्ट के लिए एक नया अस्थायी खाता बनाएगा, फिर प्रकाशित करने के बाद उसे हटा देगा।"
 }

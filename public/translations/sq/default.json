@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "Mund të theksosh sintaksën dhe të ruash hapësirat duke përdorur etiketat [code].",
   "reply_link_required_alert": "Duhet të përgjigjesh me një lidhje.",
   "reply_media_link_required_alert": "Duhet të përgjigjesh me një lidhje imazhi ose videoje.",
-  "reply_links_not_allowed_alert": "Lidhjet në përgjigje nuk lejohen në këtë bord."
+  "reply_links_not_allowed_alert": "Lidhjet në përgjigje nuk lejohen në këtë bord.",
+  "transfer": "Transfero",
+  "modQueue.transferTitle": "Transfero postimin",
+  "modQueue.transferSource": "Nga",
+  "modQueue.transferTarget": "Në forum",
+  "modQueue.transferFields": "Kopjo fushat",
+  "modQueue.transferNoFields": "Zgjidhni të paktën një fushë për të kopjuar.",
+  "modQueue.transferSuccess": "U transferua. Postimi origjinal tani të drejton te bordi i ri.",
+  "transferred": "U transferua",
+  "modQueue.transferTitleWithNumber": "Transfero postimin No.{{number}}",
+  "modQueue.transferRecreateNotice": "Ky nuk është transferim i vërtetë në protokoll. 5chan e rikrijon postimin në bordin e zgjedhur dhe heq origjinalin.",
+  "modQueue.transferRepliesNotice": "Përgjigjet nuk transferohen. Ato fshihen bashkë me postimin origjinal.",
+  "modQueue.transferTemporaryAccountNotice": "5chan do të krijojë një llogari të re të përkohshme vetëm për këtë postim të kopjuar, pastaj do ta fshijë pas publikimit."
 }

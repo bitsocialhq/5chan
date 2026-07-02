@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "Anda dapat menyorot sintaks dan mempertahankan spasi dengan menggunakan tag [code].",
   "reply_link_required_alert": "Anda harus membalas dengan tautan.",
   "reply_media_link_required_alert": "Anda harus membalas dengan tautan gambar atau video.",
-  "reply_links_not_allowed_alert": "Tautan balasan tidak diizinkan di papan ini."
+  "reply_links_not_allowed_alert": "Tautan balasan tidak diizinkan di papan ini.",
+  "transfer": "Pindahkan",
+  "modQueue.transferTitle": "Transfer posting",
+  "modQueue.transferSource": "Dari",
+  "modQueue.transferTarget": "Ke forum",
+  "modQueue.transferFields": "Salin bidang",
+  "modQueue.transferNoFields": "Pilih setidaknya satu bidang untuk disalin.",
+  "modQueue.transferSuccess": "Ditransfer. Postingan asli sekarang mengarah ke board baru.",
+  "transferred": "Ditransfer",
+  "modQueue.transferTitleWithNumber": "Transfer postingan No.{{number}}",
+  "modQueue.transferRecreateNotice": "Ini bukan transfer protokol yang sebenarnya. 5chan membuat ulang postingan di board yang dipilih dan menghapus yang asli.",
+  "modQueue.transferRepliesNotice": "Balasan tidak ditransfer. Balasan akan dihapus bersama postingan asli.",
+  "modQueue.transferTemporaryAccountNotice": "5chan akan membuat akun sementara baru hanya untuk postingan salinan ini, lalu menghapusnya setelah dipublikasikan."
 }

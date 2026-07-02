@@ -27,6 +27,7 @@ import PostDesktop from '../../components/post-desktop/post-desktop';
 import PostMobile from '../../components/post-mobile/post-mobile';
 import { getRequestedThreadTopCid, scrollThreadContainerToTop } from '../../lib/utils/thread-scroll-utils';
 import { evictThreadRefreshCaches } from '../../lib/utils/thread-refresh-cache-utils';
+import { hasTransferredCommentMarker } from '../../lib/comment-transfer';
 import { REPLIES_PER_PAGE } from '../../lib/constants';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import type { QueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
@@ -205,6 +206,7 @@ export interface PostProps {
   isPublishing?: boolean;
   onApprove?: () => void;
   onReject?: () => void;
+  onTransfer?: () => void;
   onRemoveFromModQueue?: () => void;
   quotedByMap?: Map<string, Comment[]>;
 }
@@ -221,6 +223,7 @@ export const Post = memo(
     isPublishing,
     onApprove,
     onReject,
+    onTransfer,
     onRemoveFromModQueue,
     feedVirtualizationModeOverride,
     replyPaginationOverride,
@@ -239,6 +242,7 @@ export const Post = memo(
     // handle pending mod or author edit
     const { editedComment } = useEditedComment({ comment });
     comment = mergeCommentFallback(editedComment as CommentWithRefresh | undefined, comment as CommentWithRefresh | undefined);
+    const transferHandler = comment?.parentCid ? undefined : onTransfer;
 
     return (
       <div className={styles.thread}>
@@ -259,6 +263,7 @@ export const Post = memo(
               isPublishing={isPublishing}
               onApprove={onApprove}
               onReject={onReject}
+              onTransfer={transferHandler}
               onRemoveFromModQueue={onRemoveFromModQueue}
             />
           ) : (
@@ -277,6 +282,7 @@ export const Post = memo(
               isPublishing={isPublishing}
               onApprove={onApprove}
               onReject={onReject}
+              onTransfer={transferHandler}
               onRemoveFromModQueue={onRemoveFromModQueue}
             />
           )}
@@ -290,6 +296,7 @@ export const Post = memo(
     return (
       prev?.cid === next?.cid &&
       prev?.number === next?.number &&
+      prev?.parentCid === next?.parentCid &&
       prev?.postNumber === next?.postNumber &&
       prev?.replyCount === next?.replyCount &&
       prev?.updatedAt === next?.updatedAt &&
@@ -309,6 +316,7 @@ export const Post = memo(
       prev?.deleted === next?.deleted &&
       prev?.reason === next?.reason &&
       prev?.commentModeration?.purged === next?.commentModeration?.purged &&
+      hasTransferredCommentMarker(prev) === hasTransferredCommentMarker(next) &&
       prevProps.showAllReplies === nextProps.showAllReplies &&
       prevProps.showReplies === nextProps.showReplies &&
       prevProps.targetReplyCid === nextProps.targetReplyCid &&
@@ -321,6 +329,7 @@ export const Post = memo(
       prevProps.isPublishing === nextProps.isPublishing &&
       prevProps.onApprove === nextProps.onApprove &&
       prevProps.onReject === nextProps.onReject &&
+      prevProps.onTransfer === nextProps.onTransfer &&
       prevProps.onRemoveFromModQueue === nextProps.onRemoveFromModQueue
     );
   },

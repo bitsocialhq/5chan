@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "Du kan fremheve syntaks og bevare mellomrom ved å bruke [code]-tagger.",
   "reply_link_required_alert": "Du må svare med en lenke.",
   "reply_media_link_required_alert": "Du må svare med en bilde- eller videolenke.",
-  "reply_links_not_allowed_alert": "Svarlenker er ikke tillatt på dette forumet."
+  "reply_links_not_allowed_alert": "Svarlenker er ikke tillatt på dette forumet.",
+  "transfer": "Overfør",
+  "modQueue.transferTitle": "Overfør innlegg",
+  "modQueue.transferSource": "Fra",
+  "modQueue.transferTarget": "Til forum",
+  "modQueue.transferFields": "Kopier felt",
+  "modQueue.transferNoFields": "Velg minst ett felt som skal kopieres.",
+  "modQueue.transferSuccess": "Overført. Det opprinnelige innlegget peker nå til det nye boardet.",
+  "transferred": "Overført",
+  "modQueue.transferTitleWithNumber": "Overfør innlegg No.{{number}}",
+  "modQueue.transferRecreateNotice": "Dette er ikke en ekte protokolloverføring. 5chan oppretter innlegget på nytt på valgt board og fjerner originalen.",
+  "modQueue.transferRepliesNotice": "Svar overføres ikke. De slettes sammen med det opprinnelige innlegget.",
+  "modQueue.transferTemporaryAccountNotice": "5chan oppretter en ny midlertidig konto bare for dette kopierte innlegget, og sletter den etter publisering."
 }

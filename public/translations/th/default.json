@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "คุณสามารถไฮไลต์ไวยากรณ์และรักษาช่องว่างได้โดยใช้แท็ก [code]",
   "reply_link_required_alert": "คุณต้องตอบกลับพร้อมลิงก์",
   "reply_media_link_required_alert": "คุณต้องตอบกลับพร้อมลิงก์รูปภาพหรือวิดีโอ",
-  "reply_links_not_allowed_alert": "ไม่อนุญาตให้ใส่ลิงก์ในคำตอบบนบอร์ดนี้"
+  "reply_links_not_allowed_alert": "ไม่อนุญาตให้ใส่ลิงก์ในคำตอบบนบอร์ดนี้",
+  "transfer": "โอน",
+  "modQueue.transferTitle": "ย้ายโพสต์",
+  "modQueue.transferSource": "จาก",
+  "modQueue.transferTarget": "ไปยังกระดาน",
+  "modQueue.transferFields": "คัดลอกฟิลด์",
+  "modQueue.transferNoFields": "เลือกอย่างน้อยหนึ่งฟิลด์ที่จะคัดลอก",
+  "modQueue.transferSuccess": "โอนย้ายแล้ว โพสต์ต้นฉบับชี้ไปยังกระดานใหม่แล้ว",
+  "transferred": "โอนย้ายแล้ว",
+  "modQueue.transferTitleWithNumber": "โอนย้ายโพสต์ No.{{number}}",
+  "modQueue.transferRecreateNotice": "นี่ไม่ใช่การโอนย้ายจริงในระดับโปรโตคอล 5chan จะสร้างโพสต์ใหม่บนกระดานที่เลือกและลบต้นฉบับ",
+  "modQueue.transferRepliesNotice": "การตอบกลับจะไม่ถูกโอนย้าย และจะถูกลบไปพร้อมกับโพสต์ต้นฉบับ",
+  "modQueue.transferTemporaryAccountNotice": "5chan จะสร้างบัญชีชั่วคราวใหม่สำหรับโพสต์ที่คัดลอกนี้เท่านั้น แล้วลบบัญชีนั้นหลังเผยแพร่"
 }

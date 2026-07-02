@@ -1,0 +1,146 @@
+.transferModal {
+  box-sizing: border-box;
+  position: fixed;
+  display: block;
+  z-index: 998;
+  width: 430px;
+  max-width: calc(100vw - 20px);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  margin: 0;
+  padding: 2px;
+  color: inherit;
+  color-scheme: var(--color-scheme, light);
+  font-size: 10pt;
+  background-color: var(--challenge-modal-background-color);
+  border: var(--challenge-modal-border);
+  will-change: left, top;
+}
+
+.transferModal input {
+  filter: var(--filter80);
+}
+
+.transferHeader {
+  height: 18px;
+  margin: 0 0 1px;
+  padding: 0;
+  color: var(--challenge-modal-title-text-color);
+  font-size: var(--challenge-modal-title-font-size);
+  font-weight: var(--challenge-modal-title-font-weight);
+  line-height: 18px;
+  text-align: center;
+  background-color: var(--challenge-modal-title-background-color);
+  border: var(--challenge-modal-title-border);
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.transferCloseButton {
+  all: unset;
+  float: right;
+  cursor: pointer;
+  margin-bottom: -4px;
+  width: 18px;
+  height: 18px;
+  border: none;
+  image-rendering: pixelated;
+  background-image: var(--close-button-background-image);
+}
+
+.transferCloseButton:disabled {
+  cursor: not-allowed;
+}
+
+.transferBody {
+  display: grid;
+  gap: 8px;
+  padding: 6px;
+}
+
+.transferRow {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+}
+
+.transferRow select {
+  min-width: 0;
+}
+
+.transferLabel {
+  font-weight: 700;
+}
+
+.transferHint {
+  font-size: 9pt;
+  color: var(--settings-modal-alt-text-color, inherit);
+}
+
+.transferAlert {
+  color: var(--mod-queue-alert-color, #d00);
+  font-weight: 700;
+}
+
+.transferFields {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 5px;
+  border: var(--settings-modal-border-bottom);
+}
+
+.transferFields legend {
+  padding: 0 3px;
+  font-weight: 700;
+}
+
+.transferField {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.transferError {
+  color: var(--text-danger, #d00);
+  font-weight: 700;
+}
+
+.transferSuccess {
+  color: var(--text-success, #117743);
+  font-weight: 700;
+}
+
+.transferFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 6px;
+}
+
+.transferFooter button {
+  cursor: pointer;
+}
+
+.transferFooter button:disabled {
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .transferModal {
+    width: calc(100vw - 12px);
+    max-width: calc(100vw - 12px);
+  }
+
+  .transferRow {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .transferHint {
+    font-size: 10pt;
+  }
+}

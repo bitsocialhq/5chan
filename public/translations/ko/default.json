@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "[code] 태그를 사용하여 구문을 강조 표시하고 공백을 유지할 수 있습니다.",
   "reply_link_required_alert": "링크를 포함해 답글을 달아야 합니다.",
   "reply_media_link_required_alert": "이미지 또는 동영상 링크를 포함해 답글을 달아야 합니다.",
-  "reply_links_not_allowed_alert": "이 게시판에서는 답글 링크가 허용되지 않습니다."
+  "reply_links_not_allowed_alert": "이 게시판에서는 답글 링크가 허용되지 않습니다.",
+  "transfer": "이전",
+  "modQueue.transferTitle": "게시글 이동",
+  "modQueue.transferSource": "원본",
+  "modQueue.transferTarget": "게시판으로",
+  "modQueue.transferFields": "필드 복사",
+  "modQueue.transferNoFields": "복사할 필드를 하나 이상 선택하세요.",
+  "modQueue.transferSuccess": "이동되었습니다. 원래 게시글은 이제 새 게시판을 가리킵니다.",
+  "transferred": "이동됨",
+  "modQueue.transferTitleWithNumber": "게시글 No.{{number}} 이동",
+  "modQueue.transferRecreateNotice": "이것은 실제 프로토콜 전송이 아닙니다. 5chan은 선택한 게시판에 게시글을 다시 만들고 원본을 제거합니다.",
+  "modQueue.transferRepliesNotice": "답글은 이동되지 않습니다. 원본 게시글과 함께 삭제됩니다.",
+  "modQueue.transferTemporaryAccountNotice": "5chan은 이 복사된 게시글만을 위한 새 임시 계정을 만든 뒤 게시 후 삭제합니다."
 }

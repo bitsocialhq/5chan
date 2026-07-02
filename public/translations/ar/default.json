@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "يمكنك تمييز بناء الجملة والحفاظ على المسافات البيضاء باستخدام وسوم [code].",
   "reply_link_required_alert": "يجب عليك الرد برابط.",
   "reply_media_link_required_alert": "يجب عليك الرد برابط لصورة أو فيديو.",
-  "reply_links_not_allowed_alert": "لا يُسمح بروابط الردود في هذه اللوحة."
+  "reply_links_not_allowed_alert": "لا يُسمح بروابط الردود في هذه اللوحة.",
+  "transfer": "نقل",
+  "modQueue.transferTitle": "نقل المنشور",
+  "modQueue.transferSource": "من",
+  "modQueue.transferTarget": "إلى منتدى",
+  "modQueue.transferFields": "نسخ الحقول",
+  "modQueue.transferNoFields": "اختر حقلًا واحدًا على الأقل للنسخ.",
+  "modQueue.transferSuccess": "تم النقل. يشير المنشور الأصلي الآن إلى اللوحة الجديدة.",
+  "transferred": "منقول",
+  "modQueue.transferTitleWithNumber": "نقل المنشور رقم {{number}}",
+  "modQueue.transferRecreateNotice": "هذا ليس نقلا حقيقيا على مستوى البروتوكول. يعيد 5chan إنشاء المنشور على اللوحة المحددة ويزيل الأصل.",
+  "modQueue.transferRepliesNotice": "لن تُنقل الردود. سيتم حذفها مع المنشور الأصلي.",
+  "modQueue.transferTemporaryAccountNotice": "سينشئ 5chan حسابا مؤقتا جديدا لهذا المنشور المنسوخ فقط، ثم يحذفه بعد النشر."
 }

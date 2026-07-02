@@ -10,30 +10,55 @@ const act = (React as { act?: (callback: () => void | Promise<void>) => void | P
 
 type TestComment = {
   approved?: boolean;
+  archived?: boolean;
+  author?: { displayName?: string };
   cid: string;
+  commentModeration?: {
+    archived?: boolean;
+    purged?: boolean;
+    removed?: boolean;
+  };
   content?: string;
   communityAddress?: string;
+  deleted?: boolean;
+  flairs?: Array<Record<string, unknown>>;
+  link?: string;
   number?: number;
+  parentCid?: string;
   pendingApproval?: boolean;
+  removed?: boolean;
+  spoiler?: boolean;
   timestamp?: number;
+  title?: string;
 };
 
 const testState = vi.hoisted(() => ({
-  account: { author: { address: '0x123' }, id: 'account' },
+  account: { author: { address: '0x123', shortAddress: '0x123' }, id: 'account', name: 'main' },
+  accounts: [
+    { author: { address: '0x123', shortAddress: '0x123' }, id: 'account', name: 'main' },
+    { author: { address: '0x999', shortAddress: '0x999' }, id: 'throwaway-account', name: 'throwaway' },
+  ],
   accountCommunityAddresses: ['music-posting.eth'],
   addChallengeMock: vi.fn(),
   communityError: null as Error | null,
+  createAccountMock: vi.fn(),
+  deleteAccountMock: vi.fn(),
+  deleteCommentMock: vi.fn(),
   directories: [{ address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' }],
   dismissedCommentCids: [] as string[],
   feed: [] as TestComment[],
   hasMore: false,
   isMobile: false,
   loadMoreMock: vi.fn(),
+  publishCommentMock: vi.fn(),
+  publishCommentModerationActionMock: vi.fn(),
   publishCommentModerationMock: vi.fn(),
   queuedCommentHistory: [] as TestComment[],
   rememberCommentsInQueueMock: vi.fn(),
   resetMock: vi.fn(),
   setResetFunctionMock: vi.fn(),
+  springStartMock: vi.fn(),
+  useSpringMock: vi.fn(),
   viewMode: 'compact' as 'compact' | 'feed',
 }));
 
@@ -55,12 +80,13 @@ useModQueueStoreMock.getState = getModQueueState;
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string, options?: Record<string, unknown>) => (key === 'modQueue.transferTitleWithNumber' ? `Transfer Post No.${options?.number}` : key),
   }),
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   useAccount: () => testState.account,
+  useAccounts: () => ({ accounts: testState.accounts }),
   useCommunity: () => ({
     error: testState.communityError,
     roles: {
@@ -98,12 +124,26 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/accounts/index.js', () => 
   default: (
     selector: (state: {
       accounts: Record<string, typeof testState.account>;
+      accountsActions: {
+        createAccount: typeof testState.createAccountMock;
+        deleteAccount: typeof testState.deleteAccountMock;
+        deleteComment: typeof testState.deleteCommentMock;
+        publishComment: typeof testState.publishCommentMock;
+        publishCommentModeration: typeof testState.publishCommentModerationActionMock;
+      };
       accountsEditsSummaries: Record<string, Record<string, unknown>>;
       activeAccountId: string;
     }) => unknown,
   ) =>
     selector({
       accounts: { account: testState.account },
+      accountsActions: {
+        createAccount: testState.createAccountMock,
+        deleteAccount: testState.deleteAccountMock,
+        deleteComment: testState.deleteCommentMock,
+        publishComment: testState.publishCommentMock,
+        publishCommentModeration: testState.publishCommentModerationActionMock,
+      },
       accountsEditsSummaries: { account: {} },
       activeAccountId: 'account',
     }),
@@ -123,6 +163,40 @@ vi.mock('@floating-ui/react', () => ({
     },
     update: vi.fn(),
   }),
+}));
+
+vi.mock('@react-spring/web', async () => {
+  const React = await vi.importActual<typeof import('react')>('react');
+  const normalizeStyle = (style: Record<string, unknown> | undefined) =>
+    style
+      ? Object.fromEntries(
+          Object.entries(style).map(([key, value]) => [
+            key,
+            typeof value === 'object' && value !== null && 'get' in value && typeof (value as { get: unknown }).get === 'function'
+              ? (value as { get: () => unknown }).get()
+              : value,
+          ]),
+        )
+      : undefined;
+
+  return {
+    animated: {
+      div: React.forwardRef(({ style, ...props }: any, ref) => React.createElement('div', { ...props, ref, style: normalizeStyle(style) })),
+    },
+    useSpring: testState.useSpringMock.mockImplementation(() => [
+      {
+        left: { get: () => 120 },
+        top: { get: () => 50 },
+      },
+      {
+        start: testState.springStartMock,
+      },
+    ]),
+  };
+});
+
+vi.mock('@use-gesture/react', () => ({
+  useDrag: () => () => ({}),
 }));
 
 vi.mock('react-virtuoso', () => ({
@@ -181,6 +255,7 @@ vi.mock('../../../hooks/use-directories', () => ({
         (value) => typeof value === 'string' && value.replace(/(\.bso|\.eth)$/, '') === address.replace(/(\.bso|\.eth)$/, ''),
       ),
     ),
+  getFallbackDirectoriesData: () => ({ communities: testState.directories }),
   normalizeBoardAddress: (address: string) => address.replace(/(\.bso|\.eth)$/, ''),
   useDirectories: () => testState.directories,
 }));
@@ -208,17 +283,34 @@ vi.mock('../../../components/tooltip/tooltip', () => ({
 }));
 
 vi.mock('../../post/post', () => ({
-  Post: ({ isModQueue, post, showReplies }: { isModQueue?: boolean; post?: TestComment; showReplies?: boolean }) =>
+  Post: ({
+    isModQueue,
+    isPublishing,
+    modQueueStatus,
+    onTransfer,
+    post,
+    showReplies,
+  }: {
+    isModQueue?: boolean;
+    isPublishing?: boolean;
+    modQueueStatus?: string | null;
+    onTransfer?: () => void;
+    post?: TestComment;
+    showReplies?: boolean;
+  }) =>
     createElement(
       'div',
       {
         'data-cid': post?.cid,
         'data-content': post?.content,
         'data-is-mod-queue': String(Boolean(isModQueue)),
+        'data-is-publishing': String(Boolean(isPublishing)),
+        'data-mod-queue-status': modQueueStatus ?? '',
         'data-show-replies': String(Boolean(showReplies)),
         'data-testid': 'mod-queue-feed-post',
       },
       post?.cid ?? 'missing',
+      onTransfer ? createElement('button', { type: 'button', onClick: onTransfer }, 'transfer') : null,
     ),
 }));
 
@@ -270,6 +362,11 @@ const renderModQueueWithOtherRoute = async () => {
 describe('ModQueueView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    testState.account = { author: { address: '0x123', shortAddress: '0x123' }, id: 'account', name: 'main' };
+    testState.accounts = [
+      { author: { address: '0x123', shortAddress: '0x123' }, id: 'account', name: 'main' },
+      { author: { address: '0x999', shortAddress: '0x999' }, id: 'throwaway-account', name: 'throwaway' },
+    ];
     testState.accountCommunityAddresses = ['music-posting.eth'];
     testState.communityError = null;
     testState.directories = [{ address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' }];
@@ -277,7 +374,22 @@ describe('ModQueueView', () => {
     testState.feed = [];
     testState.hasMore = false;
     testState.isMobile = false;
+    testState.createAccountMock.mockResolvedValue(undefined);
+    testState.deleteAccountMock.mockResolvedValue(undefined);
+    testState.publishCommentMock.mockResolvedValue({ index: 12 });
+    testState.publishCommentModerationActionMock.mockResolvedValue(undefined);
     testState.queuedCommentHistory = [];
+    testState.springStartMock.mockReset();
+    testState.useSpringMock.mockReset();
+    testState.useSpringMock.mockImplementation(() => [
+      {
+        left: { get: () => 120 },
+        top: { get: () => 50 },
+      },
+      {
+        start: testState.springStartMock,
+      },
+    ]);
     testState.viewMode = 'compact';
 
     container = document.createElement('div');
@@ -290,6 +402,8 @@ describe('ModQueueView', () => {
       root.unmount();
     });
     container.remove();
+    document.body.style.userSelect = '';
+    document.body.style.webkitUserSelect = '';
   });
 
   it('keeps the compact table visible with the empty state while an empty mod queue continues loading', async () => {
@@ -463,6 +577,662 @@ describe('ModQueueView', () => {
     // mod-queue feed layout (no leading <hr>, no inline approve/reject buttons).
     expect(previewPost?.getAttribute('data-is-mod-queue')).toBe('false');
     expect(previewPost?.getAttribute('data-show-replies')).toBe('false');
+  });
+
+  it('transfers a queued post to another board with a temporary account', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+      { address: 'anime-posting.eth', directoryCode: 'a', title: '/a/ - Anime & Manga' },
+    ];
+    testState.feed = [
+      {
+        author: { displayName: 'Original name' },
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        flairs: [{ text: 'flag:country:auto', type: 'country' }, { text: 'flash:loop' }],
+        link: 'https://example.com/image.png',
+        number: 8,
+        pendingApproval: true,
+        spoiler: true,
+        timestamp: 90_000,
+        title: 'Wrong board',
+      },
+    ];
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    expect(transferButton).toBeTruthy();
+
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    expect(dialog?.textContent).toContain('Transfer Post No.8');
+    expect(dialog?.textContent).toContain('/g/ - Technology');
+    expect(dialog?.textContent).toContain('modQueue.transferRecreateNotice');
+    expect(dialog?.textContent).toContain('modQueue.transferRepliesNotice');
+    expect(dialog?.textContent).toContain('modQueue.transferTemporaryAccountNotice');
+    expect(dialog?.textContent).not.toContain('modQueue.transferAccount');
+    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
+    expect(Array.from(targetSelect?.options ?? []).map((option) => option.value)).toEqual(['', 'anime-posting.eth', 'tech-posting.eth']);
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+    expect(submitButton?.disabled).toBe(true);
+
+    await act(async () => {
+      if (targetSelect) {
+        targetSelect.value = 'tech-posting.eth';
+        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    expect(submitButton?.disabled).toBe(false);
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    expect(testState.createAccountMock).toHaveBeenCalledTimes(1);
+    const temporaryAccountName = testState.createAccountMock.mock.calls[0][0];
+    expect(temporaryAccountName).toEqual(expect.stringMatching(/^5chan-transfer-wrong-bo-/));
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+    const [payload, accountName] = testState.publishCommentMock.mock.calls[0];
+    expect(accountName).toBe(temporaryAccountName);
+    expect(payload).toMatchObject({
+      communityAddress: 'tech-posting.eth',
+      content: 'belongs on tech',
+      flairs: [{ text: 'flash:loop' }],
+      link: 'https://example.com/image.png',
+      spoiler: true,
+      title: 'Wrong board',
+    });
+    expect(payload.author).toBeUndefined();
+    expect(typeof payload.onChallengeVerification).toBe('function');
+
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    await act(async () => {
+      await payload.onChallengeVerification({ challengeSuccess: false, reason: 'try again' }, { cid: 'retry-post', communityAddress: 'tech-posting.eth' });
+      await Promise.resolve();
+    });
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    expect(testState.publishCommentModerationActionMock).not.toHaveBeenCalled();
+    expect(testState.deleteAccountMock).not.toHaveBeenCalled();
+    expect(dialog?.textContent).toContain('publishing');
+    alertSpy.mockRestore();
+
+    await act(async () => {
+      await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post' } }, { cid: 'transferred-post' });
+      await Promise.resolve();
+    });
+
+    expect(testState.publishCommentModerationActionMock).toHaveBeenCalledTimes(2);
+    expect(testState.publishCommentModerationActionMock.mock.calls[0][0]).toMatchObject({
+      commentCid: 'transferred-post',
+      communityAddress: 'tech-posting.eth',
+      commentModeration: {
+        flairs: [{ text: 'flash:loop' }, { text: '5chan:transferred' }],
+      },
+    });
+    expect(testState.publishCommentModerationActionMock.mock.calls[1][0]).toMatchObject({
+      commentCid: 'wrong-board-post',
+      communityAddress: 'music-posting.eth',
+      commentModeration: {
+        approved: false,
+        reason: 'Moved to >>>/g/, this post did not belong to /mu/ ([rules](/rules#mu))',
+      },
+    });
+    expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);
+    expect(dialog?.textContent).toContain('modQueue.transferSuccess');
+    expect(dialog?.textContent).not.toContain('#12');
+    expect(submitButton?.disabled).toBe(true);
+    expect(targetSelect?.disabled).toBe(true);
+    expect(testState.rememberCommentsInQueueMock).toHaveBeenCalledWith([
+      expect.objectContaining({
+        approved: false,
+        cid: 'wrong-board-post',
+        pendingApproval: false,
+      }),
+    ]);
+    expect(container.textContent).toContain('rejected');
+    expect(
+      Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => ['approve', 'reject', 'transfer'].includes(button.textContent ?? '')),
+    ).toBe(false);
+
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    expect(testState.createAccountMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+    expect(testState.publishCommentModerationActionMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps post-acceptance transfer finalization failures from being retried', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+    testState.publishCommentModerationActionMock.mockRejectedValueOnce(new Error('target marker failed'));
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
+    await act(async () => {
+      if (targetSelect) {
+        targetSelect.value = 'tech-posting.eth';
+        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    const [payload] = testState.publishCommentMock.mock.calls[0];
+    await act(async () => {
+      await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post' } }, { cid: 'transferred-post' });
+      await Promise.resolve();
+    });
+
+    expect(dialog?.querySelector('[data-testid="error-display"]')?.textContent).toBe('target marker failed');
+    expect(submitButton?.disabled).toBe(true);
+    expect(targetSelect?.disabled).toBe(true);
+    expect(testState.deleteAccountMock).toHaveBeenCalled();
+
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
+
+    const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
+    await act(async () => {
+      closeButton?.click();
+    });
+
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'transfer')).toBe(false);
+  });
+
+  it('awaits transfer publish rollback before enabling retry', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+    let resolveDeleteAccount: () => void = () => undefined;
+    testState.deleteAccountMock.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveDeleteAccount = resolve;
+        }),
+    );
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
+    await act(async () => {
+      if (targetSelect) {
+        targetSelect.value = 'tech-posting.eth';
+        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    const temporaryAccountName = testState.createAccountMock.mock.calls[0][0];
+    const [payload] = testState.publishCommentMock.mock.calls[0];
+    payload._onPendingCommentIndex(12);
+    let onErrorPromise: Promise<void> | undefined;
+    await act(async () => {
+      onErrorPromise = payload.onError(new Error('publish failed'));
+      await Promise.resolve();
+    });
+
+    expect(testState.deleteCommentMock).toHaveBeenCalledWith(12, temporaryAccountName);
+    expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);
+    expect(dialog?.textContent).toContain('publishing');
+    expect(submitButton?.disabled).toBe(true);
+
+    await act(async () => {
+      resolveDeleteAccount();
+      await onErrorPromise;
+      await Promise.resolve();
+    });
+
+    expect(dialog?.querySelector('[data-testid="error-display"]')?.textContent).toBe('publish failed');
+    expect(dialog?.textContent).not.toContain('publishing');
+    expect(submitButton?.disabled).toBe(false);
+  });
+
+  it('only allows one transfer modal to be open from the mod queue', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+      {
+        cid: 'also-wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'also belongs on tech',
+        number: 9,
+        pendingApproval: true,
+        timestamp: 91_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    let transferButtons = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer');
+    expect(transferButtons).toHaveLength(2);
+
+    await act(async () => {
+      transferButtons[0]?.click();
+    });
+
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(1);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer')).toHaveLength(0);
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
+    await act(async () => {
+      closeButton?.click();
+    });
+
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(0);
+    transferButtons = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer');
+    expect(transferButtons).toHaveLength(2);
+  });
+
+  it('keeps the transfer lock while a hidden active item is still publishing', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    const activeComment = {
+      cid: 'wrong-board-post',
+      communityAddress: 'music-posting.eth',
+      content: 'belongs on tech',
+      number: 8,
+      pendingApproval: true,
+      timestamp: 90_000,
+    };
+    const remainingComment = {
+      cid: 'also-wrong-board-post',
+      communityAddress: 'music-posting.eth',
+      content: 'also belongs on tech',
+      number: 9,
+      pendingApproval: true,
+      timestamp: 91_000,
+    };
+    testState.feed = [activeComment, remainingComment];
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(1);
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
+    await act(async () => {
+      if (targetSelect) {
+        targetSelect.value = 'tech-posting.eth';
+        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+    const [payload] = testState.publishCommentMock.mock.calls[0];
+
+    testState.feed = [remainingComment];
+    await renderModQueue();
+
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(0);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer')).toHaveLength(0);
+
+    await act(async () => {
+      await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post' } }, { cid: 'transferred-post' });
+      await Promise.resolve();
+    });
+
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer')).toHaveLength(1);
+  });
+
+  it('does not show transfer for queued replies', async () => {
+    testState.feed = [
+      {
+        cid: 'pending-reply',
+        communityAddress: 'music-posting.eth',
+        content: 'pending reply body',
+        number: 7,
+        parentCid: 'thread-cid',
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'transfer')).toBe(false);
+  });
+
+  it.each([
+    ['deleted', { deleted: true }],
+    ['removed', { removed: true }],
+    ['moderation removed', { commentModeration: { removed: true } }],
+    ['purged', { commentModeration: { purged: true } }],
+    ['archived', { archived: true }],
+    ['moderation archived', { commentModeration: { archived: true } }],
+  ])('does not show transfer for %s queued posts', async (_label, commentPatch) => {
+    testState.feed = [
+      {
+        cid: 'unavailable-post',
+        communityAddress: 'music-posting.eth',
+        content: 'already unavailable',
+        number: 7,
+        pendingApproval: true,
+        timestamp: 90_000,
+        ...commentPatch,
+      },
+    ];
+
+    await renderModQueue();
+
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'transfer')).toBe(false);
+  });
+
+  it('cleans up the temporary account and unlocks the transfer modal when the challenge is abandoned', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
+    await act(async () => {
+      if (targetSelect) {
+        targetSelect.value = 'tech-posting.eth';
+        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+    expect(container.textContent).toContain('publishing');
+    expect(
+      Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => ['approve', 'reject', 'transfer'].includes(button.textContent ?? '')),
+    ).toBe(false);
+
+    const temporaryAccountName = testState.createAccountMock.mock.calls[0][0];
+    const [payload] = testState.publishCommentMock.mock.calls[0];
+    payload._onPendingCommentIndex(12);
+
+    await act(async () => {
+      await payload.onChallenge({ type: 'text-math' }, { cid: 'pending-transfer-post' });
+    });
+
+    const abandonTransferChallenge = testState.addChallengeMock.mock.calls[0][1];
+    await act(async () => {
+      await abandonTransferChallenge();
+      await Promise.resolve();
+    });
+
+    expect(testState.deleteCommentMock).toHaveBeenCalledWith(12, temporaryAccountName);
+    expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);
+    expect(dialog?.textContent).toContain('Transfer challenge was abandoned.');
+    expect(container.textContent).not.toContain('publishing');
+    const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
+    expect(closeButton?.disabled).toBe(false);
+    expect(submitButton?.disabled).toBe(false);
+  });
+
+  it('opens and closes the transfer modal from feed mode', async () => {
+    testState.viewMode = 'feed';
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    expect(container.querySelector('[data-testid="mod-queue-feed-post"]')?.getAttribute('data-cid')).toBe('wrong-board-post');
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    expect(dialog?.textContent).toContain('Transfer Post No.8');
+
+    const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
+    await act(async () => {
+      closeButton?.click();
+    });
+
+    expect(document.body.querySelector('[role="dialog"][aria-labelledby="post-transfer-title"]')).toBeNull();
+  });
+
+  it('locks feed-mode actions while transfer publishes and marks success as rejected', async () => {
+    testState.viewMode = 'feed';
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    const feedPost = container.querySelector('[data-testid="mod-queue-feed-post"]');
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
+    await act(async () => {
+      if (targetSelect) {
+        targetSelect.value = 'tech-posting.eth';
+        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    expect(feedPost?.getAttribute('data-is-publishing')).toBe('true');
+
+    const [payload] = testState.publishCommentMock.mock.calls[0];
+    await act(async () => {
+      await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post' } }, { cid: 'transferred-post' });
+      await Promise.resolve();
+    });
+
+    expect(feedPost?.getAttribute('data-is-publishing')).toBe('false');
+    expect(feedPost?.getAttribute('data-mod-queue-status')).toBe('rejected');
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'transfer')).toBe(false);
+  });
+
+  it('keeps the transfer modal non-blocking and closes it with Escape', async () => {
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    expect(dialog?.textContent).toContain('Transfer Post No.8');
+
+    await act(async () => {
+      dialog?.querySelector('form')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(document.body.querySelector('[role="dialog"][aria-labelledby="post-transfer-title"]')).toBe(dialog);
+
+    await act(async () => {
+      document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(document.body.querySelector('[role="dialog"][aria-labelledby="post-transfer-title"]')).toBe(dialog);
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    expect(document.body.querySelector('[role="dialog"][aria-labelledby="post-transfer-title"]')).toBeNull();
+  });
+
+  it('opens transfer modals centered in the viewport', async () => {
+    const originalInnerWidth = window.innerWidth;
+    const originalInnerHeight = window.innerHeight;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 900 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 640 });
+    testState.directories = [
+      { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
+      { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
+    ];
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on tech',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+
+    try {
+      await renderModQueue();
+
+      const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+      await act(async () => {
+        transferButton?.click();
+      });
+
+      const [configFactory] = testState.useSpringMock.mock.calls[0] as [() => Record<string, unknown>, unknown[]];
+      expect(configFactory()).toEqual({
+        from: {
+          left: 235,
+          top: 320,
+        },
+      });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalInnerWidth });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: originalInnerHeight });
+    }
   });
 
   it('caps long content in the floating preview so the hover card stays compact', async () => {

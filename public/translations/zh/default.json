@@ -449,5 +449,17 @@
   "post_form_code_tags_prompt": "您可以使用 [code] 标签来高亮语法并保留空白字符。",
   "reply_link_required_alert": "你必须使用链接回复。",
   "reply_media_link_required_alert": "你必须使用图片或视频链接回复。",
-  "reply_links_not_allowed_alert": "此版块不允许回复链接。"
+  "reply_links_not_allowed_alert": "此版块不允许回复链接。",
+  "transfer": "转移",
+  "modQueue.transferTitle": "转移帖子",
+  "modQueue.transferSource": "来源",
+  "modQueue.transferTarget": "转至论坛",
+  "modQueue.transferFields": "复制字段",
+  "modQueue.transferNoFields": "请至少选择一个要复制的字段。",
+  "modQueue.transferSuccess": "已转移。原帖现在指向新版块。",
+  "transferred": "已转移",
+  "modQueue.transferTitleWithNumber": "转移帖子 No.{{number}}",
+  "modQueue.transferRecreateNotice": "这不是协议层面的真实转移。5chan 会在所选版块重新创建帖子，并移除原帖。",
+  "modQueue.transferRepliesNotice": "回复不会被转移。它们会随原帖一起删除。",
+  "modQueue.transferTemporaryAccountNotice": "5chan 会专门为这个复制后的帖子创建一个新的临时账号，并在发布后删除它。"
 }
