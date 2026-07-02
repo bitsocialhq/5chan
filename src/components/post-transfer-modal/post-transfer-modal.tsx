@@ -1,4 +1,4 @@
-import React, { useEffect, useEffectEvent, useLayoutEffect, useMemo, useReducer, useRef } from 'react';
+import React, { useEffect, useEffectEvent, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSpring, animated } from '@react-spring/web';
@@ -35,9 +35,11 @@ type DeleteCommentAction = (commentCidOrAccountCommentIndex: string | number, ac
 type DeleteAccountAction = (accountName?: string) => Promise<void>;
 type PublishCommentModerationAction = (publishCommentModerationOptions: Record<string, unknown>, accountName?: string) => Promise<void>;
 type TransferModalPosition = { left: number; top: number };
+type InitialTransferModalPosition = { isStored: boolean; position: TransferModalPosition };
 
 const TRANSFER_MODAL_WIDTH_PX = 430;
 const TRANSFER_MODAL_VIEWPORT_GUTTER_PX = 20;
+const TRANSFER_MODAL_POSITION_SESSION_STORAGE_KEY = '5chan:transfer-modal-position';
 
 interface TransferModalState {
   targetBoardAddress: string;
@@ -126,6 +128,47 @@ const getCenteredTransferModalPosition = (modalElement?: HTMLElement | null): Tr
   };
 };
 
+const readTransferModalPosition = (): TransferModalPosition | null => {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const storedPosition = window.sessionStorage.getItem(TRANSFER_MODAL_POSITION_SESSION_STORAGE_KEY);
+    if (!storedPosition) return null;
+
+    const parsedPosition = JSON.parse(storedPosition) as Partial<TransferModalPosition>;
+    if (typeof parsedPosition.left !== 'number' || typeof parsedPosition.top !== 'number') return null;
+    if (!Number.isFinite(parsedPosition.left) || !Number.isFinite(parsedPosition.top)) return null;
+
+    return {
+      left: Math.round(parsedPosition.left),
+      top: Math.round(parsedPosition.top),
+    };
+  } catch (error) {
+    console.warn('Failed to read transfer modal position from sessionStorage:', error);
+    return null;
+  }
+};
+
+const writeTransferModalPosition = (position: TransferModalPosition) => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.sessionStorage.setItem(TRANSFER_MODAL_POSITION_SESSION_STORAGE_KEY, JSON.stringify(position));
+  } catch (error) {
+    console.warn('Failed to save transfer modal position to sessionStorage:', error);
+  }
+};
+
+const shouldUseStoredTransferModalPosition = () => typeof window !== 'undefined' && window.innerWidth >= 640;
+
+const getInitialTransferModalPosition = (): InitialTransferModalPosition => {
+  const centeredPosition = getCenteredTransferModalPosition();
+  if (!shouldUseStoredTransferModalPosition()) return { isStored: false, position: centeredPosition };
+
+  const storedPosition = readTransferModalPosition();
+  return storedPosition ? { isStored: true, position: storedPosition } : { isStored: false, position: centeredPosition };
+};
+
 const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransferSuccess }: PostTransferModalProps) => {
   const { t } = useTranslation();
   const nodeRef = useRef<HTMLDivElement>(null);
@@ -174,16 +217,19 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
     typeof deleteAccount === 'function' &&
     hasSelectedTransferFields(selectedFields, availableFields);
 
+  const [initialModalPosition] = useState(getInitialTransferModalPosition);
   const [{ left, top }, api] = useSpring(
     () => ({
-      from: getCenteredTransferModalPosition(),
+      from: initialModalPosition.position,
     }),
     [],
   );
 
   useLayoutEffect(() => {
+    if (initialModalPosition.isStored) return;
+
     api.start({ ...getCenteredTransferModalPosition(nodeRef.current), immediate: true });
-  }, [api]);
+  }, [api, initialModalPosition.isStored]);
 
   const disableBodyTextSelection = () => {
     if (!bodySelectionStyleBeforeDragRef.current) {
@@ -214,6 +260,9 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
         disableBodyTextSelection();
       } else {
         restoreBodyTextSelection();
+        if (shouldUseStoredTransferModalPosition()) {
+          writeTransferModalPosition({ left: nextLeft, top: nextTop });
+        }
       }
       api.start({ left: nextLeft, top: nextTop, immediate: true });
     },
