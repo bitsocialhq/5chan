@@ -3,7 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostTransferModal from '../post-transfer-modal';
-import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
+import { TRASH_BOARD_ADDRESS, TRASH_BOARD_PUBLIC_KEY, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -194,6 +194,18 @@ describe('PostTransferModal', () => {
     const [sourceModerationOptions] = testState.publishCommentModerationMock.mock.calls[1] as [{ commentModeration: { reason: string } }, string];
     expect(sourceModerationOptions.commentModeration.reason).toContain('/trash/');
     expect(sourceModerationOptions.commentModeration.reason).toContain('/rules#trash');
+  });
+
+  it('does not offer the hidden trash board target when the source uses its public key alias', async () => {
+    await renderTransferModal({ ...baseComment, communityAddress: TRASH_BOARD_PUBLIC_KEY });
+
+    const options = Array.from(document.body.querySelectorAll<HTMLOptionElement>('select option')).map((option) => ({
+      text: option.textContent,
+      value: option.value,
+    }));
+
+    expect(document.body.textContent).toContain(TRASH_BOARD_TITLE);
+    expect(options).not.toContainEqual({ text: TRASH_BOARD_TITLE, value: TRASH_BOARD_ADDRESS });
   });
 
   it('reopens desktop transfer modals at the last dragged session position', async () => {

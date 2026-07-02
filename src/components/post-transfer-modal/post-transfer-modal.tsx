@@ -99,6 +99,15 @@ const transferModalReducer = (state: TransferModalState, action: TransferModalAc
 const getTransferBoardLabel = (community: { address?: string; directoryCode?: string; title?: string }): string =>
   community.title || community.directoryCode || community.address || '';
 
+const isSameTransferBoard = (community: { address?: string; aliases?: string[]; publicKey?: string }, sourceCommunityAddress: string | undefined): boolean => {
+  if (!sourceCommunityAddress) return false;
+  return (
+    areSameBoardAddress(community.address, sourceCommunityAddress) ||
+    community.publicKey === sourceCommunityAddress ||
+    Boolean(community.aliases?.includes(sourceCommunityAddress))
+  );
+};
+
 const getTransferFieldLabel = (field: PostTransferField, t: (key: string) => string): string => {
   if (field === 'displayName') return capitalize(t('name'));
   if (field === 'title') return capitalize(t('subject'));
@@ -186,7 +195,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
   const boardOptions = useMemo(() => {
     const transferTargets = [...directories, ...SPECIAL_BOARDS];
     return transferTargets
-      .filter((community) => community.address && (!sourceCommunityAddress || !areSameBoardAddress(community.address, sourceCommunityAddress)))
+      .filter((community) => community.address && !isSameTransferBoard(community, sourceCommunityAddress))
       .sort((left, right) => getTransferBoardLabel(left).localeCompare(getTransferBoardLabel(right), undefined, { sensitivity: 'base' }));
   }, [directories, sourceCommunityAddress]);
   const [modalState, dispatchModalState] = useReducer(transferModalReducer, comment, getInitialTransferModalState);
@@ -197,7 +206,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
   const availableFields = useMemo(() => getAvailableTransferFields(comment), [comment]);
   const sourceBoard = useMemo(() => {
     if (!sourceCommunityAddress) return undefined;
-    return getSpecialBoardByAddress(sourceCommunityAddress) ?? directories.find((community) => areSameBoardAddress(community.address, sourceCommunityAddress));
+    return getSpecialBoardByAddress(sourceCommunityAddress) ?? directories.find((community) => isSameTransferBoard(community, sourceCommunityAddress));
   }, [directories, sourceCommunityAddress]);
   const sourceBoardLabel = useMemo(() => {
     return sourceBoard ? getTransferBoardLabel(sourceBoard) : sourceCommunityAddress || 'N/A';
