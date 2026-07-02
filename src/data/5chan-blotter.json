@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.11",
+      "kind": "release",
+      "timestamp": 1782993600,
+      "message": "v0.9.11: Mod queue post transfers, resizable reply previews",
+      "version": "0.9.11"
+    },
+    {
       "id": "release-0.9.10",
       "kind": "release",
       "timestamp": 1782734400,
