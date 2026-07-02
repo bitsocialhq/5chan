@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  "This release adds moderator tools for transferring posts between boards, improves the reply editor with resizable previews and better YouTube link insertion, and keeps reply and transfer dialogs in place while you work.";
+  "This release makes reply forms follow each board's link rules, including boards that require file links or block links in replies.";
 
 const releaseBody = `${oneLinerDescription}
 
