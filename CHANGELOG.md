@@ -1,3 +1,23 @@
+## [0.9.11](https://github.com/bitsocialnet/5chan/compare/v0.9.10...v0.9.11) (2026-07-02)
+
+
+### Bug Fixes
+
+* **reply modal:** align composer controls ([c0537cc](https://github.com/bitsocialnet/5chan/commit/c0537cc680819ead007a25a7606cb7b4921be2e3))
+* **reply modal:** constrain bbcode preview width ([b90138f](https://github.com/bitsocialnet/5chan/commit/b90138f1d93523d7a29be67981163f30b7635e35))
+* **reply modal:** insert YouTube links at cursor and enable conversion everywhere ([4bfe298](https://github.com/bitsocialnet/5chan/commit/4bfe298d4b2a39e777f3e4fe0f5e1b41e24411eb))
+* **reply modal:** remember desktop position across opens in session ([546ee99](https://github.com/bitsocialnet/5chan/commit/546ee99f123f94aca99e19abd5272246a1fceb0e))
+* **transfer modal:** remember dragged position ([e50e4e6](https://github.com/bitsocialnet/5chan/commit/e50e4e630b883d16171ac3d8a7deaad9f2620921))
+
+
+### Features
+
+* **bbcode preview:** allow resizing preview pane ([21056ae](https://github.com/bitsocialnet/5chan/commit/21056ae6b943d3c75c8cbdf3fa727f7c25d8197e))
+* **mod queue:** transfer posts across boards ([#1182](https://github.com/bitsocialnet/5chan/issues/1182)) ([b4a6f0a](https://github.com/bitsocialnet/5chan/commit/b4a6f0a65afcce0414704f891925dc6bf3ba70b0))
+* **trash-board:** add hidden trash board ([099fdd6](https://github.com/bitsocialnet/5chan/commit/099fdd6f3e3506984e473e957aac81e6645294c3))
+
+
+
 ## [0.9.10](https://github.com/bitsocialnet/5chan/compare/v0.9.9...v0.9.10) (2026-06-29)
 
 
