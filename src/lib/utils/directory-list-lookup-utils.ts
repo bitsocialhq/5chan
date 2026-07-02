@@ -1,4 +1,5 @@
 import { vendoredDirectoryLists as directoryListsData } from '../../data/vendored-directory-lists';
+import { isSpecialBoardCode } from '../special-boards';
 import { normalizeDirectoryList, type DirectoryList, type DirectoryListBoard } from './directory-list-utils';
 
 const DIRECTORY_ALIAS_SUFFIXES = ['.bso', '.eth'] as const;
@@ -21,7 +22,7 @@ export const getVendoredDirectoryLists = (): DirectoryList[] => {
   const directories = Array.isArray(directoryListsData.directories) ? directoryListsData.directories : [];
   vendoredDirectoryListsCache = directories.flatMap((directory) => {
     const directoryCode = typeof directory.directoryCode === 'string' ? directory.directoryCode : undefined;
-    if (!directoryCode) return [];
+    if (!directoryCode || isSpecialBoardCode(directoryCode)) return [];
     const normalized = normalizeDirectoryList(directory, directoryCode);
     return normalized ? [normalized] : [];
   });

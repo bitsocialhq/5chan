@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostTransferModal from '../post-transfer-modal';
+import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -151,6 +152,17 @@ describe('PostTransferModal', () => {
     expect(modal?.style.left).toBe('120px');
     expect(modal?.style.top).toBe('80px');
     expect(modal?.style.transform).toBe('');
+  });
+
+  it('offers the hidden trash board as a transfer target', async () => {
+    await renderTransferModal();
+
+    const options = Array.from(document.body.querySelectorAll<HTMLOptionElement>('select option')).map((option) => ({
+      text: option.textContent,
+      value: option.value,
+    }));
+
+    expect(options).toContainEqual({ text: TRASH_BOARD_TITLE, value: TRASH_BOARD_ADDRESS });
   });
 
   it('reopens desktop transfer modals at the last dragged session position', async () => {

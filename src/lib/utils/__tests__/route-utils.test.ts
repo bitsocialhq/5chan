@@ -25,6 +25,7 @@ import {
   normalizeMultiboardFeedPath,
   stripPageFromFeedPath,
 } from '../route-utils';
+import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE, TRASH_BOARD_PUBLIC_KEY } from '../../special-boards';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY, touchLastVisitTimestamp } from '../time-filter-utils';
 
 const communities = [
@@ -59,6 +60,16 @@ describe('directory mapping helpers', () => {
     expect(getCommunityAddress('biz', communities)).toBe('business.eth');
     expect(getCommunityAddress('b', communities)).toBe('random.eth');
     expect(getCommunityAddress('unknown.example', communities)).toBe('unknown.example');
+  });
+
+  it('maps hidden special boards without treating them as directory routes', () => {
+    expect(getBoardPath(TRASH_BOARD_ADDRESS, communities)).toBe(TRASH_BOARD_CODE);
+    expect(getBoardPath(TRASH_BOARD_PUBLIC_KEY, communities)).toBe(TRASH_BOARD_CODE);
+    expect(getCommunityAddress(TRASH_BOARD_CODE, communities)).toBe(TRASH_BOARD_ADDRESS);
+    expect(getCommunityAddress('off-topic.eth', communities)).toBe(TRASH_BOARD_ADDRESS);
+
+    expect(isDirectoryRoute(TRASH_BOARD_CODE, communities)).toBe(false);
+    expect(isDirectoryBoard(TRASH_BOARD_CODE, communities)).toBe(false);
   });
 
   it('compares aliases and directory identifiers correctly', () => {

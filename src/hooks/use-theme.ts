@@ -7,6 +7,7 @@ import { useDirectories } from './use-directories';
 import { useResolvedCommunityAddress } from './use-resolved-community-address';
 import useSpecialThemeStore from '../stores/use-special-theme-store';
 import { getActiveSpecialTheme, getSpecialThemeClass } from '../lib/utils/time-utils';
+import { getSpecialBoardByAddress } from '../lib/special-boards';
 import { isSfwBoard, updateFavicon } from '../lib/update-favicon';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
 import { normalizeAccountCommentIndex } from '../lib/utils/account-comment-index-utils';
@@ -67,7 +68,8 @@ const useTheme = (): [string, (theme: string) => void] => {
       storedTheme = themes.nsfw;
     } else if (communityAddress) {
       const community = directories.find((entry) => entry.address === communityAddress);
-      if (community?.nsfw) {
+      const specialBoard = getSpecialBoardByAddress(communityAddress);
+      if (community?.nsfw || specialBoard?.nsfw) {
         storedTheme = themes.nsfw;
       } else {
         storedTheme = themes.sfw;
@@ -101,7 +103,8 @@ const useTheme = (): [string, (theme: string) => void] => {
         await setThemeStore('nsfw', newTheme);
       } else if (communityAddress) {
         const community = directories.find((entry) => entry.address === communityAddress);
-        if (community?.nsfw) {
+        const specialBoard = getSpecialBoardByAddress(communityAddress);
+        if (community?.nsfw || specialBoard?.nsfw) {
           await setThemeStore('nsfw', newTheme);
         } else {
           await setThemeStore('sfw', newTheme);

@@ -1,4 +1,5 @@
 import { DirectoryCommunity, findDirectoryByAddress, normalizeBoardAddress } from '../../hooks/use-directories';
+import { getSpecialBoardByAddress, getSpecialBoardByCode } from '../special-boards';
 import { isFlashDirectory, isFlashDirectoryCode } from '../flash-tags';
 import { getEffectiveTimeFilterName, getSearchWithTimeFilter } from './time-filter-utils';
 
@@ -81,6 +82,9 @@ const getAddressToDirectoryMap = (communities: DirectoryCommunity[]): Map<string
  * Uses findDirectoryByAddress for alias resolution (.bso/.eth) so music-posting.eth maps to mu.
  */
 export const getBoardPath = (communityAddress: string, communities: DirectoryCommunity[]): string => {
+  const specialBoard = getSpecialBoardByAddress(communityAddress) ?? getSpecialBoardByCode(communityAddress);
+  if (specialBoard) return specialBoard.directoryCode;
+
   const addressToDirectory = getAddressToDirectoryMap(communities);
   let directory = addressToDirectory.get(communityAddress);
   if (!directory) {
@@ -94,6 +98,9 @@ export const getBoardPath = (communityAddress: string, communities: DirectoryCom
  * Convert URL path (directory code or address) to community address
  */
 export const getCommunityAddress = (boardIdentifier: string, communities: DirectoryCommunity[]): string => {
+  const specialBoard = getSpecialBoardByCode(boardIdentifier) ?? getSpecialBoardByAddress(boardIdentifier);
+  if (specialBoard) return specialBoard.address;
+
   const directoryToAddress = getDirectoryToAddressMap(communities);
 
   // Check if it's a directory code

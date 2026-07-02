@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
 import Board, { type BoardProps } from '../board';
+import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -562,6 +563,21 @@ describe('Board', () => {
     });
 
     expect(container.textContent).not.toContain('board_address_unverified_warning');
+  });
+
+  it('uses hidden special board metadata for the page title', async () => {
+    testState.directories = [];
+    testState.directoryByAddress = {};
+    testState.resolvedCommunityAddress = TRASH_BOARD_ADDRESS;
+    testState.communitySnapshot = {};
+
+    await renderBoard({
+      boardProps: { boardIdentifier: 'trash', viewType: 'board' },
+      initialEntry: '/trash',
+      routePath: '/:boardIdentifier/*',
+    });
+
+    expect(document.title).toBe(`${TRASH_BOARD_TITLE} - 5chan`);
   });
 
   it('renders the current page feed, inserts recent account comments, and wires footer actions', async () => {

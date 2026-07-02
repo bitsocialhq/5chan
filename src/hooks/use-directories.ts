@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { vendoredDirectoryLists as directoryListsData, vendoredDirectoryDefaults as directoryDefaultsData } from '../data/vendored-directory-lists';
+import { isSpecialBoardAddress, isSpecialBoardCode } from '../lib/special-boards';
 import {
   directoryListToCommunity,
   isRecord,
@@ -77,6 +78,12 @@ const dedupeCommunities = (entries: DirectoryCommunity[]): DirectoryCommunity[] 
 
   return normalizedEntries;
 };
+
+const isVisibleDirectoryCommunity = (community: DirectoryCommunity): boolean =>
+  !isSpecialBoardCode(community.directoryCode) &&
+  !isSpecialBoardAddress(community.address) &&
+  !isSpecialBoardAddress(community.name) &&
+  !isSpecialBoardAddress(community.publicKey);
 
 const adaptDirectoryLists = (value: Record<string, unknown>): DirectoryCommunity[] => {
   if (!Array.isArray(value.directories)) {
@@ -199,7 +206,7 @@ const normalizeDirectoriesData = (value: unknown): DirectoriesData | null => {
   }
 
   const adapters: Array<(raw: Record<string, unknown>) => DirectoryCommunity[]> = [adaptDirectoryLists, adaptV2Directories, adaptV1Communities];
-  const communities = adapters.map((adapter) => adapter(value)).find((normalized) => normalized.length > 0) ?? [];
+  const communities = (adapters.map((adapter) => adapter(value)).find((normalized) => normalized.length > 0) ?? []).filter(isVisibleDirectoryCommunity);
 
   if (communities.length === 0) {
     return null;

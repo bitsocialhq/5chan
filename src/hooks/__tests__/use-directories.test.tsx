@@ -15,6 +15,7 @@ import {
   type DirectoriesData,
   type DirectoryDefaultsData,
 } from '../use-directories';
+import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE, TRASH_BOARD_PUBLIC_KEY, TRASH_BOARD_TITLE } from '../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -315,6 +316,40 @@ describe('use-directories', () => {
     expect(fetchMock).toHaveBeenCalledTimes(firstFetchCount);
     expect(secondSnapshot.directories.map((community) => community.address)).toContain('music-posting.bso');
     expect(secondSnapshot.metadata?.title).toBe('5chan directories');
+  });
+
+  it('filters hidden special boards from remote directory data', async () => {
+    const remoteCodes = [...REMOTE_DIRECTORY_CODES, TRASH_BOARD_CODE];
+    fetchMock.mockImplementation((url: unknown) => {
+      if (isDefaultsUrl(url)) {
+        return Promise.resolve(
+          createFetchResponse(
+            createRemoteDefaults(remoteCodes, {
+              [TRASH_BOARD_CODE]: {
+                address: TRASH_BOARD_ADDRESS,
+                publicKey: TRASH_BOARD_PUBLIC_KEY,
+                title: TRASH_BOARD_TITLE,
+                features: { safeForWork: false },
+              },
+            }),
+          ),
+        );
+      }
+      const code = getDirectoryCodeFromUrl(url);
+      const override =
+        code === TRASH_BOARD_CODE
+          ? { address: TRASH_BOARD_ADDRESS, publicKey: TRASH_BOARD_PUBLIC_KEY, title: TRASH_BOARD_TITLE, features: { safeForWork: false } }
+          : undefined;
+      return Promise.resolve(createFetchResponse(createRemoteDirectoryList(code, override)));
+    });
+
+    renderHarness(TRASH_BOARD_ADDRESS);
+    await flushEffects(12);
+
+    const snapshot = expectLatestSnapshot();
+    expect(snapshot.directories.map((directory) => directory.directoryCode)).not.toContain(TRASH_BOARD_CODE);
+    expect(snapshot.addresses).not.toContain(TRASH_BOARD_ADDRESS);
+    expect(snapshot.directory).toBeUndefined();
   });
 
   it('keeps vendored non-default directories when remote defaults omit them and one list fetch fails', async () => {

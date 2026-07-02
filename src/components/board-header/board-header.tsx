@@ -8,6 +8,7 @@ import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import { isArchiveRoute, isDirectoryListRoute } from '../../lib/utils/route-utils';
+import { getSpecialBoardByAddress } from '../../lib/special-boards';
 import styles from './board-header.module.css';
 import { useDirectories } from '../../hooks/use-directories';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
@@ -66,6 +67,7 @@ const BoardHeader = () => {
 
   // Find matching community from default list to get its title
   const defaultCommunity = communityAddress ? directories.find((s) => s.address === communityAddress) : null;
+  const specialBoard = getSpecialBoardByAddress(communityAddress);
 
   // Use accounts store with selector to only subscribe to subscriptions count
   const subscriptionsCount = useAccountsStore((state) => {
@@ -81,7 +83,7 @@ const BoardHeader = () => {
       ? '/subs/ - Subscriptions'
       : isInModView
         ? '/mod/ - Boards You Moderate'
-        : defaultCommunity?.title || stableCommunity?.title;
+        : defaultCommunity?.title || specialBoard?.title || stableCommunity?.title;
   const subtitle = isInAllView
     ? t('all_subtitle')
     : isInSubscriptionsView

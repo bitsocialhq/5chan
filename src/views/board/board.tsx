@@ -25,6 +25,7 @@ import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader'
 import useTimeFilter from '../../hooks/use-time-filter';
 import { getPageSlice } from '../../lib/utils/board-feed-pagination';
 import { getPageFromFeedPath, isDirectoryBoard, normalizeMultiboardFeedPath, stripPageFromFeedPath } from '../../lib/utils/route-utils';
+import { getSpecialBoardByAddress } from '../../lib/special-boards';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getNonokoPendingAccountCommentIndex } from '../../lib/utils/post-options-utils';
@@ -227,6 +228,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const communityIdentifier = useCommunityIdentifier(communityAddress);
 
   const communityDirectory = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
+  const specialBoard = getSpecialBoardByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
   const requestedBoardIdentifier = boardIdentifierProp || params.boardIdentifier;
   const shouldUseFlashTable = !isMultiboardView && (isFlashDirectoryCode(requestedBoardIdentifier) || isFlashDirectory(communityDirectory));
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
@@ -555,7 +557,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
 
   const isKnownEmptySingleCommunityBoard = isSingleCommunityBoard && combinedFeed.length === 0 && isLoadedCommunityState && isRawBoardThreadStateEmpty && isFeedSucceeded;
   const effectiveHasMore = isKnownEmptySingleCommunityBoard ? false : hasMore;
-  const title = isInAllView ? t('all') : isInSubscriptionsView ? t('subscriptions') : isInModView ? t('mod') : communityTitle;
+  const title = isInAllView ? t('all') : isInSubscriptionsView ? t('subscriptions') : isInModView ? t('mod') : specialBoard?.title || communityTitle;
 
   // Memoize footer component to preserve identity across renders (Virtuoso optimization)
   // Note: useFeedStateString is called inside BoardFooter to isolate re-renders from backend state changes

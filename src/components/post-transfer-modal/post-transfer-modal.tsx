@@ -12,6 +12,7 @@ import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-util
 import { areSameBoardAddress } from '../../lib/utils/route-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import capitalize from 'lodash/capitalize';
+import { SPECIAL_BOARDS } from '../../lib/special-boards';
 import styles from './post-transfer-modal.module.css';
 import {
   getAvailableTransferFields,
@@ -182,13 +183,12 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
   const deleteAccount = useAccountsStore((state) => state.accountsActions.deleteAccount) as DeleteAccountAction;
   const sourceCommunityAddress = getCommentCommunityAddress(comment);
   const sourceCommentCid = comment.cid;
-  const boardOptions = useMemo(
-    () =>
-      directories
-        .filter((community) => community.address && (!sourceCommunityAddress || !areSameBoardAddress(community.address, sourceCommunityAddress)))
-        .sort((left, right) => getTransferBoardLabel(left).localeCompare(getTransferBoardLabel(right), undefined, { sensitivity: 'base' })),
-    [directories, sourceCommunityAddress],
-  );
+  const boardOptions = useMemo(() => {
+    const transferTargets = [...directories, ...SPECIAL_BOARDS];
+    return transferTargets
+      .filter((community) => community.address && (!sourceCommunityAddress || !areSameBoardAddress(community.address, sourceCommunityAddress)))
+      .sort((left, right) => getTransferBoardLabel(left).localeCompare(getTransferBoardLabel(right), undefined, { sensitivity: 'base' }));
+  }, [directories, sourceCommunityAddress]);
   const [modalState, dispatchModalState] = useReducer(transferModalReducer, comment, getInitialTransferModalState);
   const { targetBoardAddress, selectedFields, transferState, transferError } = modalState;
 
