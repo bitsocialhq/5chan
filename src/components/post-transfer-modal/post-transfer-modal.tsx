@@ -12,7 +12,7 @@ import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-util
 import { areSameBoardAddress } from '../../lib/utils/route-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import capitalize from 'lodash/capitalize';
-import { SPECIAL_BOARDS } from '../../lib/special-boards';
+import { getSpecialBoardByAddress, SPECIAL_BOARDS } from '../../lib/special-boards';
 import styles from './post-transfer-modal.module.css';
 import {
   getAvailableTransferFields,
@@ -195,10 +195,10 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
   const resolvedTargetBoardAddress = targetBoardAddress;
   const resolvedTargetBoard = boardOptions.find((community) => community.address === targetBoardAddress);
   const availableFields = useMemo(() => getAvailableTransferFields(comment), [comment]);
-  const sourceBoard = useMemo(
-    () => (sourceCommunityAddress ? directories.find((community) => areSameBoardAddress(community.address, sourceCommunityAddress)) : undefined),
-    [directories, sourceCommunityAddress],
-  );
+  const sourceBoard = useMemo(() => {
+    if (!sourceCommunityAddress) return undefined;
+    return getSpecialBoardByAddress(sourceCommunityAddress) ?? directories.find((community) => areSameBoardAddress(community.address, sourceCommunityAddress));
+  }, [directories, sourceCommunityAddress]);
   const sourceBoardLabel = useMemo(() => {
     return sourceBoard ? getTransferBoardLabel(sourceBoard) : sourceCommunityAddress || 'N/A';
   }, [sourceBoard, sourceCommunityAddress]);

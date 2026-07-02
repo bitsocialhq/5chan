@@ -165,6 +165,37 @@ describe('PostTransferModal', () => {
     expect(options).toContainEqual({ text: TRASH_BOARD_TITLE, value: TRASH_BOARD_ADDRESS });
   });
 
+  it('resolves the hidden trash board when it is the transfer source', async () => {
+    await renderTransferModal({ ...baseComment, communityAddress: TRASH_BOARD_ADDRESS });
+
+    expect(document.body.textContent).toContain(TRASH_BOARD_TITLE);
+
+    const select = document.body.querySelector<HTMLSelectElement>('select');
+    expect(select).not.toBeNull();
+    await act(async () => {
+      select!.value = 'random-nsfw.bso';
+      select!.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    const form = document.body.querySelector<HTMLFormElement>('form');
+    expect(form).not.toBeNull();
+    await act(async () => {
+      form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+
+    const [publishOptions] = testState.publishCommentMock.mock.calls[0] as [Record<string, unknown>, string];
+    await act(async () => {
+      await (publishOptions.onChallengeVerification as (verification: unknown, comment: unknown) => Promise<void>)(
+        { challengeSuccess: true, commentUpdate: { cid: 'target-comment' } },
+        { cid: 'challenge-comment' },
+      );
+    });
+
+    const [sourceModerationOptions] = testState.publishCommentModerationMock.mock.calls[1] as [{ commentModeration: { reason: string } }, string];
+    expect(sourceModerationOptions.commentModeration.reason).toContain('/trash/');
+    expect(sourceModerationOptions.commentModeration.reason).toContain('/rules#trash');
+  });
+
   it('reopens desktop transfer modals at the last dragged session position', async () => {
     await renderTransferModal();
 
