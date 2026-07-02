@@ -894,7 +894,7 @@ describe('ModQueueView', () => {
     expect(transferButtons).toHaveLength(2);
   });
 
-  it('keeps the transfer lock when the active item leaves the visible queue', async () => {
+  it('keeps the transfer lock while a hidden active item is still publishing', async () => {
     testState.directories = [
       { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
       { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
@@ -925,12 +925,34 @@ describe('ModQueueView', () => {
     });
 
     expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(1);
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
+    await act(async () => {
+      if (targetSelect) {
+        targetSelect.value = 'tech-posting.eth';
+        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+    const [payload] = testState.publishCommentMock.mock.calls[0];
 
     testState.feed = [remainingComment];
     await renderModQueue();
 
     expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(0);
     expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer')).toHaveLength(0);
+
+    await act(async () => {
+      await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post' } }, { cid: 'transferred-post' });
+      await Promise.resolve();
+    });
+
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer')).toHaveLength(1);
   });
 
   it('does not show transfer for queued replies', async () => {
@@ -1203,7 +1225,7 @@ describe('ModQueueView', () => {
       const [configFactory] = testState.useSpringMock.mock.calls[0] as [() => Record<string, unknown>, unknown[]];
       expect(configFactory()).toEqual({
         from: {
-          left: 450,
+          left: 235,
           top: 320,
         },
       });

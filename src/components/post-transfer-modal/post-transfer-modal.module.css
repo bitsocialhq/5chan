@@ -14,10 +14,7 @@
   font-size: 10pt;
   background-color: var(--challenge-modal-background-color);
   border: var(--challenge-modal-border);
-  transform: translate(-50%, -50%);
   will-change: left, top;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 
 .transferModal input {

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useCallback, memo } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, memo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
@@ -277,6 +277,8 @@ const ModQueueExcerptPreviewLink = ({ comment, excerpt, postUrl, postUrlState }:
 
 const useModQueueTransfer = (comment: Comment, transferControls: ModQueueTransferControls) => {
   const [transferState, setTransferState] = useState<PostTransferState>('idle');
+  const transferStateRef = useRef<PostTransferState>('idle');
+  const isMountedRef = useRef(true);
   const rememberCommentsInQueue = useModQueueStore((state) => state.rememberCommentsInQueue);
   const { activeTransferCommentCid, setActiveTransferCommentCid } = transferControls;
   const transferCommentCid = comment.cid;
@@ -294,6 +296,19 @@ const useModQueueTransfer = (comment: Comment, transferControls: ModQueueTransfe
   const handleCloseTransfer = useCallback(() => {
     setActiveTransferCommentCid((currentCommentCid) => (currentCommentCid === transferCommentCid ? null : currentCommentCid));
   }, [setActiveTransferCommentCid, transferCommentCid]);
+  const handleTransferStateChange = useCallback(
+    (nextTransferState: PostTransferState) => {
+      transferStateRef.current = nextTransferState;
+      if (isMountedRef.current) {
+        setTransferState(nextTransferState);
+        return;
+      }
+      if (nextTransferState !== 'publishing') {
+        handleCloseTransfer();
+      }
+    },
+    [handleCloseTransfer],
+  );
   const handleTransferSuccess = useCallback(() => {
     const rejectedSnapshot = getQueuedCommentSnapshot({ ...comment, approved: false, pendingApproval: false });
     if (rejectedSnapshot) {
@@ -301,13 +316,23 @@ const useModQueueTransfer = (comment: Comment, transferControls: ModQueueTransfe
     }
   }, [comment, rememberCommentsInQueue]);
 
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (transferStateRef.current !== 'publishing') {
+        handleCloseTransfer();
+      }
+    };
+  }, [handleCloseTransfer]);
+
   return {
     handleTransfer: canOpenTransfer ? handleTransfer : undefined,
     isTransferPublishing,
     isTransferSucceeded,
     transferModal:
       canTransfer && isTransferOpen ? (
-        <PostTransferModal comment={comment} onClose={handleCloseTransfer} onTransferStateChange={setTransferState} onTransferSuccess={handleTransferSuccess} />
+        <PostTransferModal comment={comment} onClose={handleCloseTransfer} onTransferStateChange={handleTransferStateChange} onTransferSuccess={handleTransferSuccess} />
       ) : null,
   };
 };

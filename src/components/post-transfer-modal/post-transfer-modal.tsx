@@ -1,4 +1,4 @@
-import React, { useEffect, useEffectEvent, useMemo, useReducer, useRef } from 'react';
+import React, { useEffect, useEffectEvent, useLayoutEffect, useMemo, useReducer, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSpring, animated } from '@react-spring/web';
@@ -34,6 +34,10 @@ type PublishCommentAction = (publishCommentOptions: Record<string, unknown>, acc
 type DeleteCommentAction = (commentCidOrAccountCommentIndex: string | number, accountName?: string) => Promise<void>;
 type DeleteAccountAction = (accountName?: string) => Promise<void>;
 type PublishCommentModerationAction = (publishCommentModerationOptions: Record<string, unknown>, accountName?: string) => Promise<void>;
+type TransferModalPosition = { left: number; top: number };
+
+const TRANSFER_MODAL_WIDTH_PX = 430;
+const TRANSFER_MODAL_VIEWPORT_GUTTER_PX = 20;
 
 interface TransferModalState {
   targetBoardAddress: string;
@@ -106,14 +110,19 @@ const getTemporaryTransferAccountName = (sourceCommentCid: string | undefined): 
   return `5chan-transfer-${sourceHint}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 };
 
-const getInitialTransferModalPosition = () => {
+const getCenteredTransferModalPosition = (modalElement?: HTMLElement | null): TransferModalPosition => {
   if (typeof window === 'undefined') {
     return { left: 0, top: 0 };
   }
 
+  const modalRect = modalElement?.getBoundingClientRect();
+  const fallbackWidth = Math.min(TRANSFER_MODAL_WIDTH_PX, Math.max(0, window.innerWidth - TRANSFER_MODAL_VIEWPORT_GUTTER_PX));
+  const modalWidth = modalRect?.width || fallbackWidth;
+  const modalHeight = modalRect?.height || 0;
+
   return {
-    left: Math.round(window.innerWidth / 2),
-    top: Math.round(window.innerHeight / 2),
+    left: Math.round((window.innerWidth - modalWidth) / 2),
+    top: Math.round((window.innerHeight - modalHeight) / 2),
   };
 };
 
@@ -167,10 +176,14 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
 
   const [{ left, top }, api] = useSpring(
     () => ({
-      from: getInitialTransferModalPosition(),
+      from: getCenteredTransferModalPosition(),
     }),
     [],
   );
+
+  useLayoutEffect(() => {
+    api.start({ ...getCenteredTransferModalPosition(nodeRef.current), immediate: true });
+  }, [api]);
 
   const disableBodyTextSelection = () => {
     if (!bodySelectionStyleBeforeDragRef.current) {
