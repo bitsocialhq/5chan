@@ -9,6 +9,7 @@ import {
   hasTransferredCommentMarker,
   TRANSFERRED_COMMENT_FLAIR,
 } from '../comment-transfer';
+import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE, TRASH_BOARD_TITLE } from '../special-boards';
 
 describe('comment-transfer', () => {
   const selectedFields = {
@@ -112,6 +113,8 @@ describe('comment-transfer', () => {
   it('formats source board references and rules links from directory metadata', () => {
     expect(getTransferSourceBoardReference({ address: 'japanese-culture.eth', directoryCode: 'jp', title: '/jp/ - Otaku Culture' }, 'fallback.eth')).toBe('/jp/');
     expect(getTransferSourceBoardRulesLink({ address: 'japanese-culture.eth', directoryCode: 'jp', title: '/jp/ - Otaku Culture' })).toBe('[rules](/rules#jp)');
+    expect(getTransferSourceBoardReference({ address: TRASH_BOARD_ADDRESS, directoryCode: TRASH_BOARD_CODE, title: TRASH_BOARD_TITLE }, 'fallback.eth')).toBe('/trash/');
+    expect(getTransferSourceBoardRulesLink({ address: TRASH_BOARD_ADDRESS, directoryCode: TRASH_BOARD_CODE, title: TRASH_BOARD_TITLE })).toBe('the rules');
     expect(getTransferSourceBoardReference(undefined, 'source-board.eth')).toBe('source-board.eth');
     expect(getTransferSourceBoardRulesLink(undefined)).toBe('the rules');
   });

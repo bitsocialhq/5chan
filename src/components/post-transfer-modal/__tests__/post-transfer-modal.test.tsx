@@ -193,7 +193,7 @@ describe('PostTransferModal', () => {
 
     const [sourceModerationOptions] = testState.publishCommentModerationMock.mock.calls[1] as [{ commentModeration: { reason: string } }, string];
     expect(sourceModerationOptions.commentModeration.reason).toContain('/trash/');
-    expect(sourceModerationOptions.commentModeration.reason).toContain('/rules#trash');
+    expect(sourceModerationOptions.commentModeration.reason).toContain('(the rules)');
   });
 
   it('does not offer the hidden trash board target when the source uses its public key alias', async () => {

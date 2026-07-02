@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { TRASH_BOARD_ADDRESS, TRASH_BOARD_PUBLIC_KEY } from '../../special-boards';
+import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE, TRASH_BOARD_PUBLIC_KEY } from '../../special-boards';
 
 const importLookupUtilsWithDirectoryLists = async (directories: unknown[]) => {
   vi.resetModules();
@@ -34,5 +34,29 @@ describe('directory-list-lookup-utils', () => {
     expect(getDirectoryCodeForBoardAddress(TRASH_BOARD_PUBLIC_KEY)).toBeUndefined();
     expect(getDirectoryCandidateBoardByAddress(TRASH_BOARD_ADDRESS)).toBeUndefined();
     expect(getDirectoryCandidateBoardByAddress(TRASH_BOARD_PUBLIC_KEY)).toBeUndefined();
+  });
+
+  it('excludes entire vendored directory lists that use a special board code', async () => {
+    const { getVendoredDirectoryLists } = await importLookupUtilsWithDirectoryLists([
+      {
+        directoryCode: TRASH_BOARD_CODE,
+        boards: [
+          {
+            address: TRASH_BOARD_ADDRESS,
+            publicKey: TRASH_BOARD_PUBLIC_KEY,
+          },
+        ],
+      },
+      {
+        directoryCode: 'b',
+        boards: [
+          {
+            address: 'random-nsfw.bso',
+          },
+        ],
+      },
+    ]);
+
+    expect(getVendoredDirectoryLists().map((directory) => directory.directoryCode)).toEqual(['b']);
   });
 });
