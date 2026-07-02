@@ -1,5 +1,6 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { isCommentFlagFlair } from './comment-flags';
+import { isSpecialBoardCode } from './special-boards';
 import { isCommentArchived } from './utils/comment-moderation-utils';
 import { normalizePublishURL } from './utils/url-utils';
 
@@ -113,7 +114,7 @@ export const getTransferSourceBoardReference = (sourceBoard: TransferBoardLike |
 
 export const getTransferSourceBoardRulesLink = (sourceBoard: TransferBoardLike | undefined): string => {
   const directoryCode = getTextField(sourceBoard?.directoryCode);
-  return directoryCode ? `[rules](/rules#${directoryCode})` : 'the rules';
+  return directoryCode && !isSpecialBoardCode(directoryCode) ? `[rules](/rules#${directoryCode})` : 'the rules';
 };
 
 export const getTransferSourceModeration = (

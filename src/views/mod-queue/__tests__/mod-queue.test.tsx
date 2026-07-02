@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { Link, MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ModQueueView from '../mod-queue';
+import { TRASH_BOARD_ADDRESS } from '../../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (callback: () => void | Promise<void>) => void | Promise<void> }).act as (callback: () => void | Promise<void>) => void | Promise<void>;
@@ -618,7 +619,7 @@ describe('ModQueueView', () => {
     expect(dialog?.textContent).toContain('modQueue.transferTemporaryAccountNotice');
     expect(dialog?.textContent).not.toContain('modQueue.transferAccount');
     const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
-    expect(Array.from(targetSelect?.options ?? []).map((option) => option.value)).toEqual(['', 'anime-posting.eth', 'tech-posting.eth']);
+    expect(Array.from(targetSelect?.options ?? []).map((option) => option.value)).toEqual(['', 'anime-posting.eth', 'tech-posting.eth', TRASH_BOARD_ADDRESS]);
     const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
     expect(submitButton?.disabled).toBe(true);
 

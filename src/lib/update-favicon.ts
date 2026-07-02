@@ -1,3 +1,5 @@
+import { getSpecialBoardByAddress } from './special-boards';
+
 const DEFAULT_FAVICON = '/favicon.ico?variant=nsfw';
 const SFW_FAVICON = '/favicon2.ico?variant=sfw';
 const NOT_FOUND_FAVICON = '/favicon-404.ico?variant=404';
@@ -77,5 +79,8 @@ export const isSfwBoard = ({
   if (!communityAddress) return false;
 
   const entry = directories.find((d) => d.address === communityAddress);
+  const specialBoard = getSpecialBoardByAddress(communityAddress);
+  if (specialBoard) return !specialBoard.nsfw;
+
   return !entry?.nsfw;
 };

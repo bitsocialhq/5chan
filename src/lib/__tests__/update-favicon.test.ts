@@ -50,6 +50,7 @@ describe('update-favicon', () => {
 
   it('marks only non-special, non-routing aggregate sfw boards as sfw', async () => {
     const { isSfwBoard } = await import('../update-favicon');
+    const { TRASH_BOARD_ADDRESS } = await import('../special-boards');
 
     expect(
       isSfwBoard({
@@ -87,6 +88,18 @@ describe('update-favicon', () => {
         isInModView: false,
         communityAddress: 'flash.eth',
         directories: [{ address: 'flash.eth', nsfw: true }],
+      }),
+    ).toBe(false);
+
+    expect(
+      isSfwBoard({
+        pathname: '/trash',
+        isSpecialTheme: false,
+        isInAllView: false,
+        isInSubscriptionsView: false,
+        isInModView: false,
+        communityAddress: TRASH_BOARD_ADDRESS,
+        directories: [],
       }),
     ).toBe(false);
   });

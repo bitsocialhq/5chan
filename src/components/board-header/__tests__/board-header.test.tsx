@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BoardHeader from '../board-header';
+import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -200,6 +201,17 @@ describe('BoardHeader', () => {
     expect(container.textContent).toContain('music-posting.eth');
     expect(container.querySelector('[data-testid="tooltip"]')?.getAttribute('data-content')).toBe('Board offline');
     expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
+  });
+
+  it('renders hidden special board metadata without a directory entry', async () => {
+    testState.directories = [];
+    testState.resolvedAddress = TRASH_BOARD_ADDRESS;
+    testState.stableCommunity = undefined;
+
+    await renderHeader('/trash');
+
+    expect(container.textContent).toContain(TRASH_BOARD_TITLE);
+    expect(container.textContent).toContain(TRASH_BOARD_ADDRESS);
   });
 
   it('renders the board loading indicator while online status is still loading', async () => {

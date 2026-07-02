@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostTransferModal from '../post-transfer-modal';
+import { TRASH_BOARD_ADDRESS, TRASH_BOARD_PUBLIC_KEY, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -151,6 +152,60 @@ describe('PostTransferModal', () => {
     expect(modal?.style.left).toBe('120px');
     expect(modal?.style.top).toBe('80px');
     expect(modal?.style.transform).toBe('');
+  });
+
+  it('offers the hidden trash board as a transfer target', async () => {
+    await renderTransferModal();
+
+    const options = Array.from(document.body.querySelectorAll<HTMLOptionElement>('select option')).map((option) => ({
+      text: option.textContent,
+      value: option.value,
+    }));
+
+    expect(options).toContainEqual({ text: TRASH_BOARD_TITLE, value: TRASH_BOARD_ADDRESS });
+  });
+
+  it('resolves the hidden trash board when it is the transfer source', async () => {
+    await renderTransferModal({ ...baseComment, communityAddress: TRASH_BOARD_ADDRESS });
+
+    expect(document.body.textContent).toContain(TRASH_BOARD_TITLE);
+
+    const select = document.body.querySelector<HTMLSelectElement>('select');
+    expect(select).not.toBeNull();
+    await act(async () => {
+      select!.value = 'random-nsfw.bso';
+      select!.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    const form = document.body.querySelector<HTMLFormElement>('form');
+    expect(form).not.toBeNull();
+    await act(async () => {
+      form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+
+    const [publishOptions] = testState.publishCommentMock.mock.calls[0] as [Record<string, unknown>, string];
+    await act(async () => {
+      await (publishOptions.onChallengeVerification as (verification: unknown, comment: unknown) => Promise<void>)(
+        { challengeSuccess: true, commentUpdate: { cid: 'target-comment' } },
+        { cid: 'challenge-comment' },
+      );
+    });
+
+    const [sourceModerationOptions] = testState.publishCommentModerationMock.mock.calls[1] as [{ commentModeration: { reason: string } }, string];
+    expect(sourceModerationOptions.commentModeration.reason).toContain('/trash/');
+    expect(sourceModerationOptions.commentModeration.reason).toContain('(the rules)');
+  });
+
+  it('does not offer the hidden trash board target when the source uses its public key alias', async () => {
+    await renderTransferModal({ ...baseComment, communityAddress: TRASH_BOARD_PUBLIC_KEY });
+
+    const options = Array.from(document.body.querySelectorAll<HTMLOptionElement>('select option')).map((option) => ({
+      text: option.textContent,
+      value: option.value,
+    }));
+
+    expect(document.body.textContent).toContain(TRASH_BOARD_TITLE);
+    expect(options).not.toContainEqual({ text: TRASH_BOARD_TITLE, value: TRASH_BOARD_ADDRESS });
   });
 
   it('reopens desktop transfer modals at the last dragged session position', async () => {

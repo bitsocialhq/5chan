@@ -1,4 +1,5 @@
 import { vendoredDirectoryLists as directoryListsData } from '../../data/vendored-directory-lists';
+import { isSpecialBoardAddress, isSpecialBoardCode } from '../special-boards';
 import { normalizeDirectoryList, type DirectoryList, type DirectoryListBoard } from './directory-list-utils';
 
 const DIRECTORY_ALIAS_SUFFIXES = ['.bso', '.eth'] as const;
@@ -21,7 +22,7 @@ export const getVendoredDirectoryLists = (): DirectoryList[] => {
   const directories = Array.isArray(directoryListsData.directories) ? directoryListsData.directories : [];
   vendoredDirectoryListsCache = directories.flatMap((directory) => {
     const directoryCode = typeof directory.directoryCode === 'string' ? directory.directoryCode : undefined;
-    if (!directoryCode) return [];
+    if (!directoryCode || isSpecialBoardCode(directoryCode)) return [];
     const normalized = normalizeDirectoryList(directory, directoryCode);
     return normalized ? [normalized] : [];
   });
@@ -39,6 +40,7 @@ const findBoardInList = (list: DirectoryList, address: string): DirectoryListBoa
 
 export const getDirectoryCandidateBoardByAddress = (address: string | undefined): DirectoryListBoard | undefined => {
   if (!address) return undefined;
+  if (isSpecialBoardAddress(address)) return undefined;
 
   for (const directory of getVendoredDirectoryLists()) {
     const board = findBoardInList(directory, address);
@@ -50,6 +52,7 @@ export const getDirectoryCandidateBoardByAddress = (address: string | undefined)
 
 export const getDirectoryCodeForBoardAddress = (address: string | undefined): string | undefined => {
   if (!address) return undefined;
+  if (isSpecialBoardAddress(address)) return undefined;
 
   return getVendoredDirectoryLists().find((directory) => findBoardInList(directory, address))?.directoryCode;
 };
