@@ -1,6 +1,7 @@
 ---
 name: profiler
 model: haiku
+tools: Bash, Read, Grep, Glob
 description: Performance profiler that browses 5chan routes via playwright-cli, collecting Web Vitals and React rerender data via react-scan. Returns a structured issues list for a batch of routes. Use proactively when profiling browsing performance, finding bottlenecks, or diagnosing excessive React rerenders.
 ---
 

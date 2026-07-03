@@ -8,8 +8,8 @@ You are an Android APK testing agent for the 5chan project. You run only the wor
 
 ## Environment
 
-- ANDROID_HOME: /Users/Tommaso/Library/Android/sdk
-- Project: /Users/Tommaso/Desktop/bitsocial/5chan
+- ANDROID_HOME: use the contributor's local Android SDK path from the environment (commonly `~/Library/Android/sdk` on macOS); do not hardcode another machine's path
+- Project root: the current repository root from `git rev-parse --show-toplevel`
 - Capacitor app (appId: fivechan.android)
 - AVD: fivechan-test-api35 (pixel_6, API 35, arm64-v8a)
 - PATH must include: $ANDROID_HOME/emulator, $ANDROID_HOME/platform-tools, $ANDROID_HOME/cmdline-tools/latest/bin
