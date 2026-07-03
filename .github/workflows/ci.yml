@@ -102,6 +102,8 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      COVERAGE_PAGES_ARTIFACT: coverage-pages-${{ github.run_attempt }}
     steps:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -112,7 +114,22 @@ jobs:
           name: coverage-badge
           path: ${{ runner.temp }}/coverage-badge
 
+      - name: Check published coverage badge
+        id: published-badge
+        env:
+          BADGE_SOURCE_PATH: ${{ runner.temp }}/coverage-badge/coverage.json
+          PUBLISHED_BADGE_PATH: ${{ runner.temp }}/published-coverage.json
+        run: |
+          if curl -fsSL --retry 3 --retry-delay 5 "https://bitsocialnet.github.io/5chan/badges/coverage.json" -o "${PUBLISHED_BADGE_PATH}" &&
+            cmp -s "${BADGE_SOURCE_PATH}" "${PUBLISHED_BADGE_PATH}"; then
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+            echo "Coverage badge is already up to date."
+          else
+            echo "changed=true" >> "${GITHUB_OUTPUT}"
+          fi
+
       - name: Prepare Pages artifact
+        if: steps.published-badge.outputs.changed == 'true'
         env:
           BADGE_SOURCE_PATH: ${{ runner.temp }}/coverage-badge/coverage.json
           PAGES_OUTPUT_PATH: ${{ runner.temp }}/github-pages
@@ -122,13 +139,36 @@ jobs:
           touch "${PAGES_OUTPUT_PATH}/.nojekyll"
 
       - name: Upload Pages artifact
+        if: steps.published-badge.outputs.changed == 'true'
         uses: actions/upload-pages-artifact@v4
         with:
+          name: ${{ env.COVERAGE_PAGES_ARTIFACT }}
           path: ${{ runner.temp }}/github-pages
 
       - name: Deploy badge site
+        if: steps.published-badge.outputs.changed == 'true'
         id: deployment
+        continue-on-error: true
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: ${{ env.COVERAGE_PAGES_ARTIFACT }}
+
+      - name: Wait before badge deploy retry
+        if: steps.published-badge.outputs.changed == 'true' && steps.deployment.outcome == 'failure'
+        run: sleep 60
+
+      - name: Retry badge site deploy
+        if: steps.published-badge.outputs.changed == 'true' && steps.deployment.outcome == 'failure'
+        id: deployment_retry
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: ${{ env.COVERAGE_PAGES_ARTIFACT }}
+
+      - name: Report badge deploy failure
+        if: steps.published-badge.outputs.changed == 'true' && steps.deployment.outcome == 'failure' && steps.deployment_retry.outcome != 'success'
+        run: |
+          echo "::warning::Coverage badge artifact was generated, but GitHub Pages rejected the badge deployment. App CI remains green because badge publishing is advisory."
 
   android-build:
     name: Android Build
