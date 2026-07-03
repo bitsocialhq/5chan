@@ -56,7 +56,7 @@ If `package.json` was modified, run `corepack yarn install` first.
 ### 4. Verify no remaining markers
 
 ```bash
-rg '<<<<<<<|=======|>>>>>>>' --type ts --type tsx --type json
+rg '<<<<<<<|=======|>>>>>>>' --type ts --type json
 ```
 
 If any markers remain, go back and resolve them.
@@ -65,7 +65,7 @@ If any markers remain, go back and resolve them.
 
 ```bash
 git add -A
-git commit -m "chore: resolve merge conflicts"
+git commit -m "chore(merge): resolve merge conflicts"
 ```
 
 ## Operational Guidance
@@ -79,5 +79,5 @@ git commit -m "chore: resolve merge conflicts"
 
 - Clean working tree with all conflicts resolved
 - Passing `corepack yarn build && corepack yarn lint && corepack yarn type-check`
-- One local commit: `chore: resolve merge conflicts`
+- One local commit: `chore(merge): resolve merge conflicts`
 - Brief summary of files touched and notable resolution choices
