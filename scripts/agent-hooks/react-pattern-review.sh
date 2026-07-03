@@ -28,13 +28,26 @@ done
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$repo_root" || exit 0
 
+# Cursor afterFileEdit sends {"file_path": ...}; Claude/Codex PostToolUse send
+# {"tool_input": {"file_path": ...}} with an absolute path.
 extract_file_path() {
   if command -v jq >/dev/null 2>&1; then
-    printf '%s' "$input" | jq -r '.file_path // empty' 2>/dev/null
+    printf '%s' "$input" | jq -r '.tool_input.file_path // .file_path // empty' 2>/dev/null
     return
   fi
 
-  echo "$input" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/'
+  echo "$input" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:.*"\([^"]*\)"/\1/'
+}
+
+# Make absolute paths repo-relative so scope prefixes and src/ checks match.
+normalize_file_path() {
+  local candidate="$1"
+
+  case "$candidate" in
+    "$repo_root"/*) printf '%s' "${candidate#"$repo_root"/}" ;;
+    /*) printf '' ;;
+    *) printf '%s' "$candidate" ;;
+  esac
 }
 
 is_source_file() {
@@ -130,7 +143,13 @@ append_file_if_react_ui_source() {
 
 results=""
 react_source_files=""
-file_path="$(extract_file_path)"
+raw_file_path="$(extract_file_path)"
+file_path="$(normalize_file_path "$raw_file_path")"
+
+# A per-file event for a file outside the repo is not ours to review.
+if [ -n "$raw_file_path" ] && [ -z "$file_path" ]; then
+  exit 0
+fi
 
 if [ -n "$file_path" ]; then
   if is_source_file "$file_path" && matches_scope "$file_path"; then
@@ -178,6 +197,7 @@ if [ -n "$skill_dir" ] && [ -f "$repo_root/$skill_dir/vercel-react-best-practice
   vercel_skill="$repo_root/$skill_dir/vercel-react-best-practices/SKILL.md"
 fi
 
+build_report() {
 echo "=== React Best Practices Review Reminder ==="
 
 if [ -n "$react_source_files" ]; then
@@ -226,5 +246,23 @@ echo "- Does the TSX avoid inline object/array prop churn and unnecessary compon
 echo "- Can this be derived during render instead of synchronized with an effect?"
 echo "- Can interaction logic move to an event handler or a key-based reset?"
 echo "- Is the memoization actually needed, or is simpler render-time code better?"
+}
+
+report="$(build_report)"
+
+# On Claude Code and Codex PostToolUse events, plain stdout with exit 0 is
+# transcript-only and never reaches the model; hookSpecificOutput JSON does.
+# Cursor's afterFileEdit/stop events send no hook_event_name, so they keep
+# getting the plain-text report.
+hook_event_name=""
+if command -v jq >/dev/null 2>&1; then
+  hook_event_name="$(printf '%s' "$input" | jq -r '.hook_event_name // empty' 2>/dev/null)"
+fi
+
+if [ "$hook_event_name" = "PostToolUse" ] && command -v jq >/dev/null 2>&1; then
+  jq -cn --arg ctx "$report" '{hookSpecificOutput: {hookEventName: "PostToolUse", additionalContext: $ctx}}'
+else
+  printf '%s\n' "$report"
+fi
 
 exit 0

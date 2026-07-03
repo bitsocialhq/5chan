@@ -9,6 +9,8 @@
  *     every toolchain
  *   - mirrored files are identical after normalizing toolchain-specific
  *     tokens (.claude/.codex/.cursor path prefixes, agent model lines)
+ *   - hook entry points (harness-specific formats: .claude/settings.json,
+ *     .cursor/hooks.json, .codex/hooks.json) wire the same hook scripts
  *   - SKILL.md frontmatter has a name matching its directory and a
  *     non-empty description
  *   - agent model rules: no composer-* models in .claude agents, no
@@ -234,18 +236,41 @@ for (const hook of allHooks) {
   }
 }
 
-// hooks.json entry points must mirror each other.
+// Hook entry points are harness-specific formats and are NOT byte-mirrored:
+//   .claude/settings.json  — Claude Code only reads hooks from settings files,
+//                            never from a standalone hooks.json
+//   .cursor/hooks.json     — Cursor schema ({"version": 1, "hooks": {...}} with
+//                            afterFileEdit/stop event names)
+//   .codex/hooks.json      — Codex schema (intentionally Claude-compatible:
+//                            PostToolUse/Stop, matcher, type "command")
+// Instead of mirroring content, require every entry point to wire the same set
+// of hooks/<name>.sh scripts (modulo SINGLE_TOOLCHAIN_HOOKS exemptions).
 {
-  const holders = TOOLCHAINS.filter((tc) => exists(path.join(repoRoot, tc, 'hooks.json')));
-  for (const tc of TOOLCHAINS) {
-    if (!holders.includes(tc)) errors.push(`missing file: ${tc}/hooks.json`);
+  const entryPoints = new Map([
+    ['.claude', 'settings.json'],
+    ['.codex', 'hooks.json'],
+    ['.cursor', 'hooks.json'],
+  ]);
+  const wired = new Map();
+  for (const [tc, file] of entryPoints) {
+    const p = path.join(repoRoot, tc, file);
+    if (!exists(p)) {
+      errors.push(`missing hook entry point: ${tc}/${file}`);
+      continue;
+    }
+    const names = [...read(p).matchAll(/hooks\/([A-Za-z0-9._-]+\.sh)/g)].map((m) => m[1]);
+    wired.set(tc, new Set(names));
   }
-  const reference = holders[0];
-  for (const tc of holders.slice(1)) {
-    const a = normalize(read(path.join(repoRoot, reference, 'hooks.json')));
-    const b = normalize(read(path.join(repoRoot, tc, 'hooks.json')));
-    if (a !== b) {
-      errors.push(`content drift: ${tc}/hooks.json differs from ${reference}/hooks.json`);
+  const allWired = [...new Set([...wired.values()].flatMap((s) => [...s]))].sort();
+  for (const hook of allWired) {
+    const holders = [...wired].filter(([, names]) => names.has(hook)).map(([tc]) => tc);
+    for (const tc of wired.keys()) {
+      if (holders.includes(tc)) continue;
+      const onlyCopy = holders.length === 1 ? `${holders[0]}/hooks/${hook}` : null;
+      if (onlyCopy && SINGLE_TOOLCHAIN_HOOKS.has(onlyCopy)) continue;
+      errors.push(
+        `hook not wired: ${tc}/${entryPoints.get(tc)} does not reference hooks/${hook} (wired in ${holders.join(', ')})`,
+      );
     }
   }
 }
