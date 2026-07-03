@@ -235,7 +235,7 @@ When CodeGraph MCP tools are available and `.codegraph/` exists, prefer them for
 | React UI logic changed (`src/components`, `src/views`, `src/hooks`, UI stores) | Follow React architecture rules below, review the diff with `vercel-react-best-practices` and `vercel:react-best-practices` when available, fix valid findings, then run `yarn doctor` |
 | `package.json` changed | Run `corepack yarn install` to keep `yarn.lock` in sync |
 | Dependencies or import graph changed | Run `yarn knip` as an advisory manifest/import audit |
-| Translation key/value changed | Use `docs/agent-playbooks/translations.md` |
+| Translation key/value changed | Use the `translate` skill (spawns parallel `translator` subagents); for manual script operations see `docs/agent-playbooks/translations.md` |
 | Public-facing English content or AI context changed (`README.md`, `index.html`, `AGENTS.md`, `PRODUCT.md`, `DESIGN.md`, docs pages, or `scripts/generate-llms-files.mjs`) | Run `yarn llms:generate`; inspect and commit any resulting changes to `public/llms*.txt` so LLM indexes stay current |
 | Bug report in a specific file/line | Start with git history scan from `docs/agent-playbooks/bug-investigation.md` before editing |
 | `CHANGELOG.md` or package version changed | Run `yarn blotter:check`; if needed add a concise release one-liner |
@@ -336,7 +336,7 @@ src/
 - After adding or changing tests, run `yarn test`.
 - Do not commit or force-add local rebuild output. `build/` is the main generated build output in this repo; remove or restore generated output directories after local verification before committing.
 - After React UI logic changes, run: `yarn doctor`.
-- Treat React Doctor output as guidance for *newly introduced* issues (the CI `yarn doctor --diff` PR check flags those), not as an aggregate score to grind up: many `error`-level diagnostics flag intentional patterns or current React-Compiler limitations, not bugs. See `docs/agent-playbooks/known-surprises.md`.
+- Treat React Doctor output as guidance for *newly introduced* issues (the CI PR check in `.github/workflows/react-doctor.yml` runs `yarn doctor --scope changed --base <base branch>` to flag those), not as an aggregate score to grind up: many `error`-level diagnostics flag intentional patterns or current React-Compiler limitations, not bugs. See `docs/agent-playbooks/known-surprises.md`.
 - For UI/visual changes, verify with `playwright-cli` across Chrome/Blink, Firefox/Gecko, and WebKit/Safari.
 - Cover desktop and a mobile viewport flow in each browser engine when the change affects layout, touch behavior, or responsiveness.
 - When loading, navigation, or interaction speed matters (or you cannot tell whether perf is real or just a fast dev machine), run a low-spec pass: `./scripts/pw-throttle.sh <session> mid` (or `low`) applies CPU + network throttling to a Chromium `playwright-cli` session before you measure. Throttling is Chromium-only; keep the Firefox/WebKit checks unthrottled. See `docs/agent-playbooks/low-spec-verification.md`.
@@ -362,9 +362,9 @@ src/
 - Keep shared behavior equivalent while preserving harness-specific models, config formats, hook entry points, and tool invocation syntax.
 - Do not configure `.claude` agents to use `composer-2`; that model is Cursor-only in this repo. Keep `.claude` agent models on Claude-supported options.
 - Do not configure `.codex/agents/*.toml` with `gpt-5.3-codex` or `gpt-5.3-codex-spark`; standardize Codex agents on `gpt-5.4` unless the user explicitly requests a different model.
-- When changing shared agent behavior, update the relevant files in `.codex/skills/`, `.cursor/skills/`, `.claude/skills/`, `.codex/agents/`, `.cursor/agents/`, `.claude/agents/`, `.codex/hooks/`, `.cursor/hooks/`, `.claude/hooks/`, and their `hooks.json` or config entry points as needed.
+- When changing shared agent behavior, update the relevant files in `.codex/skills/`, `.cursor/skills/`, `.claude/skills/`, `.codex/agents/`, `.cursor/agents/`, `.claude/agents/`, `.codex/hooks/`, `.cursor/hooks/`, `.claude/hooks/`, and the hook entry points as needed. Hook entry points are harness-specific: the `hooks` key in `.claude/settings.json` (Claude Code does not read a standalone hooks.json), `.cursor/hooks.json` (Cursor schema), and `.codex/hooks.json` (Codex schema, intentionally Claude-compatible).
 - If `AGENTS.md` references a skill, agent, or hook, prefer a tracked file under `.codex/`, `.cursor/`, or `.claude/` rather than an untracked local-only instruction.
-- Review `.codex/config.toml`, `.cursor/hooks.json`, and `.claude/hooks.json` before changing agent orchestration or hook behavior, because they are the entry points contributors will actually load.
+- Review `.codex/config.toml`, `.codex/hooks.json`, `.cursor/hooks.json`, and `.claude/settings.json` before changing agent orchestration or hook behavior, because they are the entry points contributors will actually load.
 - Before finishing any React UI logic change under `src/components`, `src/views`, `src/hooks`, or UI stores, review the changed diff with `vercel-react-best-practices` and, in Codex/Vercel-plugin sessions, `vercel:react-best-practices`. Fix valid findings before final verification; do not limit this review to diffs that add new hooks or memoization.
 - When a diff adds new `useEffect`, `useLayoutEffect`, `useInsertionEffect`, `useMemo`, `useCallback`, or `memo(...)` usage under `src/`, treat the repo hook reminder as mandatory and also reconsider the change with `you-might-not-need-an-effect` before finishing.
 - Directory-specific auto-loaded rules live under `src/AGENTS.md` and `scripts/AGENTS.md`; read them before editing files in those trees.
@@ -436,7 +436,7 @@ Use these only when relevant to the active task:
 - Long-running agent workflow: `docs/agent-playbooks/long-running-agent-workflow.md`
 - Translations workflow: `docs/agent-playbooks/translations.md`
 - Commit/issue output format: `docs/agent-playbooks/commit-issue-format.md`
-- Skills/tools setup and MCP rationale: `docs/agent-playbooks/skills-and-tools.md`
+- Skills/tools setup, MCP rationale, and the index of all committed skills/subagents: `docs/agent-playbooks/skills-and-tools.md`
 - Bug investigation workflow: `docs/agent-playbooks/bug-investigation.md`
 - Known surprises log: `docs/agent-playbooks/known-surprises.md`
 - Low-spec device verification (CPU/network throttling): `docs/agent-playbooks/low-spec-verification.md`
@@ -851,7 +851,7 @@ If uncertain, ask the developer before adding an entry.
 - **Context:** Trying to raise the `yarn doctor` (react-doctor) score to 90 (PR #1155).
 - **What was surprising:** The score is overwhelmingly driven by React-Compiler *optimizability* diagnostics, not code quality. Most of the ~92 "errors" are the `react-hooks-js` plugin flagging valid, idiomatic code the React Compiler (v1.0) cannot optimize *yet* — `refs` (the deliberate latest-ref idiom for a stable callback) and `todo` (`try/finally` and throw-in-`try/catch` the compiler can't lower). The score also saturates on the *fraction of files with zero diagnostics*: removing 150 warnings moved it +1; suppressing all 76 compiler-bailout errors reached only 63; only suppressing essentially every rule reaches 90.
 - **Impact:** Agents/contributors can burn large effort (and risk real regressions) "fixing" the score by rewriting correct code into compiler-friendly-but-worse shapes, or by suppressing rules until the badge is meaningless. ~63 is the honest, no-regression ceiling.
-- **Mitigation:** Do NOT treat the aggregate react-doctor score as a target to grind up (the README badge was removed for this reason). Use react-doctor as a PR-diff reviewer — `yarn doctor --diff <base> --annotations`, already wired in `.github/workflows/ci.yml` — to catch *newly introduced* issues. `doctor.config.jsonc` deliberately does not enforce the `react-hooks-js` rules or `react-compiler-no-manual-memoization` (intentional patterns / current compiler limits). Only fix genuine bugs (e.g. clean `no-adjust-state-on-prop-change` cases). Full reasoning: `docs/agent-runs/react-doctor-score/`.
+- **Mitigation:** Do NOT treat the aggregate react-doctor score as a target to grind up (the README badge was removed for this reason). Use react-doctor as a PR-diff reviewer — `yarn doctor --scope changed --base <base> --annotations`, already wired in `.github/workflows/react-doctor.yml` (releases use `yarn doctor --diff <previous tag>` in `release.yml`) — to catch *newly introduced* issues. `doctor.config.jsonc` deliberately does not enforce the `react-hooks-js` rules or `react-compiler-no-manual-memoization` (intentional patterns / current compiler limits). Only fix genuine bugs (e.g. clean `no-adjust-state-on-prop-change` cases). Full reasoning: `docs/agent-runs/react-doctor-score/`.
 - **Status:** confirmed
 
 ### Portless 0.11 reuses legacy proxy state unless the launcher forces HTTPS
@@ -882,7 +882,7 @@ If uncertain, ask the developer before adding an entry.
 - **What was surprising:** 5chan does not consume the nearby `/Users/Tommaso/Desktop/bitsocial/bitsocial-react-hooks` checkout by default; `package.json` installs a pinned GitHub tarball of `@bitsocialnet/bitsocial-react-hooks`.
 - **Impact:** Agents can wrongly assume local hooks source changes are already active in 5chan, or debug the wrong package build when the app is really running a tarball revision from GitHub.
 - **Mitigation:** Before debugging hooks behavior from 5chan, check `package.json` to see whether the app points at a tarball commit or a local path. If you need fresh hooks behavior, update the tarball commit or temporarily switch 5chan to a local path intentionally.
-- **Status:** confirmed
+- **Status:** superseded — `package.json` now installs `@bitsocial/bitsocial-react-hooks` from npm (e.g. `0.1.26`), not a GitHub tarball. The general advice (check `package.json` before assuming local hooks changes are active) still applies.
 
 ### Hooks source commits can land before the generated tarball payload
 
@@ -892,7 +892,7 @@ If uncertain, ask the developer before adding an entry.
 - **What was surprising:** `bitsocial-react-hooks` uses `dist/` as its published entrypoint, and the repo's CI writes that generated payload in a follow-up `chore(ci): update dist and coverage badge` commit after the source commit lands on `master`.
 - **Impact:** Pinning 5chan to the feature source SHA can install a tarball whose runtime and typings still omit the new API, causing downstream type errors even though the hooks repo's source and CI look green.
 - **Mitigation:** When updating 5chan to a new hooks change, verify whether hooks `master` has a newer follow-up `chore(ci): update dist and coverage badge` commit and pin 5chan to that dist-synced SHA rather than the source-only SHA.
-- **Status:** confirmed
+- **Status:** superseded — 5chan now consumes `@bitsocial/bitsocial-react-hooks` as a published npm version, so tarball-SHA pinning mechanics no longer apply.
 
 ### Portless breaks Windows installs
 
@@ -1143,7 +1143,39 @@ Source: https://github.com/bitsocialnet/5chan/blob/master/docs/agent-playbooks/s
 ```markdown
 # Skills and Tools
 
-Use this playbook when setting up/adjusting skills and external tooling.
+Use this playbook when setting up/adjusting skills and external tooling, or to discover what is already committed.
+
+## Committed Skills Index
+
+These live in `.claude/skills/`, `.cursor/skills/`, and `.codex/skills/` (mirrored; run `yarn ai-workflow:check` after edits). No install needed — prefer them over re-implementing the flow by hand.
+
+| Skill | Use when |
+|---|---|
+| `commit` | Committing current work (splits into logical scoped commits) |
+| `commit-format` / `issue-format` | Formatting commit/issue *suggestions* in chat output |
+| `make-closed-issue` | Creating an issue + branch + PR into `master` for already-done work |
+| `review-and-merge-pr` | Triaging bot/human PR feedback, fixing, merging, finalizing issues |
+| `fix-merge-conflicts` | Resolving merge conflicts non-interactively and validating the build |
+| `release` / `release-description` | Cutting a release / updating the release one-liner |
+| `code-quality-review` | Advisory pre-push/pre-PR quality pass on the current diff |
+| `refactor-pass` | Simplicity-focused refactor of recent changes |
+| `deslop` | Removing AI-generated slop from the branch diff |
+| `debug-agent` | Evidence-based debugging with runtime NDJSON logs |
+| `you-might-not-need-an-effect` | Auditing/refactoring `useEffect` anti-patterns |
+| `vercel-react-best-practices` | React performance review rules (vendored from Vercel) |
+| `translate` | i18next key changes across all 35 languages (spawns `translator` subagents) |
+| `playwright-cli` | Browser automation and cross-engine UI verification |
+| `inspect-elements` | Mapping a live DOM node to its React source file/component stack |
+| `profile-browsing` | Web Vitals + react-scan rerender profiling (spawns `profiler` subagents) |
+| `test-apk` | Android emulator APK testing (spawns the `test-apk` subagent) |
+| `implement-plan` | Executing a multi-task plan via parallel `plan-implementer` subagents |
+| `readme` | Creating/updating README.md |
+| `context7` | Fetching up-to-date library docs |
+| `find-skills` | Discovering/installing ecosystem skills |
+
+## Committed Subagents
+
+Defined in `.claude/agents/*.md`, `.cursor/agents/*.md`, `.codex/agents/*.toml` (+ `.codex/config.toml` entries): `browser-check`, `code-quality`, `plan-implementer`, `profiler`, `react-doctor-fixer`, `react-patterns-enforcer`, `test-apk`, `translator`. Most are driven by the skills above; read the agent file before spawning one directly.
 
 ## Recommended Skills
 

@@ -35,7 +35,7 @@ If uncertain, ask the developer before adding an entry.
 - **Context:** Trying to raise the `yarn doctor` (react-doctor) score to 90 (PR #1155).
 - **What was surprising:** The score is overwhelmingly driven by React-Compiler *optimizability* diagnostics, not code quality. Most of the ~92 "errors" are the `react-hooks-js` plugin flagging valid, idiomatic code the React Compiler (v1.0) cannot optimize *yet* — `refs` (the deliberate latest-ref idiom for a stable callback) and `todo` (`try/finally` and throw-in-`try/catch` the compiler can't lower). The score also saturates on the *fraction of files with zero diagnostics*: removing 150 warnings moved it +1; suppressing all 76 compiler-bailout errors reached only 63; only suppressing essentially every rule reaches 90.
 - **Impact:** Agents/contributors can burn large effort (and risk real regressions) "fixing" the score by rewriting correct code into compiler-friendly-but-worse shapes, or by suppressing rules until the badge is meaningless. ~63 is the honest, no-regression ceiling.
-- **Mitigation:** Do NOT treat the aggregate react-doctor score as a target to grind up (the README badge was removed for this reason). Use react-doctor as a PR-diff reviewer — `yarn doctor --diff <base> --annotations`, already wired in `.github/workflows/ci.yml` — to catch *newly introduced* issues. `doctor.config.jsonc` deliberately does not enforce the `react-hooks-js` rules or `react-compiler-no-manual-memoization` (intentional patterns / current compiler limits). Only fix genuine bugs (e.g. clean `no-adjust-state-on-prop-change` cases). Full reasoning: `docs/agent-runs/react-doctor-score/`.
+- **Mitigation:** Do NOT treat the aggregate react-doctor score as a target to grind up (the README badge was removed for this reason). Use react-doctor as a PR-diff reviewer — `yarn doctor --scope changed --base <base> --annotations`, already wired in `.github/workflows/react-doctor.yml` (releases use `yarn doctor --diff <previous tag>` in `release.yml`) — to catch *newly introduced* issues. `doctor.config.jsonc` deliberately does not enforce the `react-hooks-js` rules or `react-compiler-no-manual-memoization` (intentional patterns / current compiler limits). Only fix genuine bugs (e.g. clean `no-adjust-state-on-prop-change` cases). Full reasoning: `docs/agent-runs/react-doctor-score/`.
 - **Status:** confirmed
 
 ### Portless 0.11 reuses legacy proxy state unless the launcher forces HTTPS
@@ -66,7 +66,7 @@ If uncertain, ask the developer before adding an entry.
 - **What was surprising:** 5chan does not consume the nearby `/Users/Tommaso/Desktop/bitsocial/bitsocial-react-hooks` checkout by default; `package.json` installs a pinned GitHub tarball of `@bitsocialnet/bitsocial-react-hooks`.
 - **Impact:** Agents can wrongly assume local hooks source changes are already active in 5chan, or debug the wrong package build when the app is really running a tarball revision from GitHub.
 - **Mitigation:** Before debugging hooks behavior from 5chan, check `package.json` to see whether the app points at a tarball commit or a local path. If you need fresh hooks behavior, update the tarball commit or temporarily switch 5chan to a local path intentionally.
-- **Status:** confirmed
+- **Status:** superseded — `package.json` now installs `@bitsocial/bitsocial-react-hooks` from npm (e.g. `0.1.26`), not a GitHub tarball. The general advice (check `package.json` before assuming local hooks changes are active) still applies.
 
 ### Hooks source commits can land before the generated tarball payload
 
@@ -76,7 +76,7 @@ If uncertain, ask the developer before adding an entry.
 - **What was surprising:** `bitsocial-react-hooks` uses `dist/` as its published entrypoint, and the repo's CI writes that generated payload in a follow-up `chore(ci): update dist and coverage badge` commit after the source commit lands on `master`.
 - **Impact:** Pinning 5chan to the feature source SHA can install a tarball whose runtime and typings still omit the new API, causing downstream type errors even though the hooks repo's source and CI look green.
 - **Mitigation:** When updating 5chan to a new hooks change, verify whether hooks `master` has a newer follow-up `chore(ci): update dist and coverage badge` commit and pin 5chan to that dist-synced SHA rather than the source-only SHA.
-- **Status:** confirmed
+- **Status:** superseded — 5chan now consumes `@bitsocial/bitsocial-react-hooks` as a published npm version, so tarball-SHA pinning mechanics no longer apply.
 
 ### Portless breaks Windows installs
 
