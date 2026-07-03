@@ -171,7 +171,6 @@ adb logcat -d -t 300 | tail -300
 | `android/app/src/androidTest/.../MediaUploadAutomationRunnerTest.java` | Fixture-based unit tests |
 | `android/app/src/androidTest/.../PostimagesLiveUploadTest.java` | Live integration test |
 | `android/app/src/main/assets/fixtures/` | HTML test fixtures |
-| `scripts/run-postimages-live-emulator-test.sh` | Reference emulator test script |
 
 ## Upload Automation Stages (for interpreting logcat)
 

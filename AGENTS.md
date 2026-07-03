@@ -55,7 +55,7 @@ When CodeGraph MCP tools are available and `.codegraph/` exists, prefer them for
 | React UI logic changed (`src/components`, `src/views`, `src/hooks`, UI stores) | Follow React architecture rules below, review the diff with `vercel-react-best-practices` and `vercel:react-best-practices` when available, fix valid findings, then run `yarn doctor` |
 | `package.json` changed | Run `corepack yarn install` to keep `yarn.lock` in sync |
 | Dependencies or import graph changed | Run `yarn knip` as an advisory manifest/import audit |
-| Translation key/value changed | Use `docs/agent-playbooks/translations.md` |
+| Translation key/value changed | Use the `translate` skill (spawns parallel `translator` subagents); for manual script operations see `docs/agent-playbooks/translations.md` |
 | Public-facing English content or AI context changed (`README.md`, `index.html`, `AGENTS.md`, `PRODUCT.md`, `DESIGN.md`, docs pages, or `scripts/generate-llms-files.mjs`) | Run `yarn llms:generate`; inspect and commit any resulting changes to `public/llms*.txt` so LLM indexes stay current |
 | Bug report in a specific file/line | Start with git history scan from `docs/agent-playbooks/bug-investigation.md` before editing |
 | `CHANGELOG.md` or package version changed | Run `yarn blotter:check`; if needed add a concise release one-liner |
@@ -156,7 +156,7 @@ src/
 - After adding or changing tests, run `yarn test`.
 - Do not commit or force-add local rebuild output. `build/` is the main generated build output in this repo; remove or restore generated output directories after local verification before committing.
 - After React UI logic changes, run: `yarn doctor`.
-- Treat React Doctor output as guidance for *newly introduced* issues (the CI `yarn doctor --diff` PR check flags those), not as an aggregate score to grind up: many `error`-level diagnostics flag intentional patterns or current React-Compiler limitations, not bugs. See `docs/agent-playbooks/known-surprises.md`.
+- Treat React Doctor output as guidance for *newly introduced* issues (the CI PR check in `.github/workflows/react-doctor.yml` runs `yarn doctor --scope changed --base <base branch>` to flag those), not as an aggregate score to grind up: many `error`-level diagnostics flag intentional patterns or current React-Compiler limitations, not bugs. See `docs/agent-playbooks/known-surprises.md`.
 - For UI/visual changes, verify with `playwright-cli` across Chrome/Blink, Firefox/Gecko, and WebKit/Safari.
 - Cover desktop and a mobile viewport flow in each browser engine when the change affects layout, touch behavior, or responsiveness.
 - When loading, navigation, or interaction speed matters (or you cannot tell whether perf is real or just a fast dev machine), run a low-spec pass: `./scripts/pw-throttle.sh <session> mid` (or `low`) applies CPU + network throttling to a Chromium `playwright-cli` session before you measure. Throttling is Chromium-only; keep the Firefox/WebKit checks unthrottled. See `docs/agent-playbooks/low-spec-verification.md`.
@@ -182,9 +182,9 @@ src/
 - Keep shared behavior equivalent while preserving harness-specific models, config formats, hook entry points, and tool invocation syntax.
 - Do not configure `.claude` agents to use `composer-2`; that model is Cursor-only in this repo. Keep `.claude` agent models on Claude-supported options.
 - Do not configure `.codex/agents/*.toml` with `gpt-5.3-codex` or `gpt-5.3-codex-spark`; standardize Codex agents on `gpt-5.4` unless the user explicitly requests a different model.
-- When changing shared agent behavior, update the relevant files in `.codex/skills/`, `.cursor/skills/`, `.claude/skills/`, `.codex/agents/`, `.cursor/agents/`, `.claude/agents/`, `.codex/hooks/`, `.cursor/hooks/`, `.claude/hooks/`, and their `hooks.json` or config entry points as needed.
+- When changing shared agent behavior, update the relevant files in `.codex/skills/`, `.cursor/skills/`, `.claude/skills/`, `.codex/agents/`, `.cursor/agents/`, `.claude/agents/`, `.codex/hooks/`, `.cursor/hooks/`, `.claude/hooks/`, and the hook entry points as needed. Hook entry points are harness-specific: the `hooks` key in `.claude/settings.json` (Claude Code does not read a standalone hooks.json), `.cursor/hooks.json` (Cursor schema), and `.codex/hooks.json` (Codex schema, intentionally Claude-compatible).
 - If `AGENTS.md` references a skill, agent, or hook, prefer a tracked file under `.codex/`, `.cursor/`, or `.claude/` rather than an untracked local-only instruction.
-- Review `.codex/config.toml`, `.cursor/hooks.json`, and `.claude/hooks.json` before changing agent orchestration or hook behavior, because they are the entry points contributors will actually load.
+- Review `.codex/config.toml`, `.codex/hooks.json`, `.cursor/hooks.json`, and `.claude/settings.json` before changing agent orchestration or hook behavior, because they are the entry points contributors will actually load.
 - Before finishing any React UI logic change under `src/components`, `src/views`, `src/hooks`, or UI stores, review the changed diff with `vercel-react-best-practices` and, in Codex/Vercel-plugin sessions, `vercel:react-best-practices`. Fix valid findings before final verification; do not limit this review to diffs that add new hooks or memoization.
 - When a diff adds new `useEffect`, `useLayoutEffect`, `useInsertionEffect`, `useMemo`, `useCallback`, or `memo(...)` usage under `src/`, treat the repo hook reminder as mandatory and also reconsider the change with `you-might-not-need-an-effect` before finishing.
 - Directory-specific auto-loaded rules live under `src/AGENTS.md` and `scripts/AGENTS.md`; read them before editing files in those trees.
@@ -256,7 +256,7 @@ Use these only when relevant to the active task:
 - Long-running agent workflow: `docs/agent-playbooks/long-running-agent-workflow.md`
 - Translations workflow: `docs/agent-playbooks/translations.md`
 - Commit/issue output format: `docs/agent-playbooks/commit-issue-format.md`
-- Skills/tools setup and MCP rationale: `docs/agent-playbooks/skills-and-tools.md`
+- Skills/tools setup, MCP rationale, and the index of all committed skills/subagents: `docs/agent-playbooks/skills-and-tools.md`
 - Bug investigation workflow: `docs/agent-playbooks/bug-investigation.md`
 - Known surprises log: `docs/agent-playbooks/known-surprises.md`
 - Low-spec device verification (CPU/network throttling): `docs/agent-playbooks/low-spec-verification.md`
