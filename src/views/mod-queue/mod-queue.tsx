@@ -46,7 +46,7 @@ import { PageFooterDesktop, PageFooterMobile, StyleOnlyFooterFirstRow } from '..
 import footerStyles from '../../components/footer/footer.module.css';
 import { useModeratedCommunityAddressInputs, useModeratedCommunityAddressesForInputs } from '../../hooks/use-moderated-community-addresses';
 import PostTransferModal, { type PostTransferState } from '../../components/post-transfer-modal/post-transfer-modal';
-import { canTransferComment } from '../../lib/comment-transfer';
+import { canMoveCommentToTrash } from '../../lib/comment-transfer';
 
 /** Path for display: directory code, or full address if has TLD, or shortened for long IPNS keys (no dot) */
 const getBoardDisplayPath = (address: string, path: string): string => {
@@ -282,12 +282,13 @@ const useModQueueTransfer = (comment: Comment, transferControls: ModQueueTransfe
   const rememberCommentsInQueue = useModQueueStore((state) => state.rememberCommentsInQueue);
   const { activeTransferCommentCid, setActiveTransferCommentCid } = transferControls;
   const transferCommentCid = comment.cid;
-  const canTransfer = canTransferComment(comment);
+  const canTransfer = canMoveCommentToTrash(comment);
   const isTransferOpen = Boolean(transferCommentCid && activeTransferCommentCid === transferCommentCid);
   const isTransferPublishing = transferState === 'publishing';
   const isTransferSucceeded = transferState === 'succeeded';
   const isTransferTerminal = isTransferSucceeded || transferState === 'finalizationFailed';
   const canOpenTransfer = canTransfer && !isTransferTerminal && !activeTransferCommentCid && Boolean(transferCommentCid);
+  const canShowTransfer = canTransfer && !isTransferTerminal && Boolean(transferCommentCid) && (!activeTransferCommentCid || isTransferOpen);
   const handleTransfer = useCallback(() => {
     if (canOpenTransfer && transferCommentCid) {
       setActiveTransferCommentCid(transferCommentCid);
@@ -327,7 +328,7 @@ const useModQueueTransfer = (comment: Comment, transferControls: ModQueueTransfe
   }, [handleCloseTransfer]);
 
   return {
-    handleTransfer: canOpenTransfer ? handleTransfer : undefined,
+    handleTransfer: canShowTransfer ? handleTransfer : undefined,
     isTransferPublishing,
     isTransferSucceeded,
     transferModal:
@@ -421,7 +422,7 @@ const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleAppr
           <span className={styles.buttonWrapper}>
             [
             <button type='button' className={styles.button} onClick={handleTransfer} disabled={isPublishing}>
-              {t('transfer')}
+              {t('trash')}
             </button>
             ]
           </span>
@@ -437,7 +438,7 @@ const ModQueueActions = ({ status, error, errorMessage, isPublishing, handleAppr
         </button>
         {handleTransfer && (
           <button type='button' className='button' onClick={handleTransfer} disabled={isPublishing}>
-            {t('transfer')}
+            {t('trash')}
           </button>
         )}
       </div>

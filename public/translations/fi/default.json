@@ -450,16 +450,16 @@
   "reply_link_required_alert": "Sinun on vastattava linkillä.",
   "reply_media_link_required_alert": "Sinun on vastattava kuva- tai videolinkillä.",
   "reply_links_not_allowed_alert": "Vastauslinkit eivät ole sallittuja tällä laudalla.",
-  "transfer": "Siirrä",
-  "modQueue.transferTitle": "Siirrä viesti",
+  "modQueue.transferTitle": "Siirrä viesti /trash/-laudalle",
   "modQueue.transferSource": "Mistä",
-  "modQueue.transferTarget": "Foorumille",
+  "modQueue.transferTarget": "Kohde",
   "modQueue.transferFields": "Kopioi kentät",
   "modQueue.transferNoFields": "Valitse vähintään yksi kopioitava kenttä.",
-  "modQueue.transferSuccess": "Siirretty. Alkuperäinen viesti osoittaa nyt uudelle laudalle.",
+  "modQueue.transferSuccess": "Siirretty /trash/-laudalle. Alkuperäinen viesti osoittaa nyt /trash/-laudalle.",
   "transferred": "Siirretty",
-  "modQueue.transferTitleWithNumber": "Siirrä viesti No.{{number}}",
-  "modQueue.transferRecreateNotice": "Tämä ei ole oikea protokollatason siirto. 5chan luo viestin uudelleen valitulle laudalle ja poistaa alkuperäisen.",
+  "modQueue.transferTitleWithNumber": "Siirrä viesti No.{{number}} /trash/-laudalle",
+  "modQueue.transferRecreateNotice": "Tämä ei ole oikea protokollatason siirto. 5chan luo viestin uudelleen /trash/-laudalle ja poistaa alkuperäisen.",
   "modQueue.transferRepliesNotice": "Vastauksia ei siirretä. Ne poistetaan alkuperäisen viestin mukana.",
-  "modQueue.transferTemporaryAccountNotice": "5chan luo uuden väliaikaisen tilin vain tätä kopioitua viestiä varten ja poistaa sen julkaisun jälkeen."
+  "modQueue.transferTemporaryAccountNotice": "5chan luo uuden väliaikaisen tilin vain tätä kopioitua viestiä varten ja poistaa sen julkaisun jälkeen.",
+  "trash": "Roskakori"
 }

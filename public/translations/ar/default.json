@@ -450,16 +450,16 @@
   "reply_link_required_alert": "يجب عليك الرد برابط.",
   "reply_media_link_required_alert": "يجب عليك الرد برابط لصورة أو فيديو.",
   "reply_links_not_allowed_alert": "لا يُسمح بروابط الردود في هذه اللوحة.",
-  "transfer": "نقل",
-  "modQueue.transferTitle": "نقل المنشور",
+  "modQueue.transferTitle": "انقل المنشور إلى /trash/",
   "modQueue.transferSource": "من",
-  "modQueue.transferTarget": "إلى منتدى",
+  "modQueue.transferTarget": "إلى",
   "modQueue.transferFields": "نسخ الحقول",
   "modQueue.transferNoFields": "اختر حقلًا واحدًا على الأقل للنسخ.",
-  "modQueue.transferSuccess": "تم النقل. يشير المنشور الأصلي الآن إلى اللوحة الجديدة.",
+  "modQueue.transferSuccess": "نُقل إلى /trash/. يشير المنشور الأصلي الآن إلى /trash/.",
   "transferred": "منقول",
-  "modQueue.transferTitleWithNumber": "نقل المنشور رقم {{number}}",
-  "modQueue.transferRecreateNotice": "هذا ليس نقلا حقيقيا على مستوى البروتوكول. يعيد 5chan إنشاء المنشور على اللوحة المحددة ويزيل الأصل.",
+  "modQueue.transferTitleWithNumber": "انقل المنشور رقم {{number}} إلى /trash/",
+  "modQueue.transferRecreateNotice": "هذا ليس نقلاً حقيقياً على مستوى البروتوكول. يعيد 5chan إنشاء المنشور على /trash/ ويزيل الأصل.",
   "modQueue.transferRepliesNotice": "لن تُنقل الردود. سيتم حذفها مع المنشور الأصلي.",
-  "modQueue.transferTemporaryAccountNotice": "سينشئ 5chan حسابا مؤقتا جديدا لهذا المنشور المنسوخ فقط، ثم يحذفه بعد النشر."
+  "modQueue.transferTemporaryAccountNotice": "سينشئ 5chan حسابا مؤقتا جديدا لهذا المنشور المنسوخ فقط، ثم يحذفه بعد النشر.",
+  "trash": "سلة المهملات"
 }

@@ -18,7 +18,7 @@ import useIsMobile from '../../hooks/use-is-mobile';
 import useAuthorPrivileges from '../../hooks/use-author-privileges';
 import { useBoardPseudonymityMode } from '../../hooks/use-board-pseudonymity-mode';
 import { getCommentCommunityAddress, withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
-import { canTransferComment } from '../../lib/comment-transfer';
+import { canMoveCommentToTrash } from '../../lib/comment-transfer';
 import PostTransferModal from '../post-transfer-modal/post-transfer-modal';
 
 const daysToTimestampInSeconds = (days: number) => {
@@ -90,7 +90,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
   const canAttemptAuthorDelete = isAccountCommentAuthor || allowsPseudonymousDelete;
   const canOpenEditMenu = isAccountMod || canAttemptAuthorDelete;
   const canEditOwnModPost = isAccountMod && isAccountCommentAuthor;
-  const canTransferPost = isAccountMod && canTransferComment(resolvedPost);
+  const canTransferPost = isAccountMod && canMoveCommentToTrash(resolvedPost);
   const signer = isAccountCommentAuthor ? account?.signer : undefined;
   const latestPostRef = useRef(resolvedPost);
   useEffect(() => {
@@ -552,7 +552,7 @@ const EditMenu = ({ post }: { post: Comment }) => {
                       <div className={styles.menuItem}>
                         [
                         <button type='button' className={styles.menuButton} onClick={openTransfer}>
-                          {t('transfer')}
+                          {t('trash')}
                         </button>
                         ?]
                       </div>

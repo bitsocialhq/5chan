@@ -154,28 +154,20 @@ describe('PostTransferModal', () => {
     expect(modal?.style.transform).toBe('');
   });
 
-  it('offers the hidden trash board as a transfer target', async () => {
+  it('renders the hidden trash board as the fixed transfer target', async () => {
     await renderTransferModal();
 
-    const options = Array.from(document.body.querySelectorAll<HTMLOptionElement>('select option')).map((option) => ({
-      text: option.textContent,
-      value: option.value,
-    }));
-
-    expect(options).toContainEqual({ text: TRASH_BOARD_TITLE, value: TRASH_BOARD_ADDRESS });
+    expect(document.body.textContent).toContain(TRASH_BOARD_TITLE);
+    expect(document.body.querySelector('select')).toBeNull();
   });
 
-  it('resolves the hidden trash board when it is the transfer source', async () => {
+  it('disables submission when the hidden trash board is the transfer source', async () => {
     await renderTransferModal({ ...baseComment, communityAddress: TRASH_BOARD_ADDRESS });
 
     expect(document.body.textContent).toContain(TRASH_BOARD_TITLE);
-
-    const select = document.body.querySelector<HTMLSelectElement>('select');
-    expect(select).not.toBeNull();
-    await act(async () => {
-      select!.value = 'random-nsfw.bso';
-      select!.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+    expect(document.body.querySelector('select')).toBeNull();
+    const submitButton = Array.from(document.body.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.type === 'submit');
+    expect(submitButton?.disabled).toBe(true);
 
     const form = document.body.querySelector<HTMLFormElement>('form');
     expect(form).not.toBeNull();
@@ -183,29 +175,17 @@ describe('PostTransferModal', () => {
       form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     });
 
-    const [publishOptions] = testState.publishCommentMock.mock.calls[0] as [Record<string, unknown>, string];
-    await act(async () => {
-      await (publishOptions.onChallengeVerification as (verification: unknown, comment: unknown) => Promise<void>)(
-        { challengeSuccess: true, commentUpdate: { cid: 'target-comment' } },
-        { cid: 'challenge-comment' },
-      );
-    });
-
-    const [sourceModerationOptions] = testState.publishCommentModerationMock.mock.calls[1] as [{ commentModeration: { reason: string } }, string];
-    expect(sourceModerationOptions.commentModeration.reason).toContain('/trash/');
-    expect(sourceModerationOptions.commentModeration.reason).toContain('(the rules)');
+    expect(testState.publishCommentMock).not.toHaveBeenCalled();
+    expect(testState.publishCommentModerationMock).not.toHaveBeenCalled();
   });
 
-  it('does not offer the hidden trash board target when the source uses its public key alias', async () => {
+  it('disables submission when the transfer source uses the trash public key alias', async () => {
     await renderTransferModal({ ...baseComment, communityAddress: TRASH_BOARD_PUBLIC_KEY });
 
-    const options = Array.from(document.body.querySelectorAll<HTMLOptionElement>('select option')).map((option) => ({
-      text: option.textContent,
-      value: option.value,
-    }));
-
     expect(document.body.textContent).toContain(TRASH_BOARD_TITLE);
-    expect(options).not.toContainEqual({ text: TRASH_BOARD_TITLE, value: TRASH_BOARD_ADDRESS });
+    expect(document.body.querySelector('select')).toBeNull();
+    const submitButton = Array.from(document.body.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.type === 'submit');
+    expect(submitButton?.disabled).toBe(true);
   });
 
   it('reopens desktop transfer modals at the last dragged session position', async () => {

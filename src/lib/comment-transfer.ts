@@ -1,7 +1,8 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { isCommentFlagFlair } from './comment-flags';
-import { isSpecialBoardCode } from './special-boards';
+import { getSpecialBoardByAddress, isSpecialBoardCode, TRASH_BOARD_CODE } from './special-boards';
 import { isCommentArchived } from './utils/comment-moderation-utils';
+import { getCommentCommunityAddress } from './utils/comment-utils';
 import { normalizePublishURL } from './utils/url-utils';
 
 export type PostTransferField = 'displayName' | 'title' | 'content' | 'link' | 'spoiler' | 'flairs';
@@ -46,6 +47,9 @@ export const canTransferComment = (comment: Comment | undefined): boolean => {
     !isCommentArchived(comment)
   );
 };
+
+export const canMoveCommentToTrash = (comment: Comment | undefined): boolean =>
+  canTransferComment(comment) && getSpecialBoardByAddress(getCommentCommunityAddress(comment))?.directoryCode !== TRASH_BOARD_CODE;
 
 export const getInitialTransferFields = (comment: Comment): PostTransferFields => ({
   displayName: false,

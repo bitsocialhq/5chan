@@ -472,7 +472,7 @@ const PostInfo = ({
                     <span className={styles.modQueueButtonWrapper}>
                       [
                       <button type='button' className={styles.modQueueActionButton} onClick={onTransfer} disabled={isPublishing}>
-                        {t('transfer')}
+                        {t('trash')}
                       </button>
                       ]
                     </span>

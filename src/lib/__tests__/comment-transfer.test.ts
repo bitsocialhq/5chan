@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  canMoveCommentToTrash,
   canTransferComment,
   getTargetTransferModerationFlairs,
   getTransferPublishPayload,
@@ -9,7 +10,7 @@ import {
   hasTransferredCommentMarker,
   TRANSFERRED_COMMENT_FLAIR,
 } from '../comment-transfer';
-import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE, TRASH_BOARD_TITLE } from '../special-boards';
+import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE, TRASH_BOARD_PUBLIC_KEY, TRASH_BOARD_TITLE } from '../special-boards';
 
 describe('comment-transfer', () => {
   const selectedFields = {
@@ -31,6 +32,13 @@ describe('comment-transfer', () => {
     expect(canTransferComment({ cid: 'source', commentModeration: { purged: true } } as never)).toBe(false);
     expect(canTransferComment({ cid: 'source', archived: true } as never)).toBe(false);
     expect(canTransferComment({ cid: 'source', commentModeration: { archived: true } } as never)).toBe(false);
+  });
+
+  it('only allows movable posts outside the trash board to move to trash', () => {
+    expect(canMoveCommentToTrash({ cid: 'source', communityAddress: 'music-posting.eth' } as never)).toBe(true);
+    expect(canMoveCommentToTrash({ cid: 'source', communityAddress: TRASH_BOARD_ADDRESS } as never)).toBe(false);
+    expect(canMoveCommentToTrash({ cid: 'source', communityAddress: TRASH_BOARD_PUBLIC_KEY } as never)).toBe(false);
+    expect(canMoveCommentToTrash({ cid: 'reply', parentCid: 'source', communityAddress: 'music-posting.eth' } as never)).toBe(false);
   });
 
   it('copies selected post fields while excluding flag and transferred flairs', () => {

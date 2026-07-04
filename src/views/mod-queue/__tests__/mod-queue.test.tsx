@@ -81,7 +81,11 @@ useModQueueStoreMock.getState = getModQueueState;
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: Record<string, unknown>) => (key === 'modQueue.transferTitleWithNumber' ? `Transfer Post No.${options?.number}` : key),
+    t: (key: string, options?: Record<string, unknown>) => {
+      if (key === 'modQueue.transferTitleWithNumber') return `Move Post No.${options?.number} to /trash/`;
+      if (key === 'trash') return 'Trash';
+      return key;
+    },
   }),
 }));
 
@@ -311,7 +315,7 @@ vi.mock('../../post/post', () => ({
         'data-testid': 'mod-queue-feed-post',
       },
       post?.cid ?? 'missing',
-      onTransfer ? createElement('button', { type: 'button', onClick: onTransfer }, 'transfer') : null,
+      onTransfer ? createElement('button', { type: 'button', onClick: onTransfer }, 'Trash') : null,
     ),
 }));
 
@@ -580,7 +584,7 @@ describe('ModQueueView', () => {
     expect(previewPost?.getAttribute('data-show-replies')).toBe('false');
   });
 
-  it('transfers a queued post to another board with a temporary account', async () => {
+  it('moves a queued post to /trash/ with a temporary account', async () => {
     testState.directories = [
       { address: 'music-posting.eth', directoryCode: 'mu', title: '/mu/ - Music' },
       { address: 'tech-posting.eth', directoryCode: 'g', title: '/g/ - Technology' },
@@ -604,7 +608,7 @@ describe('ModQueueView', () => {
 
     await renderModQueue();
 
-    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'Trash');
     expect(transferButton).toBeTruthy();
 
     await act(async () => {
@@ -612,25 +616,18 @@ describe('ModQueueView', () => {
     });
 
     const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
-    expect(dialog?.textContent).toContain('Transfer Post No.8');
-    expect(dialog?.textContent).toContain('/g/ - Technology');
+    expect(dialog?.textContent).toContain('Move Post No.8 to /trash/');
+    expect(dialog?.textContent).toContain('/trash/ - Off-topic');
+    expect(dialog?.textContent).not.toContain('/g/ - Technology');
+    expect(dialog?.textContent).not.toContain('/a/ - Anime & Manga');
     expect(dialog?.textContent).toContain('modQueue.transferRecreateNotice');
     expect(dialog?.textContent).toContain('modQueue.transferRepliesNotice');
     expect(dialog?.textContent).toContain('modQueue.transferTemporaryAccountNotice');
     expect(dialog?.textContent).not.toContain('modQueue.transferAccount');
-    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
-    expect(Array.from(targetSelect?.options ?? []).map((option) => option.value)).toEqual(['', 'anime-posting.eth', 'tech-posting.eth', TRASH_BOARD_ADDRESS]);
+    expect(dialog?.querySelector('select')).toBeNull();
     const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
-    expect(submitButton?.disabled).toBe(true);
-
-    await act(async () => {
-      if (targetSelect) {
-        targetSelect.value = 'tech-posting.eth';
-        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
-
     expect(submitButton?.disabled).toBe(false);
+
     await act(async () => {
       submitButton?.click();
       await Promise.resolve();
@@ -643,7 +640,7 @@ describe('ModQueueView', () => {
     const [payload, accountName] = testState.publishCommentMock.mock.calls[0];
     expect(accountName).toBe(temporaryAccountName);
     expect(payload).toMatchObject({
-      communityAddress: 'tech-posting.eth',
+      communityAddress: TRASH_BOARD_ADDRESS,
       content: 'belongs on tech',
       flairs: [{ text: 'flash:loop' }],
       link: 'https://example.com/image.png',
@@ -655,7 +652,7 @@ describe('ModQueueView', () => {
 
     const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     await act(async () => {
-      await payload.onChallengeVerification({ challengeSuccess: false, reason: 'try again' }, { cid: 'retry-post', communityAddress: 'tech-posting.eth' });
+      await payload.onChallengeVerification({ challengeSuccess: false, reason: 'try again' }, { cid: 'retry-post', communityAddress: TRASH_BOARD_ADDRESS });
       await Promise.resolve();
     });
 
@@ -673,7 +670,7 @@ describe('ModQueueView', () => {
     expect(testState.publishCommentModerationActionMock).toHaveBeenCalledTimes(2);
     expect(testState.publishCommentModerationActionMock.mock.calls[0][0]).toMatchObject({
       commentCid: 'transferred-post',
-      communityAddress: 'tech-posting.eth',
+      communityAddress: TRASH_BOARD_ADDRESS,
       commentModeration: {
         flairs: [{ text: 'flash:loop' }, { text: '5chan:transferred' }],
       },
@@ -683,14 +680,13 @@ describe('ModQueueView', () => {
       communityAddress: 'music-posting.eth',
       commentModeration: {
         approved: false,
-        reason: 'Moved to >>>/g/, this post did not belong to /mu/ ([rules](/rules#mu))',
+        reason: 'Moved to >>>/trash/, this post did not belong to /mu/ ([rules](/rules#mu))',
       },
     });
     expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);
     expect(dialog?.textContent).toContain('modQueue.transferSuccess');
     expect(dialog?.textContent).not.toContain('#12');
     expect(submitButton?.disabled).toBe(true);
-    expect(targetSelect?.disabled).toBe(true);
     expect(testState.rememberCommentsInQueueMock).toHaveBeenCalledWith([
       expect.objectContaining({
         approved: false,
@@ -699,9 +695,9 @@ describe('ModQueueView', () => {
       }),
     ]);
     expect(container.textContent).toContain('rejected');
-    expect(
-      Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => ['approve', 'reject', 'transfer'].includes(button.textContent ?? '')),
-    ).toBe(false);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => ['approve', 'reject', 'Trash'].includes(button.textContent ?? ''))).toBe(
+      false,
+    );
 
     await act(async () => {
       submitButton?.click();
@@ -732,19 +728,13 @@ describe('ModQueueView', () => {
 
     await renderModQueue();
 
-    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'Trash');
     await act(async () => {
       transferButton?.click();
     });
 
     const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
-    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
-    await act(async () => {
-      if (targetSelect) {
-        targetSelect.value = 'tech-posting.eth';
-        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
+    expect(dialog?.querySelector('select')).toBeNull();
     const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
 
     await act(async () => {
@@ -760,7 +750,6 @@ describe('ModQueueView', () => {
 
     expect(dialog?.querySelector('[data-testid="error-display"]')?.textContent).toBe('target marker failed');
     expect(submitButton?.disabled).toBe(true);
-    expect(targetSelect?.disabled).toBe(true);
     expect(testState.deleteAccountMock).toHaveBeenCalled();
 
     await act(async () => {
@@ -775,7 +764,7 @@ describe('ModQueueView', () => {
       closeButton?.click();
     });
 
-    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'transfer')).toBe(false);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'Trash')).toBe(false);
   });
 
   it('awaits transfer publish rollback before enabling retry', async () => {
@@ -803,19 +792,13 @@ describe('ModQueueView', () => {
 
     await renderModQueue();
 
-    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'Trash');
     await act(async () => {
       transferButton?.click();
     });
 
     const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
-    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
-    await act(async () => {
-      if (targetSelect) {
-        targetSelect.value = 'tech-posting.eth';
-        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
+    expect(dialog?.querySelector('select')).toBeNull();
     const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
 
     await act(async () => {
@@ -874,7 +857,7 @@ describe('ModQueueView', () => {
 
     await renderModQueue();
 
-    let transferButtons = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer');
+    let transferButtons = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'Trash');
     expect(transferButtons).toHaveLength(2);
 
     await act(async () => {
@@ -882,7 +865,14 @@ describe('ModQueueView', () => {
     });
 
     expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(1);
-    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer')).toHaveLength(0);
+    transferButtons = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'Trash');
+    expect(transferButtons).toHaveLength(1);
+
+    await act(async () => {
+      transferButtons[0]?.click();
+    });
+
+    expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(1);
 
     const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
     const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
@@ -891,7 +881,7 @@ describe('ModQueueView', () => {
     });
 
     expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(0);
-    transferButtons = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer');
+    transferButtons = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'Trash');
     expect(transferButtons).toHaveLength(2);
   });
 
@@ -920,20 +910,14 @@ describe('ModQueueView', () => {
 
     await renderModQueue();
 
-    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'Trash');
     await act(async () => {
       transferButton?.click();
     });
 
     expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(1);
     const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
-    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
-    await act(async () => {
-      if (targetSelect) {
-        targetSelect.value = 'tech-posting.eth';
-        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
+    expect(dialog?.querySelector('select')).toBeNull();
     const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
 
     await act(async () => {
@@ -946,14 +930,14 @@ describe('ModQueueView', () => {
     await renderModQueue();
 
     expect(document.body.querySelectorAll('[role="dialog"][aria-labelledby="post-transfer-title"]')).toHaveLength(0);
-    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer')).toHaveLength(0);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'Trash')).toHaveLength(0);
 
     await act(async () => {
       await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post' } }, { cid: 'transferred-post' });
       await Promise.resolve();
     });
 
-    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'transfer')).toHaveLength(1);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).filter((button) => button.textContent === 'Trash')).toHaveLength(1);
   });
 
   it('does not show transfer for queued replies', async () => {
@@ -971,7 +955,7 @@ describe('ModQueueView', () => {
 
     await renderModQueue();
 
-    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'transfer')).toBe(false);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'Trash')).toBe(false);
   });
 
   it.each([
@@ -981,6 +965,7 @@ describe('ModQueueView', () => {
     ['purged', { commentModeration: { purged: true } }],
     ['archived', { archived: true }],
     ['moderation archived', { commentModeration: { archived: true } }],
+    ['trash board', { communityAddress: TRASH_BOARD_ADDRESS }],
   ])('does not show transfer for %s queued posts', async (_label, commentPatch) => {
     testState.feed = [
       {
@@ -996,7 +981,7 @@ describe('ModQueueView', () => {
 
     await renderModQueue();
 
-    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'transfer')).toBe(false);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'Trash')).toBe(false);
   });
 
   it('cleans up the temporary account and unlocks the transfer modal when the challenge is abandoned', async () => {
@@ -1017,19 +1002,13 @@ describe('ModQueueView', () => {
 
     await renderModQueue();
 
-    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'Trash');
     await act(async () => {
       transferButton?.click();
     });
 
     const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
-    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
-    await act(async () => {
-      if (targetSelect) {
-        targetSelect.value = 'tech-posting.eth';
-        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
+    expect(dialog?.querySelector('select')).toBeNull();
     const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
 
     await act(async () => {
@@ -1037,9 +1016,9 @@ describe('ModQueueView', () => {
       await Promise.resolve();
     });
     expect(container.textContent).toContain('publishing');
-    expect(
-      Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => ['approve', 'reject', 'transfer'].includes(button.textContent ?? '')),
-    ).toBe(false);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => ['approve', 'reject', 'Trash'].includes(button.textContent ?? ''))).toBe(
+      false,
+    );
 
     const temporaryAccountName = testState.createAccountMock.mock.calls[0][0];
     const [payload] = testState.publishCommentMock.mock.calls[0];
@@ -1084,13 +1063,13 @@ describe('ModQueueView', () => {
     await renderModQueue();
 
     expect(container.querySelector('[data-testid="mod-queue-feed-post"]')?.getAttribute('data-cid')).toBe('wrong-board-post');
-    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'Trash');
     await act(async () => {
       transferButton?.click();
     });
 
     const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
-    expect(dialog?.textContent).toContain('Transfer Post No.8');
+    expect(dialog?.textContent).toContain('Move Post No.8 to /trash/');
 
     const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
     await act(async () => {
@@ -1120,19 +1099,13 @@ describe('ModQueueView', () => {
     await renderModQueue();
 
     const feedPost = container.querySelector('[data-testid="mod-queue-feed-post"]');
-    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'Trash');
     await act(async () => {
       transferButton?.click();
     });
 
     const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
-    const targetSelect = dialog?.querySelector<HTMLSelectElement>('select');
-    await act(async () => {
-      if (targetSelect) {
-        targetSelect.value = 'tech-posting.eth';
-        targetSelect.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    });
+    expect(dialog?.querySelector('select')).toBeNull();
 
     const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
     await act(async () => {
@@ -1150,7 +1123,7 @@ describe('ModQueueView', () => {
 
     expect(feedPost?.getAttribute('data-is-publishing')).toBe('false');
     expect(feedPost?.getAttribute('data-mod-queue-status')).toBe('rejected');
-    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'transfer')).toBe(false);
+    expect(Array.from(container.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent === 'Trash')).toBe(false);
   });
 
   it('keeps the transfer modal non-blocking and closes it with Escape', async () => {
@@ -1171,13 +1144,13 @@ describe('ModQueueView', () => {
 
     await renderModQueue();
 
-    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'Trash');
     await act(async () => {
       transferButton?.click();
     });
 
     const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
-    expect(dialog?.textContent).toContain('Transfer Post No.8');
+    expect(dialog?.textContent).toContain('Move Post No.8 to /trash/');
 
     await act(async () => {
       dialog?.querySelector('form')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -1218,7 +1191,7 @@ describe('ModQueueView', () => {
     try {
       await renderModQueue();
 
-      const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'transfer');
+      const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'Trash');
       await act(async () => {
         transferButton?.click();
       });
