@@ -3,13 +3,14 @@ import {
   canTransferComment,
   getTargetTransferModerationFlairs,
   getTransferPublishPayload,
+  getTransferPublishIdentity,
   getTransferSourceBoardReference,
   getTransferSourceBoardRulesLink,
   getTransferSourceModeration,
   hasTransferredCommentMarker,
   TRANSFERRED_COMMENT_FLAIR,
 } from '../comment-transfer';
-import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE, TRASH_BOARD_TITLE } from '../special-boards';
+import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE, TRASH_BOARD_PUBLIC_KEY, TRASH_BOARD_TITLE } from '../special-boards';
 
 describe('comment-transfer', () => {
   const selectedFields = {
@@ -56,6 +57,36 @@ describe('comment-transfer', () => {
       spoiler: true,
       title: 'Flash',
     });
+  });
+
+  it('uses the public key identity when publishing transfers to a special board', () => {
+    expect(getTransferPublishIdentity({ address: 'tech-posting.eth', directoryCode: 'g' }, 'tech-posting.eth')).toEqual({
+      communityAddress: 'tech-posting.eth',
+    });
+    expect(getTransferPublishIdentity({ address: TRASH_BOARD_ADDRESS, directoryCode: TRASH_BOARD_CODE, publicKey: TRASH_BOARD_PUBLIC_KEY }, TRASH_BOARD_ADDRESS)).toEqual(
+      {
+        communityAddress: TRASH_BOARD_PUBLIC_KEY,
+        communityPublicKey: TRASH_BOARD_PUBLIC_KEY,
+      },
+    );
+
+    const payload = getTransferPublishPayload(
+      {
+        cid: 'source',
+        communityAddress: 'music-posting.eth',
+        content: 'wrong board',
+      } as never,
+      selectedFields,
+      TRASH_BOARD_ADDRESS,
+      { address: TRASH_BOARD_ADDRESS, directoryCode: TRASH_BOARD_CODE, publicKey: TRASH_BOARD_PUBLIC_KEY },
+    );
+
+    expect(payload).toMatchObject({
+      communityAddress: TRASH_BOARD_PUBLIC_KEY,
+      communityPublicKey: TRASH_BOARD_PUBLIC_KEY,
+      content: 'wrong board',
+    });
+    expect(payload).not.toHaveProperty('communityName');
   });
 
   it('copies selected comment body text verbatim while still ignoring blank bodies', () => {
