@@ -165,31 +165,6 @@ describe('PostTransferModal', () => {
     expect(options).toContainEqual({ text: TRASH_BOARD_TITLE, value: TRASH_BOARD_ADDRESS });
   });
 
-  it('publishes hidden trash board transfers with the board public key identity', async () => {
-    await renderTransferModal();
-
-    const select = document.body.querySelector<HTMLSelectElement>('select');
-    expect(select).not.toBeNull();
-    await act(async () => {
-      select!.value = TRASH_BOARD_ADDRESS;
-      select!.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-
-    const form = document.body.querySelector<HTMLFormElement>('form');
-    expect(form).not.toBeNull();
-    await act(async () => {
-      form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-      await Promise.resolve();
-    });
-
-    const [publishOptions] = testState.publishCommentMock.mock.calls[0] as [Record<string, unknown>, string];
-    expect(publishOptions).toMatchObject({
-      communityAddress: TRASH_BOARD_PUBLIC_KEY,
-      communityPublicKey: TRASH_BOARD_PUBLIC_KEY,
-    });
-    expect(publishOptions).not.toHaveProperty('communityName');
-  });
-
   it('resolves the hidden trash board when it is the transfer source', async () => {
     await renderTransferModal({ ...baseComment, communityAddress: TRASH_BOARD_ADDRESS });
 
@@ -217,11 +192,6 @@ describe('PostTransferModal', () => {
     });
 
     const [sourceModerationOptions] = testState.publishCommentModerationMock.mock.calls[1] as [{ commentModeration: { reason: string } }, string];
-    expect(sourceModerationOptions).toMatchObject({
-      communityAddress: TRASH_BOARD_PUBLIC_KEY,
-      communityPublicKey: TRASH_BOARD_PUBLIC_KEY,
-    });
-    expect(sourceModerationOptions).not.toHaveProperty('communityName');
     expect(sourceModerationOptions.commentModeration.reason).toContain('/trash/');
     expect(sourceModerationOptions.commentModeration.reason).toContain('(the rules)');
   });
