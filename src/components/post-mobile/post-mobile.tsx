@@ -862,7 +862,7 @@ const PostMobile = ({
                           </button>
                           {onTransfer && (
                             <button type='button' className='button' onClick={onTransfer} disabled={isPublishing}>
-                              {t('transfer')}
+                              {t('trash')}
                             </button>
                           )}
                         </>

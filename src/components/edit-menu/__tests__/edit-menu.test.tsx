@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import EditMenu from '../edit-menu';
+import { TRASH_BOARD_ADDRESS } from '../../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -435,7 +436,7 @@ describe('EditMenu', () => {
     });
   });
 
-  it('lets moderators transfer top-level published posts from the edit menu', async () => {
+  it('lets moderators move top-level published posts to trash from the edit menu', async () => {
     testState.privileges = {
       isAccountCommentAuthor: false,
       isAccountMod: true,
@@ -444,7 +445,7 @@ describe('EditMenu', () => {
 
     await renderMenu(basePost);
     await openMenu();
-    await clickButton('transfer');
+    await clickButton('trash');
 
     expect(container.querySelector('[data-testid="post-transfer-modal"]')?.getAttribute('data-cid')).toBe('comment-1');
   });
@@ -456,7 +457,8 @@ describe('EditMenu', () => {
     ['purged', { commentModeration: { purged: true } }],
     ['archived', { archived: true }],
     ['moderation archived', { commentModeration: { archived: true } }],
-  ])('does not let moderators transfer %s posts from the edit menu', async (_label, postPatch) => {
+    ['trash board', { communityAddress: TRASH_BOARD_ADDRESS }],
+  ])('does not let moderators move %s posts to trash from the edit menu', async (_label, postPatch) => {
     testState.privileges = {
       isAccountCommentAuthor: false,
       isAccountMod: true,
@@ -469,7 +471,7 @@ describe('EditMenu', () => {
     });
     await openMenu();
 
-    expect(hasButton('transfer')).toBe(false);
+    expect(hasButton('trash')).toBe(false);
   });
 
   it('lets moderators clear an existing canonical author ban', async () => {

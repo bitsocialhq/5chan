@@ -12,7 +12,7 @@ import { alertChallengeVerificationFailed } from '../../lib/utils/challenge-util
 import { areSameBoardAddress } from '../../lib/utils/route-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import capitalize from 'lodash/capitalize';
-import { getSpecialBoardByAddress, SPECIAL_BOARDS } from '../../lib/special-boards';
+import { getSpecialBoardByAddress, TRASH_BOARD_ADDRESS } from '../../lib/special-boards';
 import styles from './post-transfer-modal.module.css';
 import {
   getAvailableTransferFields,
@@ -43,7 +43,6 @@ const TRANSFER_MODAL_VIEWPORT_GUTTER_PX = 20;
 const TRANSFER_MODAL_POSITION_SESSION_STORAGE_KEY = '5chan:transfer-modal-position';
 
 interface TransferModalState {
-  targetBoardAddress: string;
   selectedFields: PostTransferFields;
   transferState: PostTransferState;
   transferError?: unknown;
@@ -51,7 +50,6 @@ interface TransferModalState {
 
 type TransferModalAction =
   | { type: 'field'; field: PostTransferField; checked: boolean }
-  | { type: 'targetBoard'; value: string }
   | { type: 'publishStarted' }
   | { type: 'publishSucceeded' }
   | { type: 'publishFinalizationFailed'; error: unknown }
@@ -65,7 +63,6 @@ interface PostTransferModalProps {
 }
 
 const getInitialTransferModalState = (comment: Comment): TransferModalState => ({
-  targetBoardAddress: '',
   selectedFields: getInitialTransferFields(comment),
   transferState: 'idle',
 });
@@ -79,10 +76,6 @@ const transferModalReducer = (state: TransferModalState, action: TransferModalAc
   if (action.type === 'field') {
     if (isTerminalTransferState(state.transferState)) return state;
     return resetTransferResult({ ...state, selectedFields: { ...state.selectedFields, [action.field]: action.checked } });
-  }
-  if (action.type === 'targetBoard') {
-    if (isTerminalTransferState(state.transferState)) return state;
-    return resetTransferResult({ ...state, targetBoardAddress: action.value });
   }
   if (action.type === 'publishStarted') {
     return { ...state, transferState: 'publishing', transferError: undefined };
@@ -192,17 +185,13 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
   const deleteAccount = useAccountsStore((state) => state.accountsActions.deleteAccount) as DeleteAccountAction;
   const sourceCommunityAddress = getCommentCommunityAddress(comment);
   const sourceCommentCid = comment.cid;
-  const boardOptions = useMemo(() => {
-    const transferTargets = [...directories, ...SPECIAL_BOARDS];
-    return transferTargets
-      .filter((community) => community.address && !isSameTransferBoard(community, sourceCommunityAddress))
-      .sort((left, right) => getTransferBoardLabel(left).localeCompare(getTransferBoardLabel(right), undefined, { sensitivity: 'base' }));
-  }, [directories, sourceCommunityAddress]);
+  const resolvedTargetBoardAddress = TRASH_BOARD_ADDRESS;
+  const resolvedTargetBoard = getSpecialBoardByAddress(TRASH_BOARD_ADDRESS);
+  const targetBoardLabel = getTransferBoardLabel(resolvedTargetBoard ?? { address: TRASH_BOARD_ADDRESS });
+  const isSourceTargetBoard = isSameTransferBoard(resolvedTargetBoard ?? { address: TRASH_BOARD_ADDRESS }, sourceCommunityAddress);
   const [modalState, dispatchModalState] = useReducer(transferModalReducer, comment, getInitialTransferModalState);
-  const { targetBoardAddress, selectedFields, transferState, transferError } = modalState;
+  const { selectedFields, transferState, transferError } = modalState;
 
-  const resolvedTargetBoardAddress = targetBoardAddress;
-  const resolvedTargetBoard = boardOptions.find((community) => community.address === targetBoardAddress);
   const availableFields = useMemo(() => getAvailableTransferFields(comment), [comment]);
   const sourceBoard = useMemo(() => {
     if (!sourceCommunityAddress) return undefined;
@@ -217,7 +206,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
   const canSubmit =
     !isPublishingTransfer &&
     !isTransferComplete &&
-    Boolean(targetBoardAddress) &&
+    !isSourceTargetBoard &&
     Boolean(sourceCommunityAddress) &&
     Boolean(sourceCommentCid) &&
     typeof createAccount === 'function' &&
@@ -454,23 +443,10 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
             <span className={styles.transferLabel}>{t('modQueue.transferSource')}</span>
             <span>{sourceBoardLabel}</span>
           </div>
-          <label className={styles.transferRow}>
+          <div className={styles.transferRow}>
             <span className={styles.transferLabel}>{t('modQueue.transferTarget')}</span>
-            <select
-              value={targetBoardAddress}
-              onChange={(event) => dispatchModalState({ type: 'targetBoard', value: event.target.value })}
-              disabled={isPublishingTransfer || isTransferComplete}
-            >
-              <option value='' disabled>
-                {t('choose_one')}
-              </option>
-              {boardOptions.map((community) => (
-                <option key={community.address} value={community.address}>
-                  {getTransferBoardLabel(community)}
-                </option>
-              ))}
-            </select>
-          </label>
+            <span>{targetBoardLabel}</span>
+          </div>
 
           <fieldset className={styles.transferFields}>
             <legend>{t('modQueue.transferFields')}</legend>
@@ -507,7 +483,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
             {t('close')}
           </button>
           <button type='submit' disabled={!canSubmit}>
-            {isPublishingTransfer ? t('publishing') : t('transfer')}
+            {isPublishingTransfer ? t('publishing') : t('trash')}
           </button>
         </div>
       </form>

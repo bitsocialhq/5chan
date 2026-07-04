@@ -450,16 +450,16 @@
   "reply_link_required_alert": "Bạn phải trả lời bằng một liên kết.",
   "reply_media_link_required_alert": "Bạn phải trả lời bằng một liên kết hình ảnh hoặc video.",
   "reply_links_not_allowed_alert": "Liên kết trong trả lời không được phép trên bảng này.",
-  "transfer": "Chuyển",
-  "modQueue.transferTitle": "Chuyển bài đăng",
+  "modQueue.transferTitle": "Chuyển bài viết vào /trash/",
   "modQueue.transferSource": "Từ",
-  "modQueue.transferTarget": "Đến diễn đàn",
+  "modQueue.transferTarget": "Đến",
   "modQueue.transferFields": "Sao chép trường",
   "modQueue.transferNoFields": "Chọn ít nhất một trường để sao chép.",
-  "modQueue.transferSuccess": "Đã chuyển. Bài viết gốc hiện trỏ tới bảng mới.",
+  "modQueue.transferSuccess": "Đã chuyển vào /trash/. Bài viết gốc hiện trỏ tới /trash/.",
   "transferred": "Đã chuyển",
-  "modQueue.transferTitleWithNumber": "Chuyển bài viết No.{{number}}",
-  "modQueue.transferRecreateNotice": "Đây không phải là chuyển bài thật ở cấp giao thức. 5chan tạo lại bài viết trên bảng đã chọn và gỡ bài gốc.",
+  "modQueue.transferTitleWithNumber": "Chuyển bài viết No.{{number}} vào /trash/",
+  "modQueue.transferRecreateNotice": "Đây không phải là chuyển bài thật ở cấp giao thức. 5chan tạo lại bài viết trong /trash/ và gỡ bài gốc.",
   "modQueue.transferRepliesNotice": "Các trả lời sẽ không được chuyển. Chúng sẽ bị xóa cùng với bài viết gốc.",
-  "modQueue.transferTemporaryAccountNotice": "5chan sẽ tạo một tài khoản tạm thời mới chỉ cho bài viết được sao chép này, rồi xóa tài khoản đó sau khi đăng."
+  "modQueue.transferTemporaryAccountNotice": "5chan sẽ tạo một tài khoản tạm thời mới chỉ cho bài viết được sao chép này, rồi xóa tài khoản đó sau khi đăng.",
+  "trash": "Thùng rác"
 }
