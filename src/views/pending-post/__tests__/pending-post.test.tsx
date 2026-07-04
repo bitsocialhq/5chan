@@ -133,6 +133,22 @@ describe('PendingPost', () => {
     expect(testState.navigateMock).not.toHaveBeenCalledWith('/not-found', { replace: true });
   });
 
+  it('does not register the scroll helper return value as an effect cleanup', async () => {
+    scrollToMock.mockReturnValueOnce({});
+    testState.accountCommentIndex = '0';
+    testState.accountComments = [{}];
+    testState.post = {
+      communityAddress: 'music-posting.eth',
+    };
+
+    await renderPendingPost();
+
+    expect(() => {
+      act(() => root.unmount());
+    }).not.toThrow();
+    root = createRoot(container);
+  });
+
   it('passes normalized numeric-string pending indices to the account comment lookup', async () => {
     testState.accountCommentIndex = '01';
     testState.accountComments = [{}, {}];

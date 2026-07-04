@@ -61,7 +61,9 @@ const PendingPost = () => {
   const isRetryingThisPendingPost = retryingAccountCommentIndex !== null && retryingAccountCommentIndex === normalizedAccountCommentIndex;
   const lastPendingBoardRef = useRef<{ accountCommentIndex: number; boardPath: string } | null>(null);
 
-  useEffect(() => window.scrollTo(0, 0), []);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     if (typeof normalizedAccountCommentIndex === 'number' && pendingBoardPath) {
