@@ -3,6 +3,7 @@ export interface SpecialBoard {
   aliases?: string[];
   directoryCode: string;
   nsfw?: boolean;
+  publicKey?: string;
   title: string;
 }
 
@@ -14,14 +15,15 @@ export const TRASH_BOARD_TITLE = '/trash/ - Off-topic';
 export const SPECIAL_BOARDS: SpecialBoard[] = [
   {
     address: TRASH_BOARD_ADDRESS,
-    aliases: [TRASH_BOARD_PUBLIC_KEY, 'off-topic.eth'],
+    aliases: ['off-topic.eth'],
     directoryCode: TRASH_BOARD_CODE,
     nsfw: true,
+    publicKey: TRASH_BOARD_PUBLIC_KEY,
     title: TRASH_BOARD_TITLE,
   },
 ];
 
-const getSpecialBoardLookupAddresses = (board: SpecialBoard): string[] => [board.address, ...(board.aliases ?? [])];
+const getSpecialBoardLookupAddresses = (board: SpecialBoard): string[] => [board.address, ...(board.publicKey ? [board.publicKey] : []), ...(board.aliases ?? [])];
 
 export const getSpecialBoardByCode = (code: string | undefined): SpecialBoard | undefined =>
   code ? SPECIAL_BOARDS.find((board) => board.directoryCode === code) : undefined;

@@ -19,6 +19,7 @@ import {
   getInitialTransferFields,
   getTargetTransferModerationFlairs,
   getTransferBoardReference,
+  getTransferPublishIdentity,
   getTransferPublishPayload,
   getTransferSourceBoardReference,
   getTransferSourceBoardRulesLink,
@@ -333,7 +334,9 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
     try {
       await createAccount(temporaryAccountName);
       temporaryAccountCreated = true;
-      const payload = getTransferPublishPayload(comment, selectedFields, resolvedTargetBoardAddress);
+      const targetPublishIdentity = getTransferPublishIdentity(resolvedTargetBoard, resolvedTargetBoardAddress);
+      const sourcePublishIdentity = sourceCommunityAddress ? getTransferPublishIdentity(sourceBoard, sourceCommunityAddress) : undefined;
+      const payload = getTransferPublishPayload(comment, selectedFields, resolvedTargetBoardAddress, resolvedTargetBoard);
       await publishComment(
         {
           ...payload,
@@ -351,6 +354,9 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
             try {
               alertChallengeVerificationFailed(challengeVerification, challengeComment);
               if (challengeVerification?.challengeSuccess !== true) {
+                await cleanupTemporaryAccount({ deletePendingComment: true });
+                onTransferStateChange?.('failed');
+                dispatchModalState({ type: 'publishFailed', error: new Error(challengeVerification?.reason || 'Transfer challenge verification failed.') });
                 return;
               }
               if (finalizedTransferRef.current) return;
@@ -360,11 +366,14 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
               if (!targetCommentCid) {
                 throw new Error('Transferred post was accepted, but no target CID was returned.');
               }
+              if (!sourcePublishIdentity) {
+                throw new Error('Transferred post was accepted, but no source board was resolved.');
+              }
 
               // Queue the target marker first so a target moderation failure does not remove the original post.
               await publishCommentModeration({
                 commentCid: targetCommentCid,
-                communityAddress: resolvedTargetBoardAddress,
+                ...targetPublishIdentity,
                 commentModeration: {
                   flairs: getTargetTransferModerationFlairs(comment, selectedFields),
                 },
@@ -372,7 +381,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
               });
               await publishCommentModeration({
                 commentCid: sourceCommentCid,
-                communityAddress: sourceCommunityAddress,
+                ...sourcePublishIdentity,
                 commentModeration: getTransferSourceModeration(
                   comment,
                   getTransferBoardReference(resolvedTargetBoard, resolvedTargetBoardAddress),

@@ -161,6 +161,58 @@ describe('PostTransferModal', () => {
     expect(document.body.querySelector('select')).toBeNull();
   });
 
+  it('publishes hidden trash board transfers with the board public key identity', async () => {
+    await renderTransferModal();
+
+    expect(document.body.querySelector('select')).toBeNull();
+
+    const form = document.body.querySelector<HTMLFormElement>('form');
+    expect(form).not.toBeNull();
+    await act(async () => {
+      form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+
+    const [publishOptions] = testState.publishCommentMock.mock.calls[0] as [Record<string, unknown>, string];
+    expect(publishOptions).toMatchObject({
+      communityAddress: TRASH_BOARD_PUBLIC_KEY,
+      communityPublicKey: TRASH_BOARD_PUBLIC_KEY,
+    });
+    expect(publishOptions).not.toHaveProperty('communityName');
+  });
+
+  it('unlocks after hidden trash board challenge verification fails', async () => {
+    await renderTransferModal();
+
+    const form = document.body.querySelector<HTMLFormElement>('form');
+    expect(form).not.toBeNull();
+    await act(async () => {
+      form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+
+    const [publishOptions] = testState.publishCommentMock.mock.calls[0] as [Record<string, unknown>, string];
+    (publishOptions._onPendingCommentIndex as (index: number) => void)(12);
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    await act(async () => {
+      await (publishOptions.onChallengeVerification as (verification: unknown, comment: unknown) => Promise<void>)(
+        { challengeSuccess: false, reason: 'try again' },
+        { cid: 'challenge-comment' },
+      );
+      await Promise.resolve();
+    });
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    expect(testState.deleteCommentMock).toHaveBeenCalledWith(12, expect.stringMatching(/^5chan-transfer-comment-/));
+    expect(testState.deleteAccountMock).toHaveBeenCalledWith(expect.stringMatching(/^5chan-transfer-comment-/));
+    expect(document.body.textContent).toContain('try again');
+    const closeButton = Array.from(document.body.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'close');
+    const submitButton = Array.from(document.body.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.type === 'submit');
+    expect(closeButton?.disabled).toBe(false);
+    expect(submitButton?.disabled).toBe(false);
+    alertSpy.mockRestore();
+  });
+
   it('disables submission when the hidden trash board is the transfer source', async () => {
     await renderTransferModal({ ...baseComment, communityAddress: TRASH_BOARD_ADDRESS });
 

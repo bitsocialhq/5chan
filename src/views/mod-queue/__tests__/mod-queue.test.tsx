@@ -4,7 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { Link, MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ModQueueView from '../mod-queue';
-import { TRASH_BOARD_ADDRESS } from '../../../lib/special-boards';
+import { TRASH_BOARD_ADDRESS, TRASH_BOARD_PUBLIC_KEY } from '../../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (callback: () => void | Promise<void>) => void | Promise<void> }).act as (callback: () => void | Promise<void>) => void | Promise<void>;
@@ -640,7 +640,8 @@ describe('ModQueueView', () => {
     const [payload, accountName] = testState.publishCommentMock.mock.calls[0];
     expect(accountName).toBe(temporaryAccountName);
     expect(payload).toMatchObject({
-      communityAddress: TRASH_BOARD_ADDRESS,
+      communityAddress: TRASH_BOARD_PUBLIC_KEY,
+      communityPublicKey: TRASH_BOARD_PUBLIC_KEY,
       content: 'belongs on tech',
       flairs: [{ text: 'flash:loop' }],
       link: 'https://example.com/image.png',
@@ -648,19 +649,8 @@ describe('ModQueueView', () => {
       title: 'Wrong board',
     });
     expect(payload.author).toBeUndefined();
+    expect(payload).not.toHaveProperty('communityName');
     expect(typeof payload.onChallengeVerification).toBe('function');
-
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
-    await act(async () => {
-      await payload.onChallengeVerification({ challengeSuccess: false, reason: 'try again' }, { cid: 'retry-post', communityAddress: TRASH_BOARD_ADDRESS });
-      await Promise.resolve();
-    });
-
-    expect(alertSpy).toHaveBeenCalledTimes(1);
-    expect(testState.publishCommentModerationActionMock).not.toHaveBeenCalled();
-    expect(testState.deleteAccountMock).not.toHaveBeenCalled();
-    expect(dialog?.textContent).toContain('publishing');
-    alertSpy.mockRestore();
 
     await act(async () => {
       await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post' } }, { cid: 'transferred-post' });
@@ -670,7 +660,8 @@ describe('ModQueueView', () => {
     expect(testState.publishCommentModerationActionMock).toHaveBeenCalledTimes(2);
     expect(testState.publishCommentModerationActionMock.mock.calls[0][0]).toMatchObject({
       commentCid: 'transferred-post',
-      communityAddress: TRASH_BOARD_ADDRESS,
+      communityAddress: TRASH_BOARD_PUBLIC_KEY,
+      communityPublicKey: TRASH_BOARD_PUBLIC_KEY,
       commentModeration: {
         flairs: [{ text: 'flash:loop' }, { text: '5chan:transferred' }],
       },
@@ -707,6 +698,72 @@ describe('ModQueueView', () => {
     expect(testState.createAccountMock).toHaveBeenCalledTimes(1);
     expect(testState.publishCommentMock).toHaveBeenCalledTimes(1);
     expect(testState.publishCommentModerationActionMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('unlocks the transfer modal when trash challenge verification fails', async () => {
+    testState.feed = [
+      {
+        cid: 'wrong-board-post',
+        communityAddress: 'music-posting.eth',
+        content: 'belongs on trash',
+        number: 8,
+        pendingApproval: true,
+        timestamp: 90_000,
+      },
+    ];
+    let resolveDeleteAccount: () => void = () => undefined;
+    testState.deleteAccountMock.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveDeleteAccount = resolve;
+        }),
+    );
+
+    await renderModQueue();
+
+    const transferButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find((button) => button.textContent === 'Trash');
+    await act(async () => {
+      transferButton?.click();
+    });
+
+    const dialog = document.body.querySelector<HTMLElement>('[role="dialog"][aria-labelledby="post-transfer-title"]');
+    const submitButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.type === 'submit');
+    const closeButton = Array.from(dialog?.querySelectorAll<HTMLButtonElement>('button') ?? []).find((button) => button.textContent === 'close');
+
+    await act(async () => {
+      submitButton?.click();
+      await Promise.resolve();
+    });
+
+    const temporaryAccountName = testState.createAccountMock.mock.calls[0][0];
+    const [payload] = testState.publishCommentMock.mock.calls[0];
+    payload._onPendingCommentIndex(12);
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    let verificationPromise: Promise<void> | undefined;
+    await act(async () => {
+      verificationPromise = payload.onChallengeVerification({ challengeSuccess: false, reason: 'try again' }, { cid: 'failed-trash-post' });
+      await Promise.resolve();
+    });
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    expect(testState.deleteCommentMock).toHaveBeenCalledWith(12, temporaryAccountName);
+    expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);
+    expect(container.textContent).toContain('publishing');
+    expect(closeButton?.disabled).toBe(true);
+    expect(submitButton?.disabled).toBe(true);
+
+    await act(async () => {
+      resolveDeleteAccount();
+      await verificationPromise;
+      await Promise.resolve();
+    });
+
+    expect(dialog?.querySelector('[data-testid="error-display"]')?.textContent).toBe('try again');
+    expect(container.textContent).not.toContain('publishing');
+    expect(closeButton?.disabled).toBe(false);
+    expect(submitButton?.disabled).toBe(false);
+    expect(testState.publishCommentModerationActionMock).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
   });
 
   it('keeps post-acceptance transfer finalization failures from being retried', async () => {

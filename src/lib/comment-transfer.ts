@@ -11,7 +11,14 @@ export type PostTransferFields = Record<PostTransferField, boolean>;
 export type TransferBoardLike = {
   address?: string;
   directoryCode?: string;
+  publicKey?: string;
   title?: string;
+};
+
+export type TransferPublishIdentity = {
+  communityAddress: string;
+  communityPublicKey?: string;
+  communityName?: string;
 };
 
 export const TRANSFERRED_COMMENT_FLAIR_TEXT = '5chan:transferred';
@@ -67,9 +74,30 @@ export const getAvailableTransferFields = (comment: Comment): PostTransferField[
 
 export const hasSelectedTransferFields = (fields: PostTransferFields, availableFields: PostTransferField[]) => availableFields.some((field) => fields[field]);
 
-export const getTransferPublishPayload = (comment: Comment, fields: PostTransferFields, targetBoardAddress: string): Record<string, unknown> => {
+export const getTransferPublishIdentity = (targetBoard: TransferBoardLike | undefined, targetBoardAddress: string): TransferPublishIdentity => {
+  const boardAddress = getTextField(targetBoard?.address) ?? targetBoardAddress;
+  const publicKey = getTextField(targetBoard?.publicKey);
+
+  if (publicKey && isSpecialBoardCode(targetBoard?.directoryCode)) {
+    return {
+      communityAddress: publicKey,
+      communityPublicKey: publicKey,
+    };
+  }
+
+  return {
+    communityAddress: boardAddress,
+  };
+};
+
+export const getTransferPublishPayload = (
+  comment: Comment,
+  fields: PostTransferFields,
+  targetBoardAddress: string,
+  targetBoard?: TransferBoardLike,
+): Record<string, unknown> => {
   const payload: Record<string, unknown> = {
-    communityAddress: targetBoardAddress,
+    ...getTransferPublishIdentity(targetBoard, targetBoardAddress),
   };
   const displayName = getCommentDisplayName(comment);
   const title = getTextField(comment.title);
