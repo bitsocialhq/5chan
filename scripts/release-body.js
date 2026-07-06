@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  "This release adds moderator tools for moving posts between boards and a hidden trash board, improves the reply editor with resizable previews and better YouTube link insertion, and keeps reply and transfer dialogs in place while you work.";
+  "This release makes trash-board moderation safer by publishing moved posts with the correct board identity, recovering cleanly from transfer failures, and keeping trash-only actions limited to the trash board.";
 
 const releaseBody = `${oneLinerDescription}
 

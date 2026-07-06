@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.12",
+      "kind": "release",
+      "timestamp": 1783339200,
+      "message": "v0.9.12: Safer trash board moderation",
+      "version": "0.9.12"
+    },
+    {
       "id": "release-0.9.11",
       "kind": "release",
       "timestamp": 1782993600,

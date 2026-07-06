@@ -1,3 +1,17 @@
+## [0.9.12](https://github.com/bitsocialnet/5chan/compare/v0.9.11...v0.9.12) (2026-07-06)
+
+
+### Bug Fixes
+
+* **agent hooks:** wire hooks into real harness entry points and fix payload parsing ([1ac3e58](https://github.com/bitsocialnet/5chan/commit/1ac3e5883bfde7697e00f101e82b2b3ff5926c41))
+* **ai skills:** correct stale branch names, rg flags, and commit scope rules ([21bbc5f](https://github.com/bitsocialnet/5chan/commit/21bbc5f07c0b526e49147af1bb1a417baab3ff42))
+* avoid pending post cleanup crash ([5111954](https://github.com/bitsocialnet/5chan/commit/5111954081dd9ec32f1c7a2cffeb275b56b996fe))
+* **mod queue:** restrict trash action to trash board ([9dfd638](https://github.com/bitsocialnet/5chan/commit/9dfd638b71f86966694a0713fee6e762f9f8781a))
+* **post transfer:** publish trash with public key ([d6f83e8](https://github.com/bitsocialnet/5chan/commit/d6f83e8abee2e61d23565b9242df8d481fa66c22))
+* **subagents:** restrict read-only agent tools and remove machine-specific paths ([0166f2f](https://github.com/bitsocialnet/5chan/commit/0166f2f4e87fa8299008c04774e6532a3907e53e))
+
+
+
 ## [0.9.11](https://github.com/bitsocialnet/5chan/compare/v0.9.10...v0.9.11) (2026-07-02)
 
 
