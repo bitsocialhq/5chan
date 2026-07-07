@@ -2,12 +2,25 @@ import { useMemo } from 'react';
 import type { CommunityIdentifier } from '@bitsocial/bitsocial-react-hooks';
 import { findDirectoryByAddress, type DirectoryCommunity, useDirectories } from './use-directories';
 import { getDirectoryCandidateBoardByAddress } from '../lib/utils/directory-list-lookup-utils';
+import { getSpecialBoardByAddress } from '../lib/special-boards';
 
 const isLikelyCommunityName = (value: string) => value.includes('.');
 
 const getCommunityIdentifier = (communityAddress: string | undefined, directories: DirectoryCommunity[]): CommunityIdentifier | undefined => {
   if (!communityAddress) {
     return undefined;
+  }
+
+  const specialBoard = getSpecialBoardByAddress(communityAddress);
+  if (specialBoard) {
+    return specialBoard.publicKey
+      ? {
+          name: specialBoard.address,
+          publicKey: specialBoard.publicKey,
+        }
+      : {
+          name: specialBoard.address,
+        };
   }
 
   const directory = findDirectoryByAddress(directories, communityAddress);
