@@ -15,6 +15,7 @@ type TestComment = {
     displayName?: string;
     shortAddress?: string;
   };
+  accountId?: string;
   cid?: string;
   communityAddress?: string;
   content?: string;
@@ -583,21 +584,46 @@ describe('post community address compatibility', () => {
     expect(container.querySelector('img[title="Anarcho-Capitalist"]')).toBeTruthy();
   });
 
-  it('falls back to author shortAddress when the full author address cannot be shortened', async () => {
+  it('renders the author shortAddress instead of deriving a user ID from the author address', async () => {
     testState.pseudonymityMode = 'per-post';
     const post = {
       ...makeLegacyThreadWithoutReplies(),
-      author: { address: 'short-address', shortAddress: 'B2mAZojE' },
+      author: { address: 'account-author.bso', shortAddress: 'B2mAZojE' },
     };
 
     await renderWithRoute(createElement(PostDesktop, { post } as any), '/mu/thread/post-1');
     expect(container.textContent).toContain('ID: B2mAZojE');
+    expect(container.textContent).not.toContain('account-author.bso');
 
     await renderWithRoute(createElement(PostMobile, { post } as any), '/mu/thread/post-1');
     expect(container.textContent).toContain('ID: B2mAZojE');
+    expect(container.textContent).not.toContain('account-author.bso');
   });
 
-  it('uses safe account reply data by cid when a reply has no index', async () => {
+  it('keeps the published reply shortAddress when local account reply data has account author identity', async () => {
+    testState.pseudonymityMode = 'per-post';
+    const post = makeLegacyThread();
+    const reply = post.replies?.pages?.new?.comments?.[0];
+    if (!reply?.cid) {
+      throw new Error('missing fixture reply');
+    }
+    reply.author = { address: 'published-reply-address', shortAddress: 'ReplyKid9' };
+    testState.accountCommentsByCid[reply.cid] = {
+      ...reply,
+      accountId: 'viewer-account',
+      author: { address: 'account-author.bso', shortAddress: 'account-author' },
+    };
+
+    await renderWithRoute(createElement(PostDesktop, { post, showAllReplies: true }), '/mu/thread/post-1');
+    expect(container.textContent).toContain('ID: ReplyKid');
+    expect(container.textContent).not.toContain('ID: account');
+
+    await renderWithRoute(createElement(PostMobile, { post, showAllReplies: true }), '/mu/thread/post-1');
+    expect(container.textContent).toContain('ID: ReplyKid');
+    expect(container.textContent).not.toContain('ID: account');
+  });
+
+  it('hides account author identity when a cid-matched reply has no published user ID yet', async () => {
     testState.pseudonymityMode = 'per-post';
     const post = makeLegacyThread();
     const reply = post.replies?.pages?.new?.comments?.[0];
@@ -608,14 +634,17 @@ describe('post community address compatibility', () => {
     reply.author = {};
     testState.accountCommentsByCid[reply.cid] = {
       ...reply,
-      author: { shortAddress: 'ReplyKid9' },
+      accountId: 'viewer-account',
+      author: { address: 'account-author.bso', shortAddress: 'account-author' },
     };
 
     await renderWithRoute(createElement(PostDesktop, { post, showAllReplies: true }), '/mu/thread/post-1');
-    expect(container.textContent).toContain('ID: ReplyKid');
+    expect(container.textContent).toContain('ID: Pending');
+    expect(container.textContent).not.toContain('ID: account');
 
     await renderWithRoute(createElement(PostMobile, { post, showAllReplies: true }), '/mu/thread/post-1');
-    expect(container.textContent).toContain('ID: ReplyKid');
+    expect(container.textContent).toContain('ID: Pending');
+    expect(container.textContent).not.toContain('ID: account');
   });
 
   it('shows a pending ID while published reply author metadata is missing', async () => {
