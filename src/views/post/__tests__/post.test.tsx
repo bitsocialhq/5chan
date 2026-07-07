@@ -14,6 +14,7 @@ type TestComment = {
   accountId?: string;
   author?: {
     address?: string;
+    shortAddress?: string;
     community?: unknown;
   };
   cid?: string;
@@ -214,6 +215,7 @@ vi.mock('../../../components/post-desktop/post-desktop', () => ({
         'data-testid': 'post-desktop',
         'data-approved': post?.approved === undefined ? '' : String(post.approved),
         'data-author-address': post?.author?.address || '',
+        'data-author-short-address': post?.author?.shortAddress || '',
         'data-number': post?.number === undefined ? '' : String(post.number),
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
@@ -247,6 +249,7 @@ vi.mock('../../../components/post-mobile/post-mobile', () => ({
         'data-testid': 'post-mobile',
         'data-approved': post?.approved === undefined ? '' : String(post.approved),
         'data-author-address': post?.author?.address || '',
+        'data-author-short-address': post?.author?.shortAddress || '',
         'data-number': post?.number === undefined ? '' : String(post.number),
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
@@ -388,6 +391,34 @@ describe('Post', () => {
       root.render(createElement(Post, { post: { cid: 'post-2', communityAddress: 'music-posting.eth' } }));
     });
     expect(container.querySelector('[data-testid="post-mobile"]')?.textContent).toBe('post-2:none:1');
+  });
+
+  it('restores the published user ID when an edited comment overlays local author identity', async () => {
+    testState.editedCommentsByCid = {
+      'post-edited-id': {
+        cid: 'post-edited-id',
+        communityAddress: 'music-posting.eth',
+        content: 'edited body',
+        author: { address: 'account-author.bso', shortAddress: 'account-author' },
+      },
+    };
+
+    await act(async () => {
+      root.render(
+        createElement(Post, {
+          post: {
+            cid: 'post-edited-id',
+            communityAddress: 'music-posting.eth',
+            content: 'body',
+            author: { address: 'published-address', shortAddress: 'PostKid9' },
+          },
+        }),
+      );
+    });
+
+    const presenter = container.querySelector('[data-testid="post-desktop"]');
+    expect(presenter?.getAttribute('data-author-address')).toBe('account-author.bso');
+    expect(presenter?.getAttribute('data-author-short-address')).toBe('PostKid9');
   });
 
   it('keeps renderable post data when edited comments only resolve to a loading shell', async () => {
