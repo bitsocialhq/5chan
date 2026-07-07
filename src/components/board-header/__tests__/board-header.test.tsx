@@ -214,6 +214,22 @@ describe('BoardHeader', () => {
     expect(container.textContent).toContain(TRASH_BOARD_ADDRESS);
   });
 
+  it('keeps hidden special board subtitles on the canonical BSO address', async () => {
+    testState.directories = [{ address: 'off-topic.eth', title: '/trash/ - Off-topic' }];
+    testState.resolvedAddress = TRASH_BOARD_ADDRESS;
+    testState.stableCommunity = {
+      address: 'off-topic.eth',
+      shortAddress: 'off-topic.eth',
+      title: '/trash/ - Off-topic',
+    };
+
+    await renderHeader('/trash');
+
+    expect(container.textContent).toContain(TRASH_BOARD_TITLE);
+    expect(container.textContent).toContain(TRASH_BOARD_ADDRESS);
+    expect(container.textContent).not.toContain('off-topic.eth');
+  });
+
   it('renders the board loading indicator while online status is still loading', async () => {
     testState.useIsCommunityOfflineValue = {
       isOffline: false,

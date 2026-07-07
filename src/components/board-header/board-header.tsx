@@ -92,7 +92,7 @@ const BoardHeader = () => {
         ? ''
         : isInDirectoryListView
           ? t('directory_subtitle', { boardIdentifier: params.boardIdentifier })
-          : `${address || communityAddress || ''}`;
+          : `${specialBoard?.address || address || communityAddress || ''}`;
 
   return (
     <div className={`${styles.content} ${shouldShowSnow() ? styles.garland : ''}`}>

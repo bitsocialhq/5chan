@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useCommunityIdentifier, useCommunityIdentifiers } from '../use-community-identifiers';
+import { TRASH_BOARD_ADDRESS, TRASH_BOARD_PUBLIC_KEY } from '../../lib/special-boards';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -96,6 +97,36 @@ describe('useCommunityIdentifier', () => {
     expect(latestIdentifier).toEqual({
       name: 'bizraelis.bso',
       publicKey: '12D3KooWR7nTdKZqZ1twGWMfVsXYDGp1XAKUrnYznKP651jFrizE',
+    });
+  });
+
+  it('keeps hidden special board routes on the canonical BSO identity', async () => {
+    testState.address = TRASH_BOARD_ADDRESS;
+    testState.directories = [
+      {
+        address: 'off-topic.eth',
+        directoryCode: 'trash',
+        publicKey: 'stale-directory-key',
+        title: '/trash/ - Off-topic',
+      },
+    ];
+
+    await renderHarness(createElement(SingleHarness));
+
+    expect(latestIdentifier).toEqual({
+      name: TRASH_BOARD_ADDRESS,
+      publicKey: TRASH_BOARD_PUBLIC_KEY,
+    });
+  });
+
+  it('canonicalizes hidden special board aliases before loading communities', async () => {
+    testState.address = 'off-topic.eth';
+
+    await renderHarness(createElement(SingleHarness));
+
+    expect(latestIdentifier).toEqual({
+      name: TRASH_BOARD_ADDRESS,
+      publicKey: TRASH_BOARD_PUBLIC_KEY,
     });
   });
 
