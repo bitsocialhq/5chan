@@ -67,7 +67,7 @@ import { getThreadTopNavigationState, scrollThreadContainerToTop } from '../../l
 import useDeleteFailedPost from '../../hooks/use-delete-failed-post';
 import { getThreadPostCountsByAuthor } from '../../lib/utils/author-post-counts';
 import { withResolvedCommentCommunityAddress } from '../../lib/utils/comment-utils';
-import { getCommentUserID } from '../../lib/utils/comment-user-id-utils';
+import { getCommentUserID, preservePublishedUserID } from '../../lib/utils/comment-user-id-utils';
 import { getFeedPostHeightEstimate, getReplyHeightEstimates, reportReplyHeightAuditSample } from '../../lib/utils/pretext-height-estimates';
 import { getAuthorBadge } from '../../lib/utils/author-display-utils';
 import { hasCommentFlagsForDirectory } from '../../lib/comment-flag-selection';
@@ -706,11 +706,11 @@ const Reply = ({
   });
   const hasReplyIndex = typeof reply?.index === 'number';
   const isAccountReply = (hasReplyIndex && accountReply?.index === reply.index) || (!!reply?.cid && accountReply?.cid === reply.cid);
-  let post = isAccountReply ? accountReply : reply;
+  let post = isAccountReply ? preservePublishedUserID(accountReply, reply) : reply;
   // handle pending mod or author edit
   const { editedComment } = useEditedComment({ comment: post });
   if (editedComment) {
-    post = editedComment;
+    post = preservePublishedUserID(editedComment, reply);
   }
   post = withResolvedCommentCommunityAddress(post);
 

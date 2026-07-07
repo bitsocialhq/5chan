@@ -29,6 +29,7 @@ import { getRequestedThreadTopCid, scrollThreadContainerToTop } from '../../lib/
 import { evictThreadRefreshCaches } from '../../lib/utils/thread-refresh-cache-utils';
 import { hasTransferredCommentMarker } from '../../lib/comment-transfer';
 import { REPLIES_PER_PAGE } from '../../lib/constants';
+import { preservePublishedUserID } from '../../lib/utils/comment-user-id-utils';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import type { QueuedCommentRouteState } from '../../lib/utils/mod-queue-utils';
 import type { ReplyVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
@@ -130,10 +131,13 @@ const mergeLocalCommentAuthor = (comment: CommentWithRefresh | undefined, localC
 
   const mergedAuthor = mergeDefinedFields(comment.author, localComment.author);
 
-  return {
-    ...comment,
-    ...(mergedAuthor ? { author: mergedAuthor } : {}),
-  };
+  return preservePublishedUserID(
+    {
+      ...comment,
+      ...(mergedAuthor ? { author: mergedAuthor } : {}),
+    },
+    comment,
+  );
 };
 
 const mergeLocalAccountComment = (comment: CommentWithRefresh | undefined, accountComment: CommentWithRefresh | undefined): CommentWithRefresh | undefined => {
@@ -142,7 +146,13 @@ const mergeLocalAccountComment = (comment: CommentWithRefresh | undefined, accou
   if (comment.cid && accountComment.cid && comment.cid !== accountComment.cid) return comment;
 
   const mergedComment = mergeDefinedFields(comment, accountComment) ?? comment;
-  return mergeLocalCommentAuthor(mergedComment, accountComment);
+  // mergeDefinedFields replaces author wholesale, so re-merge author field-wise from the
+  // published comment (mergeLocalCommentAuthor also preserves the published User ID)
+  const commentWithMergedAuthor = mergeLocalCommentAuthor(comment, accountComment);
+  return {
+    ...mergedComment,
+    ...(commentWithMergedAuthor?.author ? { author: commentWithMergedAuthor.author } : {}),
+  };
 };
 
 // useComment may not return cached feed data immediately due to its updatedAt comparison logic.
@@ -241,7 +251,7 @@ export const Post = memo(
 
     // handle pending mod or author edit
     const { editedComment } = useEditedComment({ comment });
-    comment = mergeCommentFallback(editedComment as CommentWithRefresh | undefined, comment as CommentWithRefresh | undefined);
+    comment = preservePublishedUserID(mergeCommentFallback(editedComment as CommentWithRefresh | undefined, comment as CommentWithRefresh | undefined), post);
     const transferHandler = comment?.parentCid ? undefined : onTransfer;
 
     return (
