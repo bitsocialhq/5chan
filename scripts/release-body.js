@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  "This release makes trash-board moderation safer by publishing moved posts with the correct board identity, recovering cleanly from transfer failures, and keeping trash-only actions limited to the trash board.";
+  "This release makes pure P2P loading about 14% faster, keeps special boards tied to their correct board identities, and prevents account identities from appearing as post user IDs.";
 
 const releaseBody = `${oneLinerDescription}
 

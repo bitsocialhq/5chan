@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.13",
+      "kind": "release",
+      "timestamp": 1783512000,
+      "message": "v0.9.13: Pure P2P loads about 14% faster, corrected post user IDs",
+      "version": "0.9.13"
+    },
+    {
       "id": "release-0.9.12",
       "kind": "release",
       "timestamp": 1783339200,

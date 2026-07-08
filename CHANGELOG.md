@@ -1,3 +1,14 @@
+## [0.9.13](https://github.com/bitsocialnet/5chan/compare/v0.9.12...v0.9.13) (2026-07-08)
+
+
+### Bug Fixes
+
+* **deps:** replace vulnerable decompress with @xhmikosr/decompress ([c6dadc6](https://github.com/bitsocialnet/5chan/commit/c6dadc6355c7be6c9d2546482d26e368cd914450)), closes [#301](https://github.com/bitsocialnet/5chan/issues/301)
+* **post ids:** never display account identity as a post user id ([#1184](https://github.com/bitsocialnet/5chan/issues/1184)) ([abe1e5a](https://github.com/bitsocialnet/5chan/commit/abe1e5a6a2bf7a746675caea257a2a33898958ea))
+* **trash board:** keep hidden special boards on canonical BSO identity ([e2dc941](https://github.com/bitsocialnet/5chan/commit/e2dc9413a0373ee75c419903c5cd9193a5ec3355))
+
+
+
 ## [0.9.12](https://github.com/bitsocialnet/5chan/compare/v0.9.11...v0.9.12) (2026-07-06)
 
 
