@@ -229,7 +229,7 @@
     "seroval": "1.4.1",
     "smol-toml": "1.6.1",
     "tar": "7.5.16",
-    "yauzl": "3.2.1",
+    "yauzl": "3.4.0",
     "serialize-javascript": "7.0.5",
     "esbuild": "0.28.1",
     "esbuild@npm:^0.25.0": "0.28.1",
