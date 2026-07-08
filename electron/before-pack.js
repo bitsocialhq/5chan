@@ -3,7 +3,7 @@
 import fs from 'fs-extra';
 import ProgressBar from 'progress';
 import https from 'https';
-import decompress from 'decompress';
+import decompress from '@xhmikosr/decompress';
 import path from 'path';
 import { fileURLToPath } from 'url';
 const ipfsClientsPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'bin');
