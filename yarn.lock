@@ -26,7 +26,7 @@ __metadata:
     "@electron-forge/maker-zip": "npm:7.8.0"
     "@electron/rebuild": "npm:3.7.2"
     "@floating-ui/react": "npm:0.26.1"
-    "@pkcprotocol/pkc-js": "npm:0.0.62"
+    "@pkcprotocol/pkc-js": "npm:0.0.65"
     "@react-spring/web": "npm:10.0.3"
     "@reforged/maker-appimage": "npm:5.1.1"
     "@ruffle-rs/ruffle": "npm:0.2.0"
@@ -6435,6 +6435,73 @@ __metadata:
     ws: "npm:8.20.0"
     zod: "npm:4.3.6"
   checksum: 10c0/c55f2b5e3d52a4716124228bf9fc51cb949aff44a8d9404b4bd870367ef5c27d4cc98a2521054f2d8d008fc90977ac9a74d44e6cc619d4c4280c12128dabce9a
+  languageName: node
+  linkType: hard
+
+"@pkcprotocol/pkc-js@npm:0.0.65":
+  version: 0.0.65
+  resolution: "@pkcprotocol/pkc-js@npm:0.0.65"
+  dependencies:
+    "@enhances/with-resolvers": "npm:0.0.5"
+    "@helia/block-brokers": "npm:5.2.4"
+    "@helia/delegated-routing-v1-http-api-client": "npm:8.0.1"
+    "@helia/ipns": "npm:9.2.1"
+    "@helia/unixfs": "npm:7.2.1"
+    "@libp2p/crypto": "npm:5.1.19"
+    "@libp2p/fetch": "npm:4.1.6"
+    "@libp2p/gossipsub": "npm:16.0.2"
+    "@libp2p/identify": "npm:4.1.7"
+    "@libp2p/interface": "npm:3.2.3"
+    "@libp2p/peer-id": "npm:6.0.10"
+    "@multiformats/multiaddr": "npm:13.0.3"
+    "@noble/curves": "npm:2.2.0"
+    "@pkcprotocol/pkc-logger": "npm:0.1.0"
+    "@pkcprotocol/proper-lock-file": "npm:4.2.1"
+    assert: "npm:2.1.0"
+    better-sqlite3: "npm:12.9.0"
+    blockstore-core: "npm:7.0.1"
+    buffer: "npm:6.0.3"
+    cbor: "npm:10.0.11"
+    cborg: "npm:4.5.8"
+    debounce: "npm:1.2.1"
+    ext-name: "npm:5.0.0"
+    helia: "npm:6.1.4"
+    hpagent: "npm:1.2.0"
+    ipfs-unixfs-importer: "npm:17.0.1"
+    ipns: "npm:11.0.0"
+    it-all: "npm:3.0.6"
+    it-last: "npm:3.0.11"
+    js-sha256: "npm:0.11.1"
+    js-sha512: "npm:0.9.0"
+    kubo-rpc-client: "npm:7.1.0"
+    libp2p: "npm:3.3.3"
+    limiter-es6-compat: "npm:2.1.2"
+    localforage: "npm:1.10.0"
+    lodash.merge: "npm:4.6.2"
+    lru-cache: "npm:10.1.0"
+    multiformats: "npm:14.0.0"
+    node-forge: "npm:1.4.0"
+    open-graph-scraper: "npm:6.11.0"
+    p-limit: "npm:7.3.0"
+    p-retry: "npm:8.0.0"
+    p-timeout: "npm:7.0.1"
+    probe-image-size: "npm:7.2.3"
+    quick-lru: "npm:5.1.1"
+    remeda: "npm:2.39.0"
+    retry: "npm:0.13.1"
+    rpc-websockets: "npm:9.3.8"
+    safe-stable-stringify: "npm:2.4.3"
+    tcp-port-used: "npm:1.0.2"
+    tiny-typed-emitter: "npm:2.1.0"
+    tinycache: "npm:1.1.2"
+    ts-custom-error: "npm:3.3.1"
+    typestub-ipfs-only-hash: "npm:4.0.0"
+    uint8arrays: "npm:6.1.1"
+    undici: "npm:7.24.7"
+    uuid: "npm:13.0.0"
+    ws: "npm:8.20.0"
+    zod: "npm:4.3.6"
+  checksum: 10c0/5cb8f6545ea53d48a7092c644a968ccfc1fcc07894245d5bb20a94b8fdd6735c8232546de9706cc207e5d69cca912f780ca539e1ef6cac21969d00a400e4a3d4
   languageName: node
   linkType: hard
 
@@ -18010,6 +18077,13 @@ __metadata:
   version: 1.57.0
   resolution: "remeda@npm:1.57.0"
   checksum: 10c0/d5b455ee854ddf83dbf30fff279edf6c1e5a89885bfdf89a383ec003a9ecf6076be8d9d784d8ad0689bc129ba7480b308ae0cd8acfc85666d7df6d441dcca9ab
+  languageName: node
+  linkType: hard
+
+"remeda@npm:2.39.0":
+  version: 2.39.0
+  resolution: "remeda@npm:2.39.0"
+  checksum: 10c0/5891871c93b47c501937d6e4a1c05d0b199b4402a8eb3a7a08653e81acc4ce45ae3cff4c90785d867f5e9b5f75e27b5120f0240e8ce490fbf2ab8c48013cc8af
   languageName: node
   linkType: hard
 
