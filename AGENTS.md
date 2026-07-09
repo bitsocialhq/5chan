@@ -82,7 +82,7 @@ When CodeGraph MCP tools are available and `.codegraph/` exists, prefer them for
 - yarn
 - oxlint
 - oxfmt
-- tsgo
+- tsc (TypeScript 7 native compiler)
 
 ## Project Structure
 

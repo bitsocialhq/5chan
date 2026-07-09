@@ -11,7 +11,7 @@ Run before merge/rollout. All must pass.
 | `yarn test` | Unit tests (Vitest) | Exit 0 = pass. Fix failing tests before merge. |
 | `yarn build` | Production build | Exit 0 = pass. No build errors. |
 | `yarn lint` | Lint (oxlint) | Exit 0 = pass. Fix lint errors. |
-| `yarn type-check` | TypeScript (tsgo) | Exit 0 = pass. Fix type errors. |
+| `yarn type-check` | TypeScript (tsc) | Exit 0 = pass. Fix type errors. |
 | `yarn doctor` | React Doctor | Advisory. Prioritize `error` > `warning`. |
 
 **Quick run (all quality gates):**
