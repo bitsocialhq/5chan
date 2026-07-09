@@ -1,7 +1,7 @@
 {
   "name": "5chan",
   "version": "0.9.13",
-  "packageManager": "yarn@4.13.0",
+  "packageManager": "yarn@4.17.1+sha512.ccbfabf7d7b6b32075088be9386fb9a2e00bb6887ef07fa56effabc890a56d53da1ccc4128d62db245fcbd3961b236d75335bdf7d5320ed6eafb7588b7ad4697",
   "description": "A Bitsocial client with an imageboard UI",
   "type": "module",
   "author": "Bitsocial Forge",
@@ -47,7 +47,7 @@
     "react-router-hash-link": "2.4.3",
     "react-virtuoso": "4.18.5",
     "tcp-port-used": "1.0.2",
-    "typescript": "6.0.2",
+    "typescript": "7.0.2",
     "workbox-core": "7.4.0",
     "workbox-expiration": "7.4.0",
     "workbox-precaching": "7.4.0",
