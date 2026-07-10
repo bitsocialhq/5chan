@@ -625,7 +625,7 @@ const FAQ_SECTIONS: FAQSection[] = [
               Helia
             </a>{' '}
             IPFS node in the browser, so it can load boards peer-to-peer without centralized IPFS RPC gateways. You can turn pure browser P2P on in advanced settings and
-            inspect the connection in <Link to='/all/settings#p2p-stats-settings'>P2P stats</Link>. Browser nodes still have restrictions, such as limited inbound
+            inspect the connection in <Link to='/all/settings?section=p2p-stats-settings'>P2P stats</Link>. Browser nodes still have restrictions, such as limited inbound
             connectivity, so desktop apps remain the best way to host board data because they run a full Bitsocial node with IPFS Kubo.
           </>
         ),

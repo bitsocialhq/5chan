@@ -5,7 +5,7 @@ import styles from './catalog-search.module.css';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useCatalogFiltersStore from '../../stores/use-catalog-filters-store';
 import debounce from 'lodash/debounce';
-import { getCatalogSearchHash } from '../../lib/utils/route-utils';
+import { getCatalogSearchPath } from '../../lib/utils/route-utils';
 
 const CatalogSearch = () => {
   const { t } = useTranslation();
@@ -13,18 +13,17 @@ const CatalogSearch = () => {
   const navigate = useNavigate();
   const [searchState, setSearchState] = useState({ open: false, value: '' });
   const { setSearchFilter, clearSearchFilter } = useCatalogFiltersStore();
-  const legacyQueryParam = new URLSearchParams(search).get('q') ?? '';
+  const searchParams = new URLSearchParams(search);
+  const querySearchParam = searchParams.get('s') ?? '';
+  const legacyQueryParam = searchParams.get('q') ?? '';
   const hashSearchParam = new URLSearchParams(hash.replace(/^#/, '')).get('s') ?? '';
-  const catalogSearchParam = hashSearchParam || legacyQueryParam;
+  const catalogSearchParam = querySearchParam || hashSearchParam || legacyQueryParam;
   const openSearch = !!catalogSearchParam || searchState.open;
   const inputValue = searchState.open || searchState.value ? searchState.value : catalogSearchParam;
 
   useEffect(() => {
-    if (legacyQueryParam) {
-      const urlParams = new URLSearchParams(search);
-      urlParams.delete('q');
-      const newSearch = urlParams.toString();
-      navigate(`${pathname}${newSearch ? `?${newSearch}` : ''}${getCatalogSearchHash(catalogSearchParam)}`, { replace: true });
+    if (hashSearchParam || legacyQueryParam) {
+      navigate(getCatalogSearchPath(pathname, catalogSearchParam, search), { replace: true });
     }
 
     if (catalogSearchParam) {
@@ -33,20 +32,11 @@ const CatalogSearch = () => {
     }
 
     clearSearchFilter();
-  }, [catalogSearchParam, clearSearchFilter, legacyQueryParam, navigate, pathname, search, setSearchFilter]);
+  }, [catalogSearchParam, clearSearchFilter, hashSearchParam, legacyQueryParam, navigate, pathname, search, setSearchFilter]);
 
   const updateURL = useCallback(
     (searchText: string) => {
-      const urlParams = new URLSearchParams(search);
-      urlParams.delete('q');
-      if (searchText.trim()) {
-        const newSearch = urlParams.toString();
-        navigate(`${pathname}${newSearch ? `?${newSearch}` : ''}${getCatalogSearchHash(searchText)}`, { replace: true });
-        return;
-      }
-      const newSearch = urlParams.toString();
-      const newPath = pathname + (newSearch ? `?${newSearch}` : '');
-      navigate(newPath, { replace: true });
+      navigate(getCatalogSearchPath(pathname, searchText, search), { replace: true });
     },
     [pathname, search, navigate],
   );

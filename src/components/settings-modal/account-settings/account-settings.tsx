@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { deleteAccount, exportAccount, importAccount, setActiveAccount, useAccount, useAccounts } from '@bitsocial/bitsocial-react-hooks';
 import styles from './account-settings.module.css';
+import { getSettingsSectionPath } from '../../../lib/utils/route-utils';
 import { Capacitor } from '@capacitor/core';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getLegacyDefaultBrowserHttpRoutersOptions } from '../../../lib/p2p-browser-config';
@@ -213,9 +214,8 @@ const AccountSettingsEditor = ({
         if (result === undefined) return;
 
         alert(`Imported ${accountData.account?.name}`);
-        const currentPath = location.pathname;
-        if (!currentPath.includes('/settings#account-settings')) {
-          navigate(`${currentPath}#account-settings`, { replace: true });
+        if (new URLSearchParams(location.search).get('section') !== 'account-settings') {
+          navigate(getSettingsSectionPath(location.pathname, 'account-settings', location.search), { replace: true });
         }
         window.location.reload();
       };
@@ -243,7 +243,7 @@ const AccountSettingsEditor = ({
         <select value={account?.name} onChange={(e) => setActiveAccount(e.target.value)}>
           {accountsOptions}
         </select>{' '}
-        <button type='button' onClick={() => navigate('/settings/account-data', { state: { returnTo: location.pathname + location.hash } })}>
+        <button type='button' onClick={() => navigate('/settings/account-data', { state: { returnTo: location.pathname + location.search + location.hash } })}>
           {t('edit')}
         </button>{' '}
         <button type='button' onClick={handleExportAccount}>

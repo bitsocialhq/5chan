@@ -365,10 +365,10 @@ describe('Markdown', () => {
   });
 
   it.each([
-    ['>>>/biz/test', '/biz/catalog#s=test'],
-    ['>>>/biz/test-term', '/biz/catalog#s=test-term'],
-    ['>>>/biz/test_term', '/biz/catalog#s=test_term'],
-    ['>>>/board.eth/test', '/board.eth/catalog#s=test'],
+    ['>>>/biz/test', '/biz/catalog?s=test'],
+    ['>>>/biz/test-term', '/biz/catalog?s=test-term'],
+    ['>>>/biz/test_term', '/biz/catalog?s=test_term'],
+    ['>>>/board.eth/test', '/board.eth/catalog?s=test'],
   ])('renders board search path %s as a catalog search hash link', async (quoteLink, href) => {
     await renderMarkdown({
       content: `see ${quoteLink}.`,

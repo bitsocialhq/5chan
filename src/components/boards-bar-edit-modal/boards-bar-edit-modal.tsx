@@ -82,7 +82,7 @@ const BoardsBarEditModalForm = ({
             <span className={styles.editSubscriptionsWrapper}>
               (
               <Link
-                to={location.pathname.replace(/\/$/, '') + '/settings#subscriptions-settings'}
+                to={location.pathname.replace(/\/$/, '') + '/settings?section=subscriptions-settings'}
                 className={styles.editSubscriptionsLink}
                 onClick={(e) => {
                   e.stopPropagation();

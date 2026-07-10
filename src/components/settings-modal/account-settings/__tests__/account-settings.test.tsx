@@ -53,7 +53,7 @@ class MockFileReader {
 
 const LocationProbe = () => {
   const location = useLocation();
-  return <div data-testid='location'>{location.pathname + location.hash}</div>;
+  return <div data-testid='location'>{location.pathname + location.search + location.hash}</div>;
 };
 
 let root: Root;
@@ -349,7 +349,7 @@ describe('AccountSettings', () => {
     expect(localStorage.getItem('importedAccountAddress')).toBe('0x999');
     expect(hookMocks.setActiveAccount).toHaveBeenCalledWith('Imported');
     expect(alertSpy).toHaveBeenCalledWith('Imported Imported');
-    expect(getLocationText()).toBe('/subs/settings#account-settings');
+    expect(getLocationText()).toBe('/subs/settings?section=account-settings');
   });
 
   it('preserves explicit HTTP routers when importing an account backup', async () => {

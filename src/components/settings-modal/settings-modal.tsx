@@ -15,6 +15,7 @@ import P2PStatsSettings from './p2p-stats-settings/p2p-stats-settings';
 import { P2P_STATS_SECTION_ID, shouldShowP2PSettingsSection } from '../../lib/p2p-runtime';
 import { getReviewableSettingsUpgrades, getSettingsUpgradeKey, type SettingsUpgradeAccount } from '../../lib/settings-upgrades';
 import useSettingsUpgradeReviewStore from '../../stores/use-settings-upgrade-review-store';
+import { getSettingsSectionPath } from '../../lib/utils/route-utils';
 
 const allSectionIds = [
   'interface-settings',
@@ -35,13 +36,14 @@ const SettingsModal = () => {
   const { t } = useTranslation();
   const account = useAccount();
   const pkcRpc = usePkcRpcSettings();
-  const { hash: locationHash, pathname } = useLocation();
+  const { hash: locationHash, pathname, search } = useLocation();
   const navigate = useNavigate();
   const hiddenReviewUpgradeKeys = useSettingsUpgradeReviewStore((state) => state.hiddenReviewUpgradeKeys);
   const reviewUpgradeKeys = useSettingsUpgradeReviewStore((state) => state.reviewUpgradeKeys);
-  const hash = locationHash.slice(1);
+  const legacyHashSection = locationHash.slice(1);
+  const querySection = new URLSearchParams(search).get('section') ?? '';
   const sectionIds = useMemo(() => (shouldShowP2PSettingsSection(account) ? [...allSectionIds, P2P_STATS_SECTION_ID] : allSectionIds), [account]);
-  const hashSection = hashToSection(hash, sectionIds);
+  const routeSection = hashToSection(querySection || legacyHashSection, sectionIds);
   const settingsUpgradeKeys = useMemo(() => {
     if (!account || pkcRpc?.state === 'connected') return [];
 
@@ -70,15 +72,15 @@ const SettingsModal = () => {
   }, [closeModal]);
 
   const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
-    return hashSection ? new Set([hashSection]) : new Set();
+    return routeSection ? new Set([routeSection]) : new Set();
   });
 
   const visibleExpandedSections = useMemo(() => {
-    if (!hashSection || expandedSections.has(hashSection)) return expandedSections;
+    if (!routeSection || expandedSections.has(routeSection)) return expandedSections;
     const nextSections = new Set(expandedSections);
-    nextSections.add(hashSection);
+    nextSections.add(routeSection);
     return nextSections;
-  }, [expandedSections, hashSection]);
+  }, [expandedSections, routeSection]);
 
   const showInterfaceSettings = visibleExpandedSections.has('interface-settings');
   const showMediaHostingSettings = visibleExpandedSections.has('media-hosting-settings');
@@ -89,8 +91,6 @@ const SettingsModal = () => {
   const showP2PStatsSettings = visibleExpandedSections.has(P2P_STATS_SECTION_ID);
 
   const allExpanded = useMemo(() => sectionIds.every((id) => visibleExpandedSections.has(id)), [sectionIds, visibleExpandedSections]);
-
-  const basePath = pathname;
 
   const handleCategoryClick = (categoryId: string) => {
     const isOpening = !visibleExpandedSections.has(categoryId);
@@ -103,22 +103,22 @@ const SettingsModal = () => {
     setExpandedSections(next);
 
     if (isOpening) {
-      navigate(`${basePath}#${categoryId}`, { replace: true });
+      navigate(getSettingsSectionPath(pathname, categoryId, search), { replace: true });
     } else if (next.size === 1) {
       const remaining = next.values().next().value;
-      navigate(`${basePath}#${remaining}`, { replace: true });
+      navigate(getSettingsSectionPath(pathname, remaining ?? null, search), { replace: true });
     } else {
-      navigate(basePath, { replace: true });
+      navigate(getSettingsSectionPath(pathname, null, search), { replace: true });
     }
   };
 
   const handleExpandAll = () => {
     if (allExpanded) {
       setExpandedSections(new Set());
-      navigate(basePath, { replace: true });
+      navigate(getSettingsSectionPath(pathname, null, search), { replace: true });
     } else {
       setExpandedSections(new Set(sectionIds));
-      navigate(basePath, { replace: true });
+      navigate(getSettingsSectionPath(pathname, null, search), { replace: true });
     }
   };
 

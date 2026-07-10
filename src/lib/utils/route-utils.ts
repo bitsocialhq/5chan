@@ -227,13 +227,32 @@ const BOARD_PAGE_REGEX = /^([1-9]|10)$/;
 
 export const isBoardFeedPageNumber = (segment: string): boolean => BOARD_PAGE_REGEX.test(segment);
 
-export const getCatalogSearchHash = (searchText: string): string => {
+export const getCatalogSearchPath = (pathname: string, searchText: string, search = ''): string => {
+  const searchParams = new URLSearchParams(search);
   const trimmedSearchText = searchText.trim();
-  return trimmedSearchText ? `#s=${encodeURIComponent(trimmedSearchText)}` : '';
+  if (trimmedSearchText) {
+    searchParams.set('s', trimmedSearchText);
+  } else {
+    searchParams.delete('s');
+  }
+  searchParams.delete('q');
+  const nextSearch = searchParams.toString();
+  return `${pathname}${nextSearch ? `?${nextSearch}` : ''}`;
 };
 
 export const getCatalogSearchRoute = (boardIdentifier: string, searchText: string, search = '', options?: { settings?: boolean }): string =>
-  `/${boardIdentifier}/catalog${options?.settings ? '/settings' : ''}${search}${getCatalogSearchHash(searchText)}`;
+  getCatalogSearchPath(`/${boardIdentifier}/catalog${options?.settings ? '/settings' : ''}`, searchText, search);
+
+export const getSettingsSectionPath = (pathname: string, sectionId: string | null, search = ''): string => {
+  const searchParams = new URLSearchParams(search);
+  if (sectionId) {
+    searchParams.set('section', sectionId);
+  } else {
+    searchParams.delete('section');
+  }
+  const nextSearch = searchParams.toString();
+  return `${pathname}${nextSearch ? `?${nextSearch}` : ''}`;
+};
 
 /** Internal: check if segment is a multiboard root (all, subs, mod) */
 function isMultiboardRoot(segment: string): boolean {

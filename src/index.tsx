@@ -9,6 +9,7 @@ import './themes.css';
 import AppUpdateRegistration from './components/app-update-registration';
 import { App as CapacitorApp } from '@capacitor/app';
 import { configureP2PBrowserPkcOptions } from './lib/p2p-browser-config';
+import { canonicalizeNestedHashRoute } from './lib/utils/hash-route-utils';
 
 // Only enable analytics on 5chan.app (Vercel deployment)
 // Exclude Electron (file:// or localhost), Capacitor/APK (capacitor:// or localhost), and IPFS (ipfs:// or different domain)
@@ -17,6 +18,13 @@ const isVercelDeployment =
 const shouldLoadAnalytics = import.meta.env.VITE_APP_DISTRIBUTION !== 'fdroid' && isVercelDeployment;
 const e2eStartHash = import.meta.env.VITE_E2E_START_HASH?.trim();
 const requestedE2EHarness = import.meta.env.DEV && typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('e2e') : null;
+
+if (typeof window !== 'undefined') {
+  const canonicalHash = canonicalizeNestedHashRoute(window.location.hash);
+  if (canonicalHash !== window.location.hash) {
+    window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}${canonicalHash}`);
+  }
+}
 
 if (typeof window !== 'undefined' && e2eStartHash && window.location.hash.length === 0) {
   window.location.hash = e2eStartHash.startsWith('#') ? e2eStartHash : `#${e2eStartHash}`;

@@ -184,7 +184,7 @@ describe('BoardHeader', () => {
       clickableSubtitle?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(testState.navigateMock).toHaveBeenCalledWith('/subs/settings#subscriptions-settings');
+    expect(testState.navigateMock).toHaveBeenCalledWith('/subs/settings?section=subscriptions-settings');
   });
 
   it('renders the board title, address subtitle, and offline indicator for board routes', async () => {

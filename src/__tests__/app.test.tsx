@@ -447,18 +447,18 @@ describe('App', () => {
     expect(container.querySelector('[data-testid="not-found-view"]')).toBeNull();
   });
 
-  it('redirects unknown board subpaths to catalog search hashes', async () => {
+  it('redirects unknown board subpaths to catalog search params', async () => {
     await renderApp('/mu/test');
 
-    expect(latestLocation).toBe('/mu/catalog');
-    expect(latestHash).toBe('#s=test');
+    expect(latestLocation).toBe('/mu/catalog?s=test');
+    expect(latestHash).toBe('');
   });
 
-  it('redirects unknown board settings subpaths to catalog search settings hashes', async () => {
+  it('redirects unknown board settings subpaths to catalog search settings params', async () => {
     await renderApp('/mu/test/settings');
 
-    expect(latestLocation).toBe('/mu/catalog/settings');
-    expect(latestHash).toBe('#s=test');
+    expect(latestLocation).toBe('/mu/catalog/settings?s=test');
+    expect(latestHash).toBe('');
     expect(container.querySelector('[data-testid="settings-modal"]')).toBeTruthy();
   });
 
@@ -505,11 +505,11 @@ describe('App', () => {
     expect(container.querySelector('[data-testid="post-view"]')).toBeTruthy();
   });
 
-  it('canonicalizes board address catalog routes while preserving search hashes', async () => {
-    await renderApp('/music-posting.eth/catalog#s=test');
+  it('canonicalizes board address catalog routes while preserving search params', async () => {
+    await renderApp('/music-posting.eth/catalog?s=test');
 
-    expect(latestLocation).toBe('/mu/catalog');
-    expect(latestHash).toBe('#s=test');
+    expect(latestLocation).toBe('/mu/catalog?s=test');
+    expect(latestHash).toBe('');
   });
 
   it('canonicalizes a direct route for the current resolved directory board', async () => {
@@ -558,7 +558,7 @@ describe('App', () => {
     expect(container.textContent).toContain('not_mod_of_any_board');
     expect(container.textContent).toContain('go_to_settings_to_import_mod_account');
     expect(container.querySelector('output')?.className).toContain('modEmptyState');
-    expect(container.querySelector('output a')?.getAttribute('href')).toBe('/mod/settings#account-settings');
+    expect(container.querySelector('output a')?.getAttribute('href')).toBe('/mod/settings?section=account-settings');
     expect(container.querySelector('[data-testid="not-allowed-view"]')).toBeNull();
   });
 

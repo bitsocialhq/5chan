@@ -922,7 +922,7 @@ describe('Catalog', () => {
     expect(container.textContent).toContain('not_mod_of_any_board');
     expect(container.textContent).toContain('go_to_settings_to_import_mod_account');
     expect(container.querySelector('output')?.className).toContain('modEmptyState');
-    expect(container.querySelector('a')?.getAttribute('href')).toBe('/mod/settings#account-settings');
+    expect(container.querySelector('a')?.getAttribute('href')).toBe('/mod/settings?section=account-settings');
     expect(container.querySelectorAll('[data-testid="catalog-row"]')).toHaveLength(0);
   });
 
@@ -931,7 +931,7 @@ describe('Catalog', () => {
     testState.searchText = 'asddasd';
     testState.hasMore = false;
 
-    await renderCatalog({ initialEntry: '/mu/catalog#s=asddasd', routePath: '/:boardIdentifier/catalog' });
+    await renderCatalog({ initialEntry: '/mu/catalog?s=asddasd', routePath: '/:boardIdentifier/catalog' });
 
     expect(container.textContent).toContain('nothing_found');
     expect(container.textContent).not.toContain('no_threads');
