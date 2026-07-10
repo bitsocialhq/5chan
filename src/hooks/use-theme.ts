@@ -14,6 +14,10 @@ import { normalizeAccountCommentIndex } from '../lib/utils/account-comment-index
 
 const themeClasses = ['yotsuba', 'yotsuba-b', 'futaba', 'burichan', 'tomorrow', 'photon', 'spooky'];
 
+type UseThemeOptions = {
+  applyDocumentEffects?: boolean;
+};
+
 const updateThemeClass = (newTheme: string) => {
   document.body.classList.remove(...themeClasses);
   if (newTheme) {
@@ -21,7 +25,7 @@ const updateThemeClass = (newTheme: string) => {
   }
 };
 
-const useTheme = (): [string, (theme: string) => void] => {
+const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [string, (theme: string) => void] => {
   const location = useLocation();
   const params = useParams<{ accountCommentIndex?: string; boardIdentifier?: string; commentCid?: string }>();
   const pendingPost = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
@@ -90,12 +94,15 @@ const useTheme = (): [string, (theme: string) => void] => {
   });
 
   useEffect(() => {
+    if (!applyDocumentEffects) return;
     updateThemeClass(currentTheme);
-  }, [currentTheme]);
+  }, [applyDocumentEffects, currentTheme]);
 
   useEffect(() => {
-    updateFavicon(isInNotFoundView ? 'not-found' : sfw);
-  }, [isInNotFoundView, sfw]);
+    if (!applyDocumentEffects) return;
+    const faviconVariant = isInNotFoundView ? 'not-found' : sfw ? 'sfw' : 'default';
+    updateFavicon(faviconVariant);
+  }, [applyDocumentEffects, isInNotFoundView, sfw]);
 
   const setCommunityTheme = useCallback(
     async (newTheme: string) => {

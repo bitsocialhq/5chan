@@ -6,7 +6,7 @@ const NOT_FOUND_FAVICON = '/favicon-404.ico?variant=404';
 const FAVICON_RELS = ['icon', 'shortcut icon'] as const;
 const FAVICON_SELECTOR = ['link[data-fivechan-tab-favicon="true"]', ...FAVICON_RELS.map((rel) => `link[rel="${rel}"][sizes="16x16"]`)].join(', ');
 
-type FaviconVariant = 'default' | 'sfw' | 'not-found';
+export type FaviconVariant = 'default' | 'sfw' | 'not-found';
 
 const FAVICONS: Record<FaviconVariant, { href: string; type: string }> = {
   default: { href: DEFAULT_FAVICON, type: 'image/png' },
@@ -29,17 +29,12 @@ const createFaviconLink = (rel: (typeof FAVICON_RELS)[number], favicon: (typeof 
   return link;
 };
 
-const getFaviconVariant = (variant: boolean | FaviconVariant): FaviconVariant => {
-  if (typeof variant === 'boolean') return variant ? 'sfw' : 'default';
-  return variant;
-};
-
 /**
  * Swap the tab favicon between the default (NSFW/home), SFW, and 404 variants.
  * Uses remove-and-recreate plus cache-busted URLs to bypass sticky favicon caching.
  */
-export const updateFavicon = (variant: boolean | FaviconVariant): void => {
-  const favicon = FAVICONS[getFaviconVariant(variant)];
+export const updateFavicon = (variant: FaviconVariant): void => {
+  const favicon = FAVICONS[variant];
   const { href } = favicon;
   if (href === currentHref && hasExpectedFaviconLinks(href)) return;
   currentHref = href;

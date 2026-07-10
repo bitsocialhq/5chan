@@ -9,13 +9,14 @@ import { TRASH_BOARD_ADDRESS, TRASH_BOARD_CODE } from '../../lib/special-boards'
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
-  boardIdentifier: 'trash',
+  boardIdentifier: 'trash' as string | undefined,
   directories: [] as Array<{ address: string; nsfw?: boolean }>,
   isSpecialThemeEnabled: false as boolean | null,
   locationPathname: '/trash',
   resolvedAddress: 'off-topic.bso' as string | undefined,
   setIsEnabledMock: vi.fn(),
   setThemeMock: vi.fn().mockResolvedValue(undefined),
+  updateFaviconMock: vi.fn(),
   themes: {
     nsfw: 'tomorrow',
     sfw: 'yotsuba-b',
@@ -60,7 +61,7 @@ vi.mock('../../stores/use-theme-store', () => ({
 
 vi.mock('../../lib/update-favicon', () => ({
   isSfwBoard: () => false,
-  updateFavicon: vi.fn(),
+  updateFavicon: testState.updateFaviconMock,
 }));
 
 vi.mock('../../lib/utils/time-utils', () => ({
@@ -73,7 +74,7 @@ let container: HTMLDivElement;
 let root: Root;
 
 const HookHarness = () => {
-  latestValue = useTheme();
+  latestValue = useTheme({ applyDocumentEffects: true });
   return null;
 };
 
@@ -118,5 +119,19 @@ describe('useTheme', () => {
     });
 
     expect(testState.setThemeMock).toHaveBeenCalledWith('nsfw', 'photon');
+  });
+
+  it('restores the default favicon when navigating from not-found to mod', async () => {
+    testState.boardIdentifier = undefined;
+    testState.resolvedAddress = undefined;
+    testState.locationPathname = '/not-found';
+    await renderHook();
+
+    expect(testState.updateFaviconMock).toHaveBeenLastCalledWith('not-found');
+
+    testState.locationPathname = '/mod';
+    await renderHook();
+
+    expect(testState.updateFaviconMock).toHaveBeenLastCalledWith('default');
   });
 });
