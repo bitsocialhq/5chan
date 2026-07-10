@@ -200,7 +200,7 @@ const BoardLayout = () => {
 };
 
 const GlobalLayout = () => {
-  useTheme();
+  useTheme({ applyDocumentEffects: true });
   useSuspendOffscreenMediaPlayback();
 
   const {

@@ -32,6 +32,18 @@ describe('view-utils', () => {
     expect(isNotFoundView('/faq/missing', {})).toBe(true);
   });
 
+  it.each(['/mod', '/mod/settings', '/mod/catalog', '/mod/catalog/settings', '/mod/queue', '/mod/queue/settings', '/mod/'])(
+    'keeps canonical mod route %s out of the not-found view',
+    (pathname) => {
+      expect(isNotFoundView(pathname, {})).toBe(false);
+    },
+  );
+
+  it('keeps invalid mod routes in the not-found view', () => {
+    expect(isNotFoundView('/mod/asdf', {})).toBe(true);
+    expect(isNotFoundView('/mod/modqueue', {})).toBe(true);
+  });
+
   it('detects board, catalog, post, and settings routes using board params', () => {
     const params = {
       boardIdentifier: 'music.eth',
@@ -58,7 +70,16 @@ describe('view-utils', () => {
     expect(isNotFoundView('/definitely-not-a-route', params)).toBe(true);
     expect(isNotFoundView('/emoji-%F0%9F%8E%B5.eth/thread/cid-123', params)).toBe(false);
     expect(isArchiveView('/music.eth/archive', { boardIdentifier: 'music.eth' })).toBe(true);
+    expect(isArchiveView('/music.eth/archive/settings', { boardIdentifier: 'music.eth' })).toBe(true);
     expect(isBoardView('/music.eth/archive', { boardIdentifier: 'music.eth' })).toBe(false);
     expect(isNotFoundView('/music.eth/archive', { boardIdentifier: 'music.eth' })).toBe(false);
+    expect(isNotFoundView('/music.eth/archive/settings/', { boardIdentifier: 'music.eth' })).toBe(false);
   });
+
+  it.each(['/faq/', '/pass/', '/rules/', '/blotter/', '/settings/account-data/', '/not-allowed/', '/subs/', '/subs/catalog/settings/'])(
+    'normalizes the valid trailing-slash route %s',
+    (pathname) => {
+      expect(isNotFoundView(pathname, {})).toBe(false);
+    },
+  );
 });

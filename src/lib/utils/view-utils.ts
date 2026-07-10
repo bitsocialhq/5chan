@@ -1,4 +1,4 @@
-import { isArchiveRoute, isBoardModRoute, isModQueueRoute } from './route-utils';
+import { isArchiveRoute, isBoardModRoute, isModQueueRoute, isValidModRoute } from './route-utils';
 
 type ParamsType = {
   accountCommentIndex?: string;
@@ -9,6 +9,8 @@ type ParamsType = {
 const STATIC_APP_ROUTES = new Set(['/faq', '/pass', '/rules', '/blotter', '/settings/account-data', '/not-allowed']);
 
 const isStaticAppRoute = (pathname: string): boolean => STATIC_APP_ROUTES.has(pathname);
+
+const normalizeViewPathname = (pathname: string): string => pathname.replace(/\/+$/, '') || '/';
 
 export const isAllView = (pathname: string): boolean => {
   return pathname.startsWith('/all');
@@ -89,23 +91,27 @@ export const isSubscriptionsView = (pathname: string, _params: ParamsType): bool
 export const isArchiveView = (pathname: string, params: ParamsType): boolean => {
   const { boardIdentifier } = params;
   const identifier = boardIdentifier;
-  const decodedPathname = decodeURIComponent(pathname);
+  const decodedPathname = decodeURIComponent(normalizeViewPathname(pathname));
+  const archivePathname = decodedPathname.replace(/\/settings$/, '');
 
-  return Boolean(identifier && isArchiveRoute(decodedPathname) && decodedPathname === `/${identifier}/archive`);
+  return Boolean(identifier && isArchiveRoute(decodedPathname) && archivePathname === `/${identifier}/archive`);
 };
 
 export const isNotFoundView = (pathname: string, params: ParamsType): boolean => {
+  const normalizedPathname = normalizeViewPathname(pathname);
+
   return (
-    !isAllView(pathname) &&
-    !isBoardView(pathname, params) &&
-    !isArchiveView(pathname, params) &&
-    !isCatalogView(pathname, params) &&
-    !isHomeView(pathname) &&
-    !isStaticAppRoute(pathname) &&
-    !isPendingPostView(pathname, params) &&
-    !isPostPageView(pathname, params) &&
-    !isSettingsView(pathname, params) &&
-    !isSubscriptionsView(pathname, params) &&
-    !isModQueueView(pathname)
+    !isAllView(normalizedPathname) &&
+    !isBoardView(normalizedPathname, params) &&
+    !isArchiveView(normalizedPathname, params) &&
+    !isCatalogView(normalizedPathname, params) &&
+    !isHomeView(normalizedPathname) &&
+    !isStaticAppRoute(normalizedPathname) &&
+    !isPendingPostView(normalizedPathname, params) &&
+    !isPostPageView(normalizedPathname, params) &&
+    !isSettingsView(normalizedPathname, params) &&
+    !isSubscriptionsView(normalizedPathname, params) &&
+    !isValidModRoute(normalizedPathname) &&
+    !isModQueueView(normalizedPathname)
   );
 };
