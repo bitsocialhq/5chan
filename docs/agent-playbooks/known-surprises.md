@@ -128,14 +128,15 @@ If uncertain, ask the developer before adding an entry.
 - **Mitigation:** Keep Portless startup behind `scripts/start-dev.js`, which now uses a branch-scoped `*.5chan.localhost` route outside the canonical case and automatically increments a `-2`, `-3`, ... suffix when that branch-scoped route is already occupied.
 - **Status:** confirmed
 
-### Toolchain model names are not interchangeable
+### Toolchain model names and inheritance are not interchangeable
 
 - **Date:** 2026-04-08
+- **Updated:** 2026-07-10
 - **Observed by:** contributor + Codex
 - **Context:** Reviewing repo-managed agent configs under `.codex/agents`, `.cursor/agents`, and `.claude/agents`
-- **What was surprising:** `composer-2` is only available for Cursor in this repo, while Codex agents using `gpt-5.3-codex` or `gpt-5.3-codex-spark` perform poorly enough that they should not be configured by default.
-- **Impact:** Agents can silently inherit invalid or weak model settings, leading to broken subagent runs or degraded implementation quality.
-- **Mitigation:** Keep `.cursor` agent configs on Cursor-supported models only, never use `composer-2` in `.claude`, and standardize `.codex/agents/*.toml` on `gpt-5.4` unless a contributor explicitly requests an override.
+- **What was surprising:** Model names remain harness-specific, while Codex custom-agent `model` and `model_reasoning_effort` settings are optional and inherit from the parent when omitted; Codex does not document a `latest` alias for these files.
+- **Impact:** Hard-coded Codex model or reasoning-effort settings can become stale or unsupported and prevent subagents from following the contributor's current parent configuration.
+- **Mitigation:** Keep `.cursor` agents on Cursor-supported models, never use `composer-2` in `.claude`, and omit `model` and `model_reasoning_effort` from committed custom-agent TOMLs under `.codex/**/agents/*.toml`; `yarn ai-workflow:check` rejects pins so Codex agents keep inheriting parent settings.
 - **Status:** confirmed
 
 ### codesign parses "5chan.app" as process ID 5
