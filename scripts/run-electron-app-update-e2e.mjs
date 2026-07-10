@@ -5,7 +5,7 @@ import { copyPath, createTempWorkspace, findFirstMatchingPath, logStep, repoRoot
 
 const OLD_VERSION = '0.7.1';
 const NEW_VERSION = '0.7.3';
-const SETTINGS_HASH = '#/all/settings#interface-settings';
+const SETTINGS_HASH = '#/all/settings?section=interface-settings';
 const MAC_ARCH = process.arch === 'x64' ? 'x64' : 'arm64';
 
 const findPackagedMacApp = async () => {

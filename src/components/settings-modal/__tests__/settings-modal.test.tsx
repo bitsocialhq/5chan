@@ -70,7 +70,7 @@ vi.mock('../p2p-stats-settings/p2p-stats-settings', () => ({
 
 const LocationProbe = () => {
   const location = useLocation();
-  return <div data-testid='location'>{location.pathname + location.hash}</div>;
+  return <div data-testid='location'>{location.pathname + location.search + location.hash}</div>;
 };
 
 let root: Root;
@@ -131,16 +131,16 @@ describe('SettingsModal', () => {
     expect(container.querySelector('[data-testid="crypto-wallets-setting"]')).not.toBeNull();
   });
 
-  it('updates the hash when sections open and close', async () => {
-    render('/all/settings#account-settings');
+  it('updates the section query when sections open and close', async () => {
+    render('/all/settings?section=account-settings');
 
-    expect(getLocationText()).toBe('/all/settings#account-settings');
+    expect(getLocationText()).toBe('/all/settings?section=account-settings');
 
     await act(async () => {
       getSectionToggleByText('interface').click();
     });
 
-    expect(getLocationText()).toBe('/all/settings#interface-settings');
+    expect(getLocationText()).toBe('/all/settings?section=interface-settings');
     expect(container.querySelector('[data-testid="interface-settings-panel"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="account-settings"]')).not.toBeNull();
 
@@ -148,7 +148,7 @@ describe('SettingsModal', () => {
       getSectionToggleByText('interface').click();
     });
 
-    expect(getLocationText()).toBe('/all/settings#account-settings');
+    expect(getLocationText()).toBe('/all/settings?section=account-settings');
     expect(container.querySelector('[data-testid="interface-settings-panel"]')).toBeNull();
 
     await act(async () => {
@@ -233,8 +233,8 @@ describe('SettingsModal', () => {
     expect(useSettingsUpgradeReviewStore.getState().reviewRequestId).toBe(1);
   });
 
-  it('opens the p2p stats section from its hash when browser pure p2p is enabled', () => {
-    render('/all/settings#p2p-stats-settings');
+  it.each(['/all/settings?section=p2p-stats-settings', '/all/settings#p2p-stats-settings'])('opens the p2p stats section from route %s', (route) => {
+    render(route);
 
     expect(container.querySelector('[data-testid="p2p-stats-settings-panel"]')).not.toBeNull();
   });

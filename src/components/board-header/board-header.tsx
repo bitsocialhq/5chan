@@ -119,10 +119,10 @@ const BoardHeader = () => {
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                navigate('/subs/settings#subscriptions-settings');
+                navigate('/subs/settings?section=subscriptions-settings');
               }
             }}
-            onClick={() => navigate('/subs/settings#subscriptions-settings')}
+            onClick={() => navigate('/subs/settings?section=subscriptions-settings')}
           >
             {subtitle}
           </button>

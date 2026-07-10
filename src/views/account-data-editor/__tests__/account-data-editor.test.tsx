@@ -199,7 +199,7 @@ describe('AccountDataEditor', () => {
 
     await clickButton('go_back');
 
-    expect(testState.navigateMock).toHaveBeenCalledWith('/subs/settings#account-settings');
+    expect(testState.navigateMock).toHaveBeenCalledWith('/subs/settings?section=account-settings');
   });
 
   it('loads the editor after continue and respects custom return routes', async () => {
@@ -258,7 +258,7 @@ describe('AccountDataEditor', () => {
 
     expect(testState.buildSavePayloadMock).toHaveBeenCalledWith({ account: { name: 'changed' } }, 'test-id');
     expect(testState.setAccountMock).toHaveBeenCalledWith({ id: 'test-id', name: 'changed' });
-    expect(testState.navigateMock).toHaveBeenCalledWith('/subs/settings#account-settings');
+    expect(testState.navigateMock).toHaveBeenCalledWith('/subs/settings?section=account-settings');
   });
 
   it('surfaces save errors from setAccount', async () => {

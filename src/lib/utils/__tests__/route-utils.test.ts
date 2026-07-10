@@ -3,8 +3,9 @@ import {
   areSameBoardAddress,
   extractDirectoryFromTitle,
   getBoardPath,
-  getCatalogSearchHash,
+  getCatalogSearchPath,
   getCatalogSearchRoute,
+  getSettingsSectionPath,
   getFeedCacheKey,
   getFeedType,
   getPageFromFeedPath,
@@ -223,13 +224,19 @@ describe('feed pagination helpers', () => {
 });
 
 describe('catalog search route helpers', () => {
-  it('formats catalog search routes with 4chan-style hash params', () => {
-    expect(getCatalogSearchHash('test')).toBe('#s=test');
-    expect(getCatalogSearchRoute('biz', 'test')).toBe('/biz/catalog#s=test');
-    expect(getCatalogSearchRoute('biz', 'test', '', { settings: true })).toBe('/biz/catalog/settings#s=test');
-    expect(getCatalogSearchRoute('biz', 'cats and dogs', '?t=1w')).toBe('/biz/catalog?t=1w#s=cats%20and%20dogs');
-    expect(getCatalogSearchHash('   ')).toBe('');
+  it('formats catalog search routes with portable query params', () => {
+    expect(getCatalogSearchPath('/biz/catalog', 'test')).toBe('/biz/catalog?s=test');
+    expect(getCatalogSearchRoute('biz', 'test')).toBe('/biz/catalog?s=test');
+    expect(getCatalogSearchRoute('biz', 'test', '', { settings: true })).toBe('/biz/catalog/settings?s=test');
+    expect(getCatalogSearchRoute('biz', 'cats and dogs', '?t=1w')).toBe('/biz/catalog?t=1w&s=cats+and+dogs');
+    expect(getCatalogSearchPath('/biz/catalog', '   ', '?t=1w&s=old&q=legacy')).toBe('/biz/catalog?t=1w');
     expect(getCatalogSearchRoute('biz', '')).toBe('/biz/catalog');
+  });
+
+  it('formats settings section routes without a nested fragment', () => {
+    expect(getSettingsSectionPath('/biz/settings', 'p2p-stats-settings')).toBe('/biz/settings?section=p2p-stats-settings');
+    expect(getSettingsSectionPath('/biz/settings', 'account-settings', '?focus=1')).toBe('/biz/settings?focus=1&section=account-settings');
+    expect(getSettingsSectionPath('/biz/settings', null, '?focus=1&section=account-settings')).toBe('/biz/settings?focus=1');
   });
 });
 

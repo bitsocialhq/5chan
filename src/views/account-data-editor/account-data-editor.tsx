@@ -5,7 +5,7 @@ import { setAccount, useAccount } from '@bitsocial/bitsocial-react-hooks';
 import { buildEditableAccountJson, safeParseAccountJson, buildSavePayload } from '../../lib/utils/account-editor-utils';
 import styles from './account-data-editor.module.css';
 
-const DEFAULT_RETURN_TO = '/subs/settings#account-settings';
+const DEFAULT_RETURN_TO = '/subs/settings?section=account-settings';
 
 type AceModuleLoadResult = {
   Editor: React.ComponentType<any>;

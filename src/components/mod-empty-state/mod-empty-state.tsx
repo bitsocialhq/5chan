@@ -3,7 +3,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import styles from './mod-empty-state.module.css';
 
 const MOD_ACCOUNT_SETTINGS_LINK_COMPONENTS = {
-  1: <Link to='/mod/settings#account-settings' />,
+  1: <Link to='/mod/settings?section=account-settings' />,
 };
 
 const ModEmptyState = () => {
