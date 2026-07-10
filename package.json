@@ -9,7 +9,7 @@
   "private": true,
   "dependencies": {
     "@bbob/parser": "4.3.1",
-    "@bitsocial/bitsocial-react-hooks": "0.1.27",
+    "@bitsocial/bitsocial-react-hooks": "0.1.28",
     "@bitsocial/bso-resolver": "0.0.8",
     "@capacitor/app": "7.0.1",
     "@capacitor/browser": "7.0.5",
@@ -17,7 +17,7 @@
     "@capawesome/capacitor-android-edge-to-edge-support": "7.2.2",
     "@chenglou/pretext": "0.0.5",
     "@floating-ui/react": "0.26.1",
-    "@pkcprotocol/pkc-js": "0.0.65",
+    "@pkcprotocol/pkc-js": "0.0.68",
     "@react-spring/web": "10.0.3",
     "@ruffle-rs/ruffle": "0.2.0",
     "@types/node": "20.19.37",
