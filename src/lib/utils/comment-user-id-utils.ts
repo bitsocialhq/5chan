@@ -4,6 +4,7 @@ import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 // author.address can carry the local account identity (overlaid so author edit/delete
 // controls keep working), so it must never be used for display.
 export function getCommentUserID(comment: Comment | undefined): string {
+  if (!comment?.cid) return '';
   return comment?.author?.shortAddress || '';
 }
 
