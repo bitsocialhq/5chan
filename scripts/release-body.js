@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  "This release makes pure P2P loading about 14% faster, keeps special boards tied to their correct board identities, and prevents account identities from appearing as post user IDs.";
+  "This release makes shared settings and catalog search links work reliably across messaging apps, keeps account identities hidden on pending replies, and fixes tab icons after navigating between pages.";
 
 const releaseBody = `${oneLinerDescription}
 

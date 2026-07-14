@@ -1,3 +1,14 @@
+## [0.9.14](https://github.com/bitsocialnet/5chan/compare/v0.9.13...v0.9.14) (2026-07-14)
+
+
+### Bug Fixes
+
+* **routing:** avoid nested hashes in shared links ([#1185](https://github.com/bitsocialnet/5chan/issues/1185)) ([e5e4690](https://github.com/bitsocialnet/5chan/commit/e5e46907d67bc799722f74f66313dd63ced0e8fb))
+* **ui:** centralize favicon updates and tighten route ownership for mod views ([56f4517](https://github.com/bitsocialnet/5chan/commit/56f451719ddcc7eef618eb609269d37c982c3ecf))
+* **ui:** hide account author ID on pending replies ([e3f45a6](https://github.com/bitsocialnet/5chan/commit/e3f45a61129619177d4f1619ea71f23ca27a9903))
+
+
+
 ## [0.9.13](https://github.com/bitsocialnet/5chan/compare/v0.9.12...v0.9.13) (2026-07-08)
 
 

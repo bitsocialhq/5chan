@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.14",
+      "kind": "release",
+      "timestamp": 1784030400,
+      "message": "v0.9.14: Reliable shared settings and catalog search links",
+      "version": "0.9.14"
+    },
+    {
       "id": "release-0.9.13",
       "kind": "release",
       "timestamp": 1783512000,
