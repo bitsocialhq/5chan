@@ -187,7 +187,7 @@
   },
   "resolutions": {
     "follow-redirects": "1.16.0",
-    "@libp2p/gossipsub": "15.0.23",
+    "@libp2p/gossipsub": "16.0.4",
     "@libp2p/kad-dht": "16.2.6",
     "brace-expansion@npm:^5.0.2": "5.0.6",
     "protobufjs": "7.6.3",
