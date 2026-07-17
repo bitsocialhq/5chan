@@ -14,12 +14,13 @@ import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bit
 import { useCommunityField } from '../../hooks/use-stable-community';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { isAllView } from '../../lib/utils/view-utils';
-import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
+import { useResolvedCommunityAddress, useResolvedDirectoryBoardPath } from '../../hooks/use-resolved-community-address';
 import { useDirectories } from '../../hooks/use-directories';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
+import { useCommentCidPayload } from '../../hooks/use-comment-cid-payload';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
-import { areSameBoardAddress, isDirectoryBoard } from '../../lib/utils/route-utils';
-import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
+import { areSameBoardAddress, getBoardPath, isDirectoryBoard } from '../../lib/utils/route-utils';
+import { getCommentCommunityAddress, hasAuthoritativeCommentPayload } from '../../lib/utils/comment-utils';
 import useIsMobile from '../../hooks/use-is-mobile';
 import ErrorDisplay from '../../components/error-display/error-display';
 import { PageFooterDesktop, ThreadFooterFirstRow, ThreadFooterStyleRow, ThreadFooterMobile } from '../../components/footer/footer';
@@ -347,16 +348,14 @@ export const Post = memo(
 
 const PostPage = () => {
   const { t } = useTranslation();
-  const params = useParams();
-  const { key: locationKey, pathname, state: locationState } = useLocation();
-  const { commentCid } = params;
+  const { hash, key: locationKey, pathname, search, state: locationState } = useLocation();
+  const { boardIdentifier, commentCid } = useParams();
   const autoUpdateEnabled = useThreadLiveUpdatesStore((state) => state.enabled);
   const updateRequestId = useThreadLiveUpdatesStore((state) => state.updateRequestId);
   const startUpdate = useThreadLiveUpdatesStore((state) => state.startUpdate);
   const finishUpdate = useThreadLiveUpdatesStore((state) => state.finishUpdate);
   const resetThreadLiveUpdates = useThreadLiveUpdatesStore((state) => state.resetState);
   const resolvedCommunityAddress = useResolvedCommunityAddress();
-  const resolvedCommunityIdentifier = useCommunityIdentifier(resolvedCommunityAddress);
   const isInAllView = isAllView(pathname);
   const routeState = useMemo(() => {
     // locationKey/pathname are intentional deps: getEffectiveRouteUserState falls back to the
@@ -366,12 +365,20 @@ const PostPage = () => {
     return getEffectiveRouteUserState(locationState);
   }, [locationKey, pathname, locationState]);
 
-  const resolvedComment = useCommentWithFeedCache({ commentCid, autoUpdate: autoUpdateEnabled, community: resolvedCommunityIdentifier });
+  const { communityAddress: cidCommunityAddress } = useCommentCidPayload(commentCid);
+  const commentCommunityIdentifier = useCommunityIdentifier(cidCommunityAddress ?? resolvedCommunityAddress);
+  const resolvedComment = useCommentWithFeedCache({ commentCid, autoUpdate: autoUpdateEnabled, community: commentCommunityIdentifier });
   const queuedComment = useMemo(() => getQueuedCommentFromRouteState(routeState, commentCid), [routeState, commentCid]);
   const comment = useMemo(() => mergeLocalCommentAuthor(mergeCommentFallback(resolvedComment, queuedComment), queuedComment), [resolvedComment, queuedComment]);
   const commentCommunityAddress = getCommentCommunityAddress(comment);
-  const communityAddress = resolvedCommunityAddress ?? commentCommunityAddress;
-  const communityIdentifier = useCommunityIdentifier(communityAddress);
+  const authoritativeCommentCommunityAddress = hasAuthoritativeCommentPayload(comment) ? commentCommunityAddress : undefined;
+  const communityAddress = authoritativeCommentCommunityAddress ?? resolvedCommunityAddress;
+  const communityIdentifier = useCommunityIdentifier(authoritativeCommentCommunityAddress ?? cidCommunityAddress ?? resolvedCommunityAddress);
+  const directories = useDirectories();
+  const { boardPath: resolvedCommentBoardPath, isDirectoryCandidate: isCommentDirectoryCandidate } = useResolvedDirectoryBoardPath(authoritativeCommentCommunityAddress);
+  const canonicalCommentBoardPath = authoritativeCommentCommunityAddress
+    ? (resolvedCommentBoardPath ?? (isCommentDirectoryCandidate ? authoritativeCommentCommunityAddress : getBoardPath(authoritativeCommentCommunityAddress, directories)))
+    : undefined;
   const consumedThreadTopScrollRef = useRef<string | null>(null);
   const previousThreadCidRef = useRef<string>(undefined);
   const lastProcessedUpdateRequestIdRef = useRef(0);
@@ -379,17 +386,32 @@ const PostPage = () => {
 
   const navigate = useNavigate();
   useEffect(() => {
-    if (commentCommunityAddress && resolvedCommunityAddress && !areSameBoardAddress(commentCommunityAddress, resolvedCommunityAddress)) {
-      navigate('/not-found', { replace: true });
+    if (
+      !boardIdentifier ||
+      !canonicalCommentBoardPath ||
+      !authoritativeCommentCommunityAddress ||
+      !resolvedCommunityAddress ||
+      areSameBoardAddress(authoritativeCommentCommunityAddress, resolvedCommunityAddress)
+    ) {
+      return;
     }
-  }, [commentCommunityAddress, resolvedCommunityAddress, navigate]);
+
+    const routePrefix = `/${boardIdentifier}`;
+    if (!pathname.startsWith(`${routePrefix}/`)) return;
+    const canonicalPathname = `/${canonicalCommentBoardPath}${pathname.slice(routePrefix.length)}`;
+    if (canonicalPathname === pathname) return;
+    navigate(`${canonicalPathname}${search}${hash}`, { replace: true });
+  }, [authoritativeCommentCommunityAddress, boardIdentifier, canonicalCommentBoardPath, hash, navigate, pathname, resolvedCommunityAddress, search]);
 
   const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);
   const { error: communityError, shortAddress, title } = community || {};
-  const directories = useDirectories();
 
   // if the comment is a reply, return the post comment instead, then the reply will be highlighted in the thread
-  const postComment = useCommentWithFeedCache({ commentCid: comment?.postCid, autoUpdate: autoUpdateEnabled, community: communityIdentifier });
+  const postComment = useCommentWithFeedCache({
+    commentCid: comment?.postCid,
+    autoUpdate: autoUpdateEnabled,
+    community: authoritativeCommentCommunityAddress ? communityIdentifier : undefined,
+  });
   const post = useMemo(() => (comment?.parentCid ? mergeCommentFallback(postComment, comment) : comment), [comment, postComment]);
   threadRefreshCommentsRef.current = [comment, post];
   const requestedThreadTopCid = getRequestedThreadTopCid(routeState);
@@ -420,7 +442,6 @@ const PostPage = () => {
   }, [commentCid, locationKey, post?.cid, requestedThreadTopCid]);
 
   useEffect(() => {
-    const boardIdentifier = params.boardIdentifier;
     const isDirectory = boardIdentifier ? isDirectoryBoard(boardIdentifier, directories) : false;
 
     let boardTitle: string;
@@ -435,7 +456,7 @@ const PostPage = () => {
     const postTitle = post?.title?.slice(0, 30) || post?.content?.slice(0, 30);
     const postTitlePart = postTitle ? ` - ${postTitle.trim()}...` : '';
     document.title = `${boardTitle}${postTitlePart} - 5chan`;
-  }, [title, shortAddress, communityAddress, post?.title, post?.content, isInAllView, t, params.boardIdentifier, directories]);
+  }, [title, shortAddress, communityAddress, post?.title, post?.content, isInAllView, t, boardIdentifier, directories]);
 
   const shouldShowCommentError = comment?.error?.message && !comment?.cid;
   const shouldShowPostError = post?.error && post?.replyCount > 0 && post?.replies?.length === 0;
