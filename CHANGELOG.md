@@ -1,3 +1,13 @@
+## [0.9.15](https://github.com/bitsocialnet/5chan/compare/v0.9.14...v0.9.15) (2026-07-17)
+
+
+### Bug Fixes
+
+* **deps:** upgrade @libp2p/gossipsub to 16.0.4 for CVE-2026-49866 ([d0c515e](https://github.com/bitsocialnet/5chan/commit/d0c515e70fa39c92ff9d76e511cf3d9da1eb6fa4)), closes [#302](https://github.com/bitsocialnet/5chan/issues/302)
+* **post:** resolve thread community from CID and redirect stale routes ([cb15128](https://github.com/bitsocialnet/5chan/commit/cb15128ee8dff7f34d4b6d51682e3da50891d477))
+
+
+
 ## [0.9.14](https://github.com/bitsocialnet/5chan/compare/v0.9.13...v0.9.14) (2026-07-14)
 
 

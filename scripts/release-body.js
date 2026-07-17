@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  "This release makes shared settings and catalog search links work reliably across messaging apps, keeps account identities hidden on pending replies, and fixes tab icons after navigating between pages.";
+  "This version makes direct thread links keep working when a board's address changes and includes dependency and security updates.";
 
 const releaseBody = `${oneLinerDescription}
 
