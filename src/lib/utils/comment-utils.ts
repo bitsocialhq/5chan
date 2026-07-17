@@ -24,6 +24,24 @@ export const getCommentCommunityAddress = (comment?: unknown) => {
   return undefined;
 };
 
+export const hasAuthoritativeCommentPayload = (comment?: unknown): boolean => {
+  if (!comment || typeof comment !== 'object') {
+    return false;
+  }
+
+  const record = comment as {
+    timestamp?: unknown;
+    content?: unknown;
+    title?: unknown;
+    link?: unknown;
+    thumbnailUrl?: unknown;
+    deleted?: unknown;
+    removed?: unknown;
+  };
+
+  return Boolean(record.timestamp !== undefined || record.content || record.title || record.link || record.thumbnailUrl || record.deleted || record.removed);
+};
+
 const withResolvedReplyPages = <T>(replies: T): T => {
   const replyCollection = replies as CommentWithCommunityAddress['replies'];
   if (!replyCollection?.pages) {

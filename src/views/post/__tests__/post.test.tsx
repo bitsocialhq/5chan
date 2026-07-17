@@ -45,6 +45,7 @@ type TestComment = {
 const testState = vi.hoisted(() => ({
   accountCommentsByCid: {} as Record<string, TestComment | undefined>,
   cachedComments: {} as Record<string, TestComment>,
+  cidCommunityAddress: undefined as string | undefined,
   communityFieldAddress: undefined as string | undefined,
   commentsByCid: {} as Record<string, TestComment>,
   directories: [{ address: 'music-posting.eth', name: 'music-posting.eth', publicKey: 'music-public-key', title: '/mu/ - Music' }] as Array<{
@@ -58,6 +59,8 @@ const testState = vi.hoisted(() => ({
   navigateMock: vi.fn(),
   repliesByCommentCid: {} as Record<string, TestComment[]>,
   resolvedCommunityAddress: 'music-posting.eth' as string | undefined,
+  resolvedDirectoryBoardPath: undefined as string | undefined,
+  isDirectoryCandidate: false,
   community: {
     error: undefined as Error | undefined,
     shortAddress: 'music-posting.eth',
@@ -147,8 +150,16 @@ vi.mock('../../../hooks/use-stable-community', () => ({
   },
 }));
 
+vi.mock('../../../hooks/use-comment-cid-payload', () => ({
+  useCommentCidPayload: () => ({ communityAddress: testState.cidCommunityAddress, state: testState.cidCommunityAddress ? 'succeeded' : 'idle' }),
+}));
+
 vi.mock('../../../hooks/use-resolved-community-address', () => ({
   useResolvedCommunityAddress: () => testState.resolvedCommunityAddress,
+  useResolvedDirectoryBoardPath: () => ({
+    boardPath: testState.resolvedDirectoryBoardPath,
+    isDirectoryCandidate: testState.isDirectoryCandidate,
+  }),
 }));
 
 vi.mock('../../../hooks/use-directories', async () => {
@@ -302,12 +313,15 @@ describe('Post', () => {
     vi.clearAllMocks();
     testState.accountCommentsByCid = {};
     testState.cachedComments = {};
+    testState.cidCommunityAddress = undefined;
     testState.communityFieldAddress = undefined;
     testState.commentsByCid = {};
     testState.directories = [{ address: 'music-posting.eth', name: 'music-posting.eth', publicKey: 'music-public-key', title: '/mu/ - Music' }];
     testState.editedCommentsByCid = {};
     testState.isMobile = false;
     testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.resolvedDirectoryBoardPath = undefined;
+    testState.isDirectoryCandidate = false;
     testState.repliesByCommentCid = {};
     testState.useCommentCalls = [];
     testState.evictThreadRefreshCachesMock.mockReset();
@@ -808,19 +822,69 @@ describe('Post', () => {
     expect(window.scrollTo).not.toHaveBeenCalledWith(0, 0);
   });
 
-  it('redirects thread routes whose fetched comment belongs to a different board', async () => {
+  it('redirects stale directory thread routes to the loaded comment community address', async () => {
+    testState.resolvedCommunityAddress = 'bizraelis.bso';
+    testState.isDirectoryCandidate = true;
     testState.commentsByCid = {
       'comment-1': {
         cid: 'comment-1',
         postCid: 'comment-1',
-        communityAddress: 'other.eth',
-        title: 'Other board thread',
+        communityAddress: 'business-and-finance.bso',
+        timestamp: 1,
+        title: 'Business thread',
       },
     };
 
-    await renderPostPage('/mu/thread/comment-1');
+    await renderPostPage('/biz/thread/comment-1?focus=1#reply-2');
 
-    expect(testState.navigateMock).toHaveBeenCalledWith('/not-found', { replace: true });
+    expect(testState.navigateMock).toHaveBeenCalledWith('/business-and-finance.bso/thread/comment-1?focus=1#reply-2', { replace: true });
+  });
+
+  it('uses the CID community as the initial useComment hint without rendering the raw CID payload', async () => {
+    testState.cidCommunityAddress = 'business-and-finance.bso';
+    testState.resolvedCommunityAddress = 'bizraelis.bso';
+
+    await renderPostPage('/biz/thread/comment-1');
+
+    expect(testState.useCommentCalls).toContainEqual({
+      autoUpdate: false,
+      commentCid: 'comment-1',
+      community: expect.objectContaining({ name: 'business-and-finance.bso' }),
+    });
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('does not trust a loading comment shell as the CID community source of truth', async () => {
+    testState.resolvedCommunityAddress = 'bizraelis.bso';
+    testState.commentsByCid = {
+      'comment-shell': {
+        cid: 'comment-shell',
+        communityAddress: 'business-and-finance.bso',
+        replyCount: 0,
+        state: 'initializing',
+      },
+    };
+
+    await renderPostPage('/biz/thread/comment-shell');
+
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('uses the directory code when the loaded comment community is the current winner', async () => {
+    testState.resolvedCommunityAddress = 'wrong-board.bso';
+    testState.resolvedDirectoryBoardPath = 'biz';
+    testState.isDirectoryCandidate = true;
+    testState.commentsByCid = {
+      'comment-1': {
+        cid: 'comment-1',
+        communityAddress: 'business-and-finance.bso',
+        timestamp: 1,
+      },
+    };
+
+    await renderPostPage('/wrong-board.bso/thread/comment-1');
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/biz/thread/comment-1', { replace: true });
   });
 
   it('hydrates multiboard thread pages from a legacy-only comment address', async () => {
