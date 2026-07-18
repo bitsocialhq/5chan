@@ -5,7 +5,7 @@ describe('author display utils', () => {
   it('recognizes the hardcoded 5chan developer addresses', () => {
     expect(isKnown5chanDeveloper('estebanabaroa.bso')).toBe(true);
     expect(isKnown5chanDeveloper('rinse12.bso')).toBe(true);
-    expect(isKnown5chanDeveloper('plebeius.bso')).toBe(true);
+    expect(isKnown5chanDeveloper('bitsocialist.bso')).toBe(true);
     expect(isKnown5chanDeveloper('someone-else.bso')).toBe(false);
   });
 
@@ -16,7 +16,7 @@ describe('author display utils', () => {
       name: 'Rinse',
     });
     expect(KNOWN_5CHAN_DEVELOPER_ENTRIES).toContainEqual({
-      address: 'plebeius.bso',
+      address: 'bitsocialist.bso',
       githubProfileUrl: 'https://github.com/tomcasaburi',
       name: 'Tommaso Casaburi',
     });
@@ -31,7 +31,7 @@ describe('author display utils', () => {
   });
 
   it('keeps the developer label even when the account has a board role', () => {
-    expect(getAuthorBadge({ address: 'plebeius.bso', role: 'owner' })).toEqual({
+    expect(getAuthorBadge({ address: 'bitsocialist.bso', role: 'owner' })).toEqual({
       icon: 'admin',
       label: '5chan Dev',
       title: '5chan Dev',
@@ -39,7 +39,7 @@ describe('author display utils', () => {
   });
 
   it('returns only the 5chan Dev badge for known developers', () => {
-    expect(get5chanDeveloperBadge('plebeius.bso')).toEqual({
+    expect(get5chanDeveloperBadge('bitsocialist.bso')).toEqual({
       icon: 'admin',
       label: '5chan Dev',
       title: '5chan Dev',
@@ -63,7 +63,7 @@ describe('author display utils', () => {
   });
 
   it('returns the posting warning label for the effective moderator role', () => {
-    expect(getModerationPostingRoleLabel({ address: 'plebeius.bso', role: 'owner' })).toBe('5chan dev');
+    expect(getModerationPostingRoleLabel({ address: 'bitsocialist.bso', role: 'owner' })).toBe('5chan dev');
     expect(getModerationPostingRoleLabel({ address: 'other.bso', role: 'owner' })).toBe('owner');
     expect(getModerationPostingRoleLabel({ address: 'other.bso', role: 'admin' })).toBe('admin');
     expect(getModerationPostingRoleLabel({ address: 'other.bso', role: 'moderator' })).toBe('moderator');

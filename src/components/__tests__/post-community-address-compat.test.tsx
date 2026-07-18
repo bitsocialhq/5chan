@@ -549,9 +549,9 @@ describe('post community address compatibility', () => {
   it('renders known developer badges and keeps anonymous as the default name on desktop and mobile', async () => {
     const post = {
       ...makeLegacyThread(),
-      author: { address: 'plebeius.bso', shortAddress: 'plebeius.bso' },
+      author: { address: 'bitsocialist.bso', shortAddress: 'bitsocialist.bso' },
     };
-    const roles = { 'plebeius.bso': { role: 'owner' } };
+    const roles = { 'bitsocialist.bso': { role: 'owner' } };
 
     await renderWithRoute(createElement(PostDesktop, { post, roles } as any));
     expect(container.textContent).toContain('Anonymous');

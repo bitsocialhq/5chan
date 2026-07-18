@@ -1528,13 +1528,13 @@ describe('PostForm', () => {
 
   it('uses the 5chan dev label for known developer moderator posts', async () => {
     testState.account = {
-      author: { address: 'plebeius.bso', displayName: 'Tom' },
+      author: { address: 'bitsocialist.bso', displayName: 'Tom' },
       subscriptions: ['music-posting.eth'],
     };
     testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.rolesByCommunity = {
       'music-posting.eth': {
-        'plebeius.bso': { role: 'owner' },
+        'bitsocialist.bso': { role: 'owner' },
       },
     };
 

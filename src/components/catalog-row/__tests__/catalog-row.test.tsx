@@ -390,11 +390,11 @@ describe('CatalogRow', () => {
       },
     ];
     testState.roleByAddress = {
-      'plebeius.bso': { commentAuthorRole: 'owner', isCommentAuthorMod: true },
+      'bitsocialist.bso': { commentAuthorRole: 'owner', isCommentAuthorMod: true },
     };
 
     const post: TestComment = {
-      author: { address: 'plebeius.bso', shortAddress: 'plebeius.bso' },
+      author: { address: 'bitsocialist.bso', shortAddress: 'bitsocialist.bso' },
       cid: 'post-dev',
       content: 'Developer post',
       link: 'https://example.com/dev.png',

@@ -89,10 +89,10 @@ describe('mod queue utils', () => {
   it('adds live role communities that are not cached on the account', () => {
     expect(
       getModeratedCommunityAddresses({
-        accountAddress: 'plebeius.bso',
+        accountAddress: 'bitsocialist.bso',
         accountCommunityAddresses: ['tech-primary.bso'],
         candidateCommunityAddresses: ['tech-primary.bso', 'paranormal-posting.bso', 'viewer-board.bso'],
-        communities: [undefined, { roles: { 'plebeius.bso': { role: 'moderator' } } }, { roles: { 'plebeius.bso': { role: 'viewer' } } }],
+        communities: [undefined, { roles: { 'bitsocialist.bso': { role: 'moderator' } } }, { roles: { 'bitsocialist.bso': { role: 'viewer' } } }],
       }),
     ).toEqual(['tech-primary.bso', 'paranormal-posting.bso']);
   });

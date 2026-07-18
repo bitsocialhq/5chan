@@ -845,8 +845,8 @@ describe('Board', () => {
     testState.account = {
       id: 'active-account',
       author: {
-        address: 'plebeius.bso',
-        shortAddress: 'plebeius',
+        address: 'bitsocialist.bso',
+        shortAddress: 'bitsocialist',
       },
       subscriptions: [],
     };
@@ -870,12 +870,12 @@ describe('Board', () => {
 
     const firstPost = container.querySelector('[data-testid="post"]');
     expect(firstPost?.textContent).toBe('fresh-dev-post');
-    expect(firstPost?.getAttribute('data-author-address')).toBe('plebeius.bso');
+    expect(firstPost?.getAttribute('data-author-address')).toBe('bitsocialist.bso');
     expect(firstPost?.getAttribute('data-content')).toBe('[color=red]hello[/color]');
     expect(testState.registerCommentsMock).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({
-          author: expect.objectContaining({ address: 'plebeius.bso' }),
+          author: expect.objectContaining({ address: 'bitsocialist.bso' }),
           cid: 'fresh-dev-post',
           content: '[color=red]hello[/color]',
         }),
