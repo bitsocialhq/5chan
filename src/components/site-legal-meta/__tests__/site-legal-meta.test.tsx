@@ -49,6 +49,6 @@ describe('SiteLegalMeta', () => {
     expect(bitsocialLink?.textContent).toBe('');
     expect(bitsocialLink?.previousSibling?.textContent).toContain('Bitsocial');
     expect(bitsocialLink?.querySelector('img')?.getAttribute('src')).toBe('assets/logo/bitsocial.png');
-    expect(bitsocialLink?.querySelector('img')?.getAttribute('width')).toBe('20');
+    expect(bitsocialLink?.querySelector('img')?.getAttribute('width')).toBe('18');
   });
 });
