@@ -314,7 +314,7 @@
   "download": "تحميل",
   "checking_for_updates": "جاري التحقق من التحديثات...",
   "new_version_found": "تم العثور على إصدار جديد",
-  "site_legal_meta_license_text": "5chan هو برنامج مجاني ومفتوح المصدر بموجب GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "5chan هو FOSS بموجب GPL-3.0-or-later.",
   "community_offline_info": "قد تكون هذه اللوحة غير متصلة وقد يفشل النشر.",
   "pass_questions": "الأسئلة",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "هذا ليس نقلاً حقيقياً على مستوى البروتوكول. يعيد 5chan إنشاء المنشور على /trash/ ويزيل الأصل.",
   "modQueue.transferRepliesNotice": "لن تُنقل الردود. سيتم حذفها مع المنشور الأصلي.",
   "modQueue.transferTemporaryAccountNotice": "سينشئ 5chan حسابا مؤقتا جديدا لهذا المنشور المنسوخ فقط، ثم يحذفه بعد النشر.",
-  "trash": "سلة المهملات"
+  "trash": "سلة المهملات",
+  "site_legal_meta_powered_by": "مدعوم من"
 }

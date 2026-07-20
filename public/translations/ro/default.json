@@ -314,7 +314,7 @@
   "download": "descarcă",
   "checking_for_updates": "Se verifică actualizările...",
   "new_version_found": "versiune nouă găsită",
-  "site_legal_meta_license_text": "5chan este software liber și open-source sub GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "5chan este FOSS sub GPL-3.0-or-later.",
   "community_offline_info": "Acest panou poate fi offline și publicarea poate eșua.",
   "pass_questions": "Întrebări",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Acesta nu este un transfer real la nivel de protocol. 5chan recreează postarea în /trash/ și elimină originalul.",
   "modQueue.transferRepliesNotice": "Răspunsurile nu sunt mutate. Vor fi șterse odată cu postarea originală.",
   "modQueue.transferTemporaryAccountNotice": "5chan va crea un cont temporar nou doar pentru această postare copiată, apoi îl va șterge după publicare.",
-  "trash": "Coș"
+  "trash": "Coș",
+  "site_legal_meta_powered_by": "Susținut de"
 }

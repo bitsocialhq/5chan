@@ -314,7 +314,7 @@
   "download": "ダウンロード",
   "checking_for_updates": "更新を確認しています...",
   "new_version_found": "新しいバージョンが見つかりました",
-  "site_legal_meta_license_text": "5chanはGPL-3.0-or-laterのもとで提供される自由かつオープンソースのソフトウェアです。",
+  "site_legal_meta_license_text": "5chanはGPL-3.0-or-laterの下で提供されるFOSSです。",
   "community_offline_info": "このボードはオフラインの可能性があり、公開が失敗する可能性があります。",
   "pass_questions": "質問",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "これはプロトコル上の本当の転送ではありません。5chan は /trash/ に投稿を再作成し、元の投稿を削除します。",
   "modQueue.transferRepliesNotice": "返信は移動されません。元の投稿と一緒に削除されます。",
   "modQueue.transferTemporaryAccountNotice": "5chan はこのコピー投稿専用の一時アカウントを新しく作成し、公開後に削除します。",
-  "trash": "ゴミ箱"
+  "trash": "ゴミ箱",
+  "site_legal_meta_powered_by": "提供："
 }

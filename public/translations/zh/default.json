@@ -314,7 +314,7 @@
   "download": "下载",
   "checking_for_updates": "正在检查更新...",
   "new_version_found": "发现新版本",
-  "site_legal_meta_license_text": "5chan 是采用 GPL-3.0-or-later 的自由开源软件。",
+  "site_legal_meta_license_text": "5chan 是采用 GPL-3.0-or-later 的 FOSS。",
   "community_offline_info": "此看板可能处于离线状态，发布可能会失败。",
   "pass_questions": "问题",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "这不是协议层面的真实转移。5chan 会在 /trash/ 重新创建帖子，并移除原帖。",
   "modQueue.transferRepliesNotice": "回复不会被移动。它们会随原帖一起删除。",
   "modQueue.transferTemporaryAccountNotice": "5chan 会专门为这个复制后的帖子创建一个新的临时账号，并在发布后删除它。",
-  "trash": "垃圾箱"
+  "trash": "垃圾箱",
+  "site_legal_meta_powered_by": "技术支持："
 }

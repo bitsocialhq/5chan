@@ -314,7 +314,7 @@
   "download": "i-download",
   "checking_for_updates": "Sinusuri ang mga update...",
   "new_version_found": "may bagong bersyon na nahanap",
-  "site_legal_meta_license_text": "Ang 5chan ay libre at open-source na software sa ilalim ng GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "Ang 5chan ay FOSS sa ilalim ng GPL-3.0-or-later.",
   "community_offline_info": "Maaaring offline ang board na ito at maaaring mabigo ang pag-publish.",
   "pass_questions": "Mga Tanong",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Hindi ito tunay na protocol transfer. Muling ginagawa ng 5chan ang post sa /trash/ at inaalis ang orihinal.",
   "modQueue.transferRepliesNotice": "Hindi inililipat ang mga reply. Mabubura ang mga ito kasama ng orihinal na post.",
   "modQueue.transferTemporaryAccountNotice": "Gagawa ang 5chan ng bagong pansamantalang account para lang sa kinopyang post na ito, at buburahin ito pagkatapos ma-publish.",
-  "trash": "Basura"
+  "trash": "Basura",
+  "site_legal_meta_powered_by": "Pinapagana ng"
 }

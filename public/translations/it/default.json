@@ -314,7 +314,7 @@
   "download": "scarica",
   "checking_for_updates": "Controllo aggiornamenti...",
   "new_version_found": "nuova versione trovata",
-  "site_legal_meta_license_text": "5chan è software libero e open-source sotto GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "5chan è FOSS sotto GPL-3.0-or-later.",
   "community_offline_info": "Questa bacheca potrebbe essere offline e la pubblicazione potrebbe fallire.",
   "pass_questions": "Domande",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Questo non è un vero trasferimento del protocollo. 5chan ricrea il post in /trash/ e rimuove l’originale.",
   "modQueue.transferRepliesNotice": "Le risposte non vengono spostate. Verranno eliminate insieme al post originale.",
   "modQueue.transferTemporaryAccountNotice": "5chan creerà un nuovo account temporaneo solo per questo post copiato, poi lo eliminerà dopo la pubblicazione.",
-  "trash": "Cestino"
+  "trash": "Cestino",
+  "site_legal_meta_powered_by": "Basato su"
 }

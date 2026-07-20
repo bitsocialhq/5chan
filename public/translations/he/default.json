@@ -314,7 +314,7 @@
   "download": "הורדה",
   "checking_for_updates": "בודק עדכונים...",
   "new_version_found": "נמצאה גרסה חדשה",
-  "site_legal_meta_license_text": "5chan היא תוכנה חופשית וקוד פתוח תחת GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "5chan היא FOSS תחת GPL-3.0-or-later.",
   "community_offline_info": "הלוח הזה עשוי להיות לא מקוון והפרסום עלול להיכשל.",
   "pass_questions": "שאלות",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "זו לא העברה אמיתית ברמת הפרוטוקול. 5chan יוצר מחדש את הפוסט ב-/trash/ ומסיר את המקור.",
   "modQueue.transferRepliesNotice": "התגובות לא מועברות. הן נמחקות יחד עם הפוסט המקורי.",
   "modQueue.transferTemporaryAccountNotice": "5chan ייצור חשבון זמני חדש רק עבור הפוסט המועתק הזה, ואז ימחק אותו לאחר הפרסום.",
-  "trash": "אשפה"
+  "trash": "אשפה",
+  "site_legal_meta_powered_by": "מופעל על ידי"
 }

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Version from '../version/version';
+import styles from './site-legal-meta.module.css';
 
 type SiteLegalMetaOrder = 'version-first' | 'license-first';
 
@@ -12,7 +13,14 @@ type SiteLegalMetaProps = {
 const LicenseText = () => {
   const { t } = useTranslation();
 
-  return <span>{t('site_legal_meta_license_text')}</span>;
+  return (
+    <span className={styles.licenseText}>
+      {t('site_legal_meta_license_text')} {t('site_legal_meta_powered_by')} Bitsocial
+      <a className={styles.bitsocialLogoLink} href='https://bitsocial.net' target='_blank' rel='noopener noreferrer' aria-label='Bitsocial'>
+        <img className={styles.bitsocialLogo} src='assets/logo/bitsocial.png' alt='' width='20' height='20' />
+      </a>
+    </span>
+  );
 };
 
 const VersionFeedbackContributors = () => {

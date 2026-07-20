@@ -314,7 +314,7 @@
   "download": "downloaden",
   "checking_for_updates": "Controleren op updates...",
   "new_version_found": "nieuwe versie gevonden",
-  "site_legal_meta_license_text": "5chan is vrije en open-source software onder GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "5chan is FOSS onder GPL-3.0-or-later.",
   "community_offline_info": "Dit bord kan offline zijn en publiceren kan mislukken.",
   "pass_questions": "Vragen",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Dit is geen echte protocoloverdracht. 5chan maakt het bericht opnieuw in /trash/ en verwijdert het origineel.",
   "modQueue.transferRepliesNotice": "Reacties worden niet verplaatst. Ze worden samen met het oorspronkelijke bericht verwijderd.",
   "modQueue.transferTemporaryAccountNotice": "5chan maakt alleen voor dit gekopieerde bericht een nieuw tijdelijk account aan en verwijdert het na publicatie.",
-  "trash": "Prullenbak"
+  "trash": "Prullenbak",
+  "site_legal_meta_powered_by": "Mogelijk gemaakt door"
 }

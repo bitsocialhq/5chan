@@ -1,0 +1,19 @@
+.licenseText {
+  display: inline-flex;
+  align-items: center;
+}
+
+.bitsocialLogoLink {
+  display: block;
+  flex: 0 0 auto;
+  margin-left: 1px;
+  line-height: 0;
+  transform: translateY(-1px);
+}
+
+.bitsocialLogo {
+  display: block;
+  width: 20px;
+  height: 20px;
+  filter: contrast(1.12);
+}

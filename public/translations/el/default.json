@@ -314,7 +314,7 @@
   "download": "λήψη",
   "checking_for_updates": "Έλεγχος για ενημερώσεις...",
   "new_version_found": "βρέθηκε νέα έκδοση",
-  "site_legal_meta_license_text": "Το 5chan είναι ελεύθερο λογισμικό ανοιχτού κώδικα υπό την GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "Το 5chan είναι FOSS υπό την GPL-3.0-or-later.",
   "community_offline_info": "Αυτός ο πίνακας μπορεί να είναι εκτός σύνδεσης και η δημοσίευση μπορεί να αποτύχει.",
   "pass_questions": "Ερωτήσεις",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Αυτό δεν είναι πραγματική μεταφορά στο πρωτόκολλο. Το 5chan αναδημιουργεί την ανάρτηση στο /trash/ και αφαιρεί την αρχική.",
   "modQueue.transferRepliesNotice": "Οι απαντήσεις δεν μετακινούνται. Θα διαγραφούν μαζί με την αρχική ανάρτηση.",
   "modQueue.transferTemporaryAccountNotice": "Το 5chan θα δημιουργήσει έναν νέο προσωρινό λογαριασμό μόνο για αυτό το αντιγραμμένο post και θα τον διαγράψει μετά τη δημοσίευση.",
-  "trash": "Κάδος"
+  "trash": "Κάδος",
+  "site_legal_meta_powered_by": "Με την υποστήριξη του"
 }

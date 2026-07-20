@@ -314,7 +314,7 @@
   "download": "letöltés",
   "checking_for_updates": "Frissítések keresése...",
   "new_version_found": "új verzió található",
-  "site_legal_meta_license_text": "Az 5chan szabad és nyílt forráskódú szoftver a GPL-3.0-or-later alatt.",
+  "site_legal_meta_license_text": "Az 5chan FOSS a GPL-3.0-or-later alatt.",
   "community_offline_info": "Ez a tábla offline lehet, és a közzététel sikertelen lehet.",
   "pass_questions": "Kérdések",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Ez nem valódi protokollszintű áthelyezés. A 5chan újra létrehozza a bejegyzést a /trash/ helyen, majd eltávolítja az eredetit.",
   "modQueue.transferRepliesNotice": "A válaszok nem kerülnek át. Az eredeti bejegyzéssel együtt törlődnek.",
   "modQueue.transferTemporaryAccountNotice": "A 5chan új ideiglenes fiókot hoz létre csak ehhez a másolt bejegyzéshez, majd közzététel után törli.",
-  "trash": "Kuka"
+  "trash": "Kuka",
+  "site_legal_meta_powered_by": "Működteti:"
 }
