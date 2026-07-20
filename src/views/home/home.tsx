@@ -304,7 +304,7 @@ export const Footer = () => {
           <Link to='/'>{t('home')}</Link>
         </li>
         <li>
-          <a href='https://bitsocial.net' target='_blank' rel='noopener noreferrer'>
+          <a href='https://bitsocial.net/apps/5chan' target='_blank' rel='noopener noreferrer'>
             {t('about')}
           </a>
         </li>
