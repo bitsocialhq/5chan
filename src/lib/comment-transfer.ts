@@ -80,7 +80,8 @@ export const getTransferPublishIdentity = (targetBoard: TransferBoardLike | unde
 
   if (publicKey && isSpecialBoardCode(targetBoard?.directoryCode)) {
     return {
-      communityAddress: publicKey,
+      communityAddress: boardAddress,
+      communityName: boardAddress,
       communityPublicKey: publicKey,
     };
   }

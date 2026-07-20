@@ -640,7 +640,8 @@ describe('ModQueueView', () => {
     const [payload, accountName] = testState.publishCommentMock.mock.calls[0];
     expect(accountName).toBe(temporaryAccountName);
     expect(payload).toMatchObject({
-      communityAddress: TRASH_BOARD_PUBLIC_KEY,
+      communityAddress: TRASH_BOARD_ADDRESS,
+      communityName: TRASH_BOARD_ADDRESS,
       communityPublicKey: TRASH_BOARD_PUBLIC_KEY,
       content: 'belongs on tech',
       flairs: [{ text: 'flash:loop' }],
@@ -649,7 +650,6 @@ describe('ModQueueView', () => {
       title: 'Wrong board',
     });
     expect(payload.author).toBeUndefined();
-    expect(payload).not.toHaveProperty('communityName');
     expect(typeof payload.onChallengeVerification).toBe('function');
 
     await act(async () => {
@@ -660,7 +660,8 @@ describe('ModQueueView', () => {
     expect(testState.publishCommentModerationActionMock).toHaveBeenCalledTimes(2);
     expect(testState.publishCommentModerationActionMock.mock.calls[0][0]).toMatchObject({
       commentCid: 'transferred-post',
-      communityAddress: TRASH_BOARD_PUBLIC_KEY,
+      communityAddress: TRASH_BOARD_ADDRESS,
+      communityName: TRASH_BOARD_ADDRESS,
       communityPublicKey: TRASH_BOARD_PUBLIC_KEY,
       commentModeration: {
         flairs: [{ text: 'flash:loop' }, { text: '5chan:transferred' }],

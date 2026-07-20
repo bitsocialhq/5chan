@@ -161,7 +161,7 @@ describe('PostTransferModal', () => {
     expect(document.body.querySelector('select')).toBeNull();
   });
 
-  it('publishes hidden trash board transfers with the board public key identity', async () => {
+  it('publishes hidden trash board transfers with the canonical name and public key', async () => {
     await renderTransferModal();
 
     expect(document.body.querySelector('select')).toBeNull();
@@ -175,10 +175,10 @@ describe('PostTransferModal', () => {
 
     const [publishOptions] = testState.publishCommentMock.mock.calls[0] as [Record<string, unknown>, string];
     expect(publishOptions).toMatchObject({
-      communityAddress: TRASH_BOARD_PUBLIC_KEY,
+      communityAddress: TRASH_BOARD_ADDRESS,
+      communityName: TRASH_BOARD_ADDRESS,
       communityPublicKey: TRASH_BOARD_PUBLIC_KEY,
     });
-    expect(publishOptions).not.toHaveProperty('communityName');
   });
 
   it('unlocks after hidden trash board challenge verification fails', async () => {

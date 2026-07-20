@@ -67,13 +67,14 @@ describe('comment-transfer', () => {
     });
   });
 
-  it('uses the public key identity when publishing transfers to a special board', () => {
+  it('uses the canonical name and public key when publishing transfers to a special board', () => {
     expect(getTransferPublishIdentity({ address: 'tech-posting.eth', directoryCode: 'g' }, 'tech-posting.eth')).toEqual({
       communityAddress: 'tech-posting.eth',
     });
     expect(getTransferPublishIdentity({ address: TRASH_BOARD_ADDRESS, directoryCode: TRASH_BOARD_CODE, publicKey: TRASH_BOARD_PUBLIC_KEY }, TRASH_BOARD_ADDRESS)).toEqual(
       {
-        communityAddress: TRASH_BOARD_PUBLIC_KEY,
+        communityAddress: TRASH_BOARD_ADDRESS,
+        communityName: TRASH_BOARD_ADDRESS,
         communityPublicKey: TRASH_BOARD_PUBLIC_KEY,
       },
     );
@@ -90,11 +91,11 @@ describe('comment-transfer', () => {
     );
 
     expect(payload).toMatchObject({
-      communityAddress: TRASH_BOARD_PUBLIC_KEY,
+      communityAddress: TRASH_BOARD_ADDRESS,
+      communityName: TRASH_BOARD_ADDRESS,
       communityPublicKey: TRASH_BOARD_PUBLIC_KEY,
       content: 'wrong board',
     });
-    expect(payload).not.toHaveProperty('communityName');
   });
 
   it('copies selected comment body text verbatim while still ignoring blank bodies', () => {
