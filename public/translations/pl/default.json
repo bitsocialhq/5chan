@@ -314,7 +314,7 @@
   "download": "pobierz",
   "checking_for_updates": "Sprawdzanie aktualizacji...",
   "new_version_found": "znaleziono nową wersję",
-  "site_legal_meta_license_text": "5chan to wolne i otwarte oprogramowanie na licencji GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "5chan to FOSS na licencji GPL-3.0-or-later.",
   "community_offline_info": "Ta tablica może być offline i publikacja może się nie powieść.",
   "pass_questions": "Pytania",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "To nie jest rzeczywisty transfer na poziomie protokołu. 5chan odtwarza post w /trash/ i usuwa oryginał.",
   "modQueue.transferRepliesNotice": "Odpowiedzi nie zostaną przeniesione. Zostaną usunięte razem z oryginalnym postem.",
   "modQueue.transferTemporaryAccountNotice": "5chan utworzy nowe konto tymczasowe tylko dla tego skopiowanego posta, a potem usunie je po opublikowaniu.",
-  "trash": "Kosz"
+  "trash": "Kosz",
+  "site_legal_meta_powered_by": "Obsługiwane przez"
 }

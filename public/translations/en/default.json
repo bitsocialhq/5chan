@@ -335,7 +335,7 @@
   "download": "download",
   "checking_for_updates": "checking for updates...",
   "new_version_found": "new version found",
-  "site_legal_meta_license_text": "5chan is free and open-source software under GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "5chan is FOSS under GPL-3.0-or-later.",
   "community_offline_info": "This board might be offline and publishing might fail.",
   "pass_questions": "Questions",
   "pass_document_title": "Pass - 5chan",
@@ -480,5 +480,6 @@
   "modQueue.transferRecreateNotice": "This is not a real protocol transfer. 5chan recreates the post on /trash/ and removes the original.",
   "modQueue.transferRepliesNotice": "Replies are not moved. They are deleted with the original post.",
   "modQueue.transferTemporaryAccountNotice": "5chan will create a new temporary account just for this copied post, then delete it after publishing.",
-  "trash": "Trash"
+  "trash": "Trash",
+  "site_legal_meta_powered_by": "Powered by"
 }

@@ -314,7 +314,7 @@
   "download": "ดาวน์โหลด",
   "checking_for_updates": "กำลังตรวจสอบการอัปเดต...",
   "new_version_found": "พบเวอร์ชันใหม่",
-  "site_legal_meta_license_text": "5chan เป็นซอฟต์แวร์เสรีและโอเพนซอร์สภายใต้ GPL-3.0-or-later",
+  "site_legal_meta_license_text": "5chan เป็น FOSS ภายใต้ GPL-3.0-or-later",
   "community_offline_info": "บอร์ดนี้อาจออฟไลน์และการเผยแพร่อาจล้มเหลว",
   "pass_questions": "คำถาม",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "นี่ไม่ใช่การโอนย้ายจริงในระดับโปรโตคอล 5chan จะสร้างโพสต์ใหม่ใน /trash/ และลบต้นฉบับ",
   "modQueue.transferRepliesNotice": "การตอบกลับจะไม่ถูกย้าย และจะถูกลบไปพร้อมกับโพสต์ต้นฉบับ",
   "modQueue.transferTemporaryAccountNotice": "5chan จะสร้างบัญชีชั่วคราวใหม่สำหรับโพสต์ที่คัดลอกนี้เท่านั้น แล้วลบบัญชีนั้นหลังเผยแพร่",
-  "trash": "ถังขยะ"
+  "trash": "ถังขยะ",
+  "site_legal_meta_powered_by": "ขับเคลื่อนโดย"
 }

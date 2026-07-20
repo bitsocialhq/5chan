@@ -314,7 +314,7 @@
   "download": "ڈاؤن لوڈ",
   "checking_for_updates": "اپڈیٹس چیک کیے جا رہے ہیں...",
   "new_version_found": "نیا ورژن ملا",
-  "site_legal_meta_license_text": "5chan GPL-3.0-or-later کے تحت آزاد اور اوپن سورس سافٹ ویئر ہے۔",
+  "site_legal_meta_license_text": "5chan GPL-3.0-or-later کے تحت FOSS ہے۔",
   "community_offline_info": "یہ بورڈ آف لائن ہو سکتا ہے اور اشاعت ناکام ہو سکتی ہے۔",
   "pass_questions": "سوالات",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "یہ حقیقی پروٹوکول ٹرانسفر نہیں ہے۔ 5chan پوسٹ کو /trash/ میں دوبارہ بناتا ہے اور اصل پوسٹ ہٹا دیتا ہے۔",
   "modQueue.transferRepliesNotice": "جوابات منتقل نہیں ہوں گے۔ وہ اصل پوسٹ کے ساتھ حذف ہو جائیں گے۔",
   "modQueue.transferTemporaryAccountNotice": "5chan صرف اس کاپی شدہ پوسٹ کے لیے ایک نیا عارضی اکاؤنٹ بنائے گا، پھر شائع ہونے کے بعد اسے حذف کر دے گا۔",
-  "trash": "ردی"
+  "trash": "ردی",
+  "site_legal_meta_powered_by": "کے ذریعے تقویت یافتہ"
 }

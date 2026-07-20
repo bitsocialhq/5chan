@@ -314,7 +314,7 @@
   "download": "завантажити",
   "checking_for_updates": "Перевірка оновлень...",
   "new_version_found": "знайдено нову версію",
-  "site_legal_meta_license_text": "5chan — це вільне програмне забезпечення з відкритим кодом за GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "5chan — це FOSS за ліцензією GPL-3.0-or-later.",
   "community_offline_info": "Ця дошка може бути офлайн, і публікація може не вдатися.",
   "pass_questions": "Запитання",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Це не справжнє перенесення на рівні протоколу. 5chan заново створює допис у /trash/ і видаляє оригінал.",
   "modQueue.transferRepliesNotice": "Відповіді не переміщуються. Їх буде видалено разом із початковим дописом.",
   "modQueue.transferTemporaryAccountNotice": "5chan створить новий тимчасовий акаунт лише для цього скопійованого допису, а після публікації видалить його.",
-  "trash": "Кошик"
+  "trash": "Кошик",
+  "site_legal_meta_powered_by": "Працює на базі"
 }

@@ -314,7 +314,7 @@
   "download": "stáhnout",
   "checking_for_updates": "Kontroluji aktualizace...",
   "new_version_found": "nalezena nová verze",
-  "site_legal_meta_license_text": "5chan je svobodný software s otevřeným zdrojovým kódem pod licencí GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "5chan je FOSS pod licencí GPL-3.0-or-later.",
   "community_offline_info": "Tato deska může být offline a publikování může selhat.",
   "pass_questions": "Otázky",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Toto není skutečný protokolový přesun. 5chan příspěvek znovu vytvoří v /trash/ a původní odstraní.",
   "modQueue.transferRepliesNotice": "Odpovědi se nepřesunou. Budou odstraněny spolu s původním příspěvkem.",
   "modQueue.transferTemporaryAccountNotice": "5chan vytvoří nový dočasný účet jen pro tento zkopírovaný příspěvek a po zveřejnění ho smaže.",
-  "trash": "Koš"
+  "trash": "Koš",
+  "site_legal_meta_powered_by": "Používá technologii"
 }

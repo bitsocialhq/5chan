@@ -314,7 +314,7 @@
   "download": "tải xuống",
   "checking_for_updates": "Đang kiểm tra cập nhật...",
   "new_version_found": "đã tìm thấy phiên bản mới",
-  "site_legal_meta_license_text": "5chan là phần mềm miễn phí và mã nguồn mở theo GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "5chan là FOSS theo GPL-3.0-or-later.",
   "community_offline_info": "Bảng này có thể đang offline và việc xuất bản có thể thất bại.",
   "pass_questions": "Câu hỏi",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Đây không phải là chuyển bài thật ở cấp giao thức. 5chan tạo lại bài viết trong /trash/ và gỡ bài gốc.",
   "modQueue.transferRepliesNotice": "Các trả lời sẽ không được chuyển. Chúng sẽ bị xóa cùng với bài viết gốc.",
   "modQueue.transferTemporaryAccountNotice": "5chan sẽ tạo một tài khoản tạm thời mới chỉ cho bài viết được sao chép này, rồi xóa tài khoản đó sau khi đăng.",
-  "trash": "Thùng rác"
+  "trash": "Thùng rác",
+  "site_legal_meta_powered_by": "Được cung cấp bởi"
 }

@@ -314,7 +314,7 @@
   "download": "డౌన్లోడ్",
   "checking_for_updates": "నవీకరణలను తనిఖీ చేస్తోంది...",
   "new_version_found": "కొత్త వెర్షన్ కనుగొనబడింది",
-  "site_legal_meta_license_text": "5chan GPL-3.0-or-later కింద ఉచిత మరియు ఓపెన్-సోర్స్ సాఫ్ట్‌వేర్.",
+  "site_legal_meta_license_text": "5chan అనేది GPL-3.0-or-later కింద FOSS.",
   "community_offline_info": "ఈ బోర్డ్ ఆఫ్‌లైన్‌లో ఉండవచ్చు మరియు ప్రచురణ విఫలమవచ్చు.",
   "pass_questions": "ప్రశ్నలు",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "ఇది నిజమైన ప్రోటోకాల్ బదిలీ కాదు. 5chan పోస్ట్‌ను /trash/లో మళ్లీ సృష్టించి అసలుదాన్ని తొలగిస్తుంది.",
   "modQueue.transferRepliesNotice": "ప్రత్యుత్తరాలు తరలించబడవు. అవి అసలు పోస్ట్‌తో పాటు తొలగించబడతాయి.",
   "modQueue.transferTemporaryAccountNotice": "5chan ఈ కాపీ చేసిన పోస్ట్ కోసమే కొత్త తాత్కాలిక ఖాతాను సృష్టించి, ప్రచురించిన తర్వాత దాన్ని తొలగిస్తుంది.",
-  "trash": "ట్రాష్"
+  "trash": "ట్రాష్",
+  "site_legal_meta_powered_by": "ద్వారా ఆధారితం"
 }

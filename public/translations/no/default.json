@@ -314,7 +314,7 @@
   "download": "last ned",
   "checking_for_updates": "Sjekker etter oppdateringer...",
   "new_version_found": "ny versjon funnet",
-  "site_legal_meta_license_text": "5chan er fri programvare med åpen kildekode under GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "5chan er FOSS under GPL-3.0-or-later.",
   "community_offline_info": "Dette brettet kan være offline og publisering kan mislykkes.",
   "pass_questions": "Spørsmål",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Dette er ikke en ekte protokolloverføring. 5chan oppretter innlegget på nytt i /trash/ og fjerner originalen.",
   "modQueue.transferRepliesNotice": "Svar flyttes ikke. De slettes sammen med det opprinnelige innlegget.",
   "modQueue.transferTemporaryAccountNotice": "5chan oppretter en ny midlertidig konto bare for dette kopierte innlegget, og sletter den etter publisering.",
-  "trash": "Papirkurv"
+  "trash": "Papirkurv",
+  "site_legal_meta_powered_by": "Drevet av"
 }

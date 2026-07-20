@@ -314,7 +314,7 @@
   "download": "lataa",
   "checking_for_updates": "Tarkistetaan päivityksiä...",
   "new_version_found": "uusi versio löytyi",
-  "site_legal_meta_license_text": "5chan on vapaata ja avoimen lähdekoodin ohjelmistoa GPL-3.0-or-later -lisenssillä.",
+  "site_legal_meta_license_text": "5chan on FOSS-ohjelmisto GPL-3.0-or-later-lisenssillä.",
   "community_offline_info": "Tämä taulu voi olla offline-tilassa ja julkaisu voi epäonnistua.",
   "pass_questions": "Kysymykset",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Tämä ei ole oikea protokollatason siirto. 5chan luo viestin uudelleen /trash/-laudalle ja poistaa alkuperäisen.",
   "modQueue.transferRepliesNotice": "Vastauksia ei siirretä. Ne poistetaan alkuperäisen viestin mukana.",
   "modQueue.transferTemporaryAccountNotice": "5chan luo uuden väliaikaisen tilin vain tätä kopioitua viestiä varten ja poistaa sen julkaisun jälkeen.",
-  "trash": "Roskakori"
+  "trash": "Roskakori",
+  "site_legal_meta_powered_by": "Palvelun tarjoaa"
 }

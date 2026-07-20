@@ -314,7 +314,7 @@
   "download": "shkarko",
   "checking_for_updates": "Duke kontrolluar për përditësime...",
   "new_version_found": "u gjet version i ri",
-  "site_legal_meta_license_text": "5chan është softuer i lirë dhe me burim të hapur nën GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "5chan është FOSS nën GPL-3.0-or-later.",
   "community_offline_info": "Ky bord mund të jetë offline dhe publikimi mund të dështojë.",
   "pass_questions": "Pyetje",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Ky nuk është transferim i vërtetë në protokoll. 5chan e rikrijon postimin te /trash/ dhe heq origjinalin.",
   "modQueue.transferRepliesNotice": "Përgjigjet nuk zhvendosen. Ato fshihen bashkë me postimin origjinal.",
   "modQueue.transferTemporaryAccountNotice": "5chan do të krijojë një llogari të re të përkohshme vetëm për këtë postim të kopjuar, pastaj do ta fshijë pas publikimit.",
-  "trash": "Kosh"
+  "trash": "Kosh",
+  "site_legal_meta_powered_by": "Mundësuar nga"
 }

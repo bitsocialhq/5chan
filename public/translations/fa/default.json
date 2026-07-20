@@ -314,7 +314,7 @@
   "download": "بارگیری",
   "checking_for_updates": "در حال بررسی به‌روزرسانی‌ها...",
   "new_version_found": "نسخه جدید یافت شد",
-  "site_legal_meta_license_text": "5chan نرم‌افزار آزاد و متن‌باز تحت GPL-3.0-or-later است.",
+  "site_legal_meta_license_text": "5chan یک FOSS تحت GPL-3.0-or-later است.",
   "community_offline_info": "این بورد ممکن است آفلاین باشد و انتشار ممکن است با شکست مواجه شود.",
   "pass_questions": "پرسش‌ها",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "این یک انتقال واقعی در سطح پروتکل نیست. 5chan پست را در /trash/ دوباره می‌سازد و نسخه اصلی را حذف می‌کند.",
   "modQueue.transferRepliesNotice": "پاسخ‌ها منتقل نمی‌شوند. آن‌ها همراه با پست اصلی حذف می‌شوند.",
   "modQueue.transferTemporaryAccountNotice": "5chan فقط برای این پست کپی‌شده یک حساب موقت جدید می‌سازد و پس از انتشار آن را حذف می‌کند.",
-  "trash": "زباله‌دان"
+  "trash": "زباله‌دان",
+  "site_legal_meta_powered_by": "قدرت‌گرفته از"
 }

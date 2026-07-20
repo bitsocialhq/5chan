@@ -314,7 +314,7 @@
   "download": "unduh",
   "checking_for_updates": "Memeriksa pembaruan...",
   "new_version_found": "versi baru ditemukan",
-  "site_legal_meta_license_text": "5chan adalah perangkat lunak bebas dan open-source di bawah GPL-3.0-or-later.",
+  "site_legal_meta_license_text": "5chan adalah FOSS di bawah GPL-3.0-or-later.",
   "community_offline_info": "Papan ini mungkin offline dan publikasi mungkin gagal.",
   "pass_questions": "Pertanyaan",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Ini bukan transfer protokol yang sebenarnya. 5chan membuat ulang postingan di /trash/ dan menghapus yang asli.",
   "modQueue.transferRepliesNotice": "Balasan tidak dipindahkan. Balasan akan dihapus bersama postingan asli.",
   "modQueue.transferTemporaryAccountNotice": "5chan akan membuat akun sementara baru hanya untuk postingan salinan ini, lalu menghapusnya setelah dipublikasikan.",
-  "trash": "Sampah"
+  "trash": "Sampah",
+  "site_legal_meta_powered_by": "Didukung oleh"
 }

@@ -314,7 +314,7 @@
   "download": "indir",
   "checking_for_updates": "Güncellemeler kontrol ediliyor...",
   "new_version_found": "yeni sürüm bulundu",
-  "site_legal_meta_license_text": "5chan, GPL-3.0-or-later kapsamında özgür ve açık kaynaklı yazılımdır.",
+  "site_legal_meta_license_text": "5chan, GPL-3.0-or-later kapsamında FOSS'tur.",
   "community_offline_info": "Bu pano çevrimdışı olabilir ve yayınlama başarısız olabilir.",
   "pass_questions": "Sorular",
   "pass_document_title": "Pass - 5chan",
@@ -461,5 +461,6 @@
   "modQueue.transferRecreateNotice": "Bu gerçek bir protokol aktarımı değildir. 5chan gönderiyi /trash/ panosunda yeniden oluşturur ve orijinali kaldırır.",
   "modQueue.transferRepliesNotice": "Yanıtlar taşınmaz. Orijinal gönderiyle birlikte silinirler.",
   "modQueue.transferTemporaryAccountNotice": "5chan yalnızca bu kopyalanan gönderi için yeni bir geçici hesap oluşturacak, yayımladıktan sonra da silecek.",
-  "trash": "Çöp"
+  "trash": "Çöp",
+  "site_legal_meta_powered_by": "Şununla desteklenmektedir:"
 }
