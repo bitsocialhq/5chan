@@ -1,5 +1,5 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
-import { layout, layoutNextLine, prepare, prepareWithSegments } from '@chenglou/pretext';
+import { layout, layoutNextLineRange, prepare, prepareWithSegments } from '@chenglou/pretext';
 import { getCommentMediaInfo, getHasThumbnail } from './media-utils';
 import { EXPANDED_MEDIA_DATA_ATTRIBUTE } from './measurement-attributes';
 import { CATALOG_PREVIEW_MARKDOWN_OPTIONS, removeMarkdown, type RemoveMarkdownOptions } from './post-utils';
@@ -514,7 +514,7 @@ const measureParagraphWithFloatHeight = (text: string, font: string, width: numb
 
     while (true) {
       const currentLineWidth = currentHeight < safeFloatHeight ? Math.max(MIN_TEXT_WIDTH, safeWidth - safeFloatWidth) : safeWidth;
-      const line = layoutNextLine(preparedText, cursor, currentLineWidth);
+      const line = layoutNextLineRange(preparedText, cursor, currentLineWidth);
       if (line === null) {
         break;
       }
