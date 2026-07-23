@@ -102,6 +102,7 @@ const InfoBox = () => {
 
 type HomepageStats = {
   allPostCount?: number;
+  allReplyCount?: number;
   weekActiveUserCount?: number;
   state?: string;
 };
@@ -237,7 +238,7 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
       boardsLoaded++;
       if (hasLoadedStats(stats)) {
         boardsWithStats++;
-        totalPosts += stats.allPostCount || 0;
+        totalPosts += stats.allPostCount + (stats.allReplyCount ?? 0);
         currentUsers += stats.weekActiveUserCount || 0;
       }
     }

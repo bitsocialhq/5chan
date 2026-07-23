@@ -19,7 +19,7 @@ const testState = vi.hoisted(() => ({
   setStatsScopeMock: vi.fn(),
   statsScope: 'directory' as 'directory' | 'all',
   communities: {} as Record<string, unknown>,
-  communityStats: {} as Record<string, { allPostCount?: number; weekActiveUserCount?: number; state?: string }>,
+  communityStats: {} as Record<string, { allPostCount?: number; allReplyCount?: number; weekActiveUserCount?: number; state?: string }>,
   feedStateString: 'Downloading boards',
 }));
 
@@ -145,8 +145,8 @@ describe('Home', () => {
       'tech-posting.eth': { address: 'tech-posting.eth' },
     };
     testState.communityStats = {
-      'music-posting.eth': { allPostCount: 5, weekActiveUserCount: 2 },
-      'tech-posting.eth': { allPostCount: 7, weekActiveUserCount: 5 },
+      'music-posting.eth': { allPostCount: 5, allReplyCount: 3, weekActiveUserCount: 2 },
+      'tech-posting.eth': { allPostCount: 7, allReplyCount: 4, weekActiveUserCount: 5 },
     };
     testState.feedStateString = 'Downloading boards';
     testState.statsScope = 'directory';
@@ -179,7 +179,7 @@ describe('Home', () => {
     expect(container.textContent).not.toContain('loaded 2/2 boards p2p');
     expect(container.querySelector('.yellowOfflineIcon')).toBeNull();
     expect(container.querySelectorAll('[data-testid="loading-ellipsis"]')).toHaveLength(0);
-    expect(container.textContent).toContain('total_posts 12');
+    expect(container.textContent).toContain('total_posts 19');
     expect(container.textContent).toContain('current_users 7');
     expect(container.textContent).toContain('boards_loaded 2');
     expect(container.querySelector('[data-testid="site-legal-meta"]')?.textContent).toBe('site-legal-meta');
@@ -232,8 +232,8 @@ describe('Home', () => {
       },
     };
     testState.communityStats = {
-      'backup-business.bso': { allPostCount: 11, weekActiveUserCount: 3 },
-      'tech-posting.eth': { allPostCount: 7, weekActiveUserCount: 4 },
+      'backup-business.bso': { allPostCount: 11, allReplyCount: 13, weekActiveUserCount: 3 },
+      'tech-posting.eth': { allPostCount: 7, allReplyCount: 2, weekActiveUserCount: 4 },
     };
 
     renderHome();
@@ -245,7 +245,7 @@ describe('Home', () => {
     expect(container.querySelector('.yellowOfflineIcon')).not.toBeNull();
     expect(container.querySelectorAll('[data-testid="loading-ellipsis"]')).toHaveLength(0);
     expect(container.textContent).not.toContain('loaded 2/3 boards p2p');
-    expect(container.textContent).toContain('total_posts 18');
+    expect(container.textContent).toContain('total_posts 33');
     expect(container.textContent).toContain('current_users 7');
     expect(container.textContent).toContain('boards_loaded 2');
   });
