@@ -844,6 +844,16 @@ If uncertain, ask the developer before adding an entry.
 
 ## Entries
 
+### GitHub Projects are not used for repository workflow
+
+- **Date:** 2026-07-23
+- **Observed by:** Tommaso + Claude
+- **Context:** porting the `review-and-merge-pr` skill fix from `bitsocial-react-hooks` after a merged PR was finalized against a project board
+- **What was surprising:** the `review-and-merge-pr` and `make-closed-issue` skills still referenced an organization project and project item even though this repository no longer uses GitHub Projects.
+- **Impact:** agents can waste time querying a nonexistent project or report a successful merge as incomplete.
+- **Mitigation:** keep pull-request review and merge workflows independent of GitHub issues and Projects; only create or manage an issue when the user explicitly requests one.
+- **Status:** confirmed
+
 ### react-doctor score reflects React-Compiler coverage, not code health — do not chase it
 
 - **Date:** 2026-06-05
