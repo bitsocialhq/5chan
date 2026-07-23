@@ -6,6 +6,7 @@ describe('author display utils', () => {
     expect(isKnown5chanDeveloper('estebanabaroa.bso')).toBe(true);
     expect(isKnown5chanDeveloper('rinse12.bso')).toBe(true);
     expect(isKnown5chanDeveloper('bitsocialist.bso')).toBe(true);
+    expect(isKnown5chanDeveloper('plebeius.bso')).toBe(true);
     expect(isKnown5chanDeveloper('someone-else.bso')).toBe(false);
   });
 
@@ -17,6 +18,11 @@ describe('author display utils', () => {
     });
     expect(KNOWN_5CHAN_DEVELOPER_ENTRIES).toContainEqual({
       address: 'bitsocialist.bso',
+      githubProfileUrl: 'https://github.com/tomcasaburi',
+      name: 'Tommaso Casaburi',
+    });
+    expect(KNOWN_5CHAN_DEVELOPER_ENTRIES).toContainEqual({
+      address: 'plebeius.bso',
       githubProfileUrl: 'https://github.com/tomcasaburi',
       name: 'Tommaso Casaburi',
     });
