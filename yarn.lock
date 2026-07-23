@@ -10,7 +10,7 @@ __metadata:
   resolution: "5chan@workspace:."
   dependencies:
     "@bbob/parser": "npm:4.3.1"
-    "@bitsocial/bitsocial-react-hooks": "npm:0.1.30"
+    "@bitsocial/bitsocial-react-hooks": "npm:0.1.31"
     "@bitsocial/bso-resolver": "npm:0.0.10"
     "@capacitor/android": "npm:7.4.5"
     "@capacitor/app": "npm:7.0.1"
@@ -26,7 +26,7 @@ __metadata:
     "@electron-forge/maker-zip": "npm:7.8.0"
     "@electron/rebuild": "npm:3.7.2"
     "@floating-ui/react": "npm:0.26.1"
-    "@pkcprotocol/pkc-js": "npm:0.0.71"
+    "@pkcprotocol/pkc-js": "npm:0.0.72"
     "@react-spring/web": "npm:10.0.3"
     "@reforged/maker-appimage": "npm:5.1.1"
     "@ruffle-rs/ruffle": "npm:0.2.0"
@@ -1581,28 +1581,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bitsocial/bitsocial-react-hooks@npm:0.1.30":
-  version: 0.1.30
-  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.30"
+"@bitsocial/bitsocial-react-hooks@npm:0.1.31":
+  version: 0.1.31
+  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.31"
   dependencies:
     "@bitsocial/bso-resolver": "npm:0.0.10"
-    "@pkcprotocol/pkc-js": "npm:0.0.71"
+    "@pkcprotocol/pkc-js": "npm:0.0.72"
     "@pkcprotocol/pkc-logger": "npm:0.1.0"
-    assert: "npm:2.0.0"
+    assert: "npm:2.1.0"
     ethers: "npm:5.8.0"
     localforage: "npm:1.10.0"
     lodash.isequal: "npm:4.5.0"
-    memoizee: "npm:0.4.15"
+    memoizee: "npm:0.4.17"
     multiformats: "npm:13.4.2"
     peer-id: "npm:0.16.0"
     quick-lru: "npm:5.1.1"
     uint8arrays: "npm:3.1.1"
-    uuid: "npm:14.0.0"
-    viem: "npm:2.45.0"
-    zustand: "npm:4.0.0"
+    uuid: "npm:14.0.1"
+    viem: "npm:2.55.8"
+    zustand: "npm:4.5.7"
   peerDependencies:
     react: ">=16.8"
-  checksum: 10c0/da3b6d4f0bc304228dd0208e39e375c8cd16d2f11454319456a7d30c64bd8c6296dcbf867c008abd8ddd087a2091302742d539f705f4d93ef9682bc0c0453d20
+  checksum: 10c0/3bb68ebca7008dde97a93b04f745e427dc57a8eabaeeddff00bc3517fae34873d2b8e747311f2e4a3bc0b131955a1afb9f9a86f8d2c693260aebe6d0234b03ba
   languageName: node
   linkType: hard
 
@@ -6502,9 +6502,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pkcprotocol/pkc-js@npm:0.0.71":
-  version: 0.0.71
-  resolution: "@pkcprotocol/pkc-js@npm:0.0.71"
+"@pkcprotocol/pkc-js@npm:0.0.72":
+  version: 0.0.72
+  resolution: "@pkcprotocol/pkc-js@npm:0.0.72"
   dependencies:
     "@enhances/with-resolvers": "npm:0.0.5"
     "@helia/block-brokers": "npm:5.2.4"
@@ -6565,7 +6565,7 @@ __metadata:
     uuid: "npm:13.0.0"
     ws: "npm:8.20.0"
     zod: "npm:4.3.6"
-  checksum: 10c0/3f9823b9977ca45d91819f645f7b255217944a4a648ebfc53ab45da7e30f76ed8530092d4e34616960f8ec36da2a2e2fda4a19edec9d24b5a12f79b5e42d36f2
+  checksum: 10c0/b463c86257563480d570bee0a375eb0eb6c8883789c207ed11f56527303fa19e602413f4a9d8783ae14ccd518dc02a6ef921446a81febf299aa5c9f00b608824
   languageName: node
   linkType: hard
 
@@ -8263,18 +8263,6 @@ __metadata:
     pvutils: "npm:^1.1.3"
     tslib: "npm:^2.8.1"
   checksum: 10c0/7e79795edf1bcc86532c4084aa7c8c0ebc57f7dd6f964ad6de956abf617329722f6964b7af3a5d1c4554dd61b4b148ae1580e63e3ec2e70e7fba34f6df072b29
-  languageName: node
-  linkType: hard
-
-"assert@npm:2.0.0":
-  version: 2.0.0
-  resolution: "assert@npm:2.0.0"
-  dependencies:
-    es6-object-assign: "npm:^1.1.0"
-    is-nan: "npm:^1.2.1"
-    object-is: "npm:^1.0.1"
-    util: "npm:^0.12.0"
-  checksum: 10c0/a25c7ebc07b52cc4dadd5c46d73472e7d4b86e40eb7ebaa12f78c1ba954dbe83612be5dea314b862fc364c305ab3bdbcd1c9d4ec2d92bc37214ae7d5596347f3
   languageName: node
   linkType: hard
 
@@ -10843,13 +10831,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"es6-object-assign@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "es6-object-assign@npm:1.1.0"
-  checksum: 10c0/11c165ae16866aca897dee9b689402f0e871589e859809343ef9e0fdd067133684db16fd15abdba2a99e7319222b9f43e6b747baabb909cee9d0ecbac8deebee
-  languageName: node
-  linkType: hard
-
 "es6-symbol@npm:^3.1.1, es6-symbol@npm:^3.1.3":
   version: 3.1.4
   resolution: "es6-symbol@npm:3.1.4"
@@ -13357,7 +13338,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-nan@npm:^1.2.1, is-nan@npm:^1.3.2":
+"is-nan@npm:^1.3.2":
   version: 1.3.2
   resolution: "is-nan@npm:1.3.2"
   dependencies:
@@ -15341,6 +15322,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"memoizee@npm:0.4.17":
+  version: 0.4.17
+  resolution: "memoizee@npm:0.4.17"
+  dependencies:
+    d: "npm:^1.0.2"
+    es5-ext: "npm:^0.10.64"
+    es6-weak-map: "npm:^2.0.3"
+    event-emitter: "npm:^0.3.5"
+    is-promise: "npm:^2.2.2"
+    lru-queue: "npm:^0.1.0"
+    next-tick: "npm:^1.1.0"
+    timers-ext: "npm:^0.1.7"
+  checksum: 10c0/19821d055f0f641e79b718f91d6d89a6c92840643234a6f4e91d42aa330e8406f06c47d3828931e177c38830aa9b959710e5b7f0013be452af46d0f9eae4baf4
+  languageName: node
+  linkType: hard
+
 "meow@npm:^12.0.1":
   version: 12.1.1
   resolution: "meow@npm:12.1.1"
@@ -16216,7 +16213,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"object-is@npm:^1.0.1, object-is@npm:^1.1.5":
+"object-is@npm:^1.1.5":
   version: 1.1.6
   resolution: "object-is@npm:1.1.6"
   dependencies:
@@ -16357,27 +16354,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ox@npm:0.11.3":
-  version: 0.11.3
-  resolution: "ox@npm:0.11.3"
-  dependencies:
-    "@adraffy/ens-normalize": "npm:^1.11.0"
-    "@noble/ciphers": "npm:^1.3.0"
-    "@noble/curves": "npm:1.9.1"
-    "@noble/hashes": "npm:^1.8.0"
-    "@scure/bip32": "npm:^1.7.0"
-    "@scure/bip39": "npm:^1.6.0"
-    abitype: "npm:^1.2.3"
-    eventemitter3: "npm:5.0.1"
-  peerDependencies:
-    typescript: ">=5.4.0"
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: 10c0/aab488bb5ff2e9c9d688f4044ebceb5efc4f62e71c19c2813d1ba93509dfcf618c7c97dd06ed867843340ac9744911ef3f3a4504850711a67f220f94aa9d8feb
-  languageName: node
-  linkType: hard
-
 "ox@npm:0.14.30":
   version: 0.14.30
   resolution: "ox@npm:0.14.30"
@@ -16396,6 +16372,27 @@ __metadata:
     typescript:
       optional: true
   checksum: 10c0/dfefa9218269103b3da3686c4da62849aef15e4347fd21f898fa113d9b4c2b86afab7c662c94d58206257736202647ce96249405c021c4a233712ac34fa3cc1b
+  languageName: node
+  linkType: hard
+
+"ox@npm:0.14.32":
+  version: 0.14.32
+  resolution: "ox@npm:0.14.32"
+  dependencies:
+    "@adraffy/ens-normalize": "npm:^1.11.0"
+    "@noble/ciphers": "npm:^1.3.0"
+    "@noble/curves": "npm:1.9.1"
+    "@noble/hashes": "npm:^1.8.0"
+    "@scure/bip32": "npm:^1.7.0"
+    "@scure/bip39": "npm:^1.6.0"
+    abitype: "npm:^1.2.3"
+    eventemitter3: "npm:5.0.1"
+  peerDependencies:
+    typescript: ">=5.4.0"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 10c0/e07c0b18f967f93bf9b52dd5f00cd72db38be435f06cb16e7852c08cc6f05730c031a3ae5dbe058682160ec25b8a8664df334e28fe0677f7848abd0b9a9b59f0
   languageName: node
   linkType: hard
 
@@ -20814,7 +20811,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"util@npm:^0.12.0, util@npm:^0.12.5":
+"util@npm:^0.12.5":
   version: 0.12.5
   resolution: "util@npm:0.12.5"
   dependencies:
@@ -20833,6 +20830,15 @@ __metadata:
   bin:
     uuid: dist-node/bin/uuid
   checksum: 10c0/a57ae7794c45005c1a9208989196c5baf79a7679c30f43c1bee9033a2c4d113a2cea216fa6fcc9663b08b0d55635df1a7c6eb7e7f3d21c3e50688c698fa39a50
+  languageName: node
+  linkType: hard
+
+"uuid@npm:14.0.1":
+  version: 14.0.1
+  resolution: "uuid@npm:14.0.1"
+  bin:
+    uuid: dist-node/bin/uuid
+  checksum: 10c0/2d961289097cb68c37d93d1da0b5c3aafc1eb9948a455cca8d0ae53a099b2fe583b8933254a84097f700e6bac2e23033364904df0467c22551d5d9611febcaf6
   languageName: node
   linkType: hard
 
@@ -20860,27 +20866,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:2.45.0":
-  version: 2.45.0
-  resolution: "viem@npm:2.45.0"
-  dependencies:
-    "@noble/curves": "npm:1.9.1"
-    "@noble/hashes": "npm:1.8.0"
-    "@scure/bip32": "npm:1.7.0"
-    "@scure/bip39": "npm:1.6.0"
-    abitype: "npm:1.2.3"
-    isows: "npm:1.0.7"
-    ox: "npm:0.11.3"
-    ws: "npm:8.18.3"
-  peerDependencies:
-    typescript: ">=5.0.4"
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: 10c0/099c73d2980493a372d7c91d7593c62c9bb534a91293f6ae308a88292e16a4c89301db8899fec98597a9e6ee51f02bd9ed857f498946b2ee905c9cae00e5289d
-  languageName: node
-  linkType: hard
-
 "viem@npm:2.55.1":
   version: 2.55.1
   resolution: "viem@npm:2.55.1"
@@ -20899,6 +20884,27 @@ __metadata:
     typescript:
       optional: true
   checksum: 10c0/4747450c511604dc2280b94b6a6eab53638058a559531f7707d31f21de51670449530f9ebc2fbc06d961b8b5a6cfadb920683e701058adc8996619b012bbc56d
+  languageName: node
+  linkType: hard
+
+"viem@npm:2.55.8":
+  version: 2.55.8
+  resolution: "viem@npm:2.55.8"
+  dependencies:
+    "@noble/curves": "npm:1.9.1"
+    "@noble/hashes": "npm:1.8.0"
+    "@scure/bip32": "npm:1.7.0"
+    "@scure/bip39": "npm:1.6.0"
+    abitype: "npm:1.2.3"
+    isows: "npm:1.0.7"
+    ox: "npm:0.14.32"
+    ws: "npm:8.21.0"
+  peerDependencies:
+    typescript: ">=5.0.4"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 10c0/30457ab22c174e02680831f841cd27ba806346ea2099e6b091a53bb46f0bcd6406d93704ef1d91be0d21fd367e38fe81573a9a89a84906e469bdb9c12be7a0bb
   languageName: node
   linkType: hard
 
@@ -21840,23 +21846,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zustand@npm:4.0.0":
-  version: 4.0.0
-  resolution: "zustand@npm:4.0.0"
-  dependencies:
-    use-sync-external-store: "npm:1.2.0"
-  peerDependencies:
-    immer: ">=9.0"
-    react: ">=16.8"
-  peerDependenciesMeta:
-    immer:
-      optional: true
-    react:
-      optional: true
-  checksum: 10c0/b56c85068499370082da1dce050ece55ffbdd44513f97f16ddd119a62198e8068571c92b57174bae8430a1ab637650322884094aee4ca43c9f6d88d60154d08a
-  languageName: node
-  linkType: hard
-
 "zustand@npm:4.4.3":
   version: 4.4.3
   resolution: "zustand@npm:4.4.3"
@@ -21874,5 +21863,25 @@ __metadata:
     react:
       optional: true
   checksum: 10c0/39a3d7928dbffd644ade553e2bd0a41c007d49e3f933156e21c02a8eaea2a39ef6c633bc1f4aa33dccecba12077e551f27a1138ba06f6d61b393225f214ded25
+  languageName: node
+  linkType: hard
+
+"zustand@npm:4.5.7":
+  version: 4.5.7
+  resolution: "zustand@npm:4.5.7"
+  dependencies:
+    use-sync-external-store: "npm:^1.2.2"
+  peerDependencies:
+    "@types/react": ">=16.8"
+    immer: ">=9.0.6"
+    react: ">=16.8"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    immer:
+      optional: true
+    react:
+      optional: true
+  checksum: 10c0/55559e37a82f0c06cadc61cb08f08314c0fe05d6a93815e41e3376130c13db22a5017cbb0cd1f018c82f2dad0051afe3592561d40f980bd4082e32005e8a950c
   languageName: node
   linkType: hard

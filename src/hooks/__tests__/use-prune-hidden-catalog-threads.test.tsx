@@ -3,8 +3,8 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
-import communitiesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities';
-import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
+import communitiesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities/index.js';
+import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages/index.js';
 import usePruneHiddenCatalogThreads from '../use-prune-hidden-catalog-threads';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
