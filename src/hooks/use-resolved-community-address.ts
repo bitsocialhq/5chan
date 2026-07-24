@@ -7,6 +7,7 @@ import useCommunityOfflineStore from '../stores/use-community-offline-store';
 import { areSameBoardAddress, getCommunityAddress, getBoardPath, isDirectoryRoute } from '../lib/utils/route-utils';
 import { isCommunityKnownOffline } from '../lib/utils/community-freshness-utils';
 import { communitiesStore as useCommunitiesStore } from '../lib/bitsocial-internals/stores';
+import { getDirectoryCandidateBoardByAddress } from '../lib/utils/directory-list-lookup-utils';
 import { useNowSeconds } from './use-now-seconds';
 
 interface ResolvedDirectoryBoardPath {
@@ -29,12 +30,28 @@ const getCommunitySyncState = (
   }
 
   const normalizedAddress = normalizeBoardAddress(communityAddress);
-  const matchingKey = Object.entries(communities || {}).find(([key, community]) => {
+  for (const [key, community] of Object.entries(communities || {})) {
     const storedIdentifiers = [key, community?.address, community?.name, community?.publicKey];
-    return storedIdentifiers.some((identifier) => identifier && normalizeBoardAddress(identifier) === normalizedAddress);
-  })?.[0];
+    const matchesAddress = storedIdentifiers.some((identifier) => identifier && normalizeBoardAddress(identifier) === normalizedAddress);
+    if (!matchesAddress) continue;
 
-  return matchingKey ? syncStatuses?.[matchingKey]?.syncState : undefined;
+    for (const identifier of storedIdentifiers) {
+      if (identifier && syncStatuses?.[identifier]) {
+        return syncStatuses[identifier]?.syncState;
+      }
+    }
+  }
+
+  return undefined;
+};
+
+const getDirectoryBoardSyncState = (
+  communities: StoredCommunities | undefined,
+  syncStatuses: CommunitySyncStatuses | undefined,
+  board: DirectoryListBoard,
+): CommunitySyncState | undefined => {
+  const publicKey = board.publicKey ?? getDirectoryCandidateBoardByAddress(board.address)?.publicKey;
+  return getCommunitySyncState(communities, syncStatuses, board.address, publicKey);
 };
 
 /**
@@ -62,7 +79,7 @@ export const useResolvedCommunityAddress = (boardIdentifierOverride?: string): s
         isCommunityKnownOffline(
           {
             ...offlineStates?.[board.address],
-            syncState: getCommunitySyncState(communities, syncStatuses, board.address, board.publicKey),
+            syncState: getDirectoryBoardSyncState(communities, syncStatuses, board),
           },
           nowSeconds,
         );
@@ -100,7 +117,7 @@ export const useResolvedDirectoryBoardPath = (boardIdentifier: string | undefine
       isCommunityKnownOffline(
         {
           ...offlineStates?.[board.address],
-          syncState: getCommunitySyncState(communities, syncStatuses, board.address, board.publicKey),
+          syncState: getDirectoryBoardSyncState(communities, syncStatuses, board),
         },
         nowSeconds,
       );
