@@ -25,8 +25,7 @@ const ImageBanner = () => {
   return <img src={banner} alt='' />;
 };
 
-// Separate component for offline indicator to isolate rerenders from updatingState
-// Only this component will rerender when updatingState changes, not the whole BoardHeader
+// Separate component for offline indicator to isolate rerenders from sync lifecycle changes.
 const OfflineIndicator = ({ communityAddress }: { communityAddress: string | undefined }) => {
   const communityIdentifier = useCommunityIdentifier(communityAddress);
   const community = useCommunity(communityIdentifier ? { community: communityIdentifier } : undefined);

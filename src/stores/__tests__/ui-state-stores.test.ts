@@ -56,25 +56,22 @@ describe('ui state stores', () => {
     expect(store.getState().communityOfflineState['music-posting.eth']).toEqual({ initialLoad: true });
 
     store.getState().setCommunityOfflineState('music-posting.eth', {
-      state: 'offline',
+      state: 'succeeded',
       updatedAt: 123,
-      updatingState: 'recovering',
     });
 
     expect(store.getState().communityOfflineState['music-posting.eth']).toEqual({
       initialLoad: true,
-      state: 'offline',
+      state: 'succeeded',
       updatedAt: 123,
-      updatingState: 'recovering',
     });
 
     vi.advanceTimersByTime(30_000);
 
     expect(store.getState().communityOfflineState['music-posting.eth']).toEqual({
       initialLoad: false,
-      state: 'offline',
+      state: 'succeeded',
       updatedAt: 123,
-      updatingState: 'recovering',
     });
   });
 });

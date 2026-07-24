@@ -2,6 +2,7 @@ import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CommunitySyncState } from '@bitsocial/bitsocial-react-hooks';
 import { useResolvedCommunityAddress, useResolvedDirectoryBoardPath } from '../use-resolved-community-address';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -20,11 +21,13 @@ const testState = vi.hoisted(() => ({
   list: {
     directoryCode: 'biz',
     boards: [
-      { address: 'business-and-finance.bso', score: 100 },
+      { address: 'business-and-finance.bso', publicKey: '12D3KooWBusiness', score: 100 },
       { address: 'bizraelis.bso', score: 10 },
     ],
   },
   offlineStates: {} as Record<string, { updatedAt?: number; state?: string }>,
+  communities: {} as Record<string, { address?: string; name?: string; publicKey?: string }>,
+  syncStatuses: {} as Record<string, { syncState: CommunitySyncState }>,
   offlineSelections: [] as unknown[],
 }));
 
@@ -57,6 +60,14 @@ vi.mock('../../stores/use-community-offline-store', () => ({
   },
 }));
 
+vi.mock('../../lib/bitsocial-internals/stores', () => ({
+  communitiesStore: <T,>(selector: (state: { communities: typeof testState.communities; syncStatuses: typeof testState.syncStatuses }) => T) =>
+    selector({
+      communities: testState.communities,
+      syncStatuses: testState.syncStatuses,
+    }),
+}));
+
 let latestValue: string | undefined;
 let latestDirectoryBoardPath: { boardPath: string | undefined; isDirectoryCandidate: boolean };
 let container: HTMLDivElement;
@@ -83,6 +94,8 @@ describe('useResolvedCommunityAddress', () => {
     testState.boardIdentifier = 'biz';
     testState.boardIdentifierOverride = undefined;
     testState.offlineStates = {};
+    testState.communities = {};
+    testState.syncStatuses = {};
     testState.offlineSelections = [];
 
     container = document.createElement('div');
@@ -118,6 +131,35 @@ describe('useResolvedCommunityAddress', () => {
     await renderHook();
 
     expect(latestValue).toBe('business-and-finance.bso');
+  });
+
+  it('skips a stale higher-ranked directory board while its synchronization retries', async () => {
+    testState.offlineStates = {
+      'business-and-finance.bso': {
+        updatedAt: 1_704_067_210 - 31 * 60,
+      },
+    };
+    testState.syncStatuses = {
+      '12D3KooWBusiness': {
+        syncState: 'loading',
+      },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('bizraelis.bso');
+  });
+
+  it('skips a higher-ranked directory board when its first synchronization fails by public key', async () => {
+    testState.syncStatuses = {
+      '12D3KooWBusiness': {
+        syncState: 'failed',
+      },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('bizraelis.bso');
   });
 
   it('does not subscribe to offline state on non-directory board routes', async () => {

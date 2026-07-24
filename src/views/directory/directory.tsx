@@ -33,6 +33,7 @@ const computeBoardStatus = (
 ): 'online' | 'offline' | 'loading' | 'unknown' => {
   const freshnessState = {
     state: communityState?.state ?? offlineState?.state,
+    syncState: communityState?.syncState,
     updatedAt: communityState?.updatedAt ?? offlineState?.updatedAt,
   };
 

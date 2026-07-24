@@ -1,18 +1,20 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
-import { Community } from '@bitsocial/bitsocial-react-hooks';
+import type { Community, UseCommunityResult } from '@bitsocial/bitsocial-react-hooks';
 import { getFormattedTimeAgo } from '../lib/utils/time-utils';
 import useCommunityOfflineStore from '../stores/use-community-offline-store';
 import useCommunitiesLoadingStartTimestamps from '../stores/use-communities-loading-start-timestamps-store';
-import { isCommunityUpdateStale } from '../lib/utils/community-freshness-utils';
+import { isCommunitySyncLoading, isCommunityUpdateStale } from '../lib/utils/community-freshness-utils';
 import { useNowSeconds } from './use-now-seconds';
 
-const getCommunityOfflineKey = (community?: Community, communityAddressHint?: string) =>
+type CommunityWithSyncLifecycle = Community & Partial<Pick<UseCommunityResult, 'syncState' | 'hasCachedData'>>;
+
+const getCommunityOfflineKey = (community?: CommunityWithSyncLifecycle, communityAddressHint?: string) =>
   communityAddressHint || community?.address || community?.name || community?.publicKey;
 
-const useIsCommunityOffline = (community?: Community | undefined, communityAddressHint?: string) => {
+const useIsCommunityOffline = (community?: CommunityWithSyncLifecycle | undefined, communityAddressHint?: string) => {
   const { t } = useTranslation();
-  const { state, updatedAt, updatingState } = community || {};
+  const { state, syncState, hasCachedData, updatedAt } = community || {};
   const communityKey = getCommunityOfflineKey(community, communityAddressHint);
   const nowSeconds = useNowSeconds(!!communityKey);
   const { communityOfflineState, setCommunityOfflineState, initializeCommunityOfflineState } = useCommunityOfflineStore();
@@ -26,9 +28,9 @@ const useIsCommunityOffline = (community?: Community | undefined, communityAddre
 
   useEffect(() => {
     if (communityKey) {
-      setCommunityOfflineState(communityKey, { state, updatedAt, updatingState });
+      setCommunityOfflineState(communityKey, { state, updatedAt });
     }
-  }, [communityKey, state, updatedAt, updatingState, setCommunityOfflineState]);
+  }, [communityKey, state, updatedAt, setCommunityOfflineState]);
 
   if (!communityKey) {
     return { isOffline: false, isOnlineStatusLoading: false, offlineIconClass: '', offlineTitle: false };
@@ -37,10 +39,13 @@ const useIsCommunityOffline = (community?: Community | undefined, communityAddre
   const offlineState = communityOfflineState[communityKey] || { initialLoad: true };
   const loadingStartTimestamp = communitiesLoadingStartTimestamps[0] || 0;
   const isStale = isCommunityUpdateStale(updatedAt, nowSeconds);
-  const isLoading = offlineState.initialLoad && (!updatedAt || isStale) && nowSeconds - loadingStartTimestamp < 30;
-  const isOffline = !isLoading && (isStale || (!updatedAt && nowSeconds - loadingStartTimestamp >= 30));
+  const hasUsableCachedData = (hasCachedData ?? typeof updatedAt === 'number') && updatedAt !== undefined;
+  const isOnline = hasUsableCachedData && !isStale;
+  const hasFailed = syncState === 'failed' || (!syncState && state === 'failed');
+  const isFallbackLoading = !syncState && offlineState.initialLoad && nowSeconds - loadingStartTimestamp < 30;
+  const isLoading = !isOnline && !isStale && !hasFailed && (isCommunitySyncLoading(syncState) || isFallbackLoading);
+  const isOffline = !isOnline && !isLoading && (hasFailed || isStale || (!hasUsableCachedData && nowSeconds - loadingStartTimestamp >= 30));
 
-  const isOnline = updatedAt && !isStale;
   const offlineIconClass = isLoading ? 'yellowOfflineIcon' : isOffline ? 'redOfflineIcon' : '';
 
   const offlineTitle = isLoading
@@ -49,7 +54,7 @@ const useIsCommunityOffline = (community?: Community | undefined, communityAddre
       ? isOffline && t('posts_last_synced_info', { time: getFormattedTimeAgo(updatedAt), interpolation: { escapeValue: false } })
       : t('community_offline_info');
 
-  return { isOffline: !isOnline && isOffline, isOnlineStatusLoading: !isOnline && isLoading, offlineIconClass, offlineTitle };
+  return { isOffline, isOnlineStatusLoading: isLoading, offlineIconClass, offlineTitle };
 };
 
 export default useIsCommunityOffline;

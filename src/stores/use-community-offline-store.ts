@@ -3,7 +3,6 @@ import { create } from 'zustand';
 interface CommunityOfflineState {
   state?: string;
   updatedAt?: number;
-  updatingState?: string;
   initialLoad: boolean;
 }
 
