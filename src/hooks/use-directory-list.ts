@@ -322,9 +322,9 @@ export const useDirectoryLists = (directoryCodes: string[] | undefined): Directo
  * Returns the highest-ranked online board, or — if every candidate looks offline —
  * the highest-ranked board anyway, so the user still lands somewhere.
  */
-export const pickDirectoryWinner = (boards: DirectoryListBoard[], isOffline: (address: string) => boolean): DirectoryListBoard | undefined => {
+export const pickDirectoryWinner = (boards: DirectoryListBoard[], isOffline: (board: DirectoryListBoard) => boolean): DirectoryListBoard | undefined => {
   const ranked = sortDirectoryBoardsByRank(boards);
-  return ranked.find((board) => !isOffline(board.address)) ?? ranked[0];
+  return ranked.find((board) => !isOffline(board)) ?? ranked[0];
 };
 
 export { sortDirectoryBoardsByRank };

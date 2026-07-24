@@ -1,16 +1,103 @@
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { useDirectories } from './use-directories';
-import { getDirectoryCodeForBoardAddress, pickDirectoryWinner, useDirectoryList } from './use-directory-list';
+import type { CommunitySyncState } from '@bitsocial/bitsocial-react-hooks';
+import { normalizeBoardAddress, useDirectories } from './use-directories';
+import { getDirectoryCodeForBoardAddress, pickDirectoryWinner, useDirectoryList, type DirectoryListBoard } from './use-directory-list';
 import useCommunityOfflineStore from '../stores/use-community-offline-store';
 import { areSameBoardAddress, getCommunityAddress, getBoardPath, isDirectoryRoute } from '../lib/utils/route-utils';
-import { isCommunityKnownOffline } from '../lib/utils/community-freshness-utils';
+import { isCommunityKnownOffline, type CommunityFreshnessState } from '../lib/utils/community-freshness-utils';
+import { communitiesStore as useCommunitiesStore } from '../lib/bitsocial-internals/stores';
+import { getDirectoryCandidateBoardByAddress } from '../lib/utils/directory-list-lookup-utils';
 import { useNowSeconds } from './use-now-seconds';
 
 interface ResolvedDirectoryBoardPath {
   boardPath: string | undefined;
   isDirectoryCandidate: boolean;
 }
+
+interface StoredCommunity {
+  address?: string;
+  name?: string;
+  publicKey?: string;
+  state?: string;
+  updatedAt?: number;
+}
+
+type StoredCommunities = Record<string, StoredCommunity | undefined>;
+type CommunitySyncStatuses = Record<string, { syncState: CommunitySyncState } | undefined>;
+
+interface CommunityLifecycleState {
+  state?: string;
+  syncState?: CommunitySyncState;
+  updatedAt?: number;
+}
+
+const getCommunityLifecycleState = (
+  communities: StoredCommunities | undefined,
+  syncStatuses: CommunitySyncStatuses | undefined,
+  communityAddress: string,
+  communityPublicKey?: string,
+): CommunityLifecycleState => {
+  const directSyncStatus = (communityPublicKey && syncStatuses?.[communityPublicKey]) || syncStatuses?.[communityAddress];
+  let syncState = directSyncStatus?.syncState;
+  let matchedCommunity: StoredCommunity | undefined;
+  const normalizedAddress = normalizeBoardAddress(communityAddress);
+
+  for (const [key, community] of Object.entries(communities || {})) {
+    const storedIdentifiers = [key, community?.address, community?.name, community?.publicKey];
+    const matchesCommunity =
+      (communityPublicKey && storedIdentifiers.includes(communityPublicKey)) ||
+      storedIdentifiers.some((identifier) => identifier && normalizeBoardAddress(identifier) === normalizedAddress);
+    if (!matchesCommunity) continue;
+
+    if (
+      community &&
+      (!matchedCommunity || (community.updatedAt !== undefined && (matchedCommunity.updatedAt === undefined || community.updatedAt > matchedCommunity.updatedAt)))
+    ) {
+      matchedCommunity = community;
+    }
+
+    if (!syncState) {
+      for (const identifier of storedIdentifiers) {
+        if (identifier && syncStatuses?.[identifier]) {
+          syncState = syncStatuses[identifier]?.syncState;
+          break;
+        }
+      }
+    }
+  }
+
+  return {
+    state: matchedCommunity?.state,
+    syncState,
+    updatedAt: matchedCommunity?.updatedAt,
+  };
+};
+
+const getDirectoryBoardLifecycleState = (
+  communities: StoredCommunities | undefined,
+  syncStatuses: CommunitySyncStatuses | undefined,
+  board: DirectoryListBoard,
+): CommunityLifecycleState => {
+  const publicKey = board.publicKey ?? getDirectoryCandidateBoardByAddress(board.address)?.publicKey;
+  return getCommunityLifecycleState(communities, syncStatuses, board.address, publicKey);
+};
+
+const getDirectoryBoardFreshnessState = (
+  communities: StoredCommunities | undefined,
+  syncStatuses: CommunitySyncStatuses | undefined,
+  offlineState: CommunityFreshnessState | undefined,
+  board: DirectoryListBoard,
+): CommunityFreshnessState => {
+  const lifecycleState = getDirectoryBoardLifecycleState(communities, syncStatuses, board);
+  const updatedAts = [lifecycleState.updatedAt, offlineState?.updatedAt].filter((updatedAt): updatedAt is number => updatedAt !== undefined);
+
+  return {
+    state: lifecycleState.state === 'failed' || offlineState?.state === 'failed' ? 'failed' : (lifecycleState.state ?? offlineState?.state),
+    syncState: lifecycleState.syncState,
+    updatedAt: updatedAts.length > 0 ? Math.max(...updatedAts) : undefined,
+  };
+};
 
 /**
  * Resolve a board identifier to its canonical community address.
@@ -26,17 +113,20 @@ export const useResolvedCommunityAddress = (boardIdentifierOverride?: string): s
   const isCode = !!boardIdentifier && isDirectoryRoute(boardIdentifier, directories);
   const { list } = useDirectoryList(isCode ? boardIdentifier : undefined);
   const offlineStates = useCommunityOfflineStore((state) => (isCode ? state.communityOfflineState : undefined));
+  const communities = useCommunitiesStore((state) => (isCode ? state.communities : undefined));
+  const syncStatuses = useCommunitiesStore((state) => (isCode ? state.syncStatuses : undefined));
   const nowSeconds = useNowSeconds(isCode);
 
   return useMemo(() => {
     if (!boardIdentifier) return undefined;
     if (isCode && list && list.boards.length > 0) {
-      const isOffline = (address: string) => isCommunityKnownOffline(offlineStates?.[address], nowSeconds);
+      const isOffline = (board: DirectoryListBoard) =>
+        isCommunityKnownOffline(getDirectoryBoardFreshnessState(communities, syncStatuses, offlineStates?.[board.address], board), nowSeconds);
       const winner = pickDirectoryWinner(list.boards, isOffline);
       if (winner) return winner.address;
     }
     return getCommunityAddress(boardIdentifier, directories);
-  }, [boardIdentifier, directories, isCode, list, offlineStates, nowSeconds]);
+  }, [boardIdentifier, communities, directories, isCode, list, offlineStates, nowSeconds, syncStatuses]);
 };
 
 /**
@@ -49,6 +139,8 @@ export const useResolvedDirectoryBoardPath = (boardIdentifier: string | undefine
   const directoryCode = useMemo(() => (boardIdentifier && !isCode ? getDirectoryCodeForBoardAddress(boardIdentifier) : undefined), [boardIdentifier, isCode]);
   const { list } = useDirectoryList(directoryCode);
   const offlineStates = useCommunityOfflineStore((state) => (directoryCode ? state.communityOfflineState : undefined));
+  const communities = useCommunitiesStore((state) => (directoryCode ? state.communities : undefined));
+  const syncStatuses = useCommunitiesStore((state) => (directoryCode ? state.syncStatuses : undefined));
   const nowSeconds = useNowSeconds(!!directoryCode);
 
   return useMemo(() => {
@@ -60,14 +152,15 @@ export const useResolvedDirectoryBoardPath = (boardIdentifier: string | undefine
       return { boardPath: undefined, isDirectoryCandidate: true };
     }
 
-    const isOffline = (address: string) => isCommunityKnownOffline(offlineStates?.[address], nowSeconds);
+    const isOffline = (board: DirectoryListBoard) =>
+      isCommunityKnownOffline(getDirectoryBoardFreshnessState(communities, syncStatuses, offlineStates?.[board.address], board), nowSeconds);
     const winner = pickDirectoryWinner(list.boards, isOffline);
 
     return {
       boardPath: winner && areSameBoardAddress(winner.address, boardIdentifier) ? directoryCode : undefined,
       isDirectoryCandidate: true,
     };
-  }, [boardIdentifier, directoryCode, list, offlineStates, nowSeconds]);
+  }, [boardIdentifier, communities, directoryCode, list, offlineStates, nowSeconds, syncStatuses]);
 };
 
 /**

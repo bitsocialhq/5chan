@@ -3,7 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages';
+import communitiesPagesStore from '@bitsocial/bitsocial-react-hooks/dist/stores/communities-pages/index.js';
 import Board, { type BoardProps } from '../board';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
 import { clearStableLastVisitTimeFilterName, LAST_VISIT_STORAGE_KEY } from '../../../lib/utils/time-filter-utils';

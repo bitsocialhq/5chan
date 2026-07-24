@@ -2,6 +2,7 @@ import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CommunitySyncState } from '@bitsocial/bitsocial-react-hooks';
 import { useResolvedCommunityAddress, useResolvedDirectoryBoardPath } from '../use-resolved-community-address';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -20,11 +21,14 @@ const testState = vi.hoisted(() => ({
   list: {
     directoryCode: 'biz',
     boards: [
-      { address: 'business-and-finance.bso', score: 100 },
+      { address: 'business-and-finance.bso', publicKey: '12D3KooWBusiness', score: 100 },
       { address: 'bizraelis.bso', score: 10 },
     ],
   },
   offlineStates: {} as Record<string, { updatedAt?: number; state?: string }>,
+  communities: {} as Record<string, { address?: string; name?: string; publicKey?: string; state?: string; updatedAt?: number }>,
+  syncStatuses: {} as Record<string, { syncState: CommunitySyncState }>,
+  candidatePublicKeys: {} as Record<string, string | undefined>,
   offlineSelections: [] as unknown[],
 }));
 
@@ -57,6 +61,25 @@ vi.mock('../../stores/use-community-offline-store', () => ({
   },
 }));
 
+vi.mock('../../lib/bitsocial-internals/stores', () => ({
+  communitiesStore: <T,>(selector: (state: { communities: typeof testState.communities; syncStatuses: typeof testState.syncStatuses }) => T) =>
+    selector({
+      communities: testState.communities,
+      syncStatuses: testState.syncStatuses,
+    }),
+}));
+
+vi.mock('../../lib/utils/directory-list-lookup-utils', async () => {
+  const actual = await vi.importActual<typeof import('../../lib/utils/directory-list-lookup-utils')>('../../lib/utils/directory-list-lookup-utils');
+  return {
+    ...actual,
+    getDirectoryCandidateBoardByAddress: (address: string) => {
+      const publicKey = testState.candidatePublicKeys[address];
+      return publicKey ? { address, publicKey } : undefined;
+    },
+  };
+});
+
 let latestValue: string | undefined;
 let latestDirectoryBoardPath: { boardPath: string | undefined; isDirectoryCandidate: boolean };
 let container: HTMLDivElement;
@@ -82,7 +105,14 @@ describe('useResolvedCommunityAddress', () => {
     latestDirectoryBoardPath = { boardPath: undefined, isDirectoryCandidate: false };
     testState.boardIdentifier = 'biz';
     testState.boardIdentifierOverride = undefined;
+    testState.list.boards = [
+      { address: 'business-and-finance.bso', publicKey: '12D3KooWBusiness', score: 100 },
+      { address: 'bizraelis.bso', score: 10 },
+    ];
     testState.offlineStates = {};
+    testState.communities = {};
+    testState.syncStatuses = {};
+    testState.candidatePublicKeys = {};
     testState.offlineSelections = [];
 
     container = document.createElement('div');
@@ -118,6 +148,149 @@ describe('useResolvedCommunityAddress', () => {
     await renderHook();
 
     expect(latestValue).toBe('business-and-finance.bso');
+  });
+
+  it('skips a stale higher-ranked directory board while its synchronization retries', async () => {
+    testState.offlineStates = {
+      'business-and-finance.bso': {
+        updatedAt: 1_704_067_210 - 31 * 60,
+      },
+    };
+    testState.syncStatuses = {
+      '12D3KooWBusiness': {
+        syncState: 'loading',
+      },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('bizraelis.bso');
+  });
+
+  it('skips a higher-ranked directory board when its first synchronization fails by public key', async () => {
+    testState.syncStatuses = {
+      '12D3KooWBusiness': {
+        syncState: 'failed',
+      },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('bizraelis.bso');
+  });
+
+  it('keeps a fresh cached winner when a later synchronization fails', async () => {
+    testState.communities = {
+      '12D3KooWBusiness': {
+        address: '12D3KooWBusiness',
+        name: 'business-and-finance.bso',
+        publicKey: '12D3KooWBusiness',
+        state: 'succeeded',
+        updatedAt: 1_704_067_210 - 60,
+      },
+    };
+    testState.syncStatuses = {
+      '12D3KooWBusiness': {
+        syncState: 'failed',
+      },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('business-and-finance.bso');
+  });
+
+  it('uses the freshest timestamp across matching cached aliases and the offline mirror', async () => {
+    testState.offlineStates = {
+      'business-and-finance.bso': {
+        updatedAt: 1_704_067_210 - 31 * 60,
+      },
+    };
+    testState.communities = {
+      'business-and-finance.bso': {
+        address: 'business-and-finance.bso',
+        name: 'business-and-finance.bso',
+        publicKey: '12D3KooWBusiness',
+        updatedAt: 1_704_067_210 - 31 * 60,
+      },
+      '12D3KooWBusiness': {
+        address: '12D3KooWBusiness',
+        name: 'business-and-finance.bso',
+        publicKey: '12D3KooWBusiness',
+        updatedAt: 1_704_067_210 - 60,
+      },
+    };
+    testState.syncStatuses = {
+      '12D3KooWBusiness': {
+        syncState: 'failed',
+      },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('business-and-finance.bso');
+  });
+
+  it('treats a zero cached timestamp as stale while synchronization retries', async () => {
+    testState.communities = {
+      '12D3KooWBusiness': {
+        address: '12D3KooWBusiness',
+        name: 'business-and-finance.bso',
+        publicKey: '12D3KooWBusiness',
+        updatedAt: 0,
+      },
+    };
+    testState.syncStatuses = {
+      '12D3KooWBusiness': {
+        syncState: 'retrying',
+      },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('bizraelis.bso');
+  });
+
+  it('uses a cached community public key when the directory list only has its address', async () => {
+    testState.list.boards = [
+      { address: 'business-and-finance.bso', score: 100 },
+      { address: 'bizraelis.bso', score: 10 },
+    ];
+    testState.communities = {
+      'business-and-finance.bso': {
+        address: 'business-and-finance.bso',
+        name: 'business-and-finance.bso',
+        publicKey: '12D3KooWBusiness',
+      },
+    };
+    testState.syncStatuses = {
+      '12D3KooWBusiness': {
+        syncState: 'failed',
+      },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('bizraelis.bso');
+  });
+
+  it('uses the vendored candidate public key when the fetched directory list only has its address', async () => {
+    testState.list.boards = [
+      { address: 'business-and-finance.bso', score: 100 },
+      { address: 'bizraelis.bso', score: 10 },
+    ];
+    testState.candidatePublicKeys = {
+      'business-and-finance.bso': '12D3KooWBusiness',
+    };
+    testState.syncStatuses = {
+      '12D3KooWBusiness': {
+        syncState: 'failed',
+      },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('bizraelis.bso');
   });
 
   it('does not subscribe to offline state on non-directory board routes', async () => {

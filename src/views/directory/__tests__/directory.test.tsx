@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CommunitySyncState } from '@bitsocial/bitsocial-react-hooks';
 import Directory from '../directory';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -10,7 +11,7 @@ const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise
 
 const testState = vi.hoisted(() => ({
   boardIdentifier: 'a' as string | undefined,
-  communities: {} as Record<string, { address: string; name?: string; state?: string; updatedAt?: number }>,
+  communities: {} as Record<string, { address: string; name?: string; state?: string; syncState?: CommunitySyncState; hasCachedData?: boolean; updatedAt?: number }>,
   communityIdentifierRequests: [] as Array<string | undefined>,
   directoryListLoading: false,
   directoryBoards: [
@@ -163,7 +164,9 @@ const createDirectoryBoard = (address: string, score = 12) => ({
 const createCommunity = (address: string, updatedAt = testState.nowSeconds - 60) => ({
   address,
   name: address,
-  state: 'started',
+  state: 'succeeded',
+  syncState: 'succeeded' as const,
+  hasCachedData: true,
   updatedAt,
 });
 
@@ -178,7 +181,9 @@ describe('Directory', () => {
       'anime-and-manga.bso': {
         address: 'anime-and-manga.bso',
         name: 'anime-and-manga.bso',
-        state: 'started',
+        state: 'succeeded',
+        syncState: 'succeeded',
+        hasCachedData: true,
         updatedAt: testState.nowSeconds - 60,
       },
     };
@@ -273,13 +278,37 @@ describe('Directory', () => {
     testState.communities['anime-and-manga.bso'] = {
       address: 'anime-and-manga.bso',
       name: 'anime-and-manga.bso',
-      state: 'started',
+      state: 'succeeded',
+      syncState: 'stopped',
+      hasCachedData: true,
       updatedAt: testState.nowSeconds - 31 * 60,
     };
 
     await renderDirectory();
 
     expect(getDirectoryRow()?.textContent).toContain('offline');
+  });
+
+  it('keeps a stale listed board offline while synchronization retries', async () => {
+    testState.communities['anime-and-manga.bso'] = {
+      address: 'anime-and-manga.bso',
+      name: 'anime-and-manga.bso',
+      state: 'succeeded',
+      syncState: 'loading',
+      hasCachedData: true,
+      updatedAt: testState.nowSeconds - 31 * 60,
+    };
+    testState.offlineHookValue = {
+      isOffline: false,
+      isOnlineStatusLoading: true,
+      offlineIconClass: 'yellowOfflineIcon',
+      offlineTitle: 'downloading board...',
+    };
+
+    await renderDirectory();
+
+    expect(getDirectoryRow()?.textContent).toContain('offline');
+    expect(getDirectoryRow()?.textContent).not.toContain('loading');
   });
 
   it('does not request status checks after the top five boards', async () => {
