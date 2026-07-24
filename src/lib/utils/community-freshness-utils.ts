@@ -14,6 +14,8 @@ export const isCommunityUpdateStale = (updatedAt: number | undefined, nowSeconds
 export const isCommunitySyncLoading = (syncState: CommunitySyncState | undefined): boolean =>
   syncState === 'initializing' || syncState === 'loading' || syncState === 'retrying';
 
+export const isCommunitySyncTerminal = (syncState: CommunitySyncState | undefined): boolean => syncState !== undefined && !isCommunitySyncLoading(syncState);
+
 export const isCommunityKnownOffline = (communityState: CommunityFreshnessState | undefined, nowSeconds: number): boolean => {
   if (!communityState) return false;
 
@@ -21,6 +23,6 @@ export const isCommunityKnownOffline = (communityState: CommunityFreshnessState 
   if (communityState.updatedAt !== undefined && !isStale) return false;
   if (isStale) return true;
   if (isCommunitySyncLoading(communityState.syncState)) return false;
-  if (communityState.syncState === 'failed' || communityState.state === 'failed') return true;
+  if (isCommunitySyncTerminal(communityState.syncState) || communityState.state === 'failed') return true;
   return false;
 };

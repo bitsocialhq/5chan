@@ -4,7 +4,7 @@ import type { Community, UseCommunityResult } from '@bitsocial/bitsocial-react-h
 import { getFormattedTimeAgo } from '../lib/utils/time-utils';
 import useCommunityOfflineStore from '../stores/use-community-offline-store';
 import useCommunitiesLoadingStartTimestamps from '../stores/use-communities-loading-start-timestamps-store';
-import { isCommunitySyncLoading, isCommunityUpdateStale } from '../lib/utils/community-freshness-utils';
+import { isCommunitySyncLoading, isCommunitySyncTerminal, isCommunityUpdateStale } from '../lib/utils/community-freshness-utils';
 import { useNowSeconds } from './use-now-seconds';
 
 type CommunityWithSyncLifecycle = Community & Partial<Pick<UseCommunityResult, 'syncState' | 'hasCachedData'>>;
@@ -42,9 +42,11 @@ const useIsCommunityOffline = (community?: CommunityWithSyncLifecycle | undefine
   const hasUsableCachedData = (hasCachedData ?? typeof updatedAt === 'number') && updatedAt !== undefined;
   const isOnline = hasUsableCachedData && !isStale;
   const hasFailed = syncState === 'failed' || (!syncState && state === 'failed');
+  const isSyncLoading = isCommunitySyncLoading(syncState);
+  const hasTerminalSyncState = isCommunitySyncTerminal(syncState);
   const isFallbackLoading = !syncState && offlineState.initialLoad && nowSeconds - loadingStartTimestamp < 30;
-  const isLoading = !isOnline && !isStale && !hasFailed && (isCommunitySyncLoading(syncState) || isFallbackLoading);
-  const isOffline = !isOnline && !isLoading && (hasFailed || isStale || (!hasUsableCachedData && nowSeconds - loadingStartTimestamp >= 30));
+  const isLoading = !isOnline && !isStale && !hasFailed && (isSyncLoading || isFallbackLoading);
+  const isOffline = !isOnline && !isLoading && (hasFailed || isStale || (!hasUsableCachedData && (hasTerminalSyncState || nowSeconds - loadingStartTimestamp >= 30)));
 
   const offlineIconClass = isLoading ? 'yellowOfflineIcon' : isOffline ? 'redOfflineIcon' : '';
 

@@ -197,6 +197,24 @@ describe('useIsCommunityOffline', () => {
     };
     testState.loadingTimestamps = [1_704_067_100];
 
+    await renderHook({ address: 'music.eth' });
+
+    expect(latestValue).toEqual({
+      isOffline: true,
+      isOnlineStatusLoading: false,
+      offlineIconClass: 'redOfflineIcon',
+      offlineTitle: 'community_offline_info',
+    });
+  });
+
+  it('marks a stopped first synchronization offline without waiting for the legacy timeout', async () => {
+    testState.communityOfflineState = {
+      'music.eth': {
+        initialLoad: false,
+      },
+    };
+    testState.loadingTimestamps = [1_704_067_200];
+
     await renderHook({ address: 'music.eth', syncState: 'stopped', hasCachedData: false });
 
     expect(latestValue).toEqual({
