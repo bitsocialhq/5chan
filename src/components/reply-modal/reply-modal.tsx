@@ -181,6 +181,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   const quoteInsertNumber = modalState?.quoteInsertNumber ?? null;
   const quoteInsertSelectedText = modalState?.quoteInsertSelectedText ?? null;
   const draft = modalState?.draft;
+  const initialDraftRef = useRef(draft);
   const lastProcessedQuoteInsertRequestIdRef = useRef(quoteInsertRequestId);
 
   const [error, setError] = useState<string | PostOptionsValidationError | null>(null);
@@ -407,7 +408,8 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       return;
     }
 
-    const initialContent = draft?.content ?? (openEmpty ? selectedText || '' : `${defaultParentQuote}${selectedText || ''}`);
+    const initialDraft = initialDraftRef.current;
+    const initialContent = initialDraft?.content ?? (openEmpty ? selectedText || '' : `${defaultParentQuote}${selectedText || ''}`);
     const initialContentKey = `${parentCid}:${openEmpty ? 'empty' : 'quoted'}:${initialContent}`;
     if (initializedReplyContentKeyRef.current === initialContentKey) {
       return;
@@ -424,8 +426,8 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
     });
     setPublishReplyOptions({
       content: publishContent,
-      ...(draft?.link ? { link: draft.link } : {}),
-      ...(draft?.spoiler ? { spoiler: true } : {}),
+      ...(initialDraft?.link ? { link: initialDraft.link } : {}),
+      ...(initialDraft?.spoiler ? { spoiler: true } : {}),
     });
     checkContentLengthRef.current(publishContent, t, optionsRef.current?.value || '', postOptionsDirectoryCode);
 
@@ -438,19 +440,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
     return () => {
       window.clearTimeout(spellcheckTimeout);
     };
-  }, [
-    showReplyModal,
-    parentCid,
-    openEmpty,
-    defaultParentQuote,
-    selectedText,
-    draft?.content,
-    draft?.link,
-    draft?.spoiler,
-    postOptionsDirectoryCode,
-    setPublishReplyOptions,
-    t,
-  ]);
+  }, [showReplyModal, parentCid, openEmpty, defaultParentQuote, selectedText, postOptionsDirectoryCode, setPublishReplyOptions, t]);
 
   useEffect(() => {
     if (!showReplyModal) {

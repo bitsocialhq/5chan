@@ -34,7 +34,7 @@ import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
-import { getPostFormDraftKey } from '../../lib/utils/location-draft-utils';
+import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
 import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
@@ -798,13 +798,14 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
       nonokoRedirectPathRef.current = null;
       resetPublishPostOptions();
       resetFields();
+      closeForm();
       if (nonokoRedirectPath) {
         navigate(nonokoRedirectPath, { state: getNonokoPendingRouteState(postIndex) });
       } else {
         navigate(`/pending/${postIndex}`, pendingPostBoardPath ? { state: { boardPath: pendingPostBoardPath } } : undefined);
       }
     }
-  }, [postIndex, pendingPostBoardPath, resetFields, resetPublishPostOptions, navigate]);
+  }, [postIndex, pendingPostBoardPath, resetFields, resetPublishPostOptions, closeForm, navigate]);
 
   // in post page, publish a reply to the post
   const cid = params?.commentCid || '';
@@ -1109,7 +1110,7 @@ const PostForm = () => {
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInCatalogView = isCatalogView(location.pathname, params);
   const isMobile = useIsMobile();
-  const draftKey = getPostFormDraftKey(location);
+  const draftKey = getPageDraftKey(location);
   const showForm = usePostFormDraftsStore((state) => state.forms[draftKey]?.isOpen ?? false);
   const openForm = usePostFormDraftsStore((state) => state.openForm);
   const clearForm = usePostFormDraftsStore((state) => state.clearForm);

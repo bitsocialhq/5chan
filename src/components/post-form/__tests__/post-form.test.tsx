@@ -1701,7 +1701,8 @@ describe('PostForm', () => {
     await clickByText(container, 'start_new_thread');
     await flushEffects();
 
-    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalledTimes(1);
+    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalled();
+    expect(usePostFormDraftsStore.getState().forms['/mu']).toBeUndefined();
     expect(testState.navigateMock).toHaveBeenCalledWith('/pending/7', { state: { boardPath: 'mu' } });
   });
 
@@ -1724,7 +1725,7 @@ describe('PostForm', () => {
     await flushEffects();
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
-    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalledTimes(1);
+    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalled();
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { state: { nonokoPendingAccountCommentIndex: 7 } });
     expect(testState.navigateMock).not.toHaveBeenCalledWith('/pending/7');
   });

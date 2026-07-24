@@ -43,7 +43,7 @@ import { create } from 'zustand';
 import capitalize from 'lodash/capitalize';
 import { shouldShowSnow } from '../../lib/snow';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
-import { getLocationDraftKey } from '../../lib/utils/location-draft-utils';
+import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
@@ -238,7 +238,7 @@ const PostInfo = ({
       return;
     }
     if (cid && postCid && communityAddress && openReplyModal) {
-      openReplyModal(getLocationDraftKey(location), cid, post?.number, postCid, threadNumber, communityAddress);
+      openReplyModal(getPageDraftKey(location), cid, post?.number, postCid, threadNumber, communityAddress);
     }
   };
 

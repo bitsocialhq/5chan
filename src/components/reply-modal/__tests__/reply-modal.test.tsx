@@ -766,22 +766,56 @@ describe('ReplyModal', () => {
     testState.selectedText = '';
     testState.replyDraft = {
       content: 'saved reply draft',
+      flag: 'pol:AC',
       link: 'https://example.com/saved.png',
       options: 'nonoko',
       spoiler: true,
     };
 
-    await renderReplyModal('/mu/thread/post-1');
+    await renderReplyModal('/pol/thread/post-1', 'politically-incorrect.bso');
 
     expect(container.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('saved reply draft');
     expect(container.querySelector<HTMLInputElement>('[aria-label="options"]')?.value).toBe('nonoko');
     expect(container.querySelector<HTMLInputElement>('[aria-label="link"]')?.value).toBe('https://example.com/saved.png');
+    expect(container.querySelector<HTMLSelectElement>('[aria-label="flag"]')?.value).toBe('pol:AC');
     expect(container.querySelector<HTMLInputElement>('input[type="checkbox"]')?.checked).toBe(true);
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
       content: 'saved reply draft',
       link: 'https://example.com/saved.png',
       spoiler: true,
     });
+  });
+
+  it('preserves the caret when a live draft update rerenders the modal', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = '';
+    testState.replyDraft = {
+      content: 'saved reply draft',
+      link: '',
+      options: '',
+      spoiler: false,
+    };
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement;
+    const nextContent = 'saved edited reply draft';
+    await act(async () => {
+      const descriptor = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
+      descriptor?.set?.call(textarea, nextContent);
+      textarea.setSelectionRange(7, 7);
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      textarea.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    testState.replyDraft = {
+      ...testState.replyDraft,
+      content: nextContent,
+    };
+    await rerenderReplyModal('/mu/thread/post-1');
+
+    expect(textarea.value).toBe(nextContent);
+    expect(textarea.selectionStart).toBe(7);
+    expect(textarea.selectionEnd).toBe(7);
   });
 
   it('validates empty and invalid replies, then publishes once the payload is valid', async () => {

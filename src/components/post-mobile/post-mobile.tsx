@@ -39,7 +39,7 @@ import { PostProps } from '../../views/post/post';
 import capitalize from 'lodash/capitalize';
 import lowerCase from 'lodash/lowerCase';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
-import { getLocationDraftKey } from '../../lib/utils/location-draft-utils';
+import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
 import { selectPostMenuProps } from '../../lib/utils/post-menu-props';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
@@ -187,7 +187,7 @@ const PostInfoAndMedia = ({
       return;
     }
     if (cid && postCid && communityAddress && openReplyModal) {
-      openReplyModal(getLocationDraftKey(location), cid, resolvedPost?.number, postCid, threadNumber, communityAddress);
+      openReplyModal(getPageDraftKey(location), cid, resolvedPost?.number, postCid, threadNumber, communityAddress);
     }
   };
 

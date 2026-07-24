@@ -18,7 +18,7 @@ import { useResolvedCommunityAddress, useResolvedDirectoryBoardPath } from './ho
 import useSuspendOffscreenMediaPlayback from './hooks/use-suspend-offscreen-media-playback';
 import { normalizeAccountCommentIndex } from './lib/utils/account-comment-index-utils';
 import { getCommentCommunityAddress } from './lib/utils/comment-utils';
-import { getLocationDraftKey } from './lib/utils/location-draft-utils';
+import { getPageDraftKey } from './lib/utils/location-draft-utils';
 import {
   getBoardPath,
   isBoardModRoute,
@@ -205,7 +205,7 @@ const GlobalLayout = () => {
 
   const location = useLocation();
   const { pathname } = location;
-  const locationDraftKey = getLocationDraftKey(location);
+  const locationDraftKey = getPageDraftKey(location);
   const modal = useReplyModalStore((state) => state.modals[locationDraftKey]);
   const closeReplyModal = useReplyModalStore((state) => state.closeModal);
   const closeModal = useCallback(() => closeReplyModal(locationDraftKey), [closeReplyModal, locationDraftKey]);
