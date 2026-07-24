@@ -199,7 +199,7 @@ describe('footer', () => {
       button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(testState.openReplyModalEmptyMock).toHaveBeenCalledWith('post-cid', 42, 'music-posting.eth');
+    expect(testState.openReplyModalEmptyMock).toHaveBeenCalledWith('/all/thread/post-cid', 'post-cid', 42, 'music-posting.eth');
     expect(container.querySelector('[data-testid="post-page-stats"]')?.textContent).toBe('post-page-stats');
 
     testState.openReplyModalEmptyMock.mockReset();
@@ -248,7 +248,7 @@ describe('footer', () => {
       button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(testState.openReplyModalEmptyMock).toHaveBeenCalledWith('post-cid', 55, 'music-posting.eth');
+    expect(testState.openReplyModalEmptyMock).toHaveBeenCalledWith('/mu/thread/post-1', 'post-cid', 55, 'music-posting.eth');
   });
 
   it('falls back to link stats and unknown counts when thread data is unavailable or closed on mobile', async () => {

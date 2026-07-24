@@ -30,7 +30,7 @@ import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
 import { isAllView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import useSelectedTextStore from '../../stores/use-selected-text-store';
-import useReplyModalStore from '../../stores/use-reply-modal-store';
+import useReplyModalStore, { type ReplyModalDraft } from '../../stores/use-reply-modal-store';
 import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
 import { useDirectories } from '../../hooks/use-directories';
@@ -108,6 +108,7 @@ const getInitialReplyModalPosition = (): ReplyModalPosition => {
 
 interface ReplyModalProps {
   closeModal: () => void;
+  locationDraftKey: string;
   showReplyModal: boolean;
   parentCid: string;
   parentNumber: number | null;
@@ -117,7 +118,7 @@ interface ReplyModalProps {
   communityAddress: string;
 }
 
-const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threadNumber, postCid, scrollY, communityAddress }: ReplyModalProps) => {
+const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, parentNumber, threadNumber, postCid, scrollY, communityAddress }: ReplyModalProps) => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -171,16 +172,20 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   const lastSelectionStartRef = useRef(0);
   const lastSelectionEndRef = useRef(0);
   const initializedReplyContentKeyRef = useRef('');
-  const lastProcessedQuoteInsertRequestIdRef = useRef(0);
   const { selectedText } = useSelectedTextStore();
-  const openEmpty = useReplyModalStore((state) => state.openEmpty);
-  const quoteInsertRequestId = useReplyModalStore((state) => state.quoteInsertRequestId);
-  const quoteInsertNumber = useReplyModalStore((state) => state.quoteInsertNumber);
-  const quoteInsertSelectedText = useReplyModalStore((state) => state.quoteInsertSelectedText);
+  const modalState = useReplyModalStore((state) => state.modals[locationDraftKey]);
+  const updateStoredDraft = useReplyModalStore((state) => state.updateDraft);
+  const updateDraft = useCallback((nextDraft: Partial<ReplyModalDraft>) => updateStoredDraft(locationDraftKey, nextDraft), [locationDraftKey, updateStoredDraft]);
+  const openEmpty = modalState?.openEmpty ?? false;
+  const quoteInsertRequestId = modalState?.quoteInsertRequestId ?? 0;
+  const quoteInsertNumber = modalState?.quoteInsertNumber ?? null;
+  const quoteInsertSelectedText = modalState?.quoteInsertSelectedText ?? null;
+  const draft = modalState?.draft;
+  const lastProcessedQuoteInsertRequestIdRef = useRef(quoteInsertRequestId);
 
   const [error, setError] = useState<string | PostOptionsValidationError | null>(null);
   const [lengthError, setLengthError] = useState<string | null>(null);
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState(draft?.link ?? '');
   const [isBbcodePreviewing, setIsBbcodePreviewing] = useState(false);
   const [bbcodePreviewContent, setBbcodePreviewContent] = useState('');
   const [showTexPreview, setShowTexPreview] = useState(false);
@@ -269,7 +274,11 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
       setError(null);
       nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
-      await publishReply({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...flagPublishOptions });
+      await publishReply({
+        content: publishContent,
+        ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion),
+        ...flagPublishOptions,
+      });
     });
 
   useEffect(() => {
@@ -398,7 +407,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
       return;
     }
 
-    const initialContent = openEmpty ? selectedText || '' : `${defaultParentQuote}${selectedText || ''}`;
+    const initialContent = draft?.content ?? (openEmpty ? selectedText || '' : `${defaultParentQuote}${selectedText || ''}`);
     const initialContentKey = `${parentCid}:${openEmpty ? 'empty' : 'quoted'}:${initialContent}`;
     if (initializedReplyContentKeyRef.current === initialContentKey) {
       return;
@@ -413,7 +422,11 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     const publishContent = getContentWithOptions(initialContent, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode, {
       includeFortune: false,
     });
-    setPublishReplyOptions({ content: publishContent });
+    setPublishReplyOptions({
+      content: publishContent,
+      ...(draft?.link ? { link: draft.link } : {}),
+      ...(draft?.spoiler ? { spoiler: true } : {}),
+    });
     checkContentLengthRef.current(publishContent, t, optionsRef.current?.value || '', postOptionsDirectoryCode);
 
     const spellcheckTimeout = window.setTimeout(() => {
@@ -425,7 +438,19 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     return () => {
       window.clearTimeout(spellcheckTimeout);
     };
-  }, [showReplyModal, parentCid, openEmpty, defaultParentQuote, selectedText, postOptionsDirectoryCode, setPublishReplyOptions, t]);
+  }, [
+    showReplyModal,
+    parentCid,
+    openEmpty,
+    defaultParentQuote,
+    selectedText,
+    draft?.content,
+    draft?.link,
+    draft?.spoiler,
+    postOptionsDirectoryCode,
+    setPublishReplyOptions,
+    t,
+  ]);
 
   useEffect(() => {
     if (!showReplyModal) {
@@ -450,6 +475,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
   };
 
   const handleContentValueChange = (content: string, selectionStart?: number, selectionEnd?: number, options = optionsRef.current?.value || '') => {
+    updateDraft({ content });
     if (isBbcodePreviewing) {
       setBbcodePreviewContent(content);
     }
@@ -464,6 +490,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
   const handleOptionsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const options = e.target.value;
+    updateDraft({ options });
     handleContentValueChange(textRef.current?.value || '', undefined, undefined, options);
     setError((currentError) => (isPostOptionsValidationError(currentError) ? null : currentError));
     checkPostOptionsRef.current(options, postOptionsDirectoryCode);
@@ -486,6 +513,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
 
   const setLinkValue = (nextUrl: string) => {
     setUrl(nextUrl);
+    updateDraft({ link: nextUrl });
     setPublishReplyOptions({ link: nextUrl });
   };
 
@@ -571,9 +599,10 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
     const publishContent = getContentWithOptions(nextValue, optionsRef.current?.value || '', fortuneEntryRef, diceRollRef, postOptionsDirectoryCode, {
       includeFortune: false,
     });
+    updateDraft({ content: nextValue });
     setPublishReplyOptions({ content: publishContent });
     checkContentLengthRef.current(publishContent, t, optionsRef.current?.value || '', postOptionsDirectoryCode);
-  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, postOptionsDirectoryCode, setPublishReplyOptions, t]);
+  }, [showReplyModal, quoteInsertRequestId, quoteInsertNumber, quoteInsertSelectedText, postOptionsDirectoryCode, setPublishReplyOptions, t, updateDraft]);
 
   const { isUploading, uploadedFileName, handleUpload, uploadFile } = useFileUpload({
     onUploadComplete: (uploadedUrl: string) => {
@@ -673,6 +702,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             autoCorrect='off'
             autoComplete='off'
             spellCheck='false'
+            defaultValue={draft?.options}
             onChange={handleOptionsChange}
           />
         </div>
@@ -713,6 +743,7 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             aria-label={requireReplyLinkIsMedia ? t('link_to_file') : t('link')}
             placeholder={requireReplyLinkIsMedia ? FILE_LINK_PLACEHOLDER : capitalize(t('link'))}
             disabled={isUploading || youtubeThumbnailConversionCountdown !== null || noReplyLinks}
+            defaultValue={draft?.link}
             onChange={(e) => {
               handleLinkChange(e.target.value);
             }}
@@ -734,7 +765,8 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
               aria-label={t('flag')}
               className={styles.flagSelector}
               ref={flagRef}
-              defaultValue={flagOptions[0]?.value}
+              defaultValue={draft?.flag ?? flagOptions[0]?.value}
+              onChange={(event) => updateDraft({ flag: event.target.value })}
             >
               {flagOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -761,7 +793,15 @@ const ReplyModal = ({ closeModal, showReplyModal, parentCid, parentNumber, threa
             <span className={styles.spoilerButton}>
               [
               <label>
-                <input type='checkbox' aria-label={capitalize(t('spoiler'))} onChange={(e) => setPublishReplyOptions({ spoiler: e.target.checked })} />
+                <input
+                  type='checkbox'
+                  aria-label={capitalize(t('spoiler'))}
+                  defaultChecked={draft?.spoiler}
+                  onChange={(e) => {
+                    updateDraft({ spoiler: e.target.checked });
+                    setPublishReplyOptions({ spoiler: e.target.checked });
+                  }}
+                />
                 {capitalize(t('spoiler'))}?
               </label>
               ]

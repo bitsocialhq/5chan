@@ -17,6 +17,7 @@ import {
 import { shouldShowCatalogButton } from '../board-buttons/catalog-button-utils';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import useReplyModalStore from '../../stores/use-reply-modal-store';
+import { getLocationDraftKey } from '../../lib/utils/location-draft-utils';
 import useThreadLiveUpdatesStore from '../../stores/use-thread-live-updates-store';
 import useCountLinksInReplies from '../../hooks/use-count-links-in-replies';
 import useOptimisticReplyCount from '../../hooks/use-optimistic-reply-count';
@@ -168,7 +169,7 @@ export const ThreadFooterFirstRow = ({ postCid, threadNumber, communityAddress, 
 
   const handlePostReplyClick = () => {
     if (isThreadClosed) return;
-    openReplyModalEmpty(postCid, threadNumber, communityAddress);
+    openReplyModalEmpty(getLocationDraftKey(location), postCid, threadNumber, communityAddress);
   };
 
   return (
@@ -259,7 +260,7 @@ export const ThreadFooterMobile = ({ postCid, threadNumber, communityAddress, is
 
   const handlePostReplyClick = () => {
     if (isThreadClosed) return;
-    openReplyModalEmpty(postCid, threadNumber, communityAddress);
+    openReplyModalEmpty(getLocationDraftKey(location), postCid, threadNumber, communityAddress);
   };
 
   return (

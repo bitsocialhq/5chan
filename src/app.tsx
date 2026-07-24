@@ -1,5 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react';
-import { useShallow } from 'zustand/react/shallow';
+import { lazy, Suspense, useCallback, useEffect } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { useAccount, useAccountComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { initSnow, removeSnow, shouldShowSnow } from './lib/snow';
@@ -19,6 +18,7 @@ import { useResolvedCommunityAddress, useResolvedDirectoryBoardPath } from './ho
 import useSuspendOffscreenMediaPlayback from './hooks/use-suspend-offscreen-media-playback';
 import { normalizeAccountCommentIndex } from './lib/utils/account-comment-index-utils';
 import { getCommentCommunityAddress } from './lib/utils/comment-utils';
+import { getLocationDraftKey } from './lib/utils/location-draft-utils';
 import {
   getBoardPath,
   isBoardModRoute,
@@ -203,29 +203,19 @@ const GlobalLayout = () => {
   useTheme({ applyDocumentEffects: true });
   useSuspendOffscreenMediaPlayback();
 
-  const {
-    activeCid,
-    parentNumber,
-    threadNumber,
-    threadCid,
-    communityAddress: activeCommunityAddress,
-    closeModal,
-    showReplyModal,
-    scrollY,
-  } = useReplyModalStore(
-    useShallow((state) => ({
-      activeCid: state.activeCid,
-      parentNumber: state.parentNumber,
-      threadNumber: state.threadNumber,
-      threadCid: state.threadCid,
-      communityAddress: state.communityAddress,
-      closeModal: state.closeModal,
-      showReplyModal: state.showReplyModal,
-      scrollY: state.scrollY,
-    })),
-  );
-
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname } = location;
+  const locationDraftKey = getLocationDraftKey(location);
+  const modal = useReplyModalStore((state) => state.modals[locationDraftKey]);
+  const closeReplyModal = useReplyModalStore((state) => state.closeModal);
+  const closeModal = useCallback(() => closeReplyModal(locationDraftKey), [closeReplyModal, locationDraftKey]);
+  const activeCid = modal?.activeCid;
+  const parentNumber = modal?.parentNumber ?? null;
+  const threadNumber = modal?.threadNumber ?? null;
+  const threadCid = modal?.threadCid;
+  const activeCommunityAddress = modal?.communityAddress;
+  const showReplyModal = modal?.showReplyModal ?? false;
+  const scrollY = modal?.scrollY ?? 0;
   const isInSettingsView = pathname.endsWith('/settings');
 
   return (
@@ -240,7 +230,9 @@ const GlobalLayout = () => {
       {activeCid && threadCid && activeCommunityAddress && (
         <Suspense fallback={null}>
           <ReplyModal
+            key={locationDraftKey}
             closeModal={closeModal}
+            locationDraftKey={locationDraftKey}
             parentCid={activeCid}
             parentNumber={parentNumber}
             threadNumber={threadNumber}

@@ -100,7 +100,15 @@ vi.mock('../stores/use-create-board-modal-store', () => ({
 }));
 
 vi.mock('../stores/use-reply-modal-store', () => ({
-  default: () => testState.replyModalState,
+  default: <T,>(selector?: (state: { closeModal: ReplyModalShape['closeModal']; modals: Record<string, ReplyModalShape> }) => T) => {
+    const state = {
+      closeModal: testState.replyModalState.closeModal,
+      modals: new Proxy({} as Record<string, ReplyModalShape>, {
+        get: () => testState.replyModalState,
+      }),
+    };
+    return selector ? selector(state) : (state as T);
+  },
 }));
 
 vi.mock('../stores/use-special-theme-store', () => ({
