@@ -478,6 +478,8 @@ const renderNavigablePostForm = async (initialEntry: string) => {
           React.Fragment,
           {},
           createElement(Link, { to: '/biz' }, 'go_biz'),
+          createElement(Link, { to: '/biz?search=first' }, 'go_biz_first_search'),
+          createElement(Link, { to: '/biz?search=second' }, 'go_biz_second_search'),
           createElement(Link, { to: '/biz/thread/thread-cid' }, 'go_thread'),
           createElement(
             Routes,
@@ -1112,6 +1114,23 @@ describe('PostForm', () => {
       spoiler: true,
       title: 'Saved subject',
     });
+  });
+
+  it('restores the correct post draft when only the location search changes', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    await renderNavigablePostForm('/biz?search=first');
+    await clickByText(container, 'start_new_thread');
+    await dispatchInput(container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement, 'first search draft');
+
+    await clickLinkByText(container, 'go_biz_second_search');
+    await clickByText(container, 'start_new_thread');
+    await dispatchInput(container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement, 'second search draft');
+
+    await clickLinkByText(container, 'go_biz_first_search');
+    expect(container.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('first search draft');
+
+    await clickLinkByText(container, 'go_biz_second_search');
+    expect(container.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('second search draft');
   });
 
   it('shows a 4chan-style flag field on flag boards and publishes the default geographic request', async () => {

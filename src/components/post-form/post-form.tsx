@@ -1160,7 +1160,7 @@ const PostForm = () => {
             <button type='button' className={`${styles.showFormButton} button`} onClick={toggleForm}>
               {showForm ? t('close_post_form') : isInPostView ? t('post_a_reply') : t('start_new_thread')}
             </button>
-            {showForm && <PostFormTable closeForm={closeForm} draftKey={draftKey} postCid={postCid} />}
+            {showForm && <PostFormTable key={draftKey} closeForm={closeForm} draftKey={draftKey} postCid={postCid} />}
           </>
         )}
         {isInCatalogView && <hr />}
@@ -1188,7 +1188,7 @@ const PostForm = () => {
           ]
         </div>
       ) : (
-        <PostFormTable closeForm={closeForm} draftKey={draftKey} postCid={postCid} />
+        <PostFormTable key={draftKey} closeForm={closeForm} draftKey={draftKey} postCid={postCid} />
       )}
     </div>
   );
