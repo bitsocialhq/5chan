@@ -34,6 +34,7 @@ import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import { isValidURL } from '../../lib/utils/url-utils';
 import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
+import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
 import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
@@ -57,6 +58,7 @@ import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/sho
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
+import usePostFormDraftsStore, { EMPTY_POST_FORM_STATE, type PostFormDraft } from '../../stores/use-post-form-drafts-store';
 import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
 import LoadingEllipsis from '../loading-ellipsis/loading-ellipsis';
@@ -202,6 +204,8 @@ interface PostFormFieldsProps {
   onOekakiClearUploadedUrl: (url: string) => void;
   isPublishSubmissionInFlight: boolean;
   disableReplyPublish: boolean;
+  draft: PostFormDraft;
+  updateDraft: (draft: Partial<PostFormDraft>) => void;
 }
 
 const PostFormFields = ({
@@ -257,6 +261,8 @@ const PostFormFields = ({
   onOekakiClearUploadedUrl,
   isPublishSubmissionInFlight,
   disableReplyPublish,
+  draft,
+  updateDraft,
 }: PostFormFieldsProps) => (
   <>
     <tr>
@@ -294,7 +300,16 @@ const PostFormFields = ({
     <tr>
       <td>{t('options')}</td>
       <td>
-        <input type='text' aria-label={t('options')} ref={optionsRef} autoCorrect='off' autoComplete='off' spellCheck='false' onChange={handleOptionsChange} />
+        <input
+          type='text'
+          aria-label={t('options')}
+          ref={optionsRef}
+          autoCorrect='off'
+          autoComplete='off'
+          spellCheck='false'
+          defaultValue={draft.options}
+          onChange={handleOptionsChange}
+        />
       </td>
     </tr>
     {!isInPostView && (
@@ -305,7 +320,9 @@ const PostFormFields = ({
             type='text'
             aria-label={t('subject')}
             ref={subjectRef}
+            defaultValue={draft.title}
             onChange={(e) => {
+              updateDraft({ title: e.target.value });
               setPublishPostOptions({ title: e.target.value });
             }}
           />
@@ -350,6 +367,7 @@ const PostFormFields = ({
           ref={textRef}
           aria-label={t('comment')}
           hidden={showBbcodeToolbar && isBbcodePreviewing}
+          defaultValue={draft.content}
           onChange={handleContentChange}
         />
       </td>
@@ -364,7 +382,8 @@ const PostFormFields = ({
             aria-label={t('flag')}
             className={styles.flagSelector}
             ref={flagRef}
-            defaultValue={flagOptions[0]?.value}
+            defaultValue={draft.flag ?? flagOptions[0]?.value}
+            onChange={(event) => updateDraft({ flag: event.target.value })}
           >
             {flagOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -387,6 +406,7 @@ const PostFormFields = ({
           placeholder={requireCurrentLinkIsMedia ? FILE_LINK_PLACEHOLDER : undefined}
           ref={urlRef}
           disabled={disableLinkInput}
+          defaultValue={draft.link}
           onChange={(e) => {
             handleLinkChange(e.target.value);
           }}
@@ -425,7 +445,14 @@ const PostFormFields = ({
       <tr>
         <td>{t('tag')}</td>
         <td>
-          <select name='flashTag' aria-label={t('tag')} className={styles.flagSelector} ref={flashTagRef} defaultValue=''>
+          <select
+            name='flashTag'
+            aria-label={t('tag')}
+            className={styles.flagSelector}
+            ref={flashTagRef}
+            defaultValue={draft.flashTag}
+            onChange={(event) => updateDraft({ flashTag: event.target.value })}
+          >
             <option value=''>{t('choose_one')}</option>
             {flashTagOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -453,7 +480,15 @@ const PostFormFields = ({
             <input
               type='checkbox'
               aria-label={capitalize(t('spoiler'))}
-              onChange={(e) => (isInPostView ? setPublishReplyOptions({ spoiler: e.target.checked }) : setPublishPostOptions({ spoiler: e.target.checked }))}
+              defaultChecked={draft.spoiler}
+              onChange={(e) => {
+                updateDraft({ spoiler: e.target.checked });
+                if (isInPostView) {
+                  setPublishReplyOptions({ spoiler: e.target.checked });
+                } else {
+                  setPublishPostOptions({ spoiler: e.target.checked });
+                }
+              }}
             />
             {capitalize(t('spoiler'))}?
           </label>
@@ -468,8 +503,11 @@ const PostFormFields = ({
           <select
             aria-label={t('board')}
             className={styles.boardSelector}
-            onChange={(e) => setPublishPostOptions({ communityAddress: e.target.value })}
-            value={communityAddress}
+            onChange={(e) => {
+              updateDraft({ communityAddress: e.target.value || undefined });
+              setPublishPostOptions({ communityAddress: e.target.value });
+            }}
+            value={communityAddress || ''}
           >
             <option value=''>{t('choose_one')}</option>
             {isInAllView &&
@@ -549,11 +587,16 @@ const PostFormErrorRow = ({ ariaLive, children }: { ariaLive?: 'polite'; childre
   </tr>
 );
 
-const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid: string }) => {
+const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void; draftKey: string; postCid: string }) => {
   const { t } = useTranslation();
   const params = useParams();
+  const location = useLocation();
   const account = useAccount();
-  const [url, setUrl] = useState('');
+  const draft = usePostFormDraftsStore((state) => state.forms[draftKey]?.draft ?? EMPTY_POST_FORM_STATE.draft);
+  const updateStoredDraft = usePostFormDraftsStore((state) => state.updateDraft);
+  const updateDraft = useCallback((nextDraft: Partial<PostFormDraft>) => updateStoredDraft(draftKey, nextDraft), [draftKey, updateStoredDraft]);
+  const hasRestoredDraftRef = useRef(Boolean(draft.communityAddress || draft.content || draft.link || draft.options || draft.spoiler || draft.title));
+  const [url, setUrl] = useState(draft.link);
   const author = account?.author || {};
   const { displayName } = author || {};
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
@@ -562,7 +605,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const { setPublishPostOptions, postIndex, publishPost, publishPostError, publishPostOptions, resetPublishPostOptions } = usePublishPost({
     communityAddress,
   });
-  const effectiveBoardAddress = communityAddress || publishPostOptions.communityAddress;
+  const effectiveBoardAddress = communityAddress || draft.communityAddress || publishPostOptions.communityAddress;
 
   const textRef = useRef<HTMLTextAreaElement>(null);
   const urlRef = useRef<HTMLInputElement>(null);
@@ -574,7 +617,6 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   const diceRollRef = useRef<DiceRoll | null>(null);
   const nonokoRedirectPathRef = useRef<string | null>(null);
 
-  const location = useLocation();
   const isInPostView = isPostPageView(location.pathname, params);
   const isInAllView = isAllView(location.pathname);
   const isInModView = isModView(location.pathname);
@@ -724,7 +766,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
         return;
       }
 
-      if ((isInAllView || isInSubscriptionsView || isInModView) && !publishPostOptions.communityAddress) {
+      if ((isInAllView || isInSubscriptionsView || isInModView) && !draft.communityAddress) {
         setFormError(`${t('error')}: ${t('no_board_selected_warning')}`);
         return;
       }
@@ -738,7 +780,14 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       };
 
       nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-      await publishPost({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...publishOptions });
+      await publishPost({
+        content: publishContent,
+        ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
+        ...publishOptions,
+        ...(hasRestoredDraftRef.current && draft.communityAddress ? { communityAddress: draft.communityAddress } : {}),
+        ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
+        ...(hasRestoredDraftRef.current && currentTitle ? { title: currentTitle } : {}),
+      });
     });
 
   // redirect to pending page when pending comment is created
@@ -749,13 +798,14 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       nonokoRedirectPathRef.current = null;
       resetPublishPostOptions();
       resetFields();
+      closeForm();
       if (nonokoRedirectPath) {
         navigate(nonokoRedirectPath, { state: getNonokoPendingRouteState(postIndex) });
       } else {
         navigate(`/pending/${postIndex}`, pendingPostBoardPath ? { state: { boardPath: pendingPostBoardPath } } : undefined);
       }
     }
-  }, [postIndex, pendingPostBoardPath, resetFields, resetPublishPostOptions, navigate]);
+  }, [postIndex, pendingPostBoardPath, resetFields, resetPublishPostOptions, closeForm, navigate]);
 
   // in post page, publish a reply to the post
   const cid = params?.commentCid || '';
@@ -775,6 +825,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
   }, [checkContentLength, checkPostOptions, isInPostView, resetPublishPostOptions, resetPublishReplyOptions]);
 
   const handleContentValueChange = (content: string, options = optionsRef.current?.value || '') => {
+    updateDraft({ content });
     const publishContent = getContentWithOptions(content, options, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode, { includeFortune: false });
     if (isBbcodePreviewing) {
       setBbcodePreviewContent(content);
@@ -800,6 +851,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
 
   const handleOptionsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const options = e.target.value;
+    updateDraft({ options });
     handleContentValueChange(textRef.current?.value || '', options);
     setFormError((currentError) => (isPostOptionsValidationError(currentError) ? null : currentError));
     checkPostOptions(options, postOptionsDirectoryCode);
@@ -869,11 +921,17 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
       const flagPublishOptions = getCommentFlagPublishOptionsForDirectory(directoryEntry, flagRef.current?.value);
 
       nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
-      await publishReply({ content: publishContent, ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion), ...flagPublishOptions });
+      await publishReply({
+        content: publishContent,
+        ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
+        ...flagPublishOptions,
+        ...(hasRestoredDraftRef.current && draft.spoiler ? { spoiler: true } : {}),
+      });
     });
 
   const setLinkValue = (nextUrl: string) => {
     setUrl(nextUrl);
+    updateDraft({ link: nextUrl });
     if (isInPostView) {
       setPublishReplyOptions({ link: nextUrl });
     } else {
@@ -1000,7 +1058,7 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             directories={directories}
             accountCommunityAddresses={accountCommunityAddresses}
             subscriptions={subscriptions}
-            communityAddress={communityAddress}
+            communityAddress={effectiveBoardAddress}
             rulesPath={rulesPath}
             requireCurrentLinkIsMedia={requireCurrentLinkIsMedia}
             flagOptions={flagOptions}
@@ -1018,6 +1076,8 @@ const PostFormTable = ({ closeForm, postCid }: { closeForm: () => void; postCid:
             onOekakiClearUploadedUrl={handleOekakiClearUploadedUrl}
             isPublishSubmissionInFlight={isPublishSubmissionInFlight}
             disableReplyPublish={isResolvingExternalQuotes}
+            draft={draft}
+            updateDraft={updateDraft}
           />
         </tbody>
         <tfoot>
@@ -1050,6 +1110,18 @@ const PostForm = () => {
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInCatalogView = isCatalogView(location.pathname, params);
   const isMobile = useIsMobile();
+  const draftKey = getPageDraftKey(location);
+  const showForm = usePostFormDraftsStore((state) => state.forms[draftKey]?.isOpen ?? false);
+  const openForm = usePostFormDraftsStore((state) => state.openForm);
+  const clearForm = usePostFormDraftsStore((state) => state.clearForm);
+  const closeForm = useCallback(() => clearForm(draftKey), [clearForm, draftKey]);
+  const toggleForm = useCallback(() => {
+    if (showForm) {
+      closeForm();
+    } else {
+      openForm(draftKey);
+    }
+  }, [closeForm, draftKey, openForm, showForm]);
 
   const commentCid = params?.commentCid;
   const post = useCommunitiesPagesStore((state) => (commentCid ? state.comments[commentCid] : undefined));
@@ -1064,8 +1136,6 @@ const PostForm = () => {
   const archived = isCommentArchived(comment);
   const isThreadClosed = deleted || locked || removed || archived;
   const threadStateKey = archived ? 'thread_archived' : 'thread_closed';
-
-  const [showForm, setShowForm] = useState(false);
 
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
@@ -1087,10 +1157,10 @@ const PostForm = () => {
           </div>
         ) : (
           <>
-            <button type='button' className={`${styles.showFormButton} button`} onClick={() => setShowForm(showForm ? false : true)}>
+            <button type='button' className={`${styles.showFormButton} button`} onClick={toggleForm}>
               {showForm ? t('close_post_form') : isInPostView ? t('post_a_reply') : t('start_new_thread')}
             </button>
-            {showForm && <PostFormTable closeForm={() => setShowForm(false)} postCid={postCid} />}
+            {showForm && <PostFormTable key={draftKey} closeForm={closeForm} draftKey={draftKey} postCid={postCid} />}
           </>
         )}
         {isInCatalogView && <hr />}
@@ -1112,13 +1182,13 @@ const PostForm = () => {
       ) : !showForm ? (
         <div>
           [
-          <button type='button' className='button' onClick={() => setShowForm(true)}>
+          <button type='button' className='button' onClick={() => openForm(draftKey)}>
             {isInPostView ? t('post_a_reply') : t('start_new_thread')}
           </button>
           ]
         </div>
       ) : (
-        <PostFormTable closeForm={() => setShowForm(false)} postCid={postCid} />
+        <PostFormTable key={draftKey} closeForm={closeForm} draftKey={draftKey} postCid={postCid} />
       )}
     </div>
   );

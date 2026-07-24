@@ -42,6 +42,9 @@ const testState = vi.hoisted(() => ({
   offlineStatusLoading: false,
   offlineWarningVisible: false,
   openEmpty: false,
+  locationDraftKey: '/mu/thread/post-1',
+  replyDraft: undefined as { content: string; flag?: string; link: string; options: string; spoiler: boolean } | undefined,
+  updateDraftMock: vi.fn(),
   publishReplyMock: vi.fn(),
   publishReplyError: null as string | null,
   publishReplyStateMessage: null as string | null,
@@ -129,12 +132,32 @@ vi.mock('../../../stores/use-selected-text-store', () => ({
 }));
 
 vi.mock('../../../stores/use-reply-modal-store', () => ({
-  default: <T,>(selector?: (state: { openEmpty: boolean; quoteInsertNumber?: number; quoteInsertRequestId: number; quoteInsertSelectedText: string }) => T) => {
+  default: <T,>(
+    selector?: (state: {
+      modals: Record<
+        string,
+        {
+          draft?: typeof testState.replyDraft;
+          openEmpty: boolean;
+          quoteInsertNumber?: number;
+          quoteInsertRequestId: number;
+          quoteInsertSelectedText: string;
+        }
+      >;
+      updateDraft: typeof testState.updateDraftMock;
+    }) => T,
+  ) => {
     const state = {
-      openEmpty: testState.openEmpty,
-      quoteInsertNumber: testState.quoteInsertNumber,
-      quoteInsertRequestId: testState.quoteInsertRequestId,
-      quoteInsertSelectedText: testState.quoteInsertSelectedText,
+      modals: {
+        [testState.locationDraftKey]: {
+          draft: testState.replyDraft,
+          openEmpty: testState.openEmpty,
+          quoteInsertNumber: testState.quoteInsertNumber,
+          quoteInsertRequestId: testState.quoteInsertRequestId,
+          quoteInsertSelectedText: testState.quoteInsertSelectedText,
+        },
+      },
+      updateDraft: testState.updateDraftMock,
     };
     return selector ? selector(state) : (state as T);
   },
@@ -324,6 +347,7 @@ const flushEffects = async (count = 4) => {
 };
 
 const renderReplyModal = async (initialEntry = '/mu/thread/post-1', communityAddress = 'music-posting.eth') => {
+  testState.locationDraftKey = initialEntry;
   await act(async () => {
     root.render(
       createElement(
@@ -331,6 +355,7 @@ const renderReplyModal = async (initialEntry = '/mu/thread/post-1', communityAdd
         { initialEntries: [initialEntry] },
         createElement(ReplyModal, {
           closeModal: testState.closeModalMock,
+          locationDraftKey: initialEntry,
           parentCid: 'parent-cid',
           parentNumber: 42,
           postCid: 'post-cid',
@@ -441,6 +466,9 @@ describe('ReplyModal', () => {
     testState.offlineStatusLoading = false;
     testState.offlineWarningVisible = false;
     testState.openEmpty = false;
+    testState.locationDraftKey = '/mu/thread/post-1';
+    testState.replyDraft = undefined;
+    testState.updateDraftMock.mockReset();
     testState.publishReplyMock.mockReset();
     testState.publishReplyError = null;
     testState.publishReplyStateMessage = null;
@@ -731,6 +759,63 @@ describe('ReplyModal', () => {
 
     expect(container.querySelector('[class*="offlineBoard"]')).toBeNull();
     expect(container.textContent).not.toContain('community_offline_info');
+  });
+
+  it('restores the draft fields saved for the current location', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = '';
+    testState.replyDraft = {
+      content: 'saved reply draft',
+      flag: 'pol:AC',
+      link: 'https://example.com/saved.png',
+      options: 'nonoko',
+      spoiler: true,
+    };
+
+    await renderReplyModal('/pol/thread/post-1', 'politically-incorrect.bso');
+
+    expect(container.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('saved reply draft');
+    expect(container.querySelector<HTMLInputElement>('[aria-label="options"]')?.value).toBe('nonoko');
+    expect(container.querySelector<HTMLInputElement>('[aria-label="link"]')?.value).toBe('https://example.com/saved.png');
+    expect(container.querySelector<HTMLSelectElement>('[aria-label="flag"]')?.value).toBe('pol:AC');
+    expect(container.querySelector<HTMLInputElement>('input[type="checkbox"]')?.checked).toBe(true);
+    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({
+      content: 'saved reply draft',
+      link: 'https://example.com/saved.png',
+      spoiler: true,
+    });
+  });
+
+  it('preserves the caret when a live draft update rerenders the modal', async () => {
+    testState.openEmpty = true;
+    testState.selectedText = '';
+    testState.replyDraft = {
+      content: 'saved reply draft',
+      link: '',
+      options: '',
+      spoiler: false,
+    };
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement;
+    const nextContent = 'saved edited reply draft';
+    await act(async () => {
+      const descriptor = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
+      descriptor?.set?.call(textarea, nextContent);
+      textarea.setSelectionRange(7, 7);
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      textarea.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    testState.replyDraft = {
+      ...testState.replyDraft,
+      content: nextContent,
+    };
+    await rerenderReplyModal('/mu/thread/post-1');
+
+    expect(textarea.value).toBe(nextContent);
+    expect(textarea.selectionStart).toBe(7);
+    expect(textarea.selectionEnd).toBe(7);
   });
 
   it('validates empty and invalid replies, then publishes once the payload is valid', async () => {
@@ -1407,6 +1492,25 @@ describe('ReplyModal', () => {
 
     await rerenderReplyModal('/mu/thread/post-1');
     expect(textarea?.value).toBe('Existing line\n>>77\nQuoted line\n');
+  });
+
+  it('does not replay a saved quote request when its location remounts', async () => {
+    testState.isMobile = true;
+    testState.openEmpty = true;
+    testState.replyDraft = {
+      content: 'Existing line\n>>77\nQuoted line\n',
+      link: '',
+      options: '',
+      spoiler: false,
+    };
+    testState.quoteInsertNumber = 77;
+    testState.quoteInsertRequestId = 1;
+    testState.quoteInsertSelectedText = 'Quoted line';
+
+    await renderReplyModal('/mu/thread/post-1');
+
+    expect(container.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('Existing line\n>>77\nQuoted line\n');
+    expect(testState.updateDraftMock).not.toHaveBeenCalled();
   });
 
   it('uses file-link placeholder defaults in all view and hides board-specific warnings or spoiler controls when disabled', async () => {

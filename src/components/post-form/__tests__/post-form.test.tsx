@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostForm, { LinkTypePreviewer } from '../post-form';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../../lib/oekaki/oekaki-copy';
 import { POST_OPTIONS_VALIDATION_DELAY_MS } from '../../../lib/utils/post-options-utils';
+import usePostFormDraftsStore from '../../../stores/use-post-form-drafts-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -477,7 +478,15 @@ const renderNavigablePostForm = async (initialEntry: string) => {
           React.Fragment,
           {},
           createElement(Link, { to: '/biz' }, 'go_biz'),
-          createElement(Routes, {}, createElement(Route, { path: '/:boardIdentifier/*', element: createElement(KeyedPostForm) })),
+          createElement(Link, { to: '/biz?search=first' }, 'go_biz_first_search'),
+          createElement(Link, { to: '/biz?search=second' }, 'go_biz_second_search'),
+          createElement(Link, { to: '/biz/thread/thread-cid' }, 'go_thread'),
+          createElement(
+            Routes,
+            {},
+            createElement(Route, { path: '/:boardIdentifier/thread/:commentCid/*', element: createElement(KeyedPostForm) }),
+            createElement(Route, { path: '/:boardIdentifier/*', element: createElement(KeyedPostForm) }),
+          ),
         ),
       ),
     );
@@ -536,6 +545,7 @@ const dispatchChange = async (element: HTMLInputElement | HTMLSelectElement, val
 describe('PostForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    usePostFormDraftsStore.setState({ forms: {} });
     testState.account = {
       author: { address: 'alice.eth', displayName: 'Alice' },
       subscriptions: ['music-posting.eth'],
@@ -1053,38 +1063,74 @@ describe('PostForm', () => {
     expect(Array.from(container.querySelectorAll('button')).some((button) => button.textContent === 'Draw')).toBe(false);
   });
 
-  it('drops stale thread content when board navigation remounts the form before a link-only post', async () => {
-    await renderNavigablePostForm('/mu');
+  it('restores each location post form visibility and draft after navigation', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    await renderNavigablePostForm('/biz');
     await clickByText(container, 'start_new_thread');
 
     let table = container.querySelector('table');
-    let textarea = table?.querySelector('textarea');
+    const textarea = table?.querySelector('textarea');
+    const optionsInput = table?.querySelector<HTMLInputElement>('[aria-label="options"]');
+    const subjectInput = table?.querySelector<HTMLInputElement>('[aria-label="subject"]');
+    const linkInput = table?.querySelector<HTMLInputElement>('[aria-label="link"]');
+    const spoilerInput = table?.querySelector<HTMLInputElement>('input[type="checkbox"]');
 
     expect(table).toBeTruthy();
     expect(textarea).toBeTruthy();
+    expect(optionsInput).toBeTruthy();
+    expect(subjectInput).toBeTruthy();
+    expect(linkInput).toBeTruthy();
+    expect(spoilerInput).toBeTruthy();
 
-    await dispatchInput(textarea as HTMLTextAreaElement, 'stale draft body');
-    expect(testState.publishPostOptions.content).toBe('stale draft body');
+    await dispatchInput(optionsInput as HTMLInputElement, 'nonoko');
+    await dispatchInput(subjectInput as HTMLInputElement, 'Saved subject');
+    await dispatchInput(textarea as HTMLTextAreaElement, 'saved board draft');
+    await dispatchInput(linkInput as HTMLInputElement, 'https://example.com/saved.png');
+    await act(async () => {
+      spoilerInput?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    await clickLinkByText(container, 'go_thread');
+    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('table')).toBeNull();
+
+    await clickByText(container, 'post_a_reply');
+    expect(container.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('');
 
     await clickLinkByText(container, 'go_biz');
-    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalledTimes(1);
-
-    await clickByText(container, 'start_new_thread');
 
     table = container.querySelector('table');
-    textarea = table?.querySelector('textarea');
-    const textInputs = table?.querySelectorAll<HTMLInputElement>('input[type="text"]') || [];
-    const linkInput = textInputs[3];
+    expect(table).toBeTruthy();
+    expect(table?.querySelector<HTMLInputElement>('[aria-label="options"]')?.value).toBe('nonoko');
+    expect(table?.querySelector<HTMLInputElement>('[aria-label="subject"]')?.value).toBe('Saved subject');
+    expect(table?.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('saved board draft');
+    expect(table?.querySelector<HTMLInputElement>('[aria-label="link"]')?.value).toBe('https://example.com/saved.png');
+    expect(table?.querySelector<HTMLInputElement>('input[type="checkbox"]')?.checked).toBe(true);
 
-    expect(textarea?.value).toBe('');
-    expect(linkInput).toBeTruthy();
-
-    await dispatchInput(linkInput as HTMLInputElement, 'https://example.com/fresh.png');
     await clickByText(table as HTMLTableElement, 'post');
+    expect(testState.publishPostMock).toHaveBeenCalledWith({
+      content: 'saved board draft',
+      link: 'https://example.com/saved.png',
+      spoiler: true,
+      title: 'Saved subject',
+    });
+  });
 
-    expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
-    expect(testState.publishedPostOptions?.link).toBe('https://example.com/fresh.png');
-    expect(testState.publishedPostOptions?.content).toBeUndefined();
+  it('restores the correct post draft when only the location search changes', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    await renderNavigablePostForm('/biz?search=first');
+    await clickByText(container, 'start_new_thread');
+    await dispatchInput(container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement, 'first search draft');
+
+    await clickLinkByText(container, 'go_biz_second_search');
+    await clickByText(container, 'start_new_thread');
+    await dispatchInput(container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement, 'second search draft');
+
+    await clickLinkByText(container, 'go_biz_first_search');
+    expect(container.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('first search draft');
+
+    await clickLinkByText(container, 'go_biz_second_search');
+    expect(container.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('second search draft');
   });
 
   it('shows a 4chan-style flag field on flag boards and publishes the default geographic request', async () => {
@@ -1674,7 +1720,8 @@ describe('PostForm', () => {
     await clickByText(container, 'start_new_thread');
     await flushEffects();
 
-    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalledTimes(1);
+    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalled();
+    expect(usePostFormDraftsStore.getState().forms['/mu']).toBeUndefined();
     expect(testState.navigateMock).toHaveBeenCalledWith('/pending/7', { state: { boardPath: 'mu' } });
   });
 
@@ -1697,7 +1744,7 @@ describe('PostForm', () => {
     await flushEffects();
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
-    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalledTimes(1);
+    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalled();
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { state: { nonokoPendingAccountCommentIndex: 7 } });
     expect(testState.navigateMock).not.toHaveBeenCalledWith('/pending/7');
   });

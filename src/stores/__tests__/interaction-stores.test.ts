@@ -12,17 +12,7 @@ import useThreadLiveUpdatesStore from '../use-thread-live-updates-store';
 
 const resetReplyModalStore = () => {
   useReplyModalStore.setState({
-    showReplyModal: false,
-    openEmpty: false,
-    activeCid: null,
-    parentNumber: null,
-    threadNumber: null,
-    threadCid: null,
-    communityAddress: null,
-    scrollY: 0,
-    quoteInsertRequestId: 0,
-    quoteInsertNumber: null,
-    quoteInsertSelectedText: null,
+    modals: {},
   });
 };
 
@@ -282,6 +272,7 @@ describe('interaction stores', () => {
   });
 
   it('opens reply modals with quoted selection and mobile scroll state', () => {
+    const locationKey = '/mu/thread/thread-cid';
     Object.defineProperty(window, 'innerWidth', {
       configurable: true,
       value: 600,
@@ -294,10 +285,10 @@ describe('interaction stores', () => {
     });
     vi.spyOn(document, 'getSelection').mockReturnValue({ toString: () => 'alpha\nbeta\n' } as Selection);
 
-    useReplyModalStore.getState().openReplyModal('parent-cid', 12, 'thread-cid', 34, 'music.eth');
+    useReplyModalStore.getState().openReplyModal(locationKey, 'parent-cid', 12, 'thread-cid', 34, 'music.eth');
 
     expect(useSelectedTextStore.getState().selectedText).toBe('>alpha\n>beta\n');
-    expect(useReplyModalStore.getState()).toMatchObject({
+    expect(useReplyModalStore.getState().modals[locationKey]).toMatchObject({
       showReplyModal: true,
       openEmpty: false,
       activeCid: 'thread-cid',
@@ -310,14 +301,16 @@ describe('interaction stores', () => {
   });
 
   it('inserts quote requests into an already-open reply modal and can reopen empty', () => {
-    useReplyModalStore.getState().openReplyModal('parent-cid', 12, 'thread-cid', 34, 'music.eth');
+    const locationKey = '/mu/thread/thread-cid';
+    const otherLocationKey = '/mu/thread/other-thread-cid';
+    useReplyModalStore.getState().openReplyModal(locationKey, 'parent-cid', 12, 'thread-cid', 34, 'music.eth');
     vi.spyOn(document, 'getSelection').mockReturnValue({ toString: () => 'quoted text' } as Selection);
 
-    useReplyModalStore.getState().openReplyModal('parent-cid-2', 77, 'thread-cid', 34, 'music.eth');
+    useReplyModalStore.getState().openReplyModal(locationKey, 'parent-cid-2', 77, 'thread-cid', 34, 'music.eth');
 
-    expect(useReplyModalStore.getState().quoteInsertRequestId).toBe(1);
-    expect(useReplyModalStore.getState().quoteInsertNumber).toBe(77);
-    expect(useReplyModalStore.getState().quoteInsertSelectedText).toBe('>quoted text');
+    expect(useReplyModalStore.getState().modals[locationKey].quoteInsertRequestId).toBe(1);
+    expect(useReplyModalStore.getState().modals[locationKey].quoteInsertNumber).toBe(77);
+    expect(useReplyModalStore.getState().modals[locationKey].quoteInsertSelectedText).toBe('>quoted text');
 
     useSelectedTextStore.getState().setSelectedText('stale quote');
     Object.defineProperty(window, 'innerWidth', {
@@ -331,32 +324,36 @@ describe('interaction stores', () => {
       writable: true,
     });
 
-    useReplyModalStore.getState().openReplyModalEmpty('thread-cid', 34, 'music.eth');
+    useReplyModalStore.getState().updateDraft(locationKey, { content: 'first route draft', link: 'https://example.com/first.png' });
+    useReplyModalStore.getState().openReplyModalEmpty(otherLocationKey, 'other-thread-cid', 35, 'music.eth');
 
     expect(useSelectedTextStore.getState().selectedText).toBe('');
-    expect(useReplyModalStore.getState()).toMatchObject({
+    expect(useReplyModalStore.getState().modals[otherLocationKey]).toMatchObject({
       showReplyModal: true,
       openEmpty: true,
-      activeCid: 'thread-cid',
-      threadNumber: 34,
-      threadCid: 'thread-cid',
+      activeCid: 'other-thread-cid',
+      threadNumber: 35,
+      threadCid: 'other-thread-cid',
       communityAddress: 'music.eth',
       scrollY: 32,
       quoteInsertNumber: null,
       quoteInsertSelectedText: null,
     });
+    expect(useReplyModalStore.getState().modals[otherLocationKey].draft).toEqual({
+      content: '',
+      link: '',
+      options: '',
+      spoiler: false,
+    });
+    expect(useReplyModalStore.getState().modals[locationKey].draft).toMatchObject({
+      content: 'first route draft',
+      link: 'https://example.com/first.png',
+    });
 
     useSelectedTextStore.getState().setSelectedText('cleanup');
-    useReplyModalStore.getState().closeModal();
+    useReplyModalStore.getState().closeModal(otherLocationKey);
     expect(useSelectedTextStore.getState().selectedText).toBe('');
-    expect(useReplyModalStore.getState()).toMatchObject({
-      showReplyModal: false,
-      openEmpty: false,
-      activeCid: null,
-      parentNumber: null,
-      threadNumber: null,
-      quoteInsertNumber: null,
-      quoteInsertSelectedText: null,
-    });
+    expect(useReplyModalStore.getState().modals[otherLocationKey]).toBeUndefined();
+    expect(useReplyModalStore.getState().modals[locationKey].showReplyModal).toBe(true);
   });
 });
