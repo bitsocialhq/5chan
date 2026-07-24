@@ -26,7 +26,7 @@ const testState = vi.hoisted(() => ({
     ],
   },
   offlineStates: {} as Record<string, { updatedAt?: number; state?: string }>,
-  communities: {} as Record<string, { address?: string; name?: string; publicKey?: string }>,
+  communities: {} as Record<string, { address?: string; name?: string; publicKey?: string; state?: string; updatedAt?: number }>,
   syncStatuses: {} as Record<string, { syncState: CommunitySyncState }>,
   candidatePublicKeys: {} as Record<string, string | undefined>,
   offlineSelections: [] as unknown[],
@@ -171,6 +171,78 @@ describe('useResolvedCommunityAddress', () => {
     testState.syncStatuses = {
       '12D3KooWBusiness': {
         syncState: 'failed',
+      },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('bizraelis.bso');
+  });
+
+  it('keeps a fresh cached winner when a later synchronization fails', async () => {
+    testState.communities = {
+      '12D3KooWBusiness': {
+        address: '12D3KooWBusiness',
+        name: 'business-and-finance.bso',
+        publicKey: '12D3KooWBusiness',
+        state: 'succeeded',
+        updatedAt: 1_704_067_210 - 60,
+      },
+    };
+    testState.syncStatuses = {
+      '12D3KooWBusiness': {
+        syncState: 'failed',
+      },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('business-and-finance.bso');
+  });
+
+  it('uses the freshest timestamp across matching cached aliases and the offline mirror', async () => {
+    testState.offlineStates = {
+      'business-and-finance.bso': {
+        updatedAt: 1_704_067_210 - 31 * 60,
+      },
+    };
+    testState.communities = {
+      'business-and-finance.bso': {
+        address: 'business-and-finance.bso',
+        name: 'business-and-finance.bso',
+        publicKey: '12D3KooWBusiness',
+        updatedAt: 1_704_067_210 - 31 * 60,
+      },
+      '12D3KooWBusiness': {
+        address: '12D3KooWBusiness',
+        name: 'business-and-finance.bso',
+        publicKey: '12D3KooWBusiness',
+        updatedAt: 1_704_067_210 - 60,
+      },
+    };
+    testState.syncStatuses = {
+      '12D3KooWBusiness': {
+        syncState: 'failed',
+      },
+    };
+
+    await renderHook();
+
+    expect(latestValue).toBe('business-and-finance.bso');
+  });
+
+  it('treats a zero cached timestamp as stale while synchronization retries', async () => {
+    testState.communities = {
+      '12D3KooWBusiness': {
+        address: '12D3KooWBusiness',
+        name: 'business-and-finance.bso',
+        publicKey: '12D3KooWBusiness',
+        updatedAt: 0,
+      },
+    };
+    testState.syncStatuses = {
+      '12D3KooWBusiness': {
+        syncState: 'retrying',
       },
     };
 
