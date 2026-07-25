@@ -163,7 +163,7 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
           </span>
         ) : status === 'loading' ? (
           <span className={styles.statusLoading}>
-            <LoadingEllipsis string={t('loading')} />
+            <LoadingEllipsis centered string={t('loading')} />
           </span>
         ) : status === 'unknown' ? (
           <span className={styles.statusUnavailable}>{DIRECTORY_STATUS_UNAVAILABLE_MARKER}</span>
