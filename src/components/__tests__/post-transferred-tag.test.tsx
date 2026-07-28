@@ -2,6 +2,7 @@ import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { TRASH_BOARD_ADDRESS } from '../../lib/special-boards';
 import PostTransferredTag from '../post-transferred-tag';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -34,6 +35,22 @@ describe('PostTransferredTag', () => {
     });
 
     expect(container.textContent).toBe('[Transferred] ');
+  });
+
+  it('does not render the transferred label for posts moved to trash', async () => {
+    await act(async () => {
+      root.render(
+        createElement(PostTransferredTag, {
+          comment: {
+            commentModeration: { flairs: [{ text: '5chan:transferred' }] },
+            communityAddress: TRASH_BOARD_ADDRESS,
+            title: 'Original title',
+          },
+        }),
+      );
+    });
+
+    expect(container.textContent).toBe('');
   });
 
   it('ignores user-authored transferred-looking flairs', async () => {
