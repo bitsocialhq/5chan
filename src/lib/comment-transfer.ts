@@ -177,6 +177,22 @@ export const getTransferredCommentCid = (challengeVerification: unknown, challen
   return isRecord(challengeComment) ? getTextField(challengeComment.cid) : undefined;
 };
 
+export const getTransferredCommentNumber = (challengeVerification: unknown, challengeComment: unknown): number | undefined => {
+  if (isRecord(challengeVerification)) {
+    const commentUpdate = challengeVerification.commentUpdate;
+    if (isRecord(commentUpdate) && typeof commentUpdate.number === 'number' && Number.isInteger(commentUpdate.number) && commentUpdate.number > 0) {
+      return commentUpdate.number;
+    }
+    const comment = challengeVerification.comment;
+    if (isRecord(comment) && typeof comment.number === 'number' && Number.isInteger(comment.number) && comment.number > 0) {
+      return comment.number;
+    }
+  }
+
+  if (!isRecord(challengeComment)) return undefined;
+  return typeof challengeComment.number === 'number' && Number.isInteger(challengeComment.number) && challengeComment.number > 0 ? challengeComment.number : undefined;
+};
+
 const hasTransferredMarkerInFlairs = (flairs: unknown): boolean => getFlairs(flairs).some(isTransferredCommentFlair);
 
 export const hasTransferredCommentMarker = (comment: unknown): boolean => {

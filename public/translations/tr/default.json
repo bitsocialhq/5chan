@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Hedef",
   "modQueue.transferFields": "Alanları kopyala",
   "modQueue.transferNoFields": "Kopyalamak için en az bir alan seçin.",
-  "modQueue.transferSuccess": "/trash/ panosuna taşındı. Orijinal gönderi artık /trash/ panosuna işaret ediyor.",
+  "modQueue.transferSuccess": "Taşındı",
   "transferred": "Aktarıldı",
   "modQueue.transferTitleWithNumber": "No.{{number}} gönderisini /trash/ panosuna taşı",
   "modQueue.transferRecreateNotice": "Bu gerçek bir protokol aktarımı değildir. 5chan gönderiyi /trash/ panosunda yeniden oluşturur ve orijinali kaldırır.",

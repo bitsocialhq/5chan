@@ -1,6 +1,7 @@
 import React, { useEffect, useEffectEvent, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { useSpring, animated } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 import { type ChallengeVerification, type Comment } from '@bitsocial/bitsocial-react-hooks';
@@ -25,6 +26,7 @@ import {
   getTransferSourceBoardRulesLink,
   getTransferSourceModeration,
   getTransferredCommentCid,
+  getTransferredCommentNumber,
   hasSelectedTransferFields,
   type PostTransferField,
   type PostTransferFields,
@@ -45,6 +47,7 @@ const TRANSFER_MODAL_POSITION_SESSION_STORAGE_KEY = '5chan:transfer-modal-positi
 
 interface TransferModalState {
   selectedFields: PostTransferFields;
+  targetComment?: { cid: string; number?: number };
   transferState: PostTransferState;
   transferError?: unknown;
 }
@@ -52,7 +55,7 @@ interface TransferModalState {
 type TransferModalAction =
   | { type: 'field'; field: PostTransferField; checked: boolean }
   | { type: 'publishStarted' }
-  | { type: 'publishSucceeded' }
+  | { type: 'publishSucceeded'; targetComment: { cid: string; number?: number } }
   | { type: 'publishFinalizationFailed'; error: unknown }
   | { type: 'publishFailed'; error: unknown };
 
@@ -79,10 +82,10 @@ const transferModalReducer = (state: TransferModalState, action: TransferModalAc
     return resetTransferResult({ ...state, selectedFields: { ...state.selectedFields, [action.field]: action.checked } });
   }
   if (action.type === 'publishStarted') {
-    return { ...state, transferState: 'publishing', transferError: undefined };
+    return { ...state, targetComment: undefined, transferState: 'publishing', transferError: undefined };
   }
   if (action.type === 'publishSucceeded') {
-    return { ...state, transferState: 'succeeded' };
+    return { ...state, targetComment: action.targetComment, transferState: 'succeeded' };
   }
   if (action.type === 'publishFinalizationFailed') {
     return { ...state, transferState: 'finalizationFailed', transferError: action.error };
@@ -191,7 +194,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
   const targetBoardLabel = getTransferBoardLabel(resolvedTargetBoard ?? { address: TRASH_BOARD_ADDRESS });
   const isSourceTargetBoard = isSameTransferBoard(resolvedTargetBoard ?? { address: TRASH_BOARD_ADDRESS }, sourceCommunityAddress);
   const [modalState, dispatchModalState] = useReducer(transferModalReducer, comment, getInitialTransferModalState);
-  const { selectedFields, transferState, transferError } = modalState;
+  const { selectedFields, targetComment, transferState, transferError } = modalState;
 
   const availableFields = useMemo(() => getAvailableTransferFields(comment), [comment]);
   const sourceBoard = useMemo(() => {
@@ -366,6 +369,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
               if (!targetCommentCid) {
                 throw new Error('Transferred post was accepted, but no target CID was returned.');
               }
+              const targetCommentNumber = getTransferredCommentNumber(challengeVerification, challengeComment);
               if (!sourcePublishIdentity) {
                 throw new Error('Transferred post was accepted, but no source board was resolved.');
               }
@@ -398,7 +402,7 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
                 console.error('Transfer success callback failed:', error);
               }
               onTransferStateChange?.('succeeded');
-              dispatchModalState({ type: 'publishSucceeded' });
+              dispatchModalState({ type: 'publishSucceeded', targetComment: { cid: targetCommentCid, number: targetCommentNumber } });
             } catch (error) {
               console.error('Transfer finalization failed:', error);
               await cleanupTemporaryAccount();
@@ -484,7 +488,11 @@ const PostTransferModal = ({ comment, onClose, onTransferStateChange, onTransfer
               <ErrorDisplay error={transferError} inline={true} showImmediately={true} />
             </div>
           )}
-          {transferState === 'succeeded' && <div className={styles.transferSuccess}>{t('modQueue.transferSuccess')}</div>}
+          {transferState === 'succeeded' && targetComment && (
+            <div className={styles.transferSuccess}>
+              {t('modQueue.transferSuccess')} <Link to={`/trash/thread/${targetComment.cid}`}>{`>>>/trash/${targetComment.number ?? targetComment.cid}`}</Link>
+            </div>
+          )}
         </div>
 
         <div className={styles.transferFooter}>

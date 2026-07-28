@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "ไปที่",
   "modQueue.transferFields": "คัดลอกฟิลด์",
   "modQueue.transferNoFields": "เลือกอย่างน้อยหนึ่งฟิลด์ที่จะคัดลอก",
-  "modQueue.transferSuccess": "ย้ายไปที่ /trash/ แล้ว โพสต์ต้นฉบับชี้ไปที่ /trash/ แล้ว",
+  "modQueue.transferSuccess": "ย้ายแล้ว",
   "transferred": "โอนย้ายแล้ว",
   "modQueue.transferTitleWithNumber": "ย้ายโพสต์ No.{{number}} ไปที่ /trash/",
   "modQueue.transferRecreateNotice": "นี่ไม่ใช่การโอนย้ายจริงในระดับโปรโตคอล 5chan จะสร้างโพสต์ใหม่ใน /trash/ และลบต้นฉบับ",

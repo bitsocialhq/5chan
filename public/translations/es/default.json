@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "A",
   "modQueue.transferFields": "Copiar campos",
   "modQueue.transferNoFields": "Elige al menos un campo para copiar.",
-  "modQueue.transferSuccess": "Movida a /trash/. La publicación original ahora apunta a /trash/.",
+  "modQueue.transferSuccess": "Movido",
   "transferred": "Transferido",
   "modQueue.transferTitleWithNumber": "Mover publicación No.{{number}} a /trash/",
   "modQueue.transferRecreateNotice": "Esto no es una transferencia real del protocolo. 5chan vuelve a crear la publicación en /trash/ y elimina la original.",

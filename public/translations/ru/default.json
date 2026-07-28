@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "В",
   "modQueue.transferFields": "Копировать поля",
   "modQueue.transferNoFields": "Выберите хотя бы одно поле для копирования.",
-  "modQueue.transferSuccess": "Перемещено в /trash/. Исходный пост теперь указывает на /trash/.",
+  "modQueue.transferSuccess": "Перемещено",
   "transferred": "Перенесено",
   "modQueue.transferTitleWithNumber": "Переместить пост No.{{number}} в /trash/",
   "modQueue.transferRecreateNotice": "Это не настоящий перенос на уровне протокола. 5chan заново создаёт пост в /trash/ и удаляет оригинал.",

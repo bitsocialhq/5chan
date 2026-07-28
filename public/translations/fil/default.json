@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Sa",
   "modQueue.transferFields": "Kopyahin ang mga field",
   "modQueue.transferNoFields": "Pumili ng kahit isang field na kopyahin.",
-  "modQueue.transferSuccess": "Inilipat sa /trash/. Nakaturo na ngayon ang orihinal na post sa /trash/.",
+  "modQueue.transferSuccess": "Inilipat",
   "transferred": "Nailipat",
   "modQueue.transferTitleWithNumber": "Ilipat ang post No.{{number}} sa /trash/",
   "modQueue.transferRecreateNotice": "Hindi ito tunay na protocol transfer. Muling ginagawa ng 5chan ang post sa /trash/ at inaalis ang orihinal.",

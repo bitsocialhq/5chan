@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Nach",
   "modQueue.transferFields": "Felder kopieren",
   "modQueue.transferNoFields": "Wählen Sie mindestens ein Feld zum Kopieren aus.",
-  "modQueue.transferSuccess": "Nach /trash/ verschoben. Der ursprüngliche Beitrag verweist jetzt auf /trash/.",
+  "modQueue.transferSuccess": "Verschoben",
   "transferred": "Übertragen",
   "modQueue.transferTitleWithNumber": "Beitrag Nr. {{number}} nach /trash/ verschieben",
   "modQueue.transferRecreateNotice": "Das ist keine echte Protokoll-Übertragung. 5chan erstellt den Beitrag in /trash/ neu und entfernt das Original.",

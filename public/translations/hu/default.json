@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Ide",
   "modQueue.transferFields": "Mezők másolása",
   "modQueue.transferNoFields": "Válasszon legalább egy mezőt a másoláshoz.",
-  "modQueue.transferSuccess": "Áthelyezve ide: /trash/. Az eredeti bejegyzés most a /trash/ helyre mutat.",
+  "modQueue.transferSuccess": "Áthelyezve",
   "transferred": "Áthelyezve",
   "modQueue.transferTitleWithNumber": "No.{{number}} bejegyzés áthelyezése ide: /trash/",
   "modQueue.transferRecreateNotice": "Ez nem valódi protokollszintű áthelyezés. A 5chan újra létrehozza a bejegyzést a /trash/ helyen, majd eltávolítja az eredetit.",

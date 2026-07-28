@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Ke",
   "modQueue.transferFields": "Salin bidang",
   "modQueue.transferNoFields": "Pilih setidaknya satu bidang untuk disalin.",
-  "modQueue.transferSuccess": "Dipindahkan ke /trash/. Postingan asli sekarang mengarah ke /trash/.",
+  "modQueue.transferSuccess": "Dipindahkan",
   "transferred": "Ditransfer",
   "modQueue.transferTitleWithNumber": "Pindahkan postingan No.{{number}} ke /trash/",
   "modQueue.transferRecreateNotice": "Ini bukan transfer protokol yang sebenarnya. 5chan membuat ulang postingan di /trash/ dan menghapus yang asli.",

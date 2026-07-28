@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Do",
   "modQueue.transferFields": "Kopiuj pola",
   "modQueue.transferNoFields": "Wybierz co najmniej jedno pole do skopiowania.",
-  "modQueue.transferSuccess": "Przeniesiono do /trash/. Oryginalny post wskazuje teraz /trash/.",
+  "modQueue.transferSuccess": "Przeniesiono",
   "transferred": "Przeniesiono",
   "modQueue.transferTitleWithNumber": "Przenieś post No.{{number}} do /trash/",
   "modQueue.transferRecreateNotice": "To nie jest rzeczywisty transfer na poziomie protokołu. 5chan odtwarza post w /trash/ i usuwa oryginał.",

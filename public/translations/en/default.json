@@ -474,7 +474,7 @@
   "modQueue.transferTarget": "To",
   "modQueue.transferFields": "Copy fields",
   "modQueue.transferNoFields": "Choose at least one field to copy.",
-  "modQueue.transferSuccess": "Moved to /trash/. The original post now points to /trash/.",
+  "modQueue.transferSuccess": "Moved",
   "transferred": "Transferred",
   "modQueue.transferTitleWithNumber": "Move Post No.{{number}} to /trash/",
   "modQueue.transferRecreateNotice": "This is not a real protocol transfer. 5chan recreates the post on /trash/ and removes the original.",

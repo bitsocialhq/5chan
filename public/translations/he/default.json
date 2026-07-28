@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "אל",
   "modQueue.transferFields": "העתק שדות",
   "modQueue.transferNoFields": "בחר לפחות שדה אחד להעתקה.",
-  "modQueue.transferSuccess": "הועבר אל /trash/. הפוסט המקורי מפנה עכשיו אל /trash/.",
+  "modQueue.transferSuccess": "הועבר",
   "transferred": "הועבר",
   "modQueue.transferTitleWithNumber": "העבר את פוסט מס׳ {{number}} אל /trash/",
   "modQueue.transferRecreateNotice": "זו לא העברה אמיתית ברמת הפרוטוקול. 5chan יוצר מחדש את הפוסט ב-/trash/ ומסיר את המקור.",

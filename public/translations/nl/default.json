@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Naar",
   "modQueue.transferFields": "Velden kopiëren",
   "modQueue.transferNoFields": "Kies minimaal één veld om te kopiëren.",
-  "modQueue.transferSuccess": "Verplaatst naar /trash/. Het oorspronkelijke bericht verwijst nu naar /trash/.",
+  "modQueue.transferSuccess": "Verplaatst",
   "transferred": "Overgezet",
   "modQueue.transferTitleWithNumber": "Bericht No.{{number}} naar /trash/ verplaatsen",
   "modQueue.transferRecreateNotice": "Dit is geen echte protocoloverdracht. 5chan maakt het bericht opnieuw in /trash/ en verwijdert het origineel.",

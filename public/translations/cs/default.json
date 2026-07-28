@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Do",
   "modQueue.transferFields": "Kopírovat pole",
   "modQueue.transferNoFields": "Vyberte alespoň jedno pole ke kopírování.",
-  "modQueue.transferSuccess": "Přesunuto do /trash/. Původní příspěvek teď odkazuje na /trash/.",
+  "modQueue.transferSuccess": "Přesunuto",
   "transferred": "Přesunuto",
   "modQueue.transferTitleWithNumber": "Přesunout příspěvek č. {{number}} do /trash/",
   "modQueue.transferRecreateNotice": "Toto není skutečný protokolový přesun. 5chan příspěvek znovu vytvoří v /trash/ a původní odstraní.",

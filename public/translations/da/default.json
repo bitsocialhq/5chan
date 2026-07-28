@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Til",
   "modQueue.transferFields": "Kopiér felter",
   "modQueue.transferNoFields": "Vælg mindst ét felt, der skal kopieres.",
-  "modQueue.transferSuccess": "Flyttet til /trash/. Det oprindelige opslag peger nu på /trash/.",
+  "modQueue.transferSuccess": "Flyttet",
   "transferred": "Overført",
   "modQueue.transferTitleWithNumber": "Flyt opslag No.{{number}} til /trash/",
   "modQueue.transferRecreateNotice": "Dette er ikke en rigtig protokoloverførsel. 5chan genskaber opslaget i /trash/ og fjerner originalen.",

@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "대상",
   "modQueue.transferFields": "필드 복사",
   "modQueue.transferNoFields": "복사할 필드를 하나 이상 선택하세요.",
-  "modQueue.transferSuccess": "/trash/로 이동되었습니다. 원래 게시글은 이제 /trash/를 가리킵니다.",
+  "modQueue.transferSuccess": "이동됨",
   "transferred": "이동됨",
   "modQueue.transferTitleWithNumber": "게시글 No.{{number}}을 /trash/로 이동",
   "modQueue.transferRecreateNotice": "이것은 실제 프로토콜 전송이 아닙니다. 5chan은 /trash/에 게시글을 다시 만들고 원본을 제거합니다.",

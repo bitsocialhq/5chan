@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "La",
   "modQueue.transferFields": "Copiază câmpurile",
   "modQueue.transferNoFields": "Alege cel puțin un câmp de copiat.",
-  "modQueue.transferSuccess": "Mutată în /trash/. Postarea originală trimite acum la /trash/.",
+  "modQueue.transferSuccess": "Mutat",
   "transferred": "Transferat",
   "modQueue.transferTitleWithNumber": "Mută postarea No.{{number}} în /trash/",
   "modQueue.transferRecreateNotice": "Acesta nu este un transfer real la nivel de protocol. 5chan recreează postarea în /trash/ și elimină originalul.",

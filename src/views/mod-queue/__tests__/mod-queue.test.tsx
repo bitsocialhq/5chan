@@ -653,7 +653,7 @@ describe('ModQueueView', () => {
     expect(typeof payload.onChallengeVerification).toBe('function');
 
     await act(async () => {
-      await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post' } }, { cid: 'transferred-post' });
+      await payload.onChallengeVerification({ challengeSuccess: true, commentUpdate: { cid: 'transferred-post', number: 12 } }, { cid: 'transferred-post' });
       await Promise.resolve();
     });
 
@@ -677,7 +677,8 @@ describe('ModQueueView', () => {
     });
     expect(testState.deleteAccountMock).toHaveBeenCalledWith(temporaryAccountName);
     expect(dialog?.textContent).toContain('modQueue.transferSuccess');
-    expect(dialog?.textContent).not.toContain('#12');
+    const targetPostLink = Array.from(dialog?.querySelectorAll<HTMLAnchorElement>('a') ?? []).find((link) => link.textContent === '>>>/trash/12');
+    expect(targetPostLink?.getAttribute('href')).toBe('/trash/thread/transferred-post');
     expect(submitButton?.disabled).toBe(true);
     expect(testState.rememberCommentsInQueueMock).toHaveBeenCalledWith([
       expect.objectContaining({

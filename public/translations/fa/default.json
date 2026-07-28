@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "به",
   "modQueue.transferFields": "کپی فیلدها",
   "modQueue.transferNoFields": "حداقل یک فیلد برای کپی انتخاب کنید.",
-  "modQueue.transferSuccess": "به /trash/ منتقل شد. پست اصلی اکنون به /trash/ اشاره می‌کند.",
+  "modQueue.transferSuccess": "منتقل شد",
   "transferred": "منتقل شد",
   "modQueue.transferTitleWithNumber": "انتقال پست شماره {{number}} به /trash/",
   "modQueue.transferRecreateNotice": "این یک انتقال واقعی در سطح پروتکل نیست. 5chan پست را در /trash/ دوباره می‌سازد و نسخه اصلی را حذف می‌کند.",

@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "গন্তব্য",
   "modQueue.transferFields": "ক্ষেত্র কপি করুন",
   "modQueue.transferNoFields": "কপি করতে অন্তত একটি ক্ষেত্র নির্বাচন করুন।",
-  "modQueue.transferSuccess": "/trash/-এ সরানো হয়েছে। মূল পোস্টটি এখন /trash/-এর দিকে নির্দেশ করে।",
+  "modQueue.transferSuccess": "সরানো হয়েছে",
   "transferred": "স্থানান্তরিত",
   "modQueue.transferTitleWithNumber": "পোস্ট No.{{number}} /trash/-এ সরান",
   "modQueue.transferRecreateNotice": "এটি প্রোটোকল স্তরের আসল স্থানান্তর নয়। 5chan পোস্টটি /trash/-এ আবার তৈরি করে এবং আসলটি সরিয়ে দেয়।",

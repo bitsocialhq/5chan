@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Προς",
   "modQueue.transferFields": "Αντιγραφή πεδίων",
   "modQueue.transferNoFields": "Επιλέξτε τουλάχιστον ένα πεδίο για αντιγραφή.",
-  "modQueue.transferSuccess": "Μετακινήθηκε στο /trash/. Η αρχική ανάρτηση δείχνει πλέον στο /trash/.",
+  "modQueue.transferSuccess": "Μετακινήθηκε",
   "transferred": "Μεταφέρθηκε",
   "modQueue.transferTitleWithNumber": "Μετακίνηση ανάρτησης No.{{number}} στο /trash/",
   "modQueue.transferRecreateNotice": "Αυτό δεν είναι πραγματική μεταφορά στο πρωτόκολλο. Το 5chan αναδημιουργεί την ανάρτηση στο /trash/ και αφαιρεί την αρχική.",

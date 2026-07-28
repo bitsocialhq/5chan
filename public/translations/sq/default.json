@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Te",
   "modQueue.transferFields": "Kopjo fushat",
   "modQueue.transferNoFields": "Zgjidhni të paktën një fushë për të kopjuar.",
-  "modQueue.transferSuccess": "U zhvendos te /trash/. Postimi origjinal tani të drejton te /trash/.",
+  "modQueue.transferSuccess": "U zhvendos",
   "transferred": "U transferua",
   "modQueue.transferTitleWithNumber": "Zhvendose postimin No.{{number}} te /trash/",
   "modQueue.transferRecreateNotice": "Ky nuk është transferim i vërtetë në protokoll. 5chan e rikrijon postimin te /trash/ dhe heq origjinalin.",

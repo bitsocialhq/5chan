@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "至",
   "modQueue.transferFields": "复制字段",
   "modQueue.transferNoFields": "请至少选择一个要复制的字段。",
-  "modQueue.transferSuccess": "已移至 /trash/。原帖现在指向 /trash/。",
+  "modQueue.transferSuccess": "已移动",
   "transferred": "已转移",
   "modQueue.transferTitleWithNumber": "将帖子 No.{{number}} 移至 /trash/",
   "modQueue.transferRecreateNotice": "这不是协议层面的真实转移。5chan 会在 /trash/ 重新创建帖子，并移除原帖。",

@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Kohde",
   "modQueue.transferFields": "Kopioi kentät",
   "modQueue.transferNoFields": "Valitse vähintään yksi kopioitava kenttä.",
-  "modQueue.transferSuccess": "Siirretty /trash/-laudalle. Alkuperäinen viesti osoittaa nyt /trash/-laudalle.",
+  "modQueue.transferSuccess": "Siirretty",
   "transferred": "Siirretty",
   "modQueue.transferTitleWithNumber": "Siirrä viesti No.{{number}} /trash/-laudalle",
   "modQueue.transferRecreateNotice": "Tämä ei ole oikea protokollatason siirto. 5chan luo viestin uudelleen /trash/-laudalle ja poistaa alkuperäisen.",

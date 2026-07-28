@@ -8,6 +8,7 @@ import {
   getTransferSourceBoardReference,
   getTransferSourceBoardRulesLink,
   getTransferSourceModeration,
+  getTransferredCommentNumber,
   hasTransferredCommentMarker,
   TRANSFERRED_COMMENT_FLAIR,
 } from '../comment-transfer';
@@ -157,6 +158,13 @@ describe('comment-transfer', () => {
     expect(getTransferSourceBoardRulesLink({ address: TRASH_BOARD_ADDRESS, directoryCode: TRASH_BOARD_CODE, title: TRASH_BOARD_TITLE })).toBe('the rules');
     expect(getTransferSourceBoardReference(undefined, 'source-board.eth')).toBe('source-board.eth');
     expect(getTransferSourceBoardRulesLink(undefined)).toBe('the rules');
+  });
+
+  it('reads the transferred post number from challenge verification data', () => {
+    expect(getTransferredCommentNumber({ commentUpdate: { number: 12 } }, { number: 13 })).toBe(12);
+    expect(getTransferredCommentNumber({ comment: { number: 14 } }, { number: 15 })).toBe(14);
+    expect(getTransferredCommentNumber({}, { number: 16 })).toBe(16);
+    expect(getTransferredCommentNumber({ commentUpdate: { number: 0 } }, {})).toBeUndefined();
   });
 
   it('only treats moderation/update flairs as the transferred marker', () => {

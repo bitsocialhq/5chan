@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Till",
   "modQueue.transferFields": "Kopiera fält",
   "modQueue.transferNoFields": "Välj minst ett fält att kopiera.",
-  "modQueue.transferSuccess": "Flyttat till /trash/. Det ursprungliga inlägget pekar nu till /trash/.",
+  "modQueue.transferSuccess": "Flyttad",
   "transferred": "Överfört",
   "modQueue.transferTitleWithNumber": "Flytta inlägg No.{{number}} till /trash/",
   "modQueue.transferRecreateNotice": "Det här är inte en riktig protokollöverföring. 5chan återskapar inlägget i /trash/ och tar bort originalet.",

@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "إلى",
   "modQueue.transferFields": "نسخ الحقول",
   "modQueue.transferNoFields": "اختر حقلًا واحدًا على الأقل للنسخ.",
-  "modQueue.transferSuccess": "نُقل إلى /trash/. يشير المنشور الأصلي الآن إلى /trash/.",
+  "modQueue.transferSuccess": "تم النقل",
   "transferred": "منقول",
   "modQueue.transferTitleWithNumber": "انقل المنشور رقم {{number}} إلى /trash/",
   "modQueue.transferRecreateNotice": "هذا ليس نقلاً حقيقياً على مستوى البروتوكول. يعيد 5chan إنشاء المنشور على /trash/ ويزيل الأصل.",

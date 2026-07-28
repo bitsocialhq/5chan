@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "Đến",
   "modQueue.transferFields": "Sao chép trường",
   "modQueue.transferNoFields": "Chọn ít nhất một trường để sao chép.",
-  "modQueue.transferSuccess": "Đã chuyển vào /trash/. Bài viết gốc hiện trỏ tới /trash/.",
+  "modQueue.transferSuccess": "Đã chuyển",
   "transferred": "Đã chuyển",
   "modQueue.transferTitleWithNumber": "Chuyển bài viết No.{{number}} vào /trash/",
   "modQueue.transferRecreateNotice": "Đây không phải là chuyển bài thật ở cấp giao thức. 5chan tạo lại bài viết trong /trash/ và gỡ bài gốc.",

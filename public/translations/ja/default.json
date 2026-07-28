@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "移動先",
   "modQueue.transferFields": "フィールドをコピー",
   "modQueue.transferNoFields": "コピーする項目を1つ以上選択してください。",
-  "modQueue.transferSuccess": "/trash/ へ移動しました。元の投稿は /trash/ を指すようになりました。",
+  "modQueue.transferSuccess": "移動しました",
   "transferred": "転送済み",
   "modQueue.transferTitleWithNumber": "投稿 No.{{number}} を /trash/ へ移動",
   "modQueue.transferRecreateNotice": "これはプロトコル上の本当の転送ではありません。5chan は /trash/ に投稿を再作成し、元の投稿を削除します。",

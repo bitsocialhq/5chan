@@ -455,7 +455,7 @@
   "modQueue.transferTarget": "కు",
   "modQueue.transferFields": "ఫీల్డ్‌లను కాపీ చేయండి",
   "modQueue.transferNoFields": "కాపీ చేయడానికి కనీసం ఒక ఫీల్డ్ ఎంచుకోండి.",
-  "modQueue.transferSuccess": "/trash/కి తరలించబడింది. అసలు పోస్ట్ ఇప్పుడు /trash/ను సూచిస్తుంది.",
+  "modQueue.transferSuccess": "తరలించబడింది",
   "transferred": "బదిలీ చేయబడింది",
   "modQueue.transferTitleWithNumber": "పోస్ట్ No.{{number}}ను /trash/కి తరలించండి",
   "modQueue.transferRecreateNotice": "ఇది నిజమైన ప్రోటోకాల్ బదిలీ కాదు. 5chan పోస్ట్‌ను /trash/లో మళ్లీ సృష్టించి అసలుదాన్ని తొలగిస్తుంది.",
