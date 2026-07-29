@@ -80,6 +80,39 @@
       ],
       "files": [],
       "notes": "React and effect reviews found no new issue. Code-quality review found no high-confidence advisory finding. Mid-tier throttled Chromium plus current Firefox/WebKit desktop and mobile checks passed without an app exception or horizontal overflow."
+    },
+    {
+      "id": "F006",
+      "priority": 6,
+      "status": "verified",
+      "description": "Reduce homepage acquisition-phase React commits while decentralized community stats resolve, without changing the displayed results.",
+      "verification": [
+        "Capture a fresh homepage acquisition baseline with component and commit timings.",
+        "Add focused regression tests for any subscription or batching change.",
+        "Reprofile through the loaded-board condition, compare the first twenty seconds, and record an untouched idle sample."
+      ],
+      "files": [
+        "src/hooks/use-communities-stats.ts",
+        "src/hooks/__tests__/use-communities-stats.test.ts",
+        "src/views/home/home.tsx",
+        "src/views/home/__tests__/home.test.tsx"
+      ],
+      "notes": "Committed as 28fda1ce3. First-twenty-second commits improved from 1,211 to 862 (-29%), and CommunityStatsRequest renders from 1,569 to 491 (-69%). All 64 boards resolved at 21.06s, about one second after the baseline run, then the next five seconds recorded zero commits."
+    },
+    {
+      "id": "F007",
+      "priority": 7,
+      "status": "verified",
+      "description": "Measure representative production cold startup under constrained CPU and network, then reduce only verified application-owned bottlenecks.",
+      "verification": [
+        "Separate Vite development-module overhead from a production build served locally.",
+        "Record production navigation, LCP, long-task, transfer, and bundle evidence under the mid-tier throttle.",
+        "Rebuild and remeasure after any retained optimization."
+      ],
+      "files": [
+        "vite.config.js"
+      ],
+      "notes": "Committed as 0de61ac56. In a Brotli production build with the service worker blocked for a controlled A/B, first content improved from 8.31s to 4.66s, LCP from 8.37s to 4.72s, DOMContentLoaded from 4.97s to 1.07s, and long-task time from 1.85s to 1.51s. The PWA precache fell from 4.06 MiB to 439.45 KiB. Production Chrome, Firefox, and WebKit retained the full board list, active stats resolution, mobile width, and no app error boundary."
     }
   ]
 }
