@@ -29,7 +29,8 @@ const testState = vi.hoisted(() => ({
   communities: {} as Record<string, { address?: string; name?: string; publicKey?: string; state?: string; updatedAt?: number }>,
   syncStatuses: {} as Record<string, { syncState: CommunitySyncState }>,
   candidatePublicKeys: {} as Record<string, string | undefined>,
-  offlineSelections: [] as unknown[],
+  communityStoreListeners: [] as Array<() => void>,
+  offlineStoreListeners: [] as Array<() => void>,
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -53,21 +54,38 @@ vi.mock('../use-directory-list', async () => {
   };
 });
 
-vi.mock('../../stores/use-community-offline-store', () => ({
-  default: <T,>(selector: (state: { communityOfflineState: typeof testState.offlineStates }) => T) => {
-    const selected = selector({ communityOfflineState: testState.offlineStates });
-    testState.offlineSelections.push(selected);
-    return selected;
-  },
-}));
+vi.mock('../../stores/use-community-offline-store', () => {
+  const getState = () => ({ communityOfflineState: testState.offlineStates });
+  const store = Object.assign(<T,>(selector: (state: ReturnType<typeof getState>) => T) => selector(getState()), {
+    getState,
+    subscribe: (listener: () => void) => {
+      testState.offlineStoreListeners.push(listener);
+      return () => {
+        testState.offlineStoreListeners = testState.offlineStoreListeners.filter((candidate) => candidate !== listener);
+      };
+    },
+  });
+  return { default: store };
+});
 
-vi.mock('../../lib/bitsocial-internals/stores', () => ({
-  communitiesStore: <T,>(selector: (state: { communities: typeof testState.communities; syncStatuses: typeof testState.syncStatuses }) => T) =>
-    selector({
-      communities: testState.communities,
-      syncStatuses: testState.syncStatuses,
-    }),
-}));
+vi.mock('../../lib/bitsocial-internals/stores', () => {
+  const getState = () => ({
+    communities: testState.communities,
+    syncStatuses: testState.syncStatuses,
+  });
+  const communitiesStore = Object.assign(<T,>(selector: (state: ReturnType<typeof getState>) => T) => selector(getState()), {
+    getState,
+    subscribe: (listener: () => void) => {
+      testState.communityStoreListeners.push(listener);
+      return () => {
+        testState.communityStoreListeners = testState.communityStoreListeners.filter((candidate) => candidate !== listener);
+      };
+    },
+  });
+  return {
+    communitiesStore,
+  };
+});
 
 vi.mock('../../lib/utils/directory-list-lookup-utils', async () => {
   const actual = await vi.importActual<typeof import('../../lib/utils/directory-list-lookup-utils')>('../../lib/utils/directory-list-lookup-utils');
@@ -84,8 +102,10 @@ let latestValue: string | undefined;
 let latestDirectoryBoardPath: { boardPath: string | undefined; isDirectoryCandidate: boolean };
 let container: HTMLDivElement;
 let root: Root;
+let hookRenderCount: number;
 
 const HookHarness = () => {
+  hookRenderCount += 1;
   latestValue = useResolvedCommunityAddress(testState.boardIdentifierOverride);
   latestDirectoryBoardPath = useResolvedDirectoryBoardPath(testState.boardIdentifier);
   return null;
@@ -113,7 +133,9 @@ describe('useResolvedCommunityAddress', () => {
     testState.communities = {};
     testState.syncStatuses = {};
     testState.candidatePublicKeys = {};
-    testState.offlineSelections = [];
+    testState.communityStoreListeners = [];
+    testState.offlineStoreListeners = [];
+    hookRenderCount = 0;
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -304,7 +326,44 @@ describe('useResolvedCommunityAddress', () => {
     await renderHook();
 
     expect(latestValue).toBe('custom-board.bso');
-    expect(testState.offlineSelections.every((selection) => selection === undefined)).toBe(true);
+    expect(testState.communityStoreListeners).toHaveLength(0);
+    expect(testState.offlineStoreListeners).toHaveLength(0);
+  });
+
+  it('does not rerender when an unrelated community publishes lifecycle progress', async () => {
+    await renderHook();
+    const rendersBeforeUnrelatedUpdate = hookRenderCount;
+
+    testState.communities = {
+      unrelated: {
+        address: 'unrelated.bso',
+        state: 'updating',
+        updatedAt: 1_704_067_210,
+      },
+    };
+    await act(async () => {
+      testState.communityStoreListeners.forEach((listener) => listener());
+    });
+
+    expect(latestValue).toBe('business-and-finance.bso');
+    expect(hookRenderCount).toBe(rendersBeforeUnrelatedUpdate);
+  });
+
+  it('rerenders when lifecycle progress changes the directory winner', async () => {
+    await renderHook();
+    const rendersBeforeWinnerChange = hookRenderCount;
+
+    testState.syncStatuses = {
+      '12D3KooWBusiness': {
+        syncState: 'failed',
+      },
+    };
+    await act(async () => {
+      testState.communityStoreListeners.forEach((listener) => listener());
+    });
+
+    expect(latestValue).toBe('bizraelis.bso');
+    expect(hookRenderCount).toBeGreaterThan(rendersBeforeWinnerChange);
   });
 
   it('switches away from a directory board when it crosses the offline threshold while mounted', async () => {

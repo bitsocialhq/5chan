@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import { useParams } from 'react-router-dom';
 import type { CommunitySyncState } from '@bitsocial/bitsocial-react-hooks';
 import { normalizeBoardAddress, useDirectories } from './use-directories';
@@ -100,6 +100,48 @@ const getDirectoryBoardFreshnessState = (
 };
 
 /**
+ * Subscribe to the two lifecycle stores while exposing only the winning board address to React.
+ * Both stores publish high-frequency sync progress updates, but a directory route only needs to
+ * rerender when those updates actually change its winner.
+ */
+const useDirectoryWinnerAddress = (boards: DirectoryListBoard[] | undefined, enabled: boolean, nowSeconds: number): string | undefined => {
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => {
+      if (!enabled) {
+        return () => undefined;
+      }
+
+      const unsubscribeCommunities = useCommunitiesStore.subscribe(onStoreChange);
+      const unsubscribeOfflineStates = useCommunityOfflineStore.subscribe(onStoreChange);
+      return () => {
+        unsubscribeCommunities();
+        unsubscribeOfflineStates();
+      };
+    },
+    [enabled],
+  );
+
+  const getSnapshot = useCallback(() => {
+    if (!enabled || !boards?.length) {
+      return undefined;
+    }
+
+    const { communities, syncStatuses } = useCommunitiesStore.getState() as {
+      communities?: StoredCommunities;
+      syncStatuses?: CommunitySyncStatuses;
+    };
+    const offlineStates = useCommunityOfflineStore.getState().communityOfflineState;
+    const winner = pickDirectoryWinner(boards, (board) =>
+      isCommunityKnownOffline(getDirectoryBoardFreshnessState(communities, syncStatuses, offlineStates?.[board.address], board), nowSeconds),
+    );
+
+    return winner?.address;
+  }, [boards, enabled, nowSeconds]);
+
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+};
+
+/**
  * Resolve a board identifier to its canonical community address.
  *
  * For directory codes (e.g. /biz) with a per-directory list of candidates, picks the
@@ -112,21 +154,16 @@ export const useResolvedCommunityAddress = (boardIdentifierOverride?: string): s
   const boardIdentifier = boardIdentifierOverride ?? params.boardIdentifier;
   const isCode = !!boardIdentifier && isDirectoryRoute(boardIdentifier, directories);
   const { list } = useDirectoryList(isCode ? boardIdentifier : undefined);
-  const offlineStates = useCommunityOfflineStore((state) => (isCode ? state.communityOfflineState : undefined));
-  const communities = useCommunitiesStore((state) => (isCode ? state.communities : undefined));
-  const syncStatuses = useCommunitiesStore((state) => (isCode ? state.syncStatuses : undefined));
   const nowSeconds = useNowSeconds(isCode);
+  const winnerAddress = useDirectoryWinnerAddress(list?.boards, isCode, nowSeconds);
 
   return useMemo(() => {
     if (!boardIdentifier) return undefined;
-    if (isCode && list && list.boards.length > 0) {
-      const isOffline = (board: DirectoryListBoard) =>
-        isCommunityKnownOffline(getDirectoryBoardFreshnessState(communities, syncStatuses, offlineStates?.[board.address], board), nowSeconds);
-      const winner = pickDirectoryWinner(list.boards, isOffline);
-      if (winner) return winner.address;
+    if (isCode && winnerAddress) {
+      return winnerAddress;
     }
     return getCommunityAddress(boardIdentifier, directories);
-  }, [boardIdentifier, communities, directories, isCode, list, offlineStates, nowSeconds, syncStatuses]);
+  }, [boardIdentifier, directories, isCode, winnerAddress]);
 };
 
 /**
@@ -138,10 +175,8 @@ export const useResolvedDirectoryBoardPath = (boardIdentifier: string | undefine
   const isCode = !!boardIdentifier && isDirectoryRoute(boardIdentifier, directories);
   const directoryCode = useMemo(() => (boardIdentifier && !isCode ? getDirectoryCodeForBoardAddress(boardIdentifier) : undefined), [boardIdentifier, isCode]);
   const { list } = useDirectoryList(directoryCode);
-  const offlineStates = useCommunityOfflineStore((state) => (directoryCode ? state.communityOfflineState : undefined));
-  const communities = useCommunitiesStore((state) => (directoryCode ? state.communities : undefined));
-  const syncStatuses = useCommunitiesStore((state) => (directoryCode ? state.syncStatuses : undefined));
   const nowSeconds = useNowSeconds(!!directoryCode);
+  const winnerAddress = useDirectoryWinnerAddress(list?.boards, !!directoryCode, nowSeconds);
 
   return useMemo(() => {
     if (!boardIdentifier || !directoryCode) {
@@ -152,15 +187,11 @@ export const useResolvedDirectoryBoardPath = (boardIdentifier: string | undefine
       return { boardPath: undefined, isDirectoryCandidate: true };
     }
 
-    const isOffline = (board: DirectoryListBoard) =>
-      isCommunityKnownOffline(getDirectoryBoardFreshnessState(communities, syncStatuses, offlineStates?.[board.address], board), nowSeconds);
-    const winner = pickDirectoryWinner(list.boards, isOffline);
-
     return {
-      boardPath: winner && areSameBoardAddress(winner.address, boardIdentifier) ? directoryCode : undefined,
+      boardPath: winnerAddress && areSameBoardAddress(winnerAddress, boardIdentifier) ? directoryCode : undefined,
       isDirectoryCandidate: true,
     };
-  }, [boardIdentifier, communities, directoryCode, list, offlineStates, nowSeconds, syncStatuses]);
+  }, [boardIdentifier, directoryCode, list, winnerAddress]);
 };
 
 /**
