@@ -187,6 +187,7 @@
   },
   "resolutions": {
     "follow-redirects": "1.16.0",
+    "@pkcprotocol/pkc-js": "0.0.73",
     "@libp2p/gossipsub": "16.0.4",
     "@libp2p/kad-dht": "16.2.6",
     "brace-expansion@npm:^1.1.7": "1.1.16",
