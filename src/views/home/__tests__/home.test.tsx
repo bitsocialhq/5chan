@@ -167,7 +167,9 @@ describe('Home', () => {
   it('renders the home view chrome, child sections, collectors, and aggregated stats', () => {
     renderHome();
 
-    expect(vi.mocked(useFeedStateString)).toHaveBeenCalledWith([]);
+    // Nothing is loading, so the loading indicator/ellipsis never mount and the live client-state
+    // subscription is never opened. Stats previously subscribed with an empty list regardless.
+    expect(vi.mocked(useFeedStateString)).not.toHaveBeenCalled();
     expect(document.title).toBe('5chan');
     expect(container.querySelector('[data-testid="disclaimer-modal"]')?.textContent).toBe('disclaimer-modal');
     expect(container.querySelector('[data-testid="directory-modal"]')?.textContent).toBe('directory-modal');

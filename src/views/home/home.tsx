@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { memo, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './home.module.css';
@@ -190,6 +190,36 @@ const StatsOptionsModal = () => {
   );
 };
 
+/**
+ * Follows client states for every collected board, so it updates constantly while boards load.
+ * The two components below own it instead of `Stats`, which otherwise rerendered the whole stats
+ * box (and its tooltip portal) on every tick just to refresh this one string.
+ */
+const useStatsLoadingString = (addresses: string[]) => {
+  const { t } = useTranslation();
+  return useFeedStateString(addresses) || t('loading');
+};
+
+const StatsLoadingIndicator = memo(({ addresses }: { addresses: string[] }) => {
+  const loadingStateString = useStatsLoadingString(addresses);
+
+  return (
+    <span className={styles.statsLoadingIconWrapper}>
+      <Tooltip content={loadingStateString}>
+        <span className={`${styles.statsLoadingIcon} yellowOfflineIcon`} />
+      </Tooltip>
+    </span>
+  );
+});
+StatsLoadingIndicator.displayName = 'StatsLoadingIndicator';
+
+const StatsLoadingEllipsis = memo(({ addresses }: { addresses: string[] }) => {
+  const loadingStateString = useStatsLoadingString(addresses);
+
+  return <LoadingEllipsis string={loadingStateString} />;
+});
+StatsLoadingEllipsis.displayName = 'StatsLoadingEllipsis';
+
 const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
   const { t } = useTranslation();
   const statsScope = useHomepageStatsOptionsStore((state) => state.statsScope);
@@ -252,7 +282,6 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
   }, [collectorAddresses, communitiesStats]);
   const hasDisplayableStats = boardsWithStats > 0 || (collectorAddresses.length > 0 && boardsLoaded === collectorAddresses.length);
   const isStatsLoading = !hasDisplayableStats || boardsLoaded < collectorAddresses.length;
-  const loadingStateString = useFeedStateString(isStatsLoading ? collectorAddresses : EMPTY_STATS_LIST) || t('loading');
 
   return (
     <>
@@ -264,13 +293,7 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
         <div className={`${styles.boxBar} ${styles.color2ColorBar}`}>
           <h2 className={styles.statsTitle}>
             {t('stats')}
-            {isStatsLoading && (
-              <span className={styles.statsLoadingIconWrapper}>
-                <Tooltip content={loadingStateString}>
-                  <span className={`${styles.statsLoadingIcon} yellowOfflineIcon`} />
-                </Tooltip>
-              </span>
-            )}
+            {isStatsLoading && <StatsLoadingIndicator addresses={collectorAddresses} />}
           </h2>
           <StatsOptionsModal />
         </div>
@@ -288,7 +311,7 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
               </div>
             </>
           ) : (
-            <LoadingEllipsis string={loadingStateString} />
+            <StatsLoadingEllipsis addresses={collectorAddresses} />
           )}
         </div>
       </div>
