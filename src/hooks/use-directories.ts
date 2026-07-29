@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { create } from 'zustand';
 import { vendoredDirectoryLists as directoryListsData, vendoredDirectoryDefaults as directoryDefaultsData } from '../data/vendored-directory-lists';
 import { isSpecialBoardAddress, isSpecialBoardCode } from '../lib/special-boards';
 import {
@@ -57,6 +58,8 @@ export const __resetDirectoriesModuleStateForTests = () => {
   cacheDefaults = null;
   fallbackDirectoriesData = null;
   fallbackDirectoryDefaults = null;
+  directoriesHydrationStarted = false;
+  useDirectoriesStore.setState({ communities: getFallbackDirectoriesData().communities, loading: true, error: null });
 };
 
 const getDirectoryIdentifiers = (community: DirectoryCommunity): string[] => [
@@ -443,77 +446,70 @@ const fetchDirectoriesFromGitHubDeduped = async (): Promise<DirectoriesData | nu
   return inFlightGitHubFetch;
 };
 
-export const useDirectories = () => {
-  // Use vendored data as initial state to prevent theme flash on first load
-  // This ensures NSFW status is known synchronously before first render
-  const [state, setState] = useState<DirectoriesState>({
-    communities: getFallbackDirectoriesData().communities,
-    loading: true,
-    error: null,
-  });
+/**
+ * Directory data is global, so it lives in one store rather than in per-caller `useState`.
+ * `useDirectories` has ~60 call sites, several of them inside list rows (catalog tiles, markdown
+ * bodies), and the previous implementation gave every instance its own state plus its own
+ * hydration effect. Hydration therefore fanned out into one `setState` per mounted instance.
+ * One store means a single write that React batches, and subscribers whose slice is unchanged
+ * do not rerender at all.
+ */
+const useDirectoriesStore = create<DirectoriesState>(() => ({
+  communities: getFallbackDirectoriesData().communities,
+  loading: true,
+  error: null,
+}));
 
-  useEffect(() => {
-    let isMounted = true;
-    const hydrateCommunities = (data: DirectoriesData) => {
-      cacheCommunities = data.communities;
-      if (isMounted) {
-        setState({
-          communities: data.communities,
-          loading: false,
-          error: null,
-        });
+let directoriesHydrationStarted = false;
+
+const setDirectoriesCommunities = (data: DirectoriesData) => {
+  cacheCommunities = data.communities;
+  useDirectoriesStore.setState({ communities: data.communities, loading: false, error: null });
+};
+
+const hydrateDirectoriesOnce = () => {
+  if (directoriesHydrationStarted) {
+    return;
+  }
+  directoriesHydrationStarted = true;
+
+  void (async () => {
+    if (cacheCommunities) {
+      useDirectoriesStore.setState({ communities: cacheCommunities, loading: false, error: null });
+    } else {
+      // Check localStorage first
+      const cachedData = getFromLocalStorage();
+      if (cachedData) {
+        setDirectoriesCommunities(cachedData);
       }
-    };
+    }
 
-    (async () => {
+    try {
+      // Refresh from GitHub when the session cache is stale, without refetching for every hook mount.
+      const directories = await fetchDirectoriesFromGitHubDeduped();
+      if (directories) {
+        setDirectoriesCommunities(directories);
+      } else if (!cacheCommunities) {
+        setDirectoriesCommunities(getFallbackDirectoriesData());
+      }
+    } catch (e) {
+      console.warn('Failed to fetch directories from GitHub:', e);
       if (cacheCommunities) {
-        setState({
-          communities: cacheCommunities,
-          loading: false,
-          error: null,
-        });
+        useDirectoriesStore.setState({ communities: cacheCommunities, loading: false, error: null });
       } else {
-        // Check localStorage first
-        const cachedData = getFromLocalStorage();
-        if (cachedData) {
-          hydrateCommunities(cachedData);
-        }
+        setDirectoriesCommunities(getFallbackDirectoriesData());
       }
+    }
+  })();
+};
 
-      try {
-        // Refresh from GitHub when the session cache is stale, without refetching for every hook mount.
-        const directories = await fetchDirectoriesFromGitHubDeduped();
-        if (directories) {
-          hydrateCommunities(directories);
-        } else if (!cacheCommunities) {
-          hydrateCommunities(getFallbackDirectoriesData());
-        }
-      } catch (e) {
-        console.warn('Failed to fetch directories from GitHub:', e);
-        // Keep each hook instance in sync even if a sibling hook populated the module cache first.
-        if (cacheCommunities) {
-          if (isMounted) {
-            setState({
-              communities: cacheCommunities,
-              loading: false,
-              error: null,
-            });
-          }
-        } else {
-          hydrateCommunities(getFallbackDirectoriesData());
-        }
-      }
-    })();
+export const useDirectories = () => {
+  const communities = useDirectoriesStore((state) => state.communities);
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  useEffect(hydrateDirectoriesOnce, []);
 
-  // Always prefer cacheCommunities (module-level, stable reference) when available
-  // Only use state.communities during initial load before cache is populated
-  // This ensures a stable reference for memoization in consuming hooks
-  return cacheCommunities || state.communities || getFallbackDirectoriesData().communities;
+  // Prefer the module-level cache so consuming hooks keep a stable reference for memoization.
+  return cacheCommunities || communities || getFallbackDirectoriesData().communities;
 };
 
 export const useDirectoryDefaults = (): DirectoryDefaultsData => {
@@ -522,73 +518,16 @@ export const useDirectoryDefaults = (): DirectoryDefaultsData => {
   return cacheDefaults ?? getFallbackDirectoryDefaults();
 };
 
-export const useDirectoriesState = () => {
-  // Use vendored data as fallback to prevent theme flash on first load
-  const [state, setState] = useState<DirectoriesState>({
-    communities: cacheCommunities || getFallbackDirectoriesData().communities,
-    loading: !cacheCommunities,
-    error: null,
-  });
+export const useDirectoriesState = (): DirectoriesState => {
+  // Field-level selectors rather than a whole-store subscription, so consumers only rerender
+  // when the field they actually read changes.
+  const communities = useDirectoriesStore((state) => state.communities);
+  const loading = useDirectoriesStore((state) => state.loading);
+  const error = useDirectoriesStore((state) => state.error);
 
-  useEffect(() => {
-    let isMounted = true;
-    const hydrateCommunities = (data: DirectoriesData) => {
-      cacheCommunities = data.communities;
-      if (isMounted) {
-        setState({
-          communities: data.communities,
-          loading: false,
-          error: null,
-        });
-      }
-    };
+  useEffect(hydrateDirectoriesOnce, []);
 
-    (async () => {
-      if (cacheCommunities) {
-        setState({
-          communities: cacheCommunities,
-          loading: false,
-          error: null,
-        });
-      } else {
-        // Check localStorage first
-        const cachedData = getFromLocalStorage();
-        if (cachedData) {
-          hydrateCommunities(cachedData);
-        }
-      }
-
-      try {
-        // Refresh from GitHub when the session cache is stale, without refetching for every hook mount.
-        const directories = await fetchDirectoriesFromGitHubDeduped();
-        if (directories) {
-          hydrateCommunities(directories);
-        } else if (!cacheCommunities) {
-          hydrateCommunities(getFallbackDirectoriesData());
-        }
-      } catch (e) {
-        console.warn('Failed to fetch directories from GitHub:', e);
-        // Keep each hook instance in sync even if a sibling hook populated the module cache first.
-        if (cacheCommunities) {
-          if (isMounted) {
-            setState({
-              communities: cacheCommunities,
-              loading: false,
-              error: null,
-            });
-          }
-        } else {
-          hydrateCommunities(getFallbackDirectoriesData());
-        }
-      }
-    })();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  return state;
+  return useMemo(() => ({ communities, loading, error }), [communities, loading, error]);
 };
 
 export const useDirectoryAddresses = () => {

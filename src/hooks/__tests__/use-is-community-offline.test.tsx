@@ -38,11 +38,15 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('../../stores/use-community-offline-store', () => ({
-  default: () => ({
-    initializeCommunityOfflineState: testState.initializeMock,
-    setCommunityOfflineState: testState.setOfflineStateMock,
-    communityOfflineState: testState.communityOfflineState,
-  }),
+  // Mirrors zustand's selector API so the hook can subscribe to a single community's entry.
+  default: (selector?: (state: Record<string, unknown>) => unknown) => {
+    const state = {
+      initializeCommunityOfflineState: testState.initializeMock,
+      setCommunityOfflineState: testState.setOfflineStateMock,
+      communityOfflineState: testState.communityOfflineState,
+    };
+    return selector ? selector(state) : state;
+  },
 }));
 
 vi.mock('../../stores/use-communities-loading-start-timestamps-store', () => ({

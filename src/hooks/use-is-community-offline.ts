@@ -17,14 +17,18 @@ const useIsCommunityOffline = (community?: CommunityWithSyncLifecycle | undefine
   const { state, syncState, hasCachedData, updatedAt } = community || {};
   const communityKey = getCommunityOfflineKey(community, communityAddressHint);
   const nowSeconds = useNowSeconds(!!communityKey);
-  const { communityOfflineState, setCommunityOfflineState, initializeCommunityOfflineState } = useCommunityOfflineStore();
+  // Subscribe to this community's entry only. The directory view renders one of these per board,
+  // so a whole-store subscription meant every board's state change rerendered every row.
+  const storedOfflineState = useCommunityOfflineStore((state) => (communityKey ? state.communityOfflineState[communityKey] : undefined));
+  const setCommunityOfflineState = useCommunityOfflineStore((state) => state.setCommunityOfflineState);
+  const initializeCommunityOfflineState = useCommunityOfflineStore((state) => state.initializeCommunityOfflineState);
   const communitiesLoadingStartTimestamps = useCommunitiesLoadingStartTimestamps(communityKey ? [communityKey] : undefined);
 
   useEffect(() => {
-    if (communityKey && !communityOfflineState[communityKey]) {
+    if (communityKey && !storedOfflineState) {
       initializeCommunityOfflineState(communityKey);
     }
-  }, [communityKey, communityOfflineState, initializeCommunityOfflineState]);
+  }, [communityKey, storedOfflineState, initializeCommunityOfflineState]);
 
   useEffect(() => {
     if (communityKey) {
@@ -36,7 +40,7 @@ const useIsCommunityOffline = (community?: CommunityWithSyncLifecycle | undefine
     return { isOffline: false, isOnlineStatusLoading: false, offlineIconClass: '', offlineTitle: false };
   }
 
-  const offlineState = communityOfflineState[communityKey] || { initialLoad: true };
+  const offlineState = storedOfflineState || { initialLoad: true };
   const loadingStartTimestamp = communitiesLoadingStartTimestamps[0] || 0;
   const isStale = isCommunityUpdateStale(updatedAt, nowSeconds);
   const hasUsableCachedData = (hasCachedData ?? typeof updatedAt === 'number') && updatedAt !== undefined;
