@@ -2,6 +2,7 @@ import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { communitiesStore } from '../../lib/bitsocial-internals/stores';
 import useStateString, { useFeedStateString } from '../use-state-string';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -16,7 +17,6 @@ const testState = vi.hoisted(() => ({
         updatingState?: string;
       }
     | undefined,
-  communitiesStates: {} as Record<string, { clientUrls: string[]; communityAddresses: string[] }>,
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
@@ -24,9 +24,10 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
     states: testState.clientsStates,
   }),
   useCommunity: () => testState.community,
-  useCommunitiesStates: () => ({
-    states: testState.communitiesStates,
-  }),
+}));
+
+vi.mock('../use-community-identifiers', () => ({
+  useCommunityIdentifiers: (addresses?: string[]) => (addresses ?? []).map((address) => (address.includes('.') ? { name: address } : { publicKey: address })),
 }));
 
 vi.mock('lodash/debounce', () => ({
@@ -40,6 +41,32 @@ vi.mock('lodash/debounce', () => ({
 let container: HTMLDivElement;
 let root: Root;
 let latestValue: string | undefined;
+let feedHarnessRenderCount: number;
+
+const createLoadingCommunity = ({
+  address,
+  state,
+  clientUrls,
+  pageClientUrls = [],
+}: {
+  address: string;
+  state: string;
+  clientUrls: string[];
+  pageClientUrls?: string[];
+}) => ({
+  address,
+  clients: {
+    ipfsGateways: Object.fromEntries(clientUrls.map((clientUrl) => [clientUrl, { state }])),
+  },
+  posts: {
+    clients: {
+      ipfsGateways: {
+        hot: Object.fromEntries(pageClientUrls.map((clientUrl) => [clientUrl, { state: 'fetching-ipfs' }])),
+      },
+    },
+  },
+  updatingState: state,
+});
 
 const StateStringHarness = ({
   value,
@@ -55,6 +82,7 @@ const StateStringHarness = ({
 };
 
 const FeedStateStringHarness = ({ addresses }: { addresses?: string[] }) => {
+  feedHarnessRenderCount += 1;
   latestValue = useFeedStateString(addresses);
   return null;
 };
@@ -65,7 +93,8 @@ describe('use-state-string', () => {
     localStorage.removeItem('5chan:pure-p2p-browser-enabled');
     testState.clientsStates = {};
     testState.community = undefined;
-    testState.communitiesStates = {};
+    communitiesStore.setState({ communities: {} });
+    feedHarnessRenderCount = 0;
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -197,53 +226,114 @@ describe('use-state-string', () => {
   });
 
   it('aggregates multi-board feed states across address resolution, threads, and pages', () => {
-    testState.communitiesStates = {
-      'fetching-ipfs': {
-        clientUrls: ['https://ipfs.io'],
-        communityAddresses: ['music-posting.eth'],
+    const addresses = ['music-posting.eth', 'tech-posting.eth', 'video-posting.eth', 'finance-posting.eth', 'photo-posting.eth'];
+    communitiesStore.setState({
+      communities: {
+        'music-posting.eth': createLoadingCommunity({
+          address: 'music-posting.eth',
+          state: 'fetching-ipns',
+          clientUrls: ['https://gateway.example.com'],
+          pageClientUrls: ['https://ipfs.io'],
+        }),
+        'tech-posting.eth': createLoadingCommunity({
+          address: 'tech-posting.eth',
+          state: 'fetching-ipns',
+          clientUrls: ['https://gateway.example.com'],
+        }),
+        'video-posting.eth': createLoadingCommunity({
+          address: 'video-posting.eth',
+          state: 'fetching-ipfs',
+          clientUrls: ['https://ipfs.io'],
+        }),
+        'finance-posting.eth': createLoadingCommunity({
+          address: 'finance-posting.eth',
+          state: 'resolving-address',
+          clientUrls: ['https://ens.example.com'],
+        }),
+        'photo-posting.eth': createLoadingCommunity({
+          address: 'photo-posting.eth',
+          state: 'resolving-address',
+          clientUrls: ['https://ens.example.com'],
+        }),
       },
-      'fetching-ipns': {
-        clientUrls: ['https://gateway.example.com'],
-        communityAddresses: ['music-posting.eth', 'tech-posting.eth'],
-      },
-      'page-1': {
-        clientUrls: ['https://gateway.example.com', 'https://ipfs.io'],
-        communityAddresses: ['music-posting.eth'],
-      },
-      'resolving-address': {
-        clientUrls: ['https://ens.example.com'],
-        communityAddresses: ['music-posting.eth', 'tech-posting.eth'],
-      },
-    };
+    });
 
     act(() => {
-      root.render(createElement(FeedStateStringHarness, { addresses: ['music-posting.eth', 'tech-posting.eth'] }));
+      root.render(createElement(FeedStateStringHarness, { addresses }));
     });
 
     expect(latestValue).toBe('Resolving 2 board addresses, downloading 2 boards (music-posting.eth, tech-posting.eth), 1 thread, 1 page via IPFS');
   });
 
   it('aggregates browser libp2p feed states as peer downloads', () => {
-    testState.communitiesStates = {
-      'fetching-ipfs': {
-        clientUrls: ['libp2pjs'],
-        communityAddresses: ['music-posting.eth'],
+    const addresses = ['music-posting.eth', 'tech-posting.eth', 'video-posting.eth'];
+    communitiesStore.setState({
+      communities: {
+        'music-posting.eth': createLoadingCommunity({
+          address: 'music-posting.eth',
+          state: 'fetching-ipns',
+          clientUrls: ['libp2pjs'],
+          pageClientUrls: ['libp2pjs'],
+        }),
+        'tech-posting.eth': createLoadingCommunity({
+          address: 'tech-posting.eth',
+          state: 'fetching-ipns',
+          clientUrls: ['libp2pjs'],
+        }),
+        'video-posting.eth': createLoadingCommunity({
+          address: 'video-posting.eth',
+          state: 'fetching-ipfs',
+          clientUrls: ['libp2pjs'],
+        }),
       },
-      'fetching-ipns': {
-        clientUrls: ['libp2pjs'],
-        communityAddresses: ['music-posting.eth', 'tech-posting.eth'],
-      },
-      'page-1': {
-        clientUrls: ['libp2pjs'],
-        communityAddresses: ['music-posting.eth'],
-      },
-    };
+    });
 
     act(() => {
-      root.render(createElement(FeedStateStringHarness, { addresses: ['music-posting.eth', 'tech-posting.eth'] }));
+      root.render(createElement(FeedStateStringHarness, { addresses }));
     });
 
     expect(latestValue).toBe('Downloading 2 boards (music-posting.eth, tech-posting.eth), 1 thread, 1 page from peers');
+  });
+
+  it('does not rerender when raw community state changes preserve the loading text', () => {
+    const addresses = ['music-posting.eth', 'tech-posting.eth'];
+
+    act(() => {
+      root.render(createElement(FeedStateStringHarness, { addresses }));
+    });
+
+    expect(latestValue).toBe('Downloading 2 boards (music-posting.eth, tech-posting.eth)');
+    expect(feedHarnessRenderCount).toBe(1);
+
+    act(() => {
+      communitiesStore.setState({
+        communities: {
+          'music-posting.eth': createLoadingCommunity({
+            address: 'music-posting.eth',
+            state: 'initializing',
+            clientUrls: [],
+          }),
+        },
+      });
+    });
+
+    expect(latestValue).toBe('Downloading 2 boards (music-posting.eth, tech-posting.eth)');
+    expect(feedHarnessRenderCount).toBe(1);
+
+    act(() => {
+      communitiesStore.setState({
+        communities: {
+          'music-posting.eth': createLoadingCommunity({
+            address: 'music-posting.eth',
+            state: 'fetching-ipns',
+            clientUrls: ['https://gateway.example.com'],
+          }),
+        },
+      });
+    });
+
+    expect(latestValue).toBe('Downloading 1 board (music-posting.eth) via IPFS');
+    expect(feedHarnessRenderCount).toBe(2);
   });
 
   it('shows an immediate board-specific loading string before detailed multi-board states arrive', () => {
