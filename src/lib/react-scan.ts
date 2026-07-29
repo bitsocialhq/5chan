@@ -1,4 +1,4 @@
-type ReactScanReportRow = { count: number; time: number; unnecessary: number };
+type ReactScanReportRow = { count: number; time: number };
 
 if (import.meta.env.DEV) {
   import('react-scan').then(({ scan }) => {
@@ -11,22 +11,15 @@ if (import.meta.env.DEV) {
     scan({
       enabled: true,
       showToolbar: !(window as any).__PROFILING__,
-      // Off by default: react-scan warns this adds meaningful overhead, which would skew the
-      // timings collected alongside it. Opt in per run when you specifically need wasted-render
-      // attribution, and read `time` as relative rather than absolute for that run.
-      trackUnnecessaryRenders: !!(window as any).__PROFILING_UNNECESSARY__,
       onRender: (fiber, renders) => {
         for (const render of renders) {
           const name = render.componentName || (fiber?.type as any)?.displayName || (fiber?.type as any)?.name;
           if (!name) {
             continue;
           }
-          const row = report.get(name) || { count: 0, time: 0, unnecessary: 0 };
+          const row = report.get(name) || { count: 0, time: 0 };
           row.count += render.count || 1;
           row.time += render.time || 0;
-          if (render.unnecessary) {
-            row.unnecessary += render.count || 1;
-          }
           report.set(name, row);
         }
       },

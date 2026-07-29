@@ -17,7 +17,7 @@ You receive from the parent agent:
 
 ## How It Works
 
-`src/lib/react-scan.ts` runs react-scan in dev mode and accumulates render data via its `onRender` option. It exposes `window.__getReactScanReport()`, which returns a plain, JSON-serializable object of per-component render counts and times: `{ ComponentName: { count, time, unnecessary } }`, plus `window.__resetReactScanReport()` to zero it between phases.
+`src/lib/react-scan.ts` runs react-scan in dev mode and accumulates render data via its `onRender` option. It exposes `window.__getReactScanReport()`, which returns a plain, JSON-serializable object of per-component render counts and times: `{ ComponentName: { count, time } }`, plus `window.__resetReactScanReport()` to zero it between phases.
 
 Do NOT call react-scan's own `getReport()` — in 0.5.3 it reads a Map that is never written to, and a `Map` stringifies to `"{}"` anyway.
 

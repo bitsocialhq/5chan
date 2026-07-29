@@ -21,11 +21,11 @@ Two-layer profiling: browser-level symptoms (Web Vitals, long tasks, scroll jank
 - Accumulates per-component render counts and times via react-scan's `onRender` option
 - Exposes `window.__getReactScanReport()` and `window.__resetReactScanReport()` for programmatic collection
 
-`__getReactScanReport()` returns a plain object: `{ ComponentName: { count, time, unnecessary } }`.
+`__getReactScanReport()` returns a plain object: `{ ComponentName: { count, time } }`.
 
 **Do not use react-scan's own `getReport()`.** It reads `Store.legacyReportData`, which react-scan 0.5.3 never writes to, so it always returns an empty `Map`. The live `Store.reportData` is no better: it is only populated while the toolbar is visible *and* a component is manually focused in the inspector, neither of which holds under automation. The app's `onRender` collector exists precisely because of this. Also note a `Map` cannot be serialized — `JSON.stringify(new Map())` is `"{}"` regardless of contents — which is why the collector returns a plain object.
 
-The profiler's `addInitScript` sets `window.__PROFILING__ = true` before the app loads, which tells react-scan to disable its toolbar and sounds during automated runs. Set `window.__PROFILING_UNNECESSARY__ = true` as well to populate the `unnecessary` counter; it adds meaningful overhead and skews `time`, so enable it only when you specifically want wasted-render attribution.
+The profiler's `addInitScript` sets `window.__PROFILING__ = true` before the app loads, which tells react-scan to disable its toolbar and sounds during automated runs.
 
 No additional setup needed — react-scan is already a devDependency and imported in the entry file.
 
