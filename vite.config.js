@@ -528,9 +528,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (/[\\/]node_modules[\\/](@pkcprotocol[\\/]pkc-js)[\\/]/.test(id)) {
-            return 'pkc-js';
-          }
           if (/[\\/]node_modules[\\/](@bitsocialnet[\\/]bitsocial-react-hooks)[\\/]/.test(id)) {
             return 'bitsocial-react-hooks';
           }
