@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { useClientsStates, useCommunity, useCommunitiesStates } from '@bitsocial/bitsocial-react-hooks';
-import debounce from 'lodash/debounce';
+import { useClientsStates, useCommunity, type Communities, type CommunityIdentifier } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../lib/get-short-address';
+import { communitiesStore } from '../lib/bitsocial-internals/stores';
+import { communityPostsCacheExpired } from '../lib/bitsocial-internals/utils';
 import { isBrowserPureP2PEnabled } from '../lib/p2p-runtime';
 import { useCommunityIdentifiers } from './use-community-identifiers';
 
@@ -20,8 +21,14 @@ type CommunityLoadingState = {
   clientUrls: string[];
 };
 
-const isCommunityLoadingState = (state: string[] | CommunityLoadingState | undefined): state is CommunityLoadingState =>
-  Boolean(state && !Array.isArray(state) && 'communityAddresses' in state && 'clientUrls' in state);
+type CommunityLoadingStates = Record<string, CommunityLoadingState>;
+
+type MutableCommunityLoadingState = {
+  communityAddresses: Set<string>;
+  clientUrls: Set<string>;
+};
+
+type MutableCommunityLoadingStates = Record<string, MutableCommunityLoadingState>;
 
 const isBrowserLibp2pClient = (clientUrl: string) => clientUrl === 'libp2pjs';
 
@@ -75,14 +82,147 @@ const sanitizeSingleFeedLoadingState = (stateString?: string): string | undefine
     .replace(/\bloading thread\b/g, 'loading board');
 };
 
+const getOrCreateCommunityLoadingState = (states: MutableCommunityLoadingStates, state: string): MutableCommunityLoadingState => {
+  states[state] ??= {
+    communityAddresses: new Set(),
+    clientUrls: new Set(),
+  };
+  return states[state];
+};
+
+const getCommunitiesLoadingStates = (storedCommunities: Communities, communityIdentifiers: CommunityIdentifier[]): CommunityLoadingStates => {
+  const states: MutableCommunityLoadingStates = {};
+
+  for (const communityIdentifier of communityIdentifiers) {
+    const communityKey = communityIdentifier.publicKey || communityIdentifier.name;
+    if (!communityKey) {
+      continue;
+    }
+    const community = storedCommunities[communityKey];
+    if (!community?.updatingState) {
+      continue;
+    }
+
+    const updatingState = community.updatingState as string;
+    if ((!community.updatedAt || communityPostsCacheExpired(community)) && updatingState !== 'stopped' && updatingState !== 'succeeded') {
+      const communityState = getOrCreateCommunityLoadingState(states, updatingState);
+      communityState.communityAddresses.add(community.address as string);
+
+      for (const clientType in community.clients ?? {}) {
+        if (clientType === 'chainProviders') {
+          for (const chainTicker in community.clients.chainProviders ?? {}) {
+            for (const clientUrl in community.clients.chainProviders[chainTicker] ?? {}) {
+              if (community.clients.chainProviders[chainTicker][clientUrl].state === updatingState) {
+                communityState.clientUrls.add(clientUrl);
+              }
+            }
+          }
+          continue;
+        }
+
+        for (const clientUrl in community.clients[clientType] ?? {}) {
+          if (community.clients[clientType][clientUrl].state === updatingState) {
+            communityState.clientUrls.add(clientUrl);
+          }
+        }
+      }
+    }
+
+    for (const clientType in community.posts?.clients ?? {}) {
+      for (const sortType in community.posts.clients[clientType] ?? {}) {
+        for (const clientUrl in community.posts.clients[clientType][sortType] ?? {}) {
+          const clientState = community.posts.clients[clientType][sortType][clientUrl].state;
+          if (clientState === 'stopped') {
+            continue;
+          }
+          const pageState = getOrCreateCommunityLoadingState(states, `${clientState}-page-${sortType}`);
+          pageState.communityAddresses.add(community.address as string);
+          pageState.clientUrls.add(clientUrl);
+        }
+      }
+    }
+  }
+
+  return Object.fromEntries(
+    Object.entries(states).map(([state, value]) => [
+      state,
+      {
+        communityAddresses: [...value.communityAddresses],
+        clientUrls: [...value.clientUrls],
+      },
+    ]),
+  );
+};
+
+const getMultipleCommunitiesFeedStateString = (
+  states: CommunityLoadingStates,
+  communityAddresses: string[] | undefined,
+  isBrowserPureP2P: boolean,
+): string | undefined => {
+  let stateString = '';
+
+  if (states['resolving-address']) {
+    const resolvingState = states['resolving-address'];
+    const count = resolvingState.communityAddresses.length;
+    stateString += `resolving ${count} board ${count === 1 ? 'address' : 'addresses'}`;
+  }
+
+  const pagesStatesCommunityAddresses = new Set<string>();
+  const downloadingClientUrls: string[] = [];
+  for (const state in states) {
+    if (state.match('page')) {
+      states[state].communityAddresses.forEach((address) => pagesStatesCommunityAddresses.add(address));
+      downloadingClientUrls.push(...states[state].clientUrls);
+    }
+  }
+
+  if (states['fetching-ipns'] || states['fetching-ipfs'] || pagesStatesCommunityAddresses.size) {
+    if (stateString) stateString += ', ';
+    stateString += 'downloading ';
+    if (states['fetching-ipns']) {
+      const fetchingIpnsState = states['fetching-ipns'];
+      downloadingClientUrls.push(...fetchingIpnsState.clientUrls);
+      const count = fetchingIpnsState.communityAddresses.length;
+      stateString += `${count} ${count === 1 ? 'board' : 'boards'}`;
+      if (count <= 5) {
+        stateString += ` (${fetchingIpnsState.communityAddresses.map((address) => getShortAddress(address) || address).join(', ')})`;
+      }
+    }
+
+    if (states['fetching-ipfs']) {
+      const fetchingIpfsState = states['fetching-ipfs'];
+      downloadingClientUrls.push(...fetchingIpfsState.clientUrls);
+      if (stateString[stateString.length - 1] !== ' ') {
+        stateString += ', ';
+      }
+      const count = fetchingIpfsState.communityAddresses.length;
+      stateString += `${count} ${count === 1 ? 'thread' : 'threads'}`;
+    }
+
+    if (pagesStatesCommunityAddresses.size) {
+      if (states['fetching-ipns'] || states['fetching-ipfs']) stateString += ', ';
+      const count = pagesStatesCommunityAddresses.size;
+      stateString += `${count} ${count === 1 ? 'page' : 'pages'}`;
+    }
+
+    stateString += getDownloadSourceSuffix(downloadingClientUrls, isBrowserPureP2P);
+  }
+
+  if (!stateString && communityAddresses?.length) {
+    const count = communityAddresses.length;
+    stateString = `downloading ${count} ${count === 1 ? 'board' : 'boards'}`;
+    if (count <= 5) {
+      stateString += ` (${communityAddresses.map((address) => getShortAddress(address) || address).join(', ')})`;
+    }
+  }
+
+  stateString = stateString.charAt(0).toUpperCase() + stateString.slice(1);
+  return stateString === '' ? undefined : stateString;
+};
+
 const useStateString = (commentOrCommunity: CommentOrCommunity | undefined): string | undefined => {
   const { states: rawStates } = useClientsStates({ comment: commentOrCommunity }) as { states: States };
   const isBrowserPureP2P = isBrowserPureP2PEnabled();
-
-  const debouncedStates = useMemo(() => {
-    const debouncedValue = debounce((value: States) => value, 300);
-    return debouncedValue(rawStates);
-  }, [rawStates]);
 
   return useMemo(() => {
     let stateString: string | undefined = '';
@@ -90,14 +230,14 @@ const useStateString = (commentOrCommunity: CommentOrCommunity | undefined): str
     const downloadingParts: string[] = [];
     const downloadingClientUrls: string[] = [];
 
-    for (const state in debouncedStates) {
-      if (debouncedStates[state].length === 0) continue;
+    for (const state in rawStates) {
+      if (rawStates[state].length === 0) continue;
       const friendlyName = getFriendlyStateName(state);
       if (state.includes('resolving')) {
         resolvingParts.push(friendlyName);
       } else {
         downloadingParts.push(friendlyName);
-        downloadingClientUrls.push(...debouncedStates[state]);
+        downloadingClientUrls.push(...rawStates[state]);
       }
     }
 
@@ -125,7 +265,7 @@ const useStateString = (commentOrCommunity: CommentOrCommunity | undefined): str
     }
 
     return stateString === '' ? undefined : stateString;
-  }, [debouncedStates, commentOrCommunity, isBrowserPureP2P]);
+  }, [rawStates, commentOrCommunity, isBrowserPureP2P]);
 };
 
 export const useFeedStateString = (communityAddresses?: string[]): string | undefined => {
@@ -139,87 +279,16 @@ export const useFeedStateString = (communityAddresses?: string[]): string | unde
   const rawSingleCommunityFeedStateString = useStateString(communityAddress ? community : undefined);
   const singleCommunityFeedStateString = communityAddress ? sanitizeSingleFeedLoadingState(rawSingleCommunityFeedStateString) : undefined;
 
-  // multiple community feed state string
-  const { states } = useCommunitiesStates({ communities });
-
-  const multipleCommunitiesFeedStateString = useMemo(() => {
+  // Every caller already owns the data-loading hook. Observe only the derived text here so
+  // high-frequency per-community lifecycle changes do not create no-op React commits.
+  const multipleCommunitiesFeedStateString = communitiesStore((state) => {
     if (communityAddress) {
       return;
     }
 
-    let stateString = '';
-
-    if (states['resolving-address']) {
-      const resolvingState = states['resolving-address'];
-      if (isCommunityLoadingState(resolvingState)) {
-        const { communityAddresses } = resolvingState;
-        const count = communityAddresses.length;
-        stateString += `resolving ${count} board ${count === 1 ? 'address' : 'addresses'}`;
-      }
-    }
-
-    const pagesStatesCommunityAddresses = new Set<string>();
-    const downloadingClientUrls: string[] = [];
-    for (const state in states) {
-      if (state.match('page')) {
-        const communityState = states[state];
-        if (isCommunityLoadingState(communityState)) {
-          communityState.communityAddresses.forEach((address: string) => pagesStatesCommunityAddresses.add(address));
-          downloadingClientUrls.push(...communityState.clientUrls);
-        }
-      }
-    }
-
-    if (states['fetching-ipns'] || states['fetching-ipfs'] || pagesStatesCommunityAddresses.size) {
-      if (stateString) stateString += ', ';
-      stateString += 'downloading ';
-      if (states['fetching-ipns']) {
-        const fetchingIpnsState = states['fetching-ipns'];
-        if (isCommunityLoadingState(fetchingIpnsState)) {
-          downloadingClientUrls.push(...fetchingIpnsState.clientUrls);
-          const count = fetchingIpnsState.communityAddresses.length;
-          stateString += `${count} ${count === 1 ? 'board' : 'boards'}`;
-          if (count <= 5) {
-            stateString += ` (${fetchingIpnsState.communityAddresses.map((a: string) => getShortAddress(a) || a).join(', ')})`;
-          }
-        }
-      }
-
-      if (states['fetching-ipfs']) {
-        const fetchingIpfsState = states['fetching-ipfs'];
-        if (isCommunityLoadingState(fetchingIpfsState)) {
-          downloadingClientUrls.push(...fetchingIpfsState.clientUrls);
-          if (stateString[stateString.length - 1] !== ' ') {
-            stateString += ', ';
-          }
-          const count = fetchingIpfsState.communityAddresses.length;
-          stateString += `${count} ${count === 1 ? 'thread' : 'threads'}`;
-        }
-      }
-
-      if (pagesStatesCommunityAddresses.size) {
-        if (states['fetching-ipns'] || states['fetching-ipfs']) stateString += ', ';
-        const count = pagesStatesCommunityAddresses.size;
-        stateString += `${count} ${count === 1 ? 'page' : 'pages'}`;
-      }
-
-      stateString += getDownloadSourceSuffix(downloadingClientUrls, isBrowserPureP2P);
-    }
-
-    if (!stateString && communityAddresses?.length) {
-      const count = communityAddresses.length;
-      stateString = `downloading ${count} ${count === 1 ? 'board' : 'boards'}`;
-      if (count <= 5) {
-        stateString += ` (${communityAddresses.map((a) => getShortAddress(a) || a).join(', ')})`;
-      }
-    }
-
-    // capitalize first letter
-    stateString = stateString.charAt(0).toUpperCase() + stateString.slice(1);
-
-    // if string is empty, return undefined instead
-    return stateString === '' ? undefined : stateString;
-  }, [states, communityAddress, communityAddresses, isBrowserPureP2P]);
+    const states = getCommunitiesLoadingStates(state.communities, communities);
+    return getMultipleCommunitiesFeedStateString(states, communityAddresses, isBrowserPureP2P);
+  });
 
   if (singleCommunityFeedStateString) {
     return singleCommunityFeedStateString;

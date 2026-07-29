@@ -4,7 +4,7 @@ import useAllFeedFilterStore from '../stores/use-all-feed-filter-store';
 
 export const useFilteredDirectoryAddresses = () => {
   const directories = useDirectories();
-  const { filter } = useAllFeedFilterStore();
+  const filter = useAllFeedFilterStore((state) => state.filter);
 
   const filteredAddresses = useMemo(() => {
     if (filter === 'all') {

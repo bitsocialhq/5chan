@@ -1,0 +1,118 @@
+{
+  "task": "excessive-rerenders",
+  "last_updated": "2026-07-30",
+  "items": [
+    {
+      "id": "F001",
+      "priority": 1,
+      "status": "verified",
+      "description": "Add serializable React profiling and establish route baselines for /biz, /all, /all/catalog, and the homepage.",
+      "verification": [
+        "Profile fresh isolated Chromium sessions with window.__getReactScanReport().",
+        "Confirm the branch-scoped Portless URL is served by exactly one dev server."
+      ],
+      "files": [
+        "src/lib/react-scan.ts"
+      ],
+      "notes": "Committed as 0f0b6118c. Baselines captured before optimization."
+    },
+    {
+      "id": "F002",
+      "priority": 2,
+      "status": "verified",
+      "description": "Narrow routing, directory, feed, post, shell, and homepage state subscriptions so unchanged lifecycle ticks do not rerender unrelated UI.",
+      "verification": [
+        "yarn test",
+        "yarn lint",
+        "yarn type-check",
+        "yarn build",
+        "yarn doctor --scope changed --base master"
+      ],
+      "files": [],
+      "notes": "Implemented incrementally in commits 912e1bf00 through 066e64a7d."
+    },
+    {
+      "id": "F003",
+      "priority": 3,
+      "status": "verified",
+      "description": "Derive multi-community loading text from primitive store selectors so hidden and visible feed footers stop rerendering on unchanged state.",
+      "verification": [
+        "yarn test",
+        "yarn lint",
+        "yarn type-check",
+        "yarn build",
+        "Fresh /all profile reaches the first post and records an untouched idle sample.",
+        "Fresh /all/catalog plus back/forward checks preserve ordering, anchoring, scroll restoration, and mobile width."
+      ],
+      "files": [
+        "src/hooks/use-state-string.ts",
+        "src/hooks/__tests__/use-state-string.test.tsx",
+        "src/lib/bitsocial-internals/utils.ts"
+      ],
+      "notes": "Committed as a72054e5d. /all first post improved from 42.21s to 3.88s; cached /all idle improved from 260 commits/5.03s to zero."
+    },
+    {
+      "id": "F004",
+      "priority": 4,
+      "status": "verified",
+      "description": "Stop resolved homepage community-stat collectors from subscribing to full community lifecycle objects while preserving stat refresh when statsCid changes.",
+      "verification": [
+        "Add focused collector lifecycle regression tests.",
+        "Profile the homepage until community stats have loaded, then collect an untouched idle sample.",
+        "Run yarn test, yarn lint, yarn type-check, yarn build, and scoped React Doctor."
+      ],
+      "files": [
+        "src/hooks/use-communities-stats.ts",
+        "src/hooks/__tests__/use-communities-stats.test.ts"
+      ],
+      "notes": "Committed as d6f2fa8b6. With 64 boards displayed, the loaded homepage improved from 235-260 commits per two seconds to zero commits across five seconds."
+    },
+    {
+      "id": "F005",
+      "priority": 5,
+      "status": "verified",
+      "description": "Run final advisory reviews, low-spec Chromium verification, cross-browser UI checks, and summarize remaining non-regression performance opportunities.",
+      "verification": [
+        "Run both React best-practice reviews and the effect review for new hook usage.",
+        "Run the code-quality-review skill.",
+        "Run a throttled Chromium pass plus desktop and mobile Firefox/WebKit verification.",
+        "Confirm a clean worktree and incremental local commits."
+      ],
+      "files": [],
+      "notes": "React and effect reviews found no new issue. Code-quality review found no high-confidence advisory finding. Mid-tier throttled Chromium plus current Firefox/WebKit desktop and mobile checks passed without an app exception or horizontal overflow."
+    },
+    {
+      "id": "F006",
+      "priority": 6,
+      "status": "verified",
+      "description": "Reduce homepage acquisition-phase React commits while decentralized community stats resolve, without changing the displayed results.",
+      "verification": [
+        "Capture a fresh homepage acquisition baseline with component and commit timings.",
+        "Add focused regression tests for any subscription or batching change.",
+        "Reprofile through the loaded-board condition, compare the first twenty seconds, and record an untouched idle sample."
+      ],
+      "files": [
+        "src/hooks/use-communities-stats.ts",
+        "src/hooks/__tests__/use-communities-stats.test.ts",
+        "src/views/home/home.tsx",
+        "src/views/home/__tests__/home.test.tsx"
+      ],
+      "notes": "Committed as 28fda1ce3. First-twenty-second commits improved from 1,211 to 862 (-29%), and CommunityStatsRequest renders from 1,569 to 491 (-69%). All 64 boards resolved at 21.06s, about one second after the baseline run, then the next five seconds recorded zero commits."
+    },
+    {
+      "id": "F007",
+      "priority": 7,
+      "status": "verified",
+      "description": "Measure representative production cold startup under constrained CPU and network, then reduce only verified application-owned bottlenecks.",
+      "verification": [
+        "Separate Vite development-module overhead from a production build served locally.",
+        "Record production navigation, LCP, long-task, transfer, and bundle evidence under the mid-tier throttle.",
+        "Rebuild and remeasure after any retained optimization."
+      ],
+      "files": [
+        "vite.config.js"
+      ],
+      "notes": "Committed as 0de61ac56. In a Brotli production build with the service worker blocked for a controlled A/B, first content improved from 8.31s to 4.66s, LCP from 8.37s to 4.72s, DOMContentLoaded from 4.97s to 1.07s, and long-task time from 1.85s to 1.51s. The PWA precache fell from 4.06 MiB to 439.45 KiB. Production Chrome, Firefox, and WebKit retained the full board list, active stats resolution, mobile width, and no app error boundary."
+    }
+  ]
+}

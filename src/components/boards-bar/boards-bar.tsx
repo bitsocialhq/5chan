@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAccountComment } from '@bitsocial/bitsocial-react-hooks';
@@ -96,7 +96,9 @@ const findBoardAddressByCode = (code: string, directories: DirectoryCommunity[])
   return entry?.address || null;
 };
 
-const BoardsBarDesktop = () => {
+// Takes no props and renders one Link per directory board, so a parent rerender is pure
+// waste: it was re-rendering ~80 Links on every store notification.
+const BoardsBarDesktop = memo(() => {
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
@@ -305,9 +307,10 @@ const BoardsBarDesktop = () => {
       {showSearchBar && <SearchBar setShowSearchBar={setShowSearchBar} />}
     </div>
   );
-};
+});
+BoardsBarDesktop.displayName = 'BoardsBarDesktop';
 
-const BoardsBarMobile = ({ communityAddress }: { communityAddress?: string }) => {
+const BoardsBarMobile = memo(({ communityAddress }: { communityAddress?: string }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const directories = useDirectories();
@@ -415,9 +418,10 @@ const BoardsBarMobile = ({ communityAddress }: { communityAddress?: string }) =>
       </div>
     </div>
   );
-};
+});
+BoardsBarMobile.displayName = 'BoardsBarMobile';
 
-const BoardsBar = () => {
+const BoardsBar = memo(() => {
   const params = useParams();
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedCommunityAddress = useResolvedCommunityAddress();
@@ -429,6 +433,7 @@ const BoardsBar = () => {
       <BoardsBarMobile communityAddress={communityAddress} />
     </>
   );
-};
+});
+BoardsBar.displayName = 'BoardsBar';
 
 export default BoardsBar;

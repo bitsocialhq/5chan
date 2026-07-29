@@ -4,6 +4,38 @@ import { normalizeBoardAddress } from './use-directories';
 
 type CommunityLike = Record<string, unknown> | Community | undefined;
 
+/**
+ * The store keys communities by publicKey (see getCommunityRefKey in bitsocial-react-hooks),
+ * while callers look up by board address, so the exact-key hit almost always misses and the
+ * fallback has to scan every community. That scan used to run once per subscriber per store
+ * notification; pkc-js emits a notification per loading-state tick, so on a multiboard feed it
+ * was O(communities x subscribers) string normalizations per tick.
+ *
+ * The normalized index is derived once per `communities` object instead. The store replaces that
+ * object on every write, so the WeakMap entry is naturally invalidated and collected with it.
+ */
+const normalizedIndexCache = new WeakMap<object, Map<string, unknown>>();
+
+const getNormalizedCommunityIndex = (communities: Record<string, unknown>) => {
+  const cached = normalizedIndexCache.get(communities);
+  if (cached) {
+    return cached;
+  }
+
+  const index = new Map<string, unknown>();
+  for (const [key, community] of Object.entries(communities)) {
+    const candidateAddress = typeof (community as CommunityLike)?.address === 'string' ? ((community as CommunityLike)?.address as string) : key;
+    const normalized = normalizeBoardAddress(candidateAddress);
+    // First match wins, matching the previous Array.prototype.find behaviour.
+    if (normalized && !index.has(normalized)) {
+      index.set(normalized, community);
+    }
+  }
+
+  normalizedIndexCache.set(communities, index);
+  return index;
+};
+
 const getCommunityByAddress = (communities: Record<string, unknown> | undefined, communityAddress: string | undefined) => {
   if (!communities || !communityAddress) {
     return undefined;
@@ -14,11 +46,7 @@ const getCommunityByAddress = (communities: Record<string, unknown> | undefined,
     return exactMatch;
   }
 
-  const normalizedAddress = normalizeBoardAddress(communityAddress);
-  return Object.entries(communities).find(([key, community]) => {
-    const candidateAddress = typeof (community as CommunityLike)?.address === 'string' ? (community as CommunityLike)?.address : key;
-    return normalizeBoardAddress(candidateAddress) === normalizedAddress;
-  })?.[1];
+  return getNormalizedCommunityIndex(communities).get(normalizeBoardAddress(communityAddress));
 };
 
 const shallowEqual = (obj1: Record<string, any> | undefined, obj2: Record<string, any> | undefined): boolean => {

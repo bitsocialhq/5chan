@@ -490,6 +490,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      // bitsocial-react-hooks imports zustand/shallow's deprecated default export and
+      // passes it as a store equality fn, so its console.warn fires on every comparator
+      // call (~1000/s while feeds stream). Redirect to an unwrapped re-export.
+      'zustand/shallow': resolve(__dirname, 'src/lib/zustand-shallow-shim.ts'),
       'node-fetch': 'isomorphic-fetch',
       assert: 'assert',
       stream: 'stream-browserify',
@@ -524,9 +528,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (/[\\/]node_modules[\\/](@pkcprotocol[\\/]pkc-js)[\\/]/.test(id)) {
-            return 'pkc-js';
-          }
           if (/[\\/]node_modules[\\/](@bitsocialnet[\\/]bitsocial-react-hooks)[\\/]/.test(id)) {
             return 'bitsocial-react-hooks';
           }

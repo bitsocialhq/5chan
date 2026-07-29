@@ -17,7 +17,9 @@ You receive from the parent agent:
 
 ## How It Works
 
-The app has `react-scan` configured with `report: true` in dev mode (`src/lib/react-scan.ts`). It exposes `window.__getReactScanReport()` which returns per-component render counts and times: `{ ComponentName: { count, time } }`.
+`src/lib/react-scan.ts` runs react-scan in dev mode and accumulates render data via its `onRender` option. It exposes `window.__getReactScanReport()`, which returns a plain, JSON-serializable object of per-component render counts and times: `{ ComponentName: { count, time } }`, plus `window.__resetReactScanReport()` to zero it between phases.
+
+Do NOT call react-scan's own `getReport()` — in 0.5.3 it reads a Map that is never written to, and a `Map` stringifies to `"{}"` anyway.
 
 The profiler's `addInitScript` also intercepts `__REACT_DEVTOOLS_GLOBAL_HOOK__` to count React commits independently (works even if react-scan is not loaded).
 
@@ -163,7 +165,7 @@ Routes profiled: /route1, /route2, ...
 - Always use the `-s=SESSION` flag on every playwright-cli command
 - Replace `SESSION` and `ROUTE` placeholders with actual values
 - **Collect per-route data before navigating to the next route** — goto resets the document
-- If `__getReactScanReport` returns null, note "react-scan report unavailable" and rely on commit counts
+- If `__getReactScanReport` is undefined or returns `{}`, wait ~1s and retry once (it is a dynamic import); if still empty, note "react-scan report unavailable" and rely on commit counts
 - If a route has no content or fails to load, note it in Info and move on
 - **Always stop tracing and close the browser when done, even on errors** — wrap your workflow in a try/finally mindset: if any step fails, still run `tracing-stop` and `close`
 - Board codes (`biz`, `pol`, `g`, etc.) map to community addresses via the app's directory
