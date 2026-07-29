@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { currentAppVersion } from '../../lib/app-version';
 
@@ -5,7 +6,7 @@ const commitRef = `${import.meta.env.VITE_COMMIT_REF || ''}`.trim();
 const shortCommitRef = commitRef.slice(0, 7);
 const isElectron = window.electronApi?.isElectron === true;
 
-const Version = () => {
+const Version = memo(() => {
   const { t } = useTranslation();
   return (
     <>
@@ -34,6 +35,7 @@ const Version = () => {
       )}
     </>
   );
-};
+});
+Version.displayName = 'Version';
 
 export default Version;

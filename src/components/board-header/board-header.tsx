@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useAccountComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
@@ -44,7 +44,8 @@ const OfflineIndicator = ({ communityAddress }: { communityAddress: string | und
   );
 };
 
-const BoardHeader = () => {
+// No props, so parent rerenders never change its output.
+const BoardHeader = memo(() => {
   const { t } = useTranslation();
   const location = useLocation();
   const params = useParams();
@@ -136,6 +137,7 @@ const BoardHeader = () => {
       {!isInArchiveView && <hr />}
     </div>
   );
-};
+});
+BoardHeader.displayName = 'BoardHeader';
 
 export default BoardHeader;

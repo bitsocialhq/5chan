@@ -67,7 +67,7 @@ export const CatalogPostMedia = ({ cid, commentMediaInfo, linkWidth, linkHeight,
   };
   const loadingStyle = { opacity: isLoaded ? 1 : 0 };
 
-  const { imageSize } = useCatalogStyleStore();
+  const imageSize = useCatalogStyleStore((state) => state.imageSize);
 
   let displayWidth, displayHeight;
   const maxThumbnailSize = imageSize === 'Large' ? 250 : 150;
@@ -248,7 +248,8 @@ const CatalogPost = memo(
       </div>
     );
 
-    const { imageSize, showOPComment } = useCatalogStyleStore();
+    const imageSize = useCatalogStyleStore((state) => state.imageSize);
+    const showOPComment = useCatalogStyleStore((state) => state.showOPComment);
     const maxWidth = imageSize === 'Large' ? '250px' : '150px';
     const maxHeight = imageSize === 'Large' ? '250px' : '150px';
     const CSSProperties = {

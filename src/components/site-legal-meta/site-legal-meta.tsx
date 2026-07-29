@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Version from '../version/version';
@@ -10,7 +11,7 @@ type SiteLegalMetaProps = {
   order?: SiteLegalMetaOrder;
 };
 
-const LicenseText = () => {
+const LicenseText = memo(() => {
   const { t } = useTranslation();
 
   return (
@@ -21,9 +22,10 @@ const LicenseText = () => {
       </a>
     </span>
   );
-};
+});
+LicenseText.displayName = 'LicenseText';
 
-const VersionFeedbackContributors = () => {
+const VersionFeedbackContributors = memo(() => {
   const { t } = useTranslation();
 
   return (
@@ -34,9 +36,10 @@ const VersionFeedbackContributors = () => {
       </a>
     </>
   );
-};
+});
+VersionFeedbackContributors.displayName = 'VersionFeedbackContributors';
 
-const SiteLegalMeta = ({ order = 'version-first' }: SiteLegalMetaProps) => {
+const SiteLegalMeta = memo(({ order = 'version-first' }: SiteLegalMetaProps) => {
   const first = order === 'version-first' ? <VersionFeedbackContributors /> : <LicenseText />;
   const second = order === 'version-first' ? <LicenseText /> : <VersionFeedbackContributors />;
 
@@ -60,6 +63,7 @@ const SiteLegalMeta = ({ order = 'version-first' }: SiteLegalMetaProps) => {
       <span style={{ display: 'block', marginTop: 5 }}>{second}</span>
     </>
   );
-};
+});
+SiteLegalMeta.displayName = 'SiteLegalMeta';
 
 export default SiteLegalMeta;
