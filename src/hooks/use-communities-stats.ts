@@ -1,7 +1,8 @@
-import { memo, useEffect, useMemo } from 'react';
+import { createElement, memo, useEffect, useMemo, useRef } from 'react';
 import { create } from 'zustand';
-import { useCommunityStats } from '@bitsocial/bitsocial-react-hooks';
+import { useCommunityStats, type CommunityIdentifier } from '@bitsocial/bitsocial-react-hooks';
 import { useCommunityIdentifier } from './use-community-identifiers';
+import { communitiesStore } from '../lib/bitsocial-internals/stores';
 
 type CommunityStatsState = {
   communityStats: { [communityAddress: string]: any };
@@ -15,7 +16,13 @@ type CommunityStatsState = {
  * If a consumer ever starts reading another field, add it here or it will silently read a stale value.
  */
 const isSameStats = (a: any, b: any) =>
-  !!a && !!b && a.allPostCount === b.allPostCount && a.allReplyCount === b.allReplyCount && a.weekActiveUserCount === b.weekActiveUserCount && a.state === b.state;
+  !!a &&
+  !!b &&
+  a.allPostCount === b.allPostCount &&
+  a.allReplyCount === b.allReplyCount &&
+  a.weekActiveUserCount === b.weekActiveUserCount &&
+  a.state === b.state &&
+  a.sourceStatsCid === b.sourceStatsCid;
 
 export const useCommunitiesStatsStore = create<CommunityStatsState>((set) => ({
   communityStats: {},
@@ -31,21 +38,50 @@ export const useCommunitiesStatsStore = create<CommunityStatsState>((set) => ({
     }),
 }));
 
-// Renders null and takes one stable string prop, so a parent rerender can never change its
-// output. Home renders ~80 of these; unmemoized, every Home rerender rerendered all of them.
-export const CommunityStatsCollector = memo(({ communityAddress }: { communityAddress: string }) => {
-  const community = useCommunityIdentifier(communityAddress);
-  // Stable options identity: the inline `{ community }` was rebuilt on every render.
+const CommunityStatsRequest = ({
+  communityAddress,
+  community,
+  sourceStatsCid,
+}: {
+  communityAddress: string;
+  community: CommunityIdentifier | undefined;
+  sourceStatsCid: string | undefined;
+}) => {
   const statsOptions = useMemo(() => (community ? { community } : undefined), [community]);
   const stats = useCommunityStats(statsOptions);
+  const initialStats = useRef(stats);
   const setCommunityStats = useCommunitiesStatsStore((state) => state.setCommunityStats);
 
   useEffect(() => {
-    if (stats && (stats.allPostCount !== undefined || stats.state === 'failed')) {
-      setCommunityStats(communityAddress, stats);
+    // useCommunityStats can synchronously return the previous CID's cached value while it
+    // starts the request for a new statsCid. Wait for its result object to change before
+    // recording the CID, otherwise the collector could mark stale values as current.
+    if (stats !== initialStats.current && (stats.allPostCount !== undefined || stats.state === 'failed')) {
+      setCommunityStats(communityAddress, { ...stats, sourceStatsCid });
     }
-  }, [stats, communityAddress, setCommunityStats]);
+  }, [communityAddress, setCommunityStats, sourceStatsCid, stats]);
 
   return null;
+};
+
+// Keep the expensive upstream hook mounted only while resolving the current statsCid.
+// Once resolved, this wrapper subscribes to the primitive CID instead of the full live
+// community object, so routine lifecycle ticks cannot rerender ~80 homepage collectors.
+export const CommunityStatsCollector = memo(({ communityAddress }: { communityAddress: string }) => {
+  const community = useCommunityIdentifier(communityAddress);
+  const communityKey = community?.publicKey ?? community?.name;
+  const sourceStatsCid = communitiesStore((state) => (communityKey ? state.communities[communityKey]?.statsCid : undefined));
+  const collectedStatsCid = useCommunitiesStatsStore((state) => state.communityStats[communityAddress]?.sourceStatsCid);
+
+  if (sourceStatsCid && collectedStatsCid === sourceStatsCid) {
+    return null;
+  }
+
+  return createElement(CommunityStatsRequest, {
+    key: sourceStatsCid ?? 'unresolved',
+    communityAddress,
+    community,
+    sourceStatsCid,
+  });
 });
 CommunityStatsCollector.displayName = 'CommunityStatsCollector';
