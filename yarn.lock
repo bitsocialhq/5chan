@@ -10,7 +10,7 @@ __metadata:
   resolution: "5chan@workspace:."
   dependencies:
     "@bbob/parser": "npm:4.3.1"
-    "@bitsocial/bitsocial-react-hooks": "npm:0.1.32"
+    "@bitsocial/bitsocial-react-hooks": "npm:0.1.33"
     "@bitsocial/bso-resolver": "npm:0.0.10"
     "@capacitor/android": "npm:7.4.5"
     "@capacitor/app": "npm:7.0.1"
@@ -26,7 +26,7 @@ __metadata:
     "@electron-forge/maker-zip": "npm:7.8.0"
     "@electron/rebuild": "npm:3.7.2"
     "@floating-ui/react": "npm:0.26.1"
-    "@pkcprotocol/pkc-js": "npm:0.0.72"
+    "@pkcprotocol/pkc-js": "npm:0.0.73"
     "@react-spring/web": "npm:10.0.3"
     "@reforged/maker-appimage": "npm:5.1.1"
     "@ruffle-rs/ruffle": "npm:0.2.0"
@@ -1581,9 +1581,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bitsocial/bitsocial-react-hooks@npm:0.1.32":
-  version: 0.1.32
-  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.32"
+"@bitsocial/bitsocial-react-hooks@npm:0.1.33":
+  version: 0.1.33
+  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.33"
   dependencies:
     "@bitsocial/bso-resolver": "npm:0.0.10"
     "@pkcprotocol/pkc-js": "npm:0.0.72"
@@ -1602,7 +1602,7 @@ __metadata:
     zustand: "npm:4.5.7"
   peerDependencies:
     react: ">=16.8"
-  checksum: 10c0/b2eb17e3c12dc666d8ee92aed5dfdf5df8fa7b1e108fa467aa29b4e0f54fa7ba6790906cfb8e619d9813bc488036449a6a7e9b6cee326701701889ba75e2361a
+  checksum: 10c0/b14c1b5d3d225144b23909479f6f4596a9f460a763576858ea534581b73ee1255da066fb255392876147692c90a6978b1135f218258b3ce21cb0dcd9c04aa582
   languageName: node
   linkType: hard
 
@@ -6584,6 +6584,73 @@ __metadata:
     ws: "npm:8.20.0"
     zod: "npm:4.3.6"
   checksum: 10c0/b463c86257563480d570bee0a375eb0eb6c8883789c207ed11f56527303fa19e602413f4a9d8783ae14ccd518dc02a6ef921446a81febf299aa5c9f00b608824
+  languageName: node
+  linkType: hard
+
+"@pkcprotocol/pkc-js@npm:0.0.73":
+  version: 0.0.73
+  resolution: "@pkcprotocol/pkc-js@npm:0.0.73"
+  dependencies:
+    "@enhances/with-resolvers": "npm:0.0.5"
+    "@helia/block-brokers": "npm:5.2.4"
+    "@helia/delegated-routing-v1-http-api-client": "npm:8.0.1"
+    "@helia/ipns": "npm:9.2.1"
+    "@helia/unixfs": "npm:7.2.1"
+    "@libp2p/crypto": "npm:5.1.19"
+    "@libp2p/fetch": "npm:4.1.6"
+    "@libp2p/gossipsub": "npm:16.0.2"
+    "@libp2p/identify": "npm:4.1.7"
+    "@libp2p/interface": "npm:3.2.3"
+    "@libp2p/peer-id": "npm:6.0.10"
+    "@multiformats/multiaddr": "npm:13.0.3"
+    "@noble/curves": "npm:2.2.0"
+    "@pkcprotocol/pkc-logger": "npm:0.1.0"
+    "@pkcprotocol/proper-lock-file": "npm:4.2.1"
+    assert: "npm:2.1.0"
+    better-sqlite3: "npm:12.9.0"
+    blockstore-core: "npm:7.0.1"
+    buffer: "npm:6.0.3"
+    cbor: "npm:10.0.11"
+    cborg: "npm:4.5.8"
+    debounce: "npm:1.2.1"
+    ext-name: "npm:5.0.0"
+    helia: "npm:6.1.4"
+    hpagent: "npm:1.2.0"
+    ipfs-unixfs-importer: "npm:17.0.1"
+    ipns: "npm:11.0.0"
+    it-all: "npm:3.0.6"
+    it-last: "npm:3.0.11"
+    js-sha256: "npm:0.11.1"
+    js-sha512: "npm:0.9.0"
+    kubo-rpc-client: "npm:7.1.0"
+    libp2p: "npm:3.3.3"
+    limiter-es6-compat: "npm:2.1.2"
+    localforage: "npm:1.10.0"
+    lodash.merge: "npm:4.6.2"
+    lru-cache: "npm:10.1.0"
+    multiformats: "npm:14.0.0"
+    node-forge: "npm:1.4.0"
+    open-graph-scraper: "npm:6.11.0"
+    p-limit: "npm:7.3.0"
+    p-retry: "npm:8.0.0"
+    p-timeout: "npm:7.0.1"
+    probe-image-size: "npm:7.2.3"
+    quick-lru: "npm:5.1.1"
+    remeda: "npm:2.39.0"
+    retry: "npm:0.13.1"
+    rpc-websockets: "npm:9.3.8"
+    safe-stable-stringify: "npm:2.4.3"
+    tcp-port-used: "npm:1.0.2"
+    tiny-typed-emitter: "npm:2.1.0"
+    tinycache: "npm:1.1.2"
+    ts-custom-error: "npm:3.3.1"
+    typestub-ipfs-only-hash: "npm:4.0.0"
+    uint8arrays: "npm:6.1.1"
+    undici: "npm:7.24.7"
+    uuid: "npm:13.0.0"
+    ws: "npm:8.20.0"
+    zod: "npm:4.3.6"
+  checksum: 10c0/9668d675a781329fb3c556e7b59d538dd0fc20ece5da482400b90dec3181e9e848295a3b0d3e28dc5b655b8bfbcc9844cb17f2aeea0131ca1d25b3ac9fd6bbb0
   languageName: node
   linkType: hard
 

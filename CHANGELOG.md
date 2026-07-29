@@ -1,3 +1,31 @@
+## [0.9.16](https://github.com/bitsocialnet/5chan/compare/v0.9.15...v0.9.16) (2026-07-29)
+
+
+### Bug Fixes
+
+* **author badges:** recognize legacy developer address ([0f2c564](https://github.com/bitsocialnet/5chan/commit/0f2c56440c70aa86f0171a1029f5ff2ec3523c67))
+* **community status:** use sync lifecycle for availability ([#1187](https://github.com/bitsocialnet/5chan/issues/1187)) ([a91c5b5](https://github.com/bitsocialnet/5chan/commit/a91c5b588bbac989f7638a2a02f46fc3be24949a))
+* **composer:** preserve drafts by location ([#1186](https://github.com/bitsocialnet/5chan/issues/1186)) ([7538403](https://github.com/bitsocialnet/5chan/commit/7538403b4c5642b18c6135b067aab278b70cefc7))
+* **directory:** center loading ellipsis in status column ([c48ea43](https://github.com/bitsocialnet/5chan/commit/c48ea43ee3d70d752293c9a8cbbf6ec84dc5ad63))
+* **footer:** point About link to 5chan app page ([829e90d](https://github.com/bitsocialnet/5chan/commit/829e90d65cff8e8e19b1ee9513549664002646f9))
+* **home stats:** include replies in total post count ([0ddf25b](https://github.com/bitsocialnet/5chan/commit/0ddf25bb444fca6fa619a5ffdecdeb6140eb3ae1))
+* **transfer:** hide transferred label on trash board posts ([56b22e7](https://github.com/bitsocialnet/5chan/commit/56b22e7ea9934bf0dc71853101aeb41b3622df0d))
+* **transfer:** link trash transfer success to new post ([27cc476](https://github.com/bitsocialnet/5chan/commit/27cc4767c6a42e4cdff48c617402427ec06b6166))
+* **transfer:** publish trash board transfers with canonical community name ([8755341](https://github.com/bitsocialnet/5chan/commit/87553414a889aa28d7a09bc4b493785ead0b0a53))
+
+
+### Features
+
+* **banners:** add banner-6 ([35a5743](https://github.com/bitsocialnet/5chan/commit/35a574362bb6c505aa521775c213fcc147d31d1e))
+* **footer:** add Bitsocial attribution to site legal meta ([192007d](https://github.com/bitsocialnet/5chan/commit/192007d632b481855964eb8859cead37fc89117f))
+
+
+### Performance Improvements
+
+* reduce browsing rerenders and startup cost ([#1189](https://github.com/bitsocialnet/5chan/issues/1189)) ([da03239](https://github.com/bitsocialnet/5chan/commit/da03239bb2cea73efd0cb926f771ac9d3eee8b45))
+
+
+
 ## [0.9.15](https://github.com/bitsocialnet/5chan/compare/v0.9.14...v0.9.15) (2026-07-17)
 
 

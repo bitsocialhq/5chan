@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  "This version makes direct thread links keep working when a board's address changes and includes dependency and security updates.";
+  'This version speeds up browsing and startup, preserves drafts as you move between boards, adds a new banner and Bitsocial footer attribution, and improves trash-board transfers.';
 
 const releaseBody = `${oneLinerDescription}
 

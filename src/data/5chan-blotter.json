@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.16",
+      "kind": "release",
+      "timestamp": 1785326400,
+      "message": "v0.9.16: Faster browsing, drafts preserved between boards, new banner",
+      "version": "0.9.16"
+    },
+    {
       "id": "release-0.9.15",
       "kind": "release",
       "timestamp": 1784289600,
