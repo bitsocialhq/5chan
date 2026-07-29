@@ -171,7 +171,8 @@ const PostInfoAndMedia = ({
 
   const { hidden } = useHide({ cid: cid || '' });
 
-  const { openReplyModal } = useReplyModalStore();
+  // Selector-scoped: see post-desktop.tsx.
+  const openReplyModal = useReplyModalStore((state) => state.openReplyModal);
 
   const onReplyModalClick = () => {
     if (deleted) {

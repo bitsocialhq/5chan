@@ -81,6 +81,22 @@ const RepliesFooter = ({ hasMore, loadingString }: { hasMore: boolean; loadingSt
     </div>
   ) : null;
 
+// Owns the `useStateString` subscription so PostDesktop does not, matching the BoardFooter
+// pattern in board.tsx. That subscription follows client IPFS states and ticks continuously while
+// a board downloads; keeping it in PostDesktop rerendered every row in the feed (and its whole
+// child tree) on every tick — to build a string only ever rendered in post-page view.
+const PostLoadingState = ({ post }: { post: Comment | undefined }) => {
+  const { t } = useTranslation();
+  const stateString = useStateString(post) || t('downloading_board');
+
+  return (
+    <div className={styles.stateString}>
+      <br />
+      <LoadingEllipsis string={stateString} />
+    </div>
+  );
+};
+
 // Store scroll position for replies virtuoso across navigations
 const lastVirtuosoStates: { [key: string]: StateSnapshot } = {};
 
@@ -222,7 +238,9 @@ const PostInfo = ({
 
   const { hidden } = useHide({ cid: cid || '' });
 
-  const { openReplyModal } = useReplyModalStore();
+  // Selector-scoped: every post row mounts this, so a full-store subscription rerendered
+  // the whole feed whenever any reply-modal field changed.
+  const openReplyModal = useReplyModalStore((state) => state.openReplyModal);
 
   const onReplyModalClick = () => {
     if (deleted) {
@@ -917,7 +935,6 @@ const PostDesktop = ({
   });
   const linksCount = totalLinksCount - visiblelinksCount;
 
-  const stateString = useStateString(resolvedPost) || t('downloading_board');
   const hasFailedState = state === 'failed';
   const { canDeleteFailedPost, canRetryFailedPost, isDeletingFailedPost, isRetryingFailedPost, onDeleteFailedPost, onRetryFailedPost } = useDeleteFailedPost(
     resolvedPost,
@@ -1276,16 +1293,12 @@ const PostDesktop = ({
         )}
       </div>
       {!isInPendingPostView &&
-      stateString &&
       !hasFailedState &&
       state !== 'succeeded' &&
       !shouldSuppressPostLoadingState(resolvedPost) &&
       isInPostPageView &&
       !(!showReplies && !showAllReplies) ? (
-        <div className={styles.stateString}>
-          <br />
-          <LoadingEllipsis string={stateString} />
-        </div>
+        <PostLoadingState post={resolvedPost} />
       ) : (
         hasFailedState && <span className={styles.error}>{t('failed')}</span>
       )}

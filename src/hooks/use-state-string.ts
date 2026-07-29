@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useClientsStates, useCommunity, useCommunitiesStates } from '@bitsocial/bitsocial-react-hooks';
-import debounce from 'lodash/debounce';
 import getShortAddress from '../lib/get-short-address';
 import { isBrowserPureP2PEnabled } from '../lib/p2p-runtime';
 import { useCommunityIdentifiers } from './use-community-identifiers';
@@ -79,25 +78,20 @@ const useStateString = (commentOrCommunity: CommentOrCommunity | undefined): str
   const { states: rawStates } = useClientsStates({ comment: commentOrCommunity }) as { states: States };
   const isBrowserPureP2P = isBrowserPureP2PEnabled();
 
-  const debouncedStates = useMemo(() => {
-    const debouncedValue = debounce((value: States) => value, 300);
-    return debouncedValue(rawStates);
-  }, [rawStates]);
-
   return useMemo(() => {
     let stateString: string | undefined = '';
     const resolvingParts: string[] = [];
     const downloadingParts: string[] = [];
     const downloadingClientUrls: string[] = [];
 
-    for (const state in debouncedStates) {
-      if (debouncedStates[state].length === 0) continue;
+    for (const state in rawStates) {
+      if (rawStates[state].length === 0) continue;
       const friendlyName = getFriendlyStateName(state);
       if (state.includes('resolving')) {
         resolvingParts.push(friendlyName);
       } else {
         downloadingParts.push(friendlyName);
-        downloadingClientUrls.push(...debouncedStates[state]);
+        downloadingClientUrls.push(...rawStates[state]);
       }
     }
 
@@ -125,7 +119,7 @@ const useStateString = (commentOrCommunity: CommentOrCommunity | undefined): str
     }
 
     return stateString === '' ? undefined : stateString;
-  }, [debouncedStates, commentOrCommunity, isBrowserPureP2P]);
+  }, [rawStates, commentOrCommunity, isBrowserPureP2P]);
 };
 
 export const useFeedStateString = (communityAddresses?: string[]): string | undefined => {
