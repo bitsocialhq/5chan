@@ -67,6 +67,8 @@ vi.mock('../../../hooks/use-directory-list', async () => {
 vi.mock('../../../hooks/use-communities-stats', () => ({
   CommunityStatsCollector: ({ communityAddress }: { communityAddress: string }) =>
     createElement('div', { 'data-testid': 'stats-collector', 'data-address': communityAddress }),
+  CommunityStatsMetadataLoader: ({ communityAddresses }: { communityAddresses: string[] }) =>
+    createElement('div', { 'data-testid': 'stats-metadata-loader', 'data-addresses': communityAddresses.join(',') }),
   useCommunitiesStatsStore: (selector: (state: { communityStats: typeof testState.communityStats }) => unknown) => selector({ communityStats: testState.communityStats }),
 }));
 
@@ -175,6 +177,7 @@ describe('Home', () => {
     expect(container.querySelector('[data-testid="directory-modal"]')?.textContent).toBe('directory-modal');
     expect(container.querySelector('[data-testid="boards-list"]')?.textContent).toBe('boards:2');
     expect(container.querySelector('[data-testid="popular-threads-box"]')?.textContent).toBe('popular:2:2');
+    expect(container.querySelector('[data-testid="stats-metadata-loader"]')?.getAttribute('data-addresses')).toBe('music-posting.eth,tech-posting.eth');
     expect(container.querySelectorAll('[data-testid="stats-collector"]')).toHaveLength(2);
     expect(testState.directoryListCodes).toEqual([]);
     expect(container.textContent).toContain('stats');

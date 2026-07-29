@@ -1,7 +1,8 @@
 import { createElement, memo, useEffect, useMemo, useRef } from 'react';
 import { create } from 'zustand';
-import { useCommunityStats, type CommunityIdentifier } from '@bitsocial/bitsocial-react-hooks';
-import { useCommunityIdentifier } from './use-community-identifiers';
+import { useShallow } from 'zustand/react/shallow';
+import { useCommunities, useCommunityStats, type CommunityIdentifier } from '@bitsocial/bitsocial-react-hooks';
+import { useCommunityIdentifier, useCommunityIdentifiers } from './use-community-identifiers';
 import { communitiesStore } from '../lib/bitsocial-internals/stores';
 
 type CommunityStatsState = {
@@ -64,6 +65,17 @@ const CommunityStatsRequest = ({
   return null;
 };
 
+export const CommunityStatsMetadataLoader = memo(({ communityAddresses }: { communityAddresses: string[] }) => {
+  const communities = useCommunityIdentifiers(communityAddresses);
+  const pendingCommunities = communitiesStore(
+    useShallow((state) => communities.filter((community) => !state.communities[community.publicKey ?? community.name ?? '']?.statsCid)),
+  );
+
+  useCommunities({ communities: pendingCommunities });
+  return null;
+});
+CommunityStatsMetadataLoader.displayName = 'CommunityStatsMetadataLoader';
+
 // Keep the expensive upstream hook mounted only while resolving the current statsCid.
 // Once resolved, this wrapper subscribes to the primitive CID instead of the full live
 // community object, so routine lifecycle ticks cannot rerender ~80 homepage collectors.
@@ -73,12 +85,11 @@ export const CommunityStatsCollector = memo(({ communityAddress }: { communityAd
   const sourceStatsCid = communitiesStore((state) => (communityKey ? state.communities[communityKey]?.statsCid : undefined));
   const collectedStatsCid = useCommunitiesStatsStore((state) => state.communityStats[communityAddress]?.sourceStatsCid);
 
-  if (sourceStatsCid && collectedStatsCid === sourceStatsCid) {
+  if (!sourceStatsCid || collectedStatsCid === sourceStatsCid) {
     return null;
   }
 
   return createElement(CommunityStatsRequest, {
-    key: sourceStatsCid ?? 'unresolved',
     communityAddress,
     community,
     sourceStatsCid,

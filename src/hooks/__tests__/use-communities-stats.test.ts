@@ -3,20 +3,27 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { communitiesStore } from '../../lib/bitsocial-internals/stores';
-import { CommunityStatsCollector, useCommunitiesStatsStore } from '../use-communities-stats';
+import { CommunityStatsCollector, CommunityStatsMetadataLoader, useCommunitiesStatsStore } from '../use-communities-stats';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const statsHookState = vi.hoisted(() => ({
   calls: 0,
+  communitiesCalls: 0,
   listeners: new Set<() => void>(),
+  requestedCommunities: [] as Array<{ name?: string; publicKey?: string }>,
   snapshot: { state: 'uninitialized' } as Record<string, unknown>,
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', async () => {
   const ReactModule = await vi.importActual<typeof import('react')>('react');
   return {
+    useCommunities: ({ communities = [] }: { communities?: Array<{ name?: string; publicKey?: string }> }) => {
+      statsHookState.communitiesCalls++;
+      statsHookState.requestedCommunities = communities;
+      return { communities: [], state: communities.length > 0 ? 'fetching-ipns' : 'uninitialized' };
+    },
     useCommunityStats: () => {
       statsHookState.calls++;
       return ReactModule.useSyncExternalStore(
@@ -36,6 +43,11 @@ vi.mock('../use-community-identifiers', () => ({
     name: communityAddress,
     publicKey: `${communityAddress}-key`,
   }),
+  useCommunityIdentifiers: (communityAddresses: string[]) =>
+    communityAddresses.map((communityAddress) => ({
+      name: communityAddress,
+      publicKey: `${communityAddress}-key`,
+    })),
 }));
 
 let container: HTMLDivElement;
@@ -55,7 +67,9 @@ describe('useCommunitiesStatsStore', () => {
     useCommunitiesStatsStore.setState({ communityStats: {} });
     communitiesStore.setState({ communities: {} });
     statsHookState.calls = 0;
+    statsHookState.communitiesCalls = 0;
     statsHookState.listeners.clear();
+    statsHookState.requestedCommunities = [];
     statsHookState.snapshot = { state: 'uninitialized' };
 
     container = document.createElement('div');
@@ -134,6 +148,82 @@ describe('useCommunitiesStatsStore', () => {
     expect(listener).toHaveBeenCalledOnce();
     expect(useCommunitiesStatsStore.getState().communityStats[address].sourceStatsCid).toBe('stats-cid-2');
     unsubscribe();
+  });
+
+  it('waits for metadata to expose a stats CID before mounting a request', () => {
+    const address = 'business-posting.bso';
+    const communityKey = `${address}-key`;
+
+    act(() => {
+      root.render(createElement(CommunityStatsCollector, { communityAddress: address }));
+    });
+    expect(statsHookState.calls).toBe(0);
+
+    act(() => {
+      communitiesStore.setState({
+        communities: {
+          [communityKey]: {
+            address,
+            updatingState: 'fetching-ipns',
+          },
+        },
+      });
+    });
+    expect(statsHookState.calls).toBe(0);
+
+    act(() => {
+      communitiesStore.setState({
+        communities: {
+          [communityKey]: {
+            address,
+            statsCid: 'stats-cid-1',
+            updatingState: 'succeeded',
+          },
+        },
+      });
+    });
+    expect(statsHookState.calls).toBeGreaterThan(0);
+  });
+
+  it('loads only communities that have not exposed a stats CID', () => {
+    const resolvedAddress = 'business-posting.bso';
+    const pendingAddress = 'technology-posting.bso';
+    communitiesStore.setState({
+      communities: {
+        [`${resolvedAddress}-key`]: {
+          address: resolvedAddress,
+          statsCid: 'stats-cid-1',
+        },
+      },
+    });
+
+    act(() => {
+      root.render(createElement(CommunityStatsMetadataLoader, { communityAddresses: [resolvedAddress, pendingAddress] }));
+    });
+
+    expect(statsHookState.requestedCommunities).toEqual([
+      {
+        name: pendingAddress,
+        publicKey: `${pendingAddress}-key`,
+      },
+    ]);
+
+    act(() => {
+      communitiesStore.setState({
+        communities: {
+          [`${resolvedAddress}-key`]: {
+            address: resolvedAddress,
+            statsCid: 'stats-cid-1',
+          },
+          [`${pendingAddress}-key`]: {
+            address: pendingAddress,
+            statsCid: 'stats-cid-2',
+          },
+        },
+      });
+    });
+
+    expect(statsHookState.requestedCommunities).toEqual([]);
   });
 
   it('unmounts resolved requests and remounts only when statsCid changes', () => {

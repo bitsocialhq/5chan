@@ -4,7 +4,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import styles from './home.module.css';
 import { type DirectoryCommunity, useDirectories, useDirectoryAddresses } from '../../hooks/use-directories';
 import { sortDirectoryBoardsByRank, useDirectoryLists } from '../../hooks/use-directory-list';
-import { CommunityStatsCollector, useCommunitiesStatsStore } from '../../hooks/use-communities-stats';
+import { CommunityStatsCollector, CommunityStatsMetadataLoader, useCommunitiesStatsStore } from '../../hooks/use-communities-stats';
 import PopularThreadsBox from './popular-threads-box';
 import BoardsList from './boards-list';
 import SiteLegalMeta from '../../components/site-legal-meta';
@@ -285,7 +285,7 @@ const Stats = ({ directories }: { directories: DirectoryCommunity[] }) => {
 
   return (
     <>
-      {/* Render collectors to fetch stats for each community */}
+      <CommunityStatsMetadataLoader communityAddresses={collectorAddresses} />
       {collectorAddresses.map((address) => (
         <CommunityStatsCollector key={address} communityAddress={address} />
       ))}
