@@ -1,5 +1,4 @@
 import { downloadIpfsClients } from './electron/before-pack.js';
-import path from 'node:path';
 
 // Sign and notarize the mac app only when Apple credentials are present (CI release
 // builds); local builds without the certificate stay unsigned and keep working.
@@ -15,7 +14,8 @@ const config = {
     // Keep Squirrel from processing the deeply nested dependency tree as loose files.
     // Executables and native modules still need real filesystem paths at runtime.
     asar: {
-      unpackDir: path.join('{bin,node_modules/better-sqlite3}', '**', '*'),
+      // Use forward slashes so minimatch also recognizes the glob on Windows.
+      unpackDir: '{bin,node_modules/better-sqlite3}/**/*',
     },
 
     // Exclude unnecessary files from the package
