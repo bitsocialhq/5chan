@@ -476,13 +476,34 @@ jobs:
         timeout-minutes: 10
         run: yarn electron:prepare-package
 
-      - name: Package Electron app
+      - name: Make Electron installer
         shell: bash
         timeout-minutes: 30
         run: |
           set -o pipefail
-          yarn electron-forge package 2>&1 | tee forge-output.log
-          ls -la out/
+          yarn electron-forge make --platform=win32 --arch=x64 2>&1 | tee forge-output.log
+          ls -la out/make/
+
+      - name: Verify ASAR runtime files
+        shell: bash
+        run: |
+          APP_ASAR=$(find out -path '*/resources/app.asar' | head -n 1)
+          KUBO_EXE=$(find out -path '*/resources/app.asar.unpacked/bin/win/ipfs.exe' | head -n 1)
+          SQLITE_MODULE=$(find out -path '*/resources/app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node' | head -n 1)
+          echo "Found ASAR: $APP_ASAR"
+          echo "Found Kubo: $KUBO_EXE"
+          echo "Found SQLite module: $SQLITE_MODULE"
+          test -f "$APP_ASAR"
+          test -f "$KUBO_EXE"
+          test -f "$SQLITE_MODULE"
+          "$KUBO_EXE" version
+
+      - name: Verify Squirrel installer
+        shell: bash
+        run: |
+          SETUP_EXE=$(find out/make -iname '*setup*.exe' | head -n 1)
+          echo "Found installer: $SETUP_EXE"
+          test -n "$SETUP_EXE" && test -f "$SETUP_EXE" && echo "Installer is valid"
 
       - name: Verify executable
         shell: bash
