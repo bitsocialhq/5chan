@@ -1,21 +1,22 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccount, usePkcRpcSettings } from '@bitsocial/bitsocial-react-hooks';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import styles from './settings-modal.module.css';
-import AccountSettings from './account-settings/account-settings';
-import CryptoAddressSetting from './crypto-address-setting/crypto-address-setting';
-import CryptoWalletsSetting from './crypto-wallets-setting/crypto-wallets-setting';
-import InterfaceSettings from './interface-settings/interface-settings';
-import MediaHostingSettings from './media-hosting-settings/media-hosting-settings';
-import AdvancedSettings from './advanced-settings/advanced-settings';
-import SubscriptionsSetting from './subscriptions-setting/subscriptions-setting';
-import TrustedBoardLinksSetting from './trusted-board-links-setting/trusted-board-links-setting';
-import P2PStatsSettings from './p2p-stats-settings/p2p-stats-settings';
 import { P2P_STATS_SECTION_ID, shouldShowP2PSettingsSection } from '../../lib/p2p-runtime';
 import { getReviewableSettingsUpgrades, getSettingsUpgradeKey, type SettingsUpgradeAccount } from '../../lib/settings-upgrades';
 import useSettingsUpgradeReviewStore from '../../stores/use-settings-upgrade-review-store';
 import { getSettingsSectionPath } from '../../lib/utils/route-utils';
+
+const AccountSettings = lazy(() => import('./account-settings/account-settings'));
+const CryptoAddressSetting = lazy(() => import('./crypto-address-setting/crypto-address-setting'));
+const CryptoWalletsSetting = lazy(() => import('./crypto-wallets-setting/crypto-wallets-setting'));
+const InterfaceSettings = lazy(() => import('./interface-settings/interface-settings'));
+const MediaHostingSettings = lazy(() => import('./media-hosting-settings/media-hosting-settings'));
+const AdvancedSettings = lazy(() => import('./advanced-settings/advanced-settings'));
+const SubscriptionsSetting = lazy(() => import('./subscriptions-setting/subscriptions-setting'));
+const TrustedBoardLinksSetting = lazy(() => import('./trusted-board-links-setting/trusted-board-links-setting'));
+const P2PStatsSettings = lazy(() => import('./p2p-stats-settings/p2p-stats-settings'));
 
 const allSectionIds = [
   'interface-settings',
@@ -164,14 +165,22 @@ const SettingsModal = () => {
             {t('interface')}
           </button>
         </div>
-        {showInterfaceSettings && <InterfaceSettings />}
+        {showInterfaceSettings && (
+          <Suspense fallback={null}>
+            <InterfaceSettings />
+          </Suspense>
+        )}
         <div id='media-hosting-settings' className={`${styles.setting} ${styles.category}`}>
           <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('media-hosting-settings')}>
             <span className={showMediaHostingSettings ? styles.hideButton : styles.showButton} />
             {t('media_hosting')}
           </button>
         </div>
-        {showMediaHostingSettings && <MediaHostingSettings />}
+        {showMediaHostingSettings && (
+          <Suspense fallback={null}>
+            <MediaHostingSettings />
+          </Suspense>
+        )}
         <div id='account-settings' className={`${styles.setting} ${styles.category}`}>
           <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('account-settings')}>
             <span className={showAccountSettings ? styles.hideButton : styles.showButton} />
@@ -180,11 +189,17 @@ const SettingsModal = () => {
         </div>
         {showAccountSettings && (
           <>
-            <AccountSettings />
+            <Suspense fallback={null}>
+              <AccountSettings />
+            </Suspense>
             <div className={styles.subSectionHeader}>{t('crypto_address')}</div>
-            <CryptoAddressSetting />
+            <Suspense fallback={null}>
+              <CryptoAddressSetting />
+            </Suspense>
             <div className={styles.subSectionHeader}>{t('crypto_wallets')}</div>
-            <CryptoWalletsSetting />
+            <Suspense fallback={null}>
+              <CryptoWalletsSetting />
+            </Suspense>
           </>
         )}
         <div id='subscriptions-settings' className={`${styles.setting} ${styles.category}`}>
@@ -193,21 +208,33 @@ const SettingsModal = () => {
             {t('board_subscriptions')}
           </button>
         </div>
-        {showSubscriptionsSettings && <SubscriptionsSetting />}
+        {showSubscriptionsSettings && (
+          <Suspense fallback={null}>
+            <SubscriptionsSetting />
+          </Suspense>
+        )}
         <div id='board-link-permissions-settings' className={`${styles.setting} ${styles.category}`}>
           <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('board-link-permissions-settings')}>
             <span className={showBoardLinkPermissionsSettings ? styles.hideButton : styles.showButton} />
             {t('board_link_permissions')}
           </button>
         </div>
-        {showBoardLinkPermissionsSettings && <TrustedBoardLinksSetting />}
+        {showBoardLinkPermissionsSettings && (
+          <Suspense fallback={null}>
+            <TrustedBoardLinksSetting />
+          </Suspense>
+        )}
         <div id='advanced-settings' className={`${styles.setting} ${styles.category}`}>
           <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('advanced-settings')}>
             <span className={showAdvancedSettings ? styles.hideButton : styles.showButton} />
             {t('advanced_settings')}
           </button>
         </div>
-        {showAdvancedSettings && <AdvancedSettings />}
+        {showAdvancedSettings && (
+          <Suspense fallback={null}>
+            <AdvancedSettings />
+          </Suspense>
+        )}
         {sectionIds.includes(P2P_STATS_SECTION_ID) && (
           <>
             <div id={P2P_STATS_SECTION_ID} className={`${styles.setting} ${styles.category}`}>
@@ -216,7 +243,11 @@ const SettingsModal = () => {
                 {t('p2p_stats')}
               </button>
             </div>
-            {showP2PStatsSettings && <P2PStatsSettings />}
+            {showP2PStatsSettings && (
+              <Suspense fallback={null}>
+                <P2PStatsSettings />
+              </Suspense>
+            )}
           </>
         )}
         {showSettingsUpgradeReview && (

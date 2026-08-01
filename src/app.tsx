@@ -56,6 +56,7 @@ import BoardBlotter from './components/board-blotter/board-blotter';
 import BoardsBar from './components/boards-bar/boards-bar';
 import ExternalQuoteStatus from './components/external-quote-status/external-quote-status';
 import ModEmptyState from './components/mod-empty-state/mod-empty-state';
+import SettingsModal from './components/settings-modal';
 
 const AccountDataEditor = lazy(() => import('./views/account-data-editor'));
 const BoardsBarEditModal = lazy(() => import('./components/boards-bar-edit-modal'));
@@ -64,7 +65,6 @@ const ChallengeModal = lazy(() => import('./components/challenge-modal'));
 const DirectoryModal = lazy(() => import('./components/directory-modal'));
 const DisclaimerModal = lazy(() => import('./components/disclaimer-modal'));
 const ReplyModal = lazy(() => import('./components/reply-modal'));
-const SettingsModal = lazy(() => import('./components/settings-modal'));
 const SettingsUpgradeModal = lazy(() => import('./components/settings-upgrade-modal'));
 
 // Preload all theme assets (buttons, backgrounds) immediately on app load
