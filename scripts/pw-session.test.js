@@ -47,8 +47,11 @@ let tempDir;
 const run = (...args) => {
   const result = spawnSync(scriptPath, args, {
     encoding: 'utf8',
+    // PATH and HOME are named explicitly rather than relying on spreading
+    // process.env, which vitest patches per environment.
     env: {
-      ...process.env,
+      PATH: process.env.PATH,
+      HOME: process.env.HOME,
       PLAYWRIGHT_RESOURCE_LOCK_DIR: path.join(tempDir, 'slot.lock'),
       PLAYWRIGHT_CLI_BIN: path.join(tempDir, 'fake-playwright-cli'),
       PW_SESSION_POLL_SECONDS: '1',
