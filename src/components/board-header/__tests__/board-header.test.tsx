@@ -19,6 +19,7 @@ const testState = vi.hoisted(() => ({
   offlineIconClass: 'offline',
   offlineTitle: 'Board offline',
   resolvedAddress: 'music-posting.eth' as string | undefined,
+  resolvedAddressListeners: [] as Array<() => void>,
   shouldShowSnow: false,
   stableCommunity: {
     address: 'music-posting.eth',
@@ -89,7 +90,17 @@ vi.mock('../../../hooks/use-community-identifiers', () => ({
 }));
 
 vi.mock('../../../hooks/use-resolved-community-address', () => ({
-  useResolvedCommunityAddress: () => testState.resolvedAddress,
+  useResolvedCommunityAddress: () =>
+    React.useSyncExternalStore(
+      (listener) => {
+        testState.resolvedAddressListeners.push(listener);
+        return () => {
+          testState.resolvedAddressListeners = testState.resolvedAddressListeners.filter((candidate) => candidate !== listener);
+        };
+      },
+      () => testState.resolvedAddress,
+      () => testState.resolvedAddress,
+    ),
 }));
 
 vi.mock('../../../hooks/use-is-mobile', () => ({
@@ -136,6 +147,7 @@ describe('BoardHeader', () => {
     testState.offlineIconClass = 'offline';
     testState.offlineTitle = 'Board offline';
     testState.resolvedAddress = 'music-posting.eth';
+    testState.resolvedAddressListeners = [];
     testState.shouldShowSnow = false;
     testState.stableCommunity = {
       address: 'music-posting.eth',
@@ -201,6 +213,21 @@ describe('BoardHeader', () => {
     expect(container.textContent).toContain('music-posting.eth');
     expect(container.querySelector('[data-testid="tooltip"]')?.getAttribute('data-content')).toBe('Board offline');
     expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
+  });
+
+  it('keeps the banner stable while a directory route resolves different board candidates', async () => {
+    mathRandomSpy.mockReturnValueOnce(0).mockReturnValue(0.75);
+
+    await renderHeader('/biz');
+    expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
+
+    await act(async () => {
+      testState.resolvedAddress = 'bizraelis.bso';
+      testState.resolvedAddressListeners.forEach((listener) => listener());
+    });
+
+    expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
+    expect(mathRandomSpy).toHaveBeenCalledTimes(1);
   });
 
   it('renders hidden special board metadata without a directory entry', async () => {

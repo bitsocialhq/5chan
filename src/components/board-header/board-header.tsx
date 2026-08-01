@@ -55,6 +55,7 @@ const BoardHeader = memo(() => {
   const isInModView = isModView(location.pathname);
   const isInArchiveView = isArchiveRoute(location.pathname);
   const isInDirectoryListView = isDirectoryListRoute(location.pathname);
+  const bannerKey = isInAllView ? 'all' : isInSubscriptionsView ? 'subscriptions' : isInModView ? 'mod' : params.boardIdentifier || 'board';
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || accountComment?.communityAddress;
@@ -98,7 +99,7 @@ const BoardHeader = memo(() => {
     <div className={`${styles.content} ${shouldShowSnow() ? styles.garland : ''}`}>
       {!useIsMobile() && (
         <div className={styles.bannerCnt}>
-          <ImageBanner key={isInAllView ? 'all' : isInSubscriptionsView ? 'subscriptions' : communityAddress} />
+          <ImageBanner key={bannerKey} />
         </div>
       )}
       <div className={styles.boardTitle}>
