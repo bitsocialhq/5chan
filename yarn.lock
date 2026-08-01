@@ -24,6 +24,7 @@ __metadata:
     "@electron-forge/maker-dmg": "npm:7.8.0"
     "@electron-forge/maker-squirrel": "npm:7.8.0"
     "@electron-forge/maker-zip": "npm:7.8.0"
+    "@electron-forge/plugin-auto-unpack-natives": "npm:7.8.0"
     "@electron/rebuild": "npm:3.7.2"
     "@floating-ui/react": "npm:0.26.1"
     "@pkcprotocol/pkc-js": "npm:0.0.73"
@@ -2051,6 +2052,16 @@ __metadata:
     fs-extra: "npm:^10.0.0"
     got: "npm:^11.8.5"
   checksum: 10c0/6bde6f88acb745cf9bb2d2fa40e039af1d950da1ba61c1d4d470aa715ad51e007aa3f1fcdf0edd7c14a10e425a04fb009643bd4013197ee8d5e3e8c407ce2e2f
+  languageName: node
+  linkType: hard
+
+"@electron-forge/plugin-auto-unpack-natives@npm:7.8.0":
+  version: 7.8.0
+  resolution: "@electron-forge/plugin-auto-unpack-natives@npm:7.8.0"
+  dependencies:
+    "@electron-forge/plugin-base": "npm:7.8.0"
+    "@electron-forge/shared-types": "npm:7.8.0"
+  checksum: 10c0/d684741844c8809e20130d737024d060be7e7f4395006065aa6c62461ce6a5c24d86c856370075c426f89304f4ef380dbe2aee51fffe10d3e734c24f28fda811
   languageName: node
   linkType: hard
 

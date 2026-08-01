@@ -490,12 +490,15 @@ jobs:
           APP_ASAR=$(find out -path '*/resources/app.asar' | head -n 1)
           KUBO_EXE=$(find out -path '*/resources/app.asar.unpacked/bin/win/ipfs.exe' | head -n 1)
           SQLITE_MODULE=$(find out -path '*/resources/app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node' | head -n 1)
+          DATACHANNEL_MODULE=$(find out -path '*/resources/app.asar.unpacked/node_modules/node-datachannel/build/Release/node_datachannel.node' | head -n 1)
           echo "Found ASAR: $APP_ASAR"
           echo "Found Kubo: $KUBO_EXE"
           echo "Found SQLite module: $SQLITE_MODULE"
+          echo "Found data channel module: $DATACHANNEL_MODULE"
           test -f "$APP_ASAR"
           test -f "$KUBO_EXE"
           test -f "$SQLITE_MODULE"
+          test -f "$DATACHANNEL_MODULE"
           "$KUBO_EXE" version
 
       - name: Verify Squirrel installer

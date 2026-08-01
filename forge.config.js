@@ -12,10 +12,10 @@ const config = {
     icon: './public/icon', // electron-forge adds the correct extension per platform
 
     // Keep Squirrel from processing the deeply nested dependency tree as loose files.
-    // Executables and native modules still need real filesystem paths at runtime.
+    // Kubo and native modules still need real filesystem paths at runtime.
     asar: {
       // Use forward slashes so minimatch also recognizes the glob on Windows.
-      unpackDir: '{bin,node_modules/better-sqlite3}/**/*',
+      unpackDir: 'bin/**/*',
     },
 
     // Exclude unnecessary files from the package
@@ -82,6 +82,13 @@ const config = {
       console.log('IPFS clients downloaded.');
     },
   },
+
+  plugins: [
+    {
+      name: '@electron-forge/plugin-auto-unpack-natives',
+      config: {},
+    },
+  ],
 
   makers: [
     // macOS

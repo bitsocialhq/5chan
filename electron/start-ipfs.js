@@ -6,26 +6,10 @@ import ps from 'node:process';
 import proxyServer from './proxy-server.js';
 import tcpPortUsed from 'tcp-port-used';
 import { fileURLToPath, pathToFileURL } from 'url';
+import { getBundledKuboPath, getIpfsBinaryName, getPackagedKuboPaths } from './kubo-paths.js';
 import { getPkcDataPath } from './pkc-paths.js';
 const dirname = path.join(path.dirname(fileURLToPath(import.meta.url)));
 const projectRoot = path.join(dirname, '..');
-
-// Get platform-specific binary name
-const getIpfsBinaryName = () => (process.platform === 'win32' ? 'ipfs.exe' : 'ipfs');
-
-// Get platform subdirectory name for bin/ folder
-const getPlatformDir = () => {
-  if (process.platform === 'win32') return 'win';
-  if (process.platform === 'darwin') return 'mac';
-  return 'linux';
-};
-
-const getBundledKuboPath = (rootPath) => path.join(rootPath, 'bin', getPlatformDir(), getIpfsBinaryName());
-
-export const getPackagedKuboPaths = (resourcesPath) => [
-  getBundledKuboPath(path.join(resourcesPath, 'app.asar.unpacked')),
-  getBundledKuboPath(path.join(resourcesPath, 'app')),
-];
 
 const downloadBundledIpfsClients = async () => {
   // before-pack.js is excluded from packaged builds, so only load it in dev.
