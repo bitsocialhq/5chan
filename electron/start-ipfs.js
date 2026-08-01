@@ -6,21 +6,10 @@ import ps from 'node:process';
 import proxyServer from './proxy-server.js';
 import tcpPortUsed from 'tcp-port-used';
 import { fileURLToPath, pathToFileURL } from 'url';
+import { getBundledKuboPath, getIpfsBinaryName, getPackagedKuboPaths } from './kubo-paths.js';
 import { getPkcDataPath } from './pkc-paths.js';
 const dirname = path.join(path.dirname(fileURLToPath(import.meta.url)));
 const projectRoot = path.join(dirname, '..');
-
-// Get platform-specific binary name
-const getIpfsBinaryName = () => (process.platform === 'win32' ? 'ipfs.exe' : 'ipfs');
-
-// Get platform subdirectory name for bin/ folder
-const getPlatformDir = () => {
-  if (process.platform === 'win32') return 'win';
-  if (process.platform === 'darwin') return 'mac';
-  return 'linux';
-};
-
-const getBundledKuboPath = (rootPath) => path.join(rootPath, 'bin', getPlatformDir(), getIpfsBinaryName());
 
 const downloadBundledIpfsClients = async () => {
   // before-pack.js is excluded from packaged builds, so only load it in dev.
@@ -50,17 +39,16 @@ const getKuboPath = async () => {
     throw new Error(`Kubo binary download completed but '${bundledKuboPath}' was not found`);
   } else {
     // In production, the binary is downloaded to bin/<platform>/ipfs by generateAssets hook
-    // With asar: false, files are at resources/app/ instead of resources/app.asar.unpacked
     const appPath = process.resourcesPath;
     const binaryName = getIpfsBinaryName();
 
-    // Try the bin/ directory first (where generateAssets downloads binaries)
-    const binDirPath = getBundledKuboPath(path.join(appPath, 'app'));
-    if (fs.existsSync(binDirPath)) {
-      return binDirPath;
+    // Prefer the unpacked ASAR path, then support older loose-file packages.
+    const packagedBinPaths = getPackagedKuboPaths(appPath);
+    const packagedBinPath = packagedBinPaths.find((candidatePath) => fs.existsSync(candidatePath));
+    if (packagedBinPath) {
+      return packagedBinPath;
     }
 
-    // Fallback: try app.asar.unpacked for ASAR builds (if we ever re-enable ASAR)
     const unpackedPath = path.join(appPath, 'app.asar.unpacked');
     const kuboModulePath = path.join(unpackedPath, 'node_modules', 'kubo');
 
@@ -84,7 +72,7 @@ const getKuboPath = async () => {
         return appKuboBinPath;
       }
 
-      throw new Error(`Could not find kubo binary. Checked: ${binDirPath}, ${kuboBinPath}, ${appKuboBinPath}`);
+      throw new Error(`Could not find kubo binary. Checked: ${[...packagedBinPaths, kuboBinPath, appKuboBinPath].join(', ')}`);
     }
   }
 };

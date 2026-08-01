@@ -11,10 +11,12 @@ const config = {
     appBundleId: '5chan.desktop',
     icon: './public/icon', // electron-forge adds the correct extension per platform
 
-    // NOTE: asar is disabled because of a bug where electron-packager silently fails
-    // during asar creation with 5chan's large node_modules. The app works fine without it.
-    // TODO: investigate and fix the asar creation issue
-    asar: false,
+    // Keep Squirrel from processing the deeply nested dependency tree as loose files.
+    // Kubo and native modules still need real filesystem paths at runtime.
+    asar: {
+      // Use forward slashes so minimatch also recognizes the glob on Windows.
+      unpackDir: 'bin/**/*',
+    },
 
     // Exclude unnecessary files from the package
     ignore: [
@@ -80,6 +82,13 @@ const config = {
       console.log('IPFS clients downloaded.');
     },
   },
+
+  plugins: [
+    {
+      name: '@electron-forge/plugin-auto-unpack-natives',
+      config: {},
+    },
+  ],
 
   makers: [
     // macOS
