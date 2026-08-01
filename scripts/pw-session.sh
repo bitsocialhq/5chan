@@ -45,8 +45,20 @@ EOF
 }
 
 playwright_cli="${PLAYWRIGHT_CLI_BIN:-playwright-cli}"
-lock_root="${XDG_CACHE_HOME:-$HOME/.cache}/bitsocial"
-lock_dir="${PLAYWRIGHT_RESOURCE_LOCK_DIR:-$lock_root/playwright-session.lock}"
+
+# Resolved in order so an explicit override never depends on HOME being set:
+# some sandboxes, CI runners, and test harnesses start without it.
+if [ -n "${PLAYWRIGHT_RESOURCE_LOCK_DIR:-}" ]; then
+  lock_dir="$PLAYWRIGHT_RESOURCE_LOCK_DIR"
+elif [ -n "${XDG_CACHE_HOME:-}" ]; then
+  lock_dir="$XDG_CACHE_HOME/bitsocial/playwright-session.lock"
+elif [ -n "${HOME:-}" ]; then
+  lock_dir="$HOME/.cache/bitsocial/playwright-session.lock"
+else
+  echo "pw-session: set HOME, XDG_CACHE_HOME, or PLAYWRIGHT_RESOURCE_LOCK_DIR so the lock has a home" >&2
+  exit 1
+fi
+
 owner_file="$lock_dir/owner"
 started_file="$lock_dir/started-at"
 workspace_file="$lock_dir/workspace"
