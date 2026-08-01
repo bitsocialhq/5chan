@@ -55,7 +55,7 @@ const renderRoot = async () => {
 
   root.render(
     <React.StrictMode>
-      <Router>
+      <Router useTransitions={false}>
         <AppUpdateRegistration />
         <App />
         {Analytics && <Analytics />}

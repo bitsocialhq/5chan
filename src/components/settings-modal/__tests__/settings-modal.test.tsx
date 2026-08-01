@@ -76,8 +76,8 @@ const LocationProbe = () => {
 let root: Root;
 let container: HTMLDivElement;
 
-const render = (initialEntry = '/all/settings') => {
-  act(() => {
+const render = async (initialEntry = '/all/settings') => {
+  await act(async () => {
     root.render(
       createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(React.Fragment, {}, createElement(SettingsModal), createElement(LocationProbe))),
     );
@@ -123,8 +123,8 @@ describe('SettingsModal', () => {
     container.remove();
   });
 
-  it('opens the account section for crypto subsection hashes', () => {
-    render('/all/settings#crypto-wallet-settings');
+  it('opens the account section for crypto subsection hashes', async () => {
+    await render('/all/settings#crypto-wallet-settings');
 
     expect(container.querySelector('[data-testid="account-settings"]')).not.toBeNull();
     expect(container.querySelector('[data-testid="crypto-address-setting"]')).not.toBeNull();
@@ -132,7 +132,7 @@ describe('SettingsModal', () => {
   });
 
   it('updates the section query when sections open and close', async () => {
-    render('/all/settings?section=account-settings');
+    await render('/all/settings?section=account-settings');
 
     expect(getLocationText()).toBe('/all/settings?section=account-settings');
 
@@ -160,7 +160,7 @@ describe('SettingsModal', () => {
   });
 
   it('expands and collapses all settings sections', async () => {
-    render('/all/settings');
+    await render('/all/settings');
 
     const expandAllControl = Array.from(container.querySelectorAll('button')).find((candidate) => (candidate.textContent ?? '').includes('expand_all_settings'));
     if (!expandAllControl) {
@@ -208,7 +208,7 @@ describe('SettingsModal', () => {
     };
     useSettingsUpgradeReviewStore.getState().dismissUpgradeKeys([upgradeKey]);
 
-    render('/all/settings');
+    await render('/all/settings');
 
     expect(container.textContent).toContain('settings_upgrade_review_notice');
     const reviewButton = Array.from(container.querySelectorAll('button')).find((candidate) => candidate.textContent === 'settings_upgrade_review_button');
@@ -233,14 +233,14 @@ describe('SettingsModal', () => {
     expect(useSettingsUpgradeReviewStore.getState().reviewRequestId).toBe(1);
   });
 
-  it.each(['/all/settings?section=p2p-stats-settings', '/all/settings#p2p-stats-settings'])('opens the p2p stats section from route %s', (route) => {
-    render(route);
+  it.each(['/all/settings?section=p2p-stats-settings', '/all/settings#p2p-stats-settings'])('opens the p2p stats section from route %s', async (route) => {
+    await render(route);
 
     expect(container.querySelector('[data-testid="p2p-stats-settings-panel"]')).not.toBeNull();
   });
 
   it('closes the modal when the overlay is clicked', async () => {
-    render('/all/settings#interface-settings');
+    await render('/all/settings#interface-settings');
 
     const overlay = container.querySelector('button');
     if (!overlay) {
@@ -255,7 +255,7 @@ describe('SettingsModal', () => {
   });
 
   it('closes the modal when Escape is pressed', async () => {
-    render('/all/settings');
+    await render('/all/settings');
 
     await act(async () => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
