@@ -30,7 +30,7 @@ Throttling is **Chromium-only** (CDP). It does not work on `firefox` or `webkit`
 
 ```bash
 # open a Chromium session, throttle it to a mid-tier phone, then verify as usual
-playwright-cli -s=lowspec open https://5chan.localhost --browser=chrome
+./scripts/pw-session.sh open lowspec https://5chan.localhost --browser=chrome
 ./scripts/pw-throttle.sh lowspec mid
 playwright-cli -s=lowspec snapshot
 playwright-cli -s=lowspec screenshot --filename=lowspec-mid.png
@@ -43,7 +43,7 @@ playwright-cli -s=lowspec screenshot --filename=lowspec-mid.png
 
 # reset and finish
 ./scripts/pw-throttle.sh lowspec off
-playwright-cli -s=lowspec close
+./scripts/pw-session.sh close lowspec
 ```
 
 ## Measuring, not guessing
@@ -59,5 +59,6 @@ playwright-cli -s=lowspec eval "() => Math.round(performance.getEntriesByType('n
 ## Caveats
 
 - Chromium-only. Skip on Firefox/WebKit sessions; keep those checks unthrottled.
+- Low-spec emulation is a measurement pass, not a machine-resource control. Hold the machine-wide browser slot for the whole pass and close it immediately afterward.
 - The `low` latency is intentionally aggressive; if requests time out, fall back to `mid`.
 - For render/rerender hotspots after a slow result, use the `profile-browsing` skill (it drives `playwright-cli` + react-scan) on the already-throttled session.

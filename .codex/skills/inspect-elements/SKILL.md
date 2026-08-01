@@ -15,7 +15,7 @@ Use this skill to jump from a concrete DOM node in the running 5chan app to the 
 
 ## Quick workflow
 
-1. Open the target route with `playwright-cli`.
+1. Open the target route with `./scripts/pw-session.sh` so the shared browser slot is respected.
 2. Run `playwright-cli snapshot` and choose the relevant element ref.
 3. Resolve that ref through the app helper:
 
@@ -33,7 +33,7 @@ The result includes:
 ## Session setup
 
 ```bash
-playwright-cli -s=inspect open https://5chan.localhost
+./scripts/pw-session.sh open inspect https://5chan.localhost
 playwright-cli -s=inspect goto https://5chan.localhost/all
 playwright-cli -s=inspect eval "window.__ELEMENT_SOURCE__?.ready ?? false"
 playwright-cli -s=inspect snapshot
@@ -75,11 +75,17 @@ playwright-cli -s=inspect eval "async el => { const info = await window.__ELEMEN
 
 Use `formattedStack` when you need a short, readable trace for the final report.
 
+Close the session immediately after collecting the needed source evidence, including when resolution fails:
+
+```bash
+./scripts/pw-session.sh close inspect
+```
+
 ## Profiling follow-up
 
 When `$profile-browsing` reports a hot route or rerender-heavy area:
 
-1. Reopen the route in a fresh playwright session.
+1. Reopen the route in a fresh Playwright session through `./scripts/pw-session.sh`.
 2. Snapshot the concrete list item, card, modal, or toolbar node that looks relevant.
 3. Resolve it with `window.__ELEMENT_SOURCE__.resolve(...)`.
 4. Use `source.filePath` as the direct edit target and `stack` to understand parent ownership.
@@ -92,3 +98,5 @@ This is a complement to `react-scan`, not a replacement. `react-scan` tells you 
 - Inspect the actual node the user cares about, not a distant wrapper, unless wrappers are the suspected problem.
 - If `source` is null but `stack` exists, use the first useful stack frame rather than guessing.
 - If both `source` and `stack` are empty, report that the node could not be resolved and pick a nearby parent element instead.
+- If the browser slot is held, retry after the owning workflow finishes or block on `./scripts/pw-session.sh open --wait ...`; do not bypass the lock or use `close-all`/`kill-all`.
+- Close the exact named session in a finally-style cleanup.
