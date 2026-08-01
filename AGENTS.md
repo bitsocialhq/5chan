@@ -59,7 +59,7 @@ When CodeGraph MCP tools are available and `.codegraph/` exists, prefer them for
 | Public-facing English content or AI context changed (`README.md`, `index.html`, `AGENTS.md`, `PRODUCT.md`, `DESIGN.md`, docs pages, or `scripts/generate-llms-files.mjs`) | Run `yarn llms:generate`; inspect and commit any resulting changes to `public/llms*.txt` so LLM indexes stay current |
 | Bug report in a specific file/line | Start with git history scan from `docs/agent-playbooks/bug-investigation.md` before editing |
 | `CHANGELOG.md` or package version changed | Run `yarn blotter:check`; if needed add a concise release one-liner |
-| UI/visual behavior changed | Verify in browser with `playwright-cli` across Chrome/Blink, Firefox/Gecko, and WebKit/Safari; test desktop and mobile viewport; if existing browser state matters, confirm whether to use a fresh session or the contributor's current browser session |
+| UI/visual behavior changed | Verify in browser with `playwright-cli` across Chrome/Blink, Firefox/Gecko, and WebKit/Safari; use `./scripts/pw-session.sh` so only one browser is active machine-wide, run engines sequentially, reuse each session for desktop/mobile, and close it before opening the next; if existing browser state matters, confirm whether to use a fresh session or the contributor's current browser session |
 | Loading, navigation, or interaction speed matters (or perf may just be a fast dev machine) | Run a low-spec pass: throttle a Chromium `playwright-cli` session with `./scripts/pw-throttle.sh <session> mid` (or `low`), then verify. Chromium only. See `docs/agent-playbooks/low-spec-verification.md` |
 | Long-running task spans multiple sessions, handoffs, or spawned agents | Use `docs/agent-playbooks/long-running-agent-workflow.md`, keep a machine-readable feature list plus a progress log, and run `./scripts/agent-init.sh --smoke` before starting a fresh feature slice |
 | New reviewable feature/fix started while on `master` | Create a short-lived `codex/feature/*`, `codex/fix/*`, `codex/docs/*`, or `codex/chore/*` branch from `master` before editing; use a separate worktree only for parallel tasks |
@@ -157,8 +157,12 @@ src/
 - Do not commit or force-add local rebuild output. `build/` is the main generated build output in this repo; remove or restore generated output directories after local verification before committing.
 - After React UI logic changes, run: `yarn doctor`.
 - Treat React Doctor output as guidance for *newly introduced* issues (the CI PR check in `.github/workflows/react-doctor.yml` runs `yarn doctor --scope changed --base <base branch>` to flag those), not as an aggregate score to grind up: many `error`-level diagnostics flag intentional patterns or current React-Compiler limitations, not bugs. See `docs/agent-playbooks/known-surprises.md`.
-- For UI/visual changes, verify with `playwright-cli` across Chrome/Blink, Firefox/Gecko, and WebKit/Safari.
+- For UI/visual changes, use Chrome/Blink for iterative checks, then perform final verification across Chrome/Blink, Firefox/Gecko, and WebKit/Safari.
 - Cover desktop and a mobile viewport flow in each browser engine when the change affects layout, touch behavior, or responsiveness.
+- Browser automation has a machine-wide resource budget of one active Playwright browser session, shared by every worktree. Use `./scripts/pw-session.sh open <session> ...` to acquire the slot, reuse that session for desktop and mobile, then run `./scripts/pw-session.sh close <session>` in a finally-style cleanup before opening another engine.
+- Run browser engines and profiler batches sequentially. Do not spawn browser-driving agents in parallel. When `open` exits 75 the slot is busy: finish non-browser checks first, or block on `./scripts/pw-session.sh open --wait[=SECONDS] <session> ...`, rather than bypassing the lock.
+- Use short, task-specific session names. Close the exact named session even when verification fails; `close` stops the browser even if the lock was already lost. Do not use `playwright-cli close-all` or `kill-all` while concurrent agents may own other sessions.
+- A lock left behind by an interrupted workflow is reclaimed automatically by the next `open` once its browser is gone. Run `./scripts/pw-session.sh status` before assuming the slot is stuck; it reports whether the holder's browser is still alive.
 - When loading, navigation, or interaction speed matters (or you cannot tell whether perf is real or just a fast dev machine), run a low-spec pass: `./scripts/pw-throttle.sh <session> mid` (or `low`) applies CPU + network throttling to a Chromium `playwright-cli` session before you measure. Throttling is Chromium-only; keep the Firefox/WebKit checks unthrottled. See `docs/agent-playbooks/low-spec-verification.md`.
 - For browser automation and verification, default to a fresh isolated `playwright-cli` session for reproducibility.
 - If the task depends on existing auth, cookies, extensions, open tabs, or another live browser state, explicitly confirm whether to use a fresh isolated session or the contributor's current browser session.
@@ -208,7 +212,7 @@ src/
 ## Core SHOULD Rules
 
 - Keep context lean: delegate heavy/verbose tasks to subprocesses when available.
-- For complex work, parallelize independent checks.
+- For complex work, parallelize independent checks, except browser-driving checks, which must respect the machine-wide single-session resource budget.
 - Add or update tests for bug fixes and non-trivial logic changes when the code is reasonably testable.
 - When touching already-covered code, prefer extending nearby tests so measured coverage does not regress without a clear reason.
 - Use `yarn knip` when adding/removing dependencies or introducing new direct imports; treat findings as advisory, but resolve real issues before finishing.
@@ -244,6 +248,7 @@ yarn doctor
 yarn doctor:score
 yarn doctor:verbose
 yarn ai-workflow:check
+./scripts/pw-session.sh status
 ./scripts/create-task-worktree.sh chore ai-workflow-improvement
 ./scripts/agent-init.sh --smoke
 ```
