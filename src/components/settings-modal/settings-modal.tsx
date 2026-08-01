@@ -188,13 +188,19 @@ const SettingsModal = () => {
           </button>
         </div>
         {showAccountSettings && (
-          <Suspense fallback={null}>
-            <AccountSettings />
+          <>
+            <Suspense fallback={null}>
+              <AccountSettings />
+            </Suspense>
             <div className={styles.subSectionHeader}>{t('crypto_address')}</div>
-            <CryptoAddressSetting />
+            <Suspense fallback={null}>
+              <CryptoAddressSetting />
+            </Suspense>
             <div className={styles.subSectionHeader}>{t('crypto_wallets')}</div>
-            <CryptoWalletsSetting />
-          </Suspense>
+            <Suspense fallback={null}>
+              <CryptoWalletsSetting />
+            </Suspense>
+          </>
         )}
         <div id='subscriptions-settings' className={`${styles.setting} ${styles.category}`}>
           <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick('subscriptions-settings')}>
