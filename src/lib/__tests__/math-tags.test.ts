@@ -47,9 +47,7 @@ describe('math-tags', () => {
   });
 
   it('does not extract math inside spoilers so spoiler parsing keeps working', () => {
-    expect(splitMathSegments('[spoiler]a [math]x[/math][/spoiler]')).toEqual([
-      { type: 'text', value: '[spoiler]a [math]x[/math][/spoiler]', start: 0 },
-    ]);
+    expect(splitMathSegments('[spoiler]a [math]x[/math][/spoiler]')).toEqual([{ type: 'text', value: '[spoiler]a [math]x[/math][/spoiler]', start: 0 }]);
     const mixed = splitMathSegments('[spoiler][math]a[/math][/spoiler] [math]b[/math]');
     expect(mixed.map((segment) => segment.type)).toEqual(['text', 'math']);
     expect(mixed[1].value).toBe('[math]b[/math]');
