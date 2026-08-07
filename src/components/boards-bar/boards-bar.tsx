@@ -288,7 +288,11 @@ const BoardsBarDesktop = memo(() => {
         ]
       </span>
       <span className={styles.navTopRight}>
-        [<Link to={!location.pathname.endsWith('settings') ? location.pathname.replace(/\/$/, '') + '/settings' : location.pathname}>{t('settings')}</Link>] [
+        [
+        <Link to={!location.pathname.endsWith('settings') ? location.pathname.replace(/\/$/, '') + '/settings' : location.pathname} state={location.state}>
+          {t('settings')}
+        </Link>
+        ] [
         <button
           type='button'
           tabIndex={0}
@@ -399,7 +403,9 @@ const BoardsBarMobile = memo(({ communityAddress }: { communityAddress?: string 
         {boardSelect}
       </div>
       <div className={styles.pageJump}>
-        <Link to={location.pathname.replace(/\/$/, '') + '/settings'}>{t('settings')}</Link>
+        <Link to={location.pathname.replace(/\/$/, '') + '/settings'} state={location.state}>
+          {t('settings')}
+        </Link>
         <button
           type='button'
           tabIndex={0}
