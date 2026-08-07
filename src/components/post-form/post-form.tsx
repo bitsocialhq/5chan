@@ -1,4 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -35,6 +36,8 @@ import { isValidURL } from '../../lib/utils/url-utils';
 import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
+import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
+import { getPendingPostRoutePost } from '../../lib/utils/pending-post-route-state';
 import { getBoardPath, isDirectoryRoute } from '../../lib/utils/route-utils';
 import { isAllView, isCatalogView, isModQueueView, isModView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { getCommentFlagOptionsForDirectory, getCommentFlagPublishOptionsForDirectory, type CommentFlagSelectOption } from '../../lib/comment-flag-selection';
@@ -58,6 +61,7 @@ import { getShowUploadControls, isWebRuntime } from '../../lib/media-hosting/sho
 import { OEKAKI_WEB_WARNING_TEXT } from '../../lib/oekaki/oekaki-copy';
 import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import useMediaHostingStore from '../../stores/use-media-hosting-store';
+import usePendingPostNavigationStore from '../../stores/use-pending-post-navigation-store';
 import usePostFormDraftsStore, { EMPTY_POST_FORM_STATE, type PostFormDraft } from '../../stores/use-post-form-drafts-store';
 import BoardOfflineAlert from '../board-offline-alert/board-offline-alert';
 import BbcodeEditorToolbar, { BbcodePreview } from '../bbcode-editor-toolbar/bbcode-editor-toolbar';
@@ -601,9 +605,57 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
   const { displayName } = author || {};
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
-  const communityAddress = resolvedAddress || accountComment?.communityAddress;
+  const communityAddress = resolvedAddress || getCommentCommunityAddress(accountComment) || getCommentCommunityAddress(getPendingPostRoutePost(location.state));
+  const navigate = useNavigate();
+  const nonokoRedirectPathRef = useRef<string | null>(null);
+  const pendingPostBoardPathRef = useRef<string | undefined>(undefined);
+  const pendingPostNavigationIndexRef = useRef<number | null>(null);
+  const navigateToPendingPost = useCallback(
+    (accountCommentIndex: number, pendingPost: Comment) => {
+      const nonokoRedirectPath = nonokoRedirectPathRef.current;
+      const boardPath = pendingPostBoardPathRef.current;
+
+      if (nonokoRedirectPath) {
+        flushSync(() => navigate(nonokoRedirectPath, { flushSync: true, state: getNonokoPendingRouteState(accountCommentIndex) }));
+      } else {
+        pendingPostNavigationIndexRef.current = accountCommentIndex;
+        flushSync(() => usePendingPostNavigationStore.getState().beginPendingPostNavigation(accountCommentIndex));
+        try {
+          flushSync(() =>
+            navigate(`/pending/${accountCommentIndex}`, {
+              flushSync: true,
+              state: { ...(boardPath ? { boardPath } : {}), pendingPost },
+            }),
+          );
+        } catch (error) {
+          pendingPostNavigationIndexRef.current = null;
+          usePendingPostNavigationStore.getState().clearPendingPostNavigation(accountCommentIndex);
+          throw error;
+        }
+      }
+      closeForm();
+    },
+    [closeForm, navigate],
+  );
+  const navigateAfterAbandon = useCallback(() => {
+    const boardPath = pendingPostBoardPathRef.current;
+    usePendingPostNavigationStore.getState().clearPendingPostNavigation();
+    if (boardPath) {
+      flushSync(() => navigate(`/${boardPath}`, { flushSync: true, replace: true }));
+    }
+  }, [navigate]);
+  const clearPendingPostHandoffAfterPublishError = useCallback(() => {
+    const pendingPostNavigationIndex = pendingPostNavigationIndexRef.current;
+    pendingPostNavigationIndexRef.current = null;
+    if (pendingPostNavigationIndex !== null) {
+      usePendingPostNavigationStore.getState().clearPendingPostHandoff(pendingPostNavigationIndex);
+    }
+  }, []);
   const { setPublishPostOptions, postIndex, publishPost, publishPostError, publishPostOptions, resetPublishPostOptions } = usePublishPost({
     communityAddress,
+    onAbandonPost: navigateAfterAbandon,
+    onPublishError: clearPendingPostHandoffAfterPublishError,
+    onPendingPost: navigateToPendingPost,
   });
   const effectiveBoardAddress = communityAddress || draft.communityAddress || publishPostOptions.communityAddress;
 
@@ -615,7 +667,6 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
   const flashTagRef = useRef<HTMLSelectElement>(null);
   const fortuneEntryRef = useRef<FortuneEntry | null>(null);
   const diceRollRef = useRef<DiceRoll | null>(null);
-  const nonokoRedirectPathRef = useRef<string | null>(null);
 
   const isInPostView = isPostPageView(location.pathname, params);
   const isInAllView = isAllView(location.pathname);
@@ -733,6 +784,7 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
       setLengthError(null);
       setFormError(null);
       nonokoRedirectPathRef.current = null;
+      pendingPostNavigationIndexRef.current = null;
 
       if (currentOptionsError) {
         setFormError(currentOptionsError);
@@ -780,6 +832,7 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
       };
 
       nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
+      pendingPostBoardPathRef.current = pendingPostBoardPath;
       await publishPost({
         content: publishContent,
         ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
@@ -791,7 +844,6 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
     });
 
   // redirect to pending page when pending comment is created
-  const navigate = useNavigate();
   useEffect(() => {
     if (typeof postIndex === 'number') {
       const nonokoRedirectPath = nonokoRedirectPathRef.current;

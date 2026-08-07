@@ -8,9 +8,12 @@ import usePendingPublishRequest from './use-pending-publish-request';
 
 type UsePublishPostOptions = {
   communityAddress?: string;
+  onAbandonPost?: () => void;
+  onPublishError?: (error: Error) => void;
+  onPendingPost?: (accountCommentIndex: number, pendingPost: Comment) => void;
 };
 
-const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
+const usePublishPost = ({ communityAddress, onAbandonPost, onPublishError, onPendingPost }: UsePublishPostOptions) => {
   const { author, title, content, link, flairs, spoiler, publishCommentOptions } = usePublishPostStore(
     useShallow((state) => ({
       author: state.author,
@@ -33,8 +36,9 @@ const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
   const { blockedReason } = usePublishAuthorDomainGuard();
   const { finishPendingPublishRequest, startPendingPublishRequest } = usePendingPublishRequest();
   const abandonCurrentPublish = useCallback(async () => {
+    onAbandonPost?.();
     await abandonPublishRef.current?.();
-  }, []);
+  }, [onAbandonPost]);
 
   const createBaseOptions = useCallback(() => {
     const baseOptions: Comment = {
@@ -83,11 +87,16 @@ const usePublishPost = ({ communityAddress }: UsePublishPostOptions) => {
   const publishOptionsWithAbandon = useMemo(
     () => ({
       ...publishCommentOptions,
+      onPendingComment: onPendingPost,
+      onError: (error: Error) => {
+        onPublishError?.(error);
+        publishCommentOptions.onError?.(error);
+      },
       onChallenge: async (...args: any[]) => {
         addChallenge(args, abandonCurrentPublish);
       },
     }),
-    [abandonCurrentPublish, addChallenge, publishCommentOptions],
+    [abandonCurrentPublish, addChallenge, onPendingPost, onPublishError, publishCommentOptions],
   );
 
   const { index, publishComment, abandonPublish } = usePublishComment(publishOptionsWithAbandon);

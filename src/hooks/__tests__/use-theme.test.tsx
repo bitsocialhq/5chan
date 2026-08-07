@@ -13,6 +13,7 @@ const testState = vi.hoisted(() => ({
   directories: [] as Array<{ address: string; nsfw?: boolean }>,
   isSpecialThemeEnabled: false as boolean | null,
   locationPathname: '/trash',
+  locationState: null as { pendingPost?: { communityAddress?: string } } | null,
   resolvedAddress: 'off-topic.bso' as string | undefined,
   setIsEnabledMock: vi.fn(),
   setThemeMock: vi.fn().mockResolvedValue(undefined),
@@ -27,7 +28,7 @@ vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
     ...actual,
-    useLocation: () => ({ pathname: testState.locationPathname }),
+    useLocation: () => ({ pathname: testState.locationPathname, state: testState.locationState }),
     useParams: () => ({ boardIdentifier: testState.boardIdentifier }),
   };
 });
@@ -92,6 +93,7 @@ describe('useTheme', () => {
     testState.directories = [];
     testState.isSpecialThemeEnabled = false;
     testState.locationPathname = `/${TRASH_BOARD_CODE}`;
+    testState.locationState = null;
     testState.resolvedAddress = TRASH_BOARD_ADDRESS;
     testState.themes = {
       nsfw: 'tomorrow',
@@ -133,5 +135,19 @@ describe('useTheme', () => {
     await renderHook();
 
     expect(testState.updateFaviconMock).toHaveBeenLastCalledWith('default');
+  });
+
+  it('keeps the board theme while an optimistic pending post is being persisted', async () => {
+    testState.boardIdentifier = undefined;
+    testState.directories = [{ address: 'music-posting.eth', nsfw: true }];
+    testState.locationPathname = '/pending/0';
+    testState.locationState = { pendingPost: { communityAddress: 'music-posting.eth' } };
+    testState.resolvedAddress = undefined;
+
+    await renderHook();
+
+    expect(latestValue?.[0]).toBe('tomorrow');
+    expect(document.body.classList.contains('tomorrow')).toBe(true);
+    expect(document.body.classList.contains('yotsuba')).toBe(false);
   });
 });

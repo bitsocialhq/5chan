@@ -10,11 +10,14 @@ import usePublishPostStore from '../../stores/use-publish-post-store';
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
 const testState = vi.hoisted(() => ({
+  abandonNavigationMock: vi.fn(),
   abandonPublishMock: vi.fn(async () => undefined),
   index: 12,
   lastPublishOptions: undefined as Record<string, any> | undefined,
   publishAuthorBlockedReason: undefined as 'resolving' | 'unresolved' | 'mismatch' | undefined,
   publishCommentMock: vi.fn(),
+  publishErrorNavigationMock: vi.fn(),
+  pendingPostNavigationMock: vi.fn(),
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
@@ -41,7 +44,12 @@ let latestValue: ReturnType<typeof usePublishPost>;
 let root: Root;
 
 const HookHarness = () => {
-  latestValue = usePublishPost({ communityAddress: 'music.eth' });
+  latestValue = usePublishPost({
+    communityAddress: 'music.eth',
+    onAbandonPost: testState.abandonNavigationMock,
+    onPublishError: testState.publishErrorNavigationMock,
+    onPendingPost: testState.pendingPostNavigationMock,
+  });
   return null;
 };
 
@@ -117,13 +125,40 @@ describe('usePublishPost', () => {
       await useChallengesStore.getState().abandonCurrentChallenge();
     });
 
+    expect(testState.abandonNavigationMock).toHaveBeenCalledTimes(1);
     expect(testState.abandonPublishMock).toHaveBeenCalledTimes(1);
+    expect(testState.abandonNavigationMock.mock.invocationCallOrder[0]).toBeLessThan(testState.abandonPublishMock.mock.invocationCallOrder[0]);
 
     await act(async () => {
       latestValue.resetPublishPostOptions();
     });
 
     expect(latestValue.publishPostOptions).toEqual({});
+  });
+
+  it('forwards pending comments before the index state update is rendered', async () => {
+    const pendingPost = { communityAddress: 'music.eth', content: 'Thread body', index: 12 };
+
+    await act(async () => {
+      await testState.lastPublishOptions?.onPendingComment?.(12, pendingPost);
+    });
+
+    expect(testState.pendingPostNavigationMock).toHaveBeenCalledWith(12, pendingPost);
+  });
+
+  it('handles optimistic navigation before forwarding publish errors', async () => {
+    const existingOnError = vi.fn();
+    const error = new Error('publish failed');
+    usePublishPostStore.setState({ publishCommentOptions: { onError: existingOnError } });
+    renderHook();
+
+    await act(async () => {
+      testState.lastPublishOptions?.onError?.(error);
+    });
+
+    expect(testState.publishErrorNavigationMock).toHaveBeenCalledWith(error);
+    expect(existingOnError).toHaveBeenCalledWith(error);
+    expect(testState.publishErrorNavigationMock.mock.invocationCallOrder[0]).toBeLessThan(existingOnError.mock.invocationCallOrder[0]);
   });
 
   it('blocks publish when the active account address is a domain that is not verified yet', async () => {

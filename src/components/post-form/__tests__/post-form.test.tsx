@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import PostForm, { LinkTypePreviewer } from '../post-form';
 import { OEKAKI_WEB_WARNING_TEXT } from '../../../lib/oekaki/oekaki-copy';
 import { POST_OPTIONS_VALIDATION_DELAY_MS } from '../../../lib/utils/post-options-utils';
+import usePendingPostNavigationStore from '../../../stores/use-pending-post-navigation-store';
 import usePostFormDraftsStore from '../../../stores/use-post-form-drafts-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -43,6 +44,9 @@ const testState = vi.hoisted(() => ({
   isResolvingExternalQuotes: false,
   mediaHostingRuntime: 'web' as 'web' | 'android' | 'electron',
   navigateMock: vi.fn(),
+  onAbandonPost: undefined as undefined | (() => void),
+  onPublishError: undefined as undefined | ((error: Error) => void),
+  onPendingPost: undefined as undefined | ((accountCommentIndex: number, pendingPost: Record<string, unknown>) => void),
   offlineTitle: 'offline board',
   postIndex: undefined as number | undefined,
   publishedPostOptions: undefined as Record<string, unknown> | undefined,
@@ -207,8 +211,21 @@ vi.mock('../../../hooks/use-publish-post', async () => {
   const React = await vi.importActual<typeof import('react')>('react');
 
   return {
-    default: ({ communityAddress }: { communityAddress?: string }) => {
+    default: ({
+      communityAddress,
+      onAbandonPost,
+      onPublishError,
+      onPendingPost,
+    }: {
+      communityAddress?: string;
+      onAbandonPost?: () => void;
+      onPublishError?: (error: Error) => void;
+      onPendingPost?: (accountCommentIndex: number, pendingPost: Record<string, unknown>) => void;
+    }) => {
       const [, forceUpdate] = React.useReducer((value: number) => value + 1, 0);
+      testState.onAbandonPost = onAbandonPost;
+      testState.onPublishError = onPublishError;
+      testState.onPendingPost = onPendingPost;
       const getPublishPostOptions = React.useCallback(
         () => ({
           ...(communityAddress ? { communityAddress } : {}),
@@ -546,6 +563,7 @@ describe('PostForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     usePostFormDraftsStore.setState({ forms: {} });
+    usePendingPostNavigationStore.getState().clearPendingPostNavigation();
     testState.account = {
       author: { address: 'alice.eth', displayName: 'Alice' },
       subscriptions: ['music-posting.eth'],
@@ -580,6 +598,9 @@ describe('PostForm', () => {
     testState.isResolvingExternalQuotes = false;
     testState.mediaHostingRuntime = 'web';
     testState.offlineTitle = 'offline board';
+    testState.onAbandonPost = undefined;
+    testState.onPublishError = undefined;
+    testState.onPendingPost = undefined;
     testState.postIndex = undefined;
     testState.publishedPostOptions = undefined;
     testState.publishPostOptions = {};
@@ -620,6 +641,7 @@ describe('PostForm', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    usePendingPostNavigationStore.getState().clearPendingPostNavigation();
   });
 
   it('shows the closed-thread notice when the current post can no longer receive replies', async () => {
@@ -1725,10 +1747,68 @@ describe('PostForm', () => {
     expect(testState.navigateMock).toHaveBeenCalledWith('/pending/7', { state: { boardPath: 'mu' } });
   });
 
+  it('navigates as soon as the pending comment is created without waiting for index state', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    const pendingPost = {
+      communityAddress: 'music-posting.eth',
+      content: 'Thread body',
+      index: 7,
+    };
+    testState.publishPostMock.mockImplementation(() => {
+      testState.onPendingPost?.(7, pendingPost);
+    });
+    const pendingNavigationStates: boolean[] = [];
+    const unsubscribe = usePendingPostNavigationStore.subscribe((state) => pendingNavigationStates.push(state.isNavigatingToPendingPost));
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    await dispatchInput(textarea, 'Thread body');
+    await clickByText(table, 'post');
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/pending/7', {
+      flushSync: true,
+      state: { boardPath: 'mu', pendingPost },
+    });
+    expect(pendingNavigationStates).toEqual([true]);
+    expect(usePendingPostNavigationStore.getState().pendingPostNavigationIndex).toBe(7);
+    expect(container.querySelector('table')).toBeNull();
+    unsubscribe();
+    usePendingPostNavigationStore.getState().clearPendingPostNavigation();
+  });
+
+  it('clears the optimistic handoff when pending navigation throws', async () => {
+    testState.navigateMock.mockImplementation(() => {
+      throw new Error('navigation failed');
+    });
+    const pendingPost = {
+      communityAddress: 'music-posting.eth',
+      index: 7,
+    };
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    expect(() => testState.onPendingPost?.(7, pendingPost)).toThrow('navigation failed');
+    expect(usePendingPostNavigationStore.getState()).toMatchObject({
+      isNavigatingToPendingPost: false,
+      pendingPostNavigationIndex: null,
+    });
+  });
+
   it('redirects new posts to the board index when nonoko is used', async () => {
     testState.resolvedCommunityAddress = 'music-posting.eth';
     testState.publishPostMock.mockImplementation(() => {
-      testState.postIndex = 7;
+      testState.onPendingPost?.(8, {
+        communityAddress: 'music-posting.eth',
+        index: 8,
+      });
+      testState.onPendingPost?.(7, {
+        communityAddress: 'music-posting.eth',
+        index: 7,
+      });
     });
 
     await renderPostForm('/mu');
@@ -1741,12 +1821,61 @@ describe('PostForm', () => {
     await dispatchInput(optionsInput as HTMLInputElement, 'nonoko');
     await dispatchInput(subjectInput as HTMLInputElement, 'Thread title');
     await clickByText(table as HTMLTableElement, 'post');
-    await flushEffects();
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
-    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalled();
-    expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { state: { nonokoPendingAccountCommentIndex: 7 } });
-    expect(testState.navigateMock).not.toHaveBeenCalledWith('/pending/7');
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { flushSync: true, state: { nonokoPendingAccountCommentIndex: 8 } });
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { flushSync: true, state: { nonokoPendingAccountCommentIndex: 7 } });
+    expect(testState.navigateMock.mock.calls.some(([path]) => typeof path === 'string' && path.startsWith('/pending/'))).toBe(false);
+  });
+
+  it('clears the optimistic handoff when publishing fails after navigation', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    testState.publishPostMock.mockImplementation(() => {
+      testState.onPendingPost?.(7, {
+        communityAddress: 'music-posting.eth',
+        index: 7,
+      });
+      testState.onPublishError?.(new Error('persistence failed'));
+    });
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'Thread body');
+    await clickByText(table, 'post');
+
+    expect(testState.navigateMock).toHaveBeenLastCalledWith('/pending/7', {
+      flushSync: true,
+      state: {
+        boardPath: 'mu',
+        pendingPost: {
+          communityAddress: 'music-posting.eth',
+          index: 7,
+        },
+      },
+    });
+    expect(usePendingPostNavigationStore.getState()).toMatchObject({
+      isNavigatingToPendingPost: true,
+      pendingPostNavigationIndex: null,
+    });
+  });
+
+  it('does not let a late publish error clear a newer optimistic handoff', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+    testState.onPendingPost?.(7, {
+      communityAddress: 'music-posting.eth',
+      index: 7,
+    });
+    const oldPublishError = testState.onPublishError;
+    usePendingPostNavigationStore.getState().beginPendingPostNavigation(8);
+
+    oldPublishError?.(new Error('late failure'));
+
+    expect(usePendingPostNavigationStore.getState().pendingPostNavigationIndex).toBe(8);
   });
 
   it('resets the reply form after a completed reply publish', async () => {

@@ -13,6 +13,8 @@ import styles from './board-header.module.css';
 import { useDirectories } from '../../hooks/use-directories';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
+import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
+import { getPendingPostRoutePost } from '../../lib/utils/pending-post-route-state';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useIsCommunityOffline from '../../hooks/use-is-community-offline';
 import { shouldShowSnow } from '../../lib/snow';
@@ -58,7 +60,7 @@ const BoardHeader = memo(() => {
   const bannerKey = isInAllView ? 'all' : isInSubscriptionsView ? 'subscriptions' : isInModView ? 'mod' : params.boardIdentifier || 'board';
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
-  const communityAddress = resolvedAddress || accountComment?.communityAddress;
+  const communityAddress = resolvedAddress || getCommentCommunityAddress(accountComment) || getCommentCommunityAddress(getPendingPostRoutePost(location.state));
 
   // Use stable community for display fields to avoid rerenders from updatingState
   const stableCommunity = useStableCommunity(communityAddress);

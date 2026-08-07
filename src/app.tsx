@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect } from 'react';
+import { Activity, lazy, Suspense, useCallback, useEffect } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { useAccount, useAccountComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { initSnow, removeSnow, shouldShowSnow } from './lib/snow';
@@ -7,6 +7,7 @@ import { preloadReplyModal, preloadThemeAssets } from './lib/utils/preload-utils
 import { hasModQueueAccessRole } from './lib/utils/mod-access';
 import useReplyModalStore from './stores/use-reply-modal-store';
 import useCreateBoardModalStore from './stores/use-create-board-modal-store';
+import usePendingPostNavigationStore from './stores/use-pending-post-navigation-store';
 import useSpecialThemeStore from './stores/use-special-theme-store';
 import useIsMobile from './hooks/use-is-mobile';
 import { useAccountCommunityAddresses } from './hooks/use-account-community-addresses';
@@ -19,6 +20,7 @@ import useSuspendOffscreenMediaPlayback from './hooks/use-suspend-offscreen-medi
 import { normalizeAccountCommentIndex } from './lib/utils/account-comment-index-utils';
 import { getCommentCommunityAddress } from './lib/utils/comment-utils';
 import { getPageDraftKey } from './lib/utils/location-draft-utils';
+import { getPendingPostRoutePost } from './lib/utils/pending-post-route-state';
 import {
   getBoardPath,
   isBoardModRoute,
@@ -78,8 +80,9 @@ const getPageOneCanonicalPath = (boardIdentifier: string, pathname: string) => `
 
 const BoardLayout = () => {
   const params = useParams();
+  const isNavigatingToPendingPost = usePendingPostNavigationStore((state) => state.isNavigatingToPendingPost);
   const { accountCommentIndex, boardIdentifier, pageNumber } = params;
-  const { pathname, search, hash } = useLocation();
+  const { pathname, search, hash, state } = useLocation();
   const isMobile = useIsMobile();
   const isInAllView = isAllView(pathname);
   const isInSubscriptionsView = isSubscriptionsView(pathname, useParams());
@@ -88,7 +91,7 @@ const BoardLayout = () => {
   const communityAddress = useResolvedCommunityAddress(boardIdentifier);
   const { boardPath: resolvedDirectoryBoardPath, isDirectoryCandidate } = useResolvedDirectoryBoardPath(boardIdentifier);
   const pendingPost = useAccountComment({ commentIndex: normalizeAccountCommentIndex(accountCommentIndex) });
-  const pendingPostCommunityAddress = getCommentCommunityAddress(pendingPost);
+  const pendingPostCommunityAddress = getCommentCommunityAddress(pendingPost) || getCommentCommunityAddress(getPendingPostRoutePost(state));
   const { closeCreateBoardModal } = useCreateBoardModalStore();
   const isOnPostRoute = isPostRoute(pathname);
   const isOnPendingPostRoute = isPendingPostRoute(pathname);
@@ -193,8 +196,12 @@ const BoardLayout = () => {
               <DesktopBoardButtons />
             </>
           )}
-      {!isOnModQueueRoute && <FeedCacheContainer />}
-      {shouldRenderOutlet && <Outlet />}
+      {!isOnModQueueRoute && (
+        <Activity mode={isNavigatingToPendingPost ? 'hidden' : 'visible'}>
+          <FeedCacheContainer />
+        </Activity>
+      )}
+      {shouldRenderOutlet && <Outlet key='board-layout-outlet' />}
     </div>
   );
 };

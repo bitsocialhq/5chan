@@ -3,6 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Link, MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import usePendingPostNavigationStore from '../stores/use-pending-post-navigation-store';
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
 
@@ -288,16 +289,19 @@ vi.mock('../components/reply-modal', () => ({
 
 let latestHash = '';
 let latestLocation = '';
+let navigateFromTest: ReturnType<typeof useNavigate> | undefined;
 let container: HTMLDivElement;
 let root: Root;
 let App: typeof import('../app').default | null = null;
 
 const LocationProbe = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   React.useLayoutEffect(() => {
     latestLocation = `${location.pathname}${location.search}`;
     latestHash = location.hash;
-  }, [location.hash, location.pathname, location.search]);
+    navigateFromTest = navigate;
+  }, [location.hash, location.pathname, location.search, navigate]);
   return null;
 };
 
@@ -309,13 +313,13 @@ const flushEffects = async (count = 8) => {
   act(() => {});
 };
 
-const renderApp = async (initialEntry: string) => {
+const renderApp = async (initialEntry: string | { pathname: string; state?: unknown }) => {
   if (!App) {
     App = (await import('../app')).default;
   }
 
   latestHash = '';
-  latestLocation = initialEntry;
+  latestLocation = typeof initialEntry === 'string' ? initialEntry : initialEntry.pathname;
   act(() => {
     root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(App!), createElement(LocationProbe)));
   });
@@ -361,8 +365,10 @@ describe('App', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    usePendingPostNavigationStore.getState().clearPendingPostNavigation();
     latestHash = '';
     latestLocation = '';
+    navigateFromTest = undefined;
     testState.account = { author: { address: '0x123' } };
     testState.accountComments = {};
     testState.accountCommunityAddresses = [];
@@ -403,6 +409,7 @@ describe('App', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    usePendingPostNavigationStore.getState().clearPendingPostNavigation();
   });
 
   it('renders board layout chrome on multiboard routes', async () => {
@@ -415,6 +422,40 @@ describe('App', () => {
     expect(container.querySelector('[data-testid="desktop-board-buttons"]')).toBeTruthy();
     expect(container.querySelector('[data-testid="board-blotter"]')).toBeTruthy();
     expect(latestLocation).toBe('/all');
+  });
+
+  it('keeps the board chrome and cached feed mounted during the immediate pending handoff', async () => {
+    await renderApp('/mu');
+    const boardsBar = container.querySelector('[data-testid="boards-bar"]');
+    const boardHeader = container.querySelector('[data-testid="board-header"]');
+    const feedCache = container.querySelector('[data-testid="feed-cache-container"]');
+
+    await act(async () => {
+      usePendingPostNavigationStore.getState().beginPendingPostNavigation(0);
+      navigateFromTest?.('/pending/0', {
+        state: { boardPath: 'mu', pendingPost: { communityAddress: 'music-posting.eth', index: 0 } },
+      });
+    });
+    await flushEffects();
+
+    expect(container.querySelector('[data-testid="pending-post-view"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="boards-bar"]')).toBe(boardsBar);
+    expect(container.querySelector('[data-testid="board-header"]')).toBe(boardHeader);
+    expect(feedCache?.isConnected).toBe(true);
+  });
+
+  it('restores the pending board shell from route state before the account row is addressable', async () => {
+    testState.accountComments = { 0: {} };
+
+    await renderApp({
+      pathname: '/pending/0',
+      state: { pendingPost: { communityAddress: 'music-posting.eth', index: 0 } },
+    });
+
+    expect(container.querySelector('[data-testid="pending-post-view"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="board-header"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="post-form"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="feed-cache-container"]')).toBeTruthy();
   });
 
   it('keeps an open post form and its draft when settings opens from a trailing-slash board route', async () => {

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import usePendingPostNavigationStore from '../../../stores/use-pending-post-navigation-store';
 import PendingPost from '../pending-post';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -17,10 +18,11 @@ const testState = vi.hoisted(() => ({
   accountCommentIndex: undefined as string | undefined,
   accountCommentLookupOptions: undefined as { commentIndex?: number } | undefined,
   accountComments: [] as TestComment[],
+  accountCommentsState: 'succeeded',
   challengeCount: 0,
   directories: [] as Array<{ address: string; title?: string }>,
   getBoardPathMock: vi.fn<(address: string) => string>(),
-  locationState: null as { boardPath?: string } | null,
+  locationState: null as { boardPath?: string; pendingPost?: TestComment } | null,
   navigateMock: vi.fn(),
   post: undefined as TestComment | undefined,
   retryingAccountCommentIndex: null as number | null,
@@ -48,6 +50,7 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
   },
   useAccountComments: () => ({
     accountComments: testState.accountComments,
+    state: testState.accountCommentsState,
   }),
 }));
 
@@ -98,6 +101,7 @@ describe('PendingPost', () => {
     testState.accountCommentIndex = undefined;
     testState.accountCommentLookupOptions = undefined;
     testState.accountComments = [];
+    testState.accountCommentsState = 'succeeded';
     testState.challengeCount = 0;
     testState.directories = [];
     testState.getBoardPathMock.mockReset();
@@ -105,6 +109,7 @@ describe('PendingPost', () => {
     testState.navigateMock.mockReset();
     testState.post = undefined;
     testState.retryingAccountCommentIndex = null;
+    usePendingPostNavigationStore.getState().clearPendingPostNavigation();
 
     window.scrollTo = scrollToMock;
 
@@ -116,6 +121,7 @@ describe('PendingPost', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    usePendingPostNavigationStore.getState().clearPendingPostNavigation();
     window.scrollTo = originalScrollTo;
   });
 
@@ -200,6 +206,134 @@ describe('PendingPost', () => {
     expect(testState.navigateMock).not.toHaveBeenCalledWith('/not-found', { replace: true });
   });
 
+  it('renders the route pending post before the account store update arrives', async () => {
+    testState.accountCommentIndex = '2';
+    testState.accountComments = [{ index: 0 }, { index: 1 }];
+    testState.locationState = {
+      boardPath: 'mu',
+      pendingPost: {
+        communityAddress: 'music-posting.eth',
+        index: 2,
+      },
+    };
+    testState.post = { index: 2 };
+    usePendingPostNavigationStore.getState().beginPendingPostNavigation(2);
+
+    await renderPendingPost();
+
+    expect(container.querySelector('[data-testid="post-view"]')).not.toBeNull();
+    expect(testState.navigateMock).not.toHaveBeenCalledWith('/not-found', { replace: true });
+  });
+
+  it('does not revive the route fallback after the stored post is abandoned', async () => {
+    testState.accountCommentIndex = '2';
+    testState.locationState = {
+      boardPath: 'mu',
+      pendingPost: { communityAddress: 'music-posting.eth', index: 2 },
+    };
+    usePendingPostNavigationStore.getState().beginPendingPostNavigation(2);
+
+    await renderPendingPost();
+    expect(container.querySelector('[data-testid="post-view"]')).not.toBeNull();
+
+    testState.post = { communityAddress: 'music-posting.eth', index: 2 };
+    await renderPendingPost();
+
+    testState.post = undefined;
+    testState.navigateMock.mockClear();
+    await renderPendingPost();
+
+    expect(container.querySelector('[data-testid="post-view"]')).toBeNull();
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
+  });
+
+  it('uses a fresh optimistic handoff when the pending route index changes without remounting', async () => {
+    testState.accountCommentIndex = '0';
+    testState.accountComments = [{ index: 0 }];
+    testState.locationState = {
+      boardPath: 'mu',
+      pendingPost: { communityAddress: 'music-posting.eth', index: 0 },
+    };
+    testState.post = { communityAddress: 'music-posting.eth', index: 0 };
+    usePendingPostNavigationStore.getState().beginPendingPostNavigation(0);
+
+    await renderPendingPost();
+
+    testState.accountCommentIndex = '1';
+    testState.locationState = {
+      boardPath: 'mu',
+      pendingPost: { communityAddress: 'music-posting.eth', index: 1 },
+    };
+    testState.post = undefined;
+    testState.navigateMock.mockClear();
+    usePendingPostNavigationStore.getState().beginPendingPostNavigation(1);
+
+    await renderPendingPost();
+
+    expect(container.querySelector('[data-testid="post-view"]')).not.toBeNull();
+    expect(testState.navigateMock).not.toHaveBeenCalledWith('/not-found', { replace: true });
+  });
+
+  it('does not keep stale optimistic route state after a reload clears the live handoff', async () => {
+    testState.accountCommentIndex = '2';
+    testState.accountComments = [{ index: 0 }, { index: 1 }];
+    testState.locationState = {
+      boardPath: 'mu',
+      pendingPost: { communityAddress: 'music-posting.eth', index: 2 },
+    };
+    testState.post = undefined;
+
+    await renderPendingPost();
+
+    expect(container.querySelector('[data-testid="post-view"]')).toBeNull();
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
+  });
+
+  it('keeps a persisted failed post visible after its optimistic handoff is cleared', async () => {
+    testState.accountCommentIndex = '2';
+    testState.accountComments = [{ index: 0 }, { index: 1 }, { index: 2 }];
+    testState.locationState = {
+      boardPath: 'mu',
+      pendingPost: { communityAddress: 'music-posting.eth', index: 2 },
+    };
+    testState.post = { communityAddress: 'music-posting.eth', index: 2 };
+
+    await renderPendingPost();
+
+    expect(container.querySelector('[data-testid="post-view"]')).not.toBeNull();
+    expect(testState.navigateMock).not.toHaveBeenCalledWith('/mu', { replace: true });
+    expect(testState.navigateMock).not.toHaveBeenCalledWith('/not-found', { replace: true });
+  });
+
+  it('restores cached feed rendering only after the pending post has painted', async () => {
+    const frameCallbacks: FrameRequestCallback[] = [];
+    const requestAnimationFrameSpy = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      frameCallbacks.push(callback);
+      return frameCallbacks.length;
+    });
+    const cancelAnimationFrameSpy = vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);
+    testState.accountCommentIndex = '0';
+    testState.accountComments = [{}];
+    testState.post = { communityAddress: 'music-posting.eth', index: 0 };
+    usePendingPostNavigationStore.getState().beginPendingPostNavigation(0);
+
+    await renderPendingPost();
+
+    expect(container.querySelector('[data-testid="post-view"]')).not.toBeNull();
+    expect(usePendingPostNavigationStore.getState().isNavigatingToPendingPost).toBe(true);
+    expect(frameCallbacks).toHaveLength(1);
+
+    act(() => frameCallbacks.shift()?.(0));
+    expect(usePendingPostNavigationStore.getState().isNavigatingToPendingPost).toBe(true);
+    expect(frameCallbacks).toHaveLength(1);
+
+    await act(async () => frameCallbacks.shift()?.(0));
+    expect(usePendingPostNavigationStore.getState().isNavigatingToPendingPost).toBe(false);
+
+    requestAnimationFrameSpy.mockRestore();
+    cancelAnimationFrameSpy.mockRestore();
+  });
+
   it('redirects abandoned pending posts back to their board after the challenge closes', async () => {
     testState.accountCommentIndex = '0';
     testState.accountComments = [];
@@ -217,6 +351,7 @@ describe('PendingPost', () => {
     await renderPendingPost();
 
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
+    expect(container.querySelector('[data-testid="post-view"]')).toBeNull();
   });
 
   it('keeps a mid-retry pending post in place while the failed row is deleted and republished', async () => {

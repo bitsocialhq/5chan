@@ -127,7 +127,7 @@ vi.mock('../../../generated/asset-manifest', () => ({
 let container: HTMLDivElement;
 let root: Root;
 
-const renderHeader = async (initialEntry: string) => {
+const renderHeader = async (initialEntry: string | { pathname: string; state?: unknown }) => {
   await act(async () => {
     root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(BoardHeader)));
   });
@@ -228,6 +228,16 @@ describe('BoardHeader', () => {
 
     expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
     expect(mathRandomSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps board metadata while an optimistic pending post is being persisted', async () => {
+    testState.accountComment = undefined;
+    testState.resolvedAddress = undefined;
+
+    await renderHeader({ pathname: '/pending/0', state: { pendingPost: { communityAddress: 'music-posting.eth', index: 0 } } });
+
+    expect(container.textContent).toContain('/mu/ - Music');
+    expect(container.textContent).toContain('music-posting.eth');
   });
 
   it('renders hidden special board metadata without a directory entry', async () => {
