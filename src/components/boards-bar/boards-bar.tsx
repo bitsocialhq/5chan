@@ -9,6 +9,7 @@ import { useAccountCommunityAddresses } from '../../hooks/use-account-community-
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath, useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
+import { getPendingPostRoutePost } from '../../lib/utils/pending-post-route-state';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import useCreateBoardModalStore from '../../stores/use-create-board-modal-store';
@@ -429,9 +430,10 @@ BoardsBarMobile.displayName = 'BoardsBarMobile';
 
 const BoardsBar = memo(() => {
   const params = useParams();
+  const location = useLocation();
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedCommunityAddress = useResolvedCommunityAddress();
-  const communityAddress = resolvedCommunityAddress || getCommentCommunityAddress(accountComment);
+  const communityAddress = resolvedCommunityAddress || getCommentCommunityAddress(accountComment) || getCommentCommunityAddress(getPendingPostRoutePost(location.state));
 
   return (
     <>

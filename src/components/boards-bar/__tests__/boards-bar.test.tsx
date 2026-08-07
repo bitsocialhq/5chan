@@ -316,6 +316,17 @@ describe('BoardsBar', () => {
     expect(Array.from(select?.querySelectorAll('option') ?? []).some((option) => option.value === 'mu')).toBe(true);
   });
 
+  it('keeps the mobile board context from pending route state while the account comment loads', async () => {
+    testState.resolvedCommunityAddress = undefined;
+
+    await renderBoardsBar({
+      pathname: '/pending/7',
+      state: { pendingPost: { communityAddress: 'music-posting.eth', index: 7 } },
+    });
+
+    expect(container.querySelector<HTMLSelectElement>('select')?.value).toBe('mu');
+  });
+
   it('preserves pending route state when opening settings', async () => {
     const routeState = {
       boardPath: 'mu',
