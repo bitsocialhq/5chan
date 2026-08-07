@@ -177,10 +177,12 @@ describe('PendingPost', () => {
   it('redirects malformed pending indices to not found', async () => {
     testState.accountCommentIndex = '1abc';
     testState.accountComments = [{}, {}];
+    testState.locationState = { boardPath: 'mu' };
 
     await renderPendingPost();
 
     expect(testState.navigateMock).toHaveBeenCalledWith('/not-found', { replace: true });
+    expect(testState.navigateMock).not.toHaveBeenCalledWith('/mu', { replace: true });
   });
 
   it('redirects out-of-range pending indices to not found', async () => {

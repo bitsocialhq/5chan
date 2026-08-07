@@ -1906,6 +1906,25 @@ describe('PostForm', () => {
     expect(usePendingPostNavigationStore.getState().pendingPostNavigationIndex).toBe(8);
   });
 
+  it('does not let an older publish abandonment clear a newer optimistic handoff', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+    testState.onPendingPost?.(7, {
+      communityAddress: 'music-posting.eth',
+      index: 7,
+    });
+    const oldAbandonPost = testState.onAbandonPost;
+    usePendingPostNavigationStore.getState().beginPendingPostNavigation(8);
+    testState.navigateMock.mockClear();
+
+    oldAbandonPost?.();
+
+    expect(usePendingPostNavigationStore.getState().pendingPostNavigationIndex).toBe(8);
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+  });
+
   it('resets the reply form after a completed reply publish', async () => {
     testState.comments = {
       'thread-cid': {

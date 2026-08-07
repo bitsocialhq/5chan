@@ -609,11 +609,13 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
   const navigate = useNavigate();
   const nonokoRedirectPathRef = useRef<string | null>(null);
   const pendingPostBoardPathRef = useRef<string | undefined>(undefined);
+  const handledPendingPostIndexRef = useRef<number | null>(null);
   const pendingPostNavigationIndexRef = useRef<number | null>(null);
   const navigateToPendingPost = useCallback(
     (accountCommentIndex: number, pendingPost: Comment) => {
       const nonokoRedirectPath = nonokoRedirectPathRef.current;
       const boardPath = pendingPostBoardPathRef.current;
+      handledPendingPostIndexRef.current = accountCommentIndex;
       pendingPostNavigationIndexRef.current = accountCommentIndex;
 
       if (nonokoRedirectPath) {
@@ -628,6 +630,7 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
             }),
           );
         } catch (error) {
+          handledPendingPostIndexRef.current = null;
           pendingPostNavigationIndexRef.current = null;
           usePendingPostNavigationStore.getState().clearPendingPostNavigation(accountCommentIndex);
           throw error;
@@ -639,7 +642,15 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
   );
   const navigateAfterAbandon = useCallback(() => {
     const boardPath = pendingPostBoardPathRef.current;
-    usePendingPostNavigationStore.getState().clearPendingPostNavigation();
+    const pendingPostNavigationIndex = pendingPostNavigationIndexRef.current;
+    const activePendingPostNavigationIndex = usePendingPostNavigationStore.getState().pendingPostNavigationIndex;
+    if (activePendingPostNavigationIndex !== null && activePendingPostNavigationIndex !== pendingPostNavigationIndex) {
+      return;
+    }
+    pendingPostNavigationIndexRef.current = null;
+    if (pendingPostNavigationIndex !== null) {
+      usePendingPostNavigationStore.getState().clearPendingPostNavigation(pendingPostNavigationIndex);
+    }
     if (boardPath) {
       flushSync(() => navigate(`/${boardPath}`, { flushSync: true, replace: true }));
     }
@@ -784,6 +795,7 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
       setLengthError(null);
       setFormError(null);
       nonokoRedirectPathRef.current = null;
+      handledPendingPostIndexRef.current = null;
       pendingPostNavigationIndexRef.current = null;
 
       if (currentOptionsError) {
@@ -846,8 +858,8 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
   // redirect to pending page when pending comment is created
   useEffect(() => {
     if (typeof postIndex === 'number') {
-      const alreadyNavigatedToPostIndex = pendingPostNavigationIndexRef.current === postIndex;
-      pendingPostNavigationIndexRef.current = null;
+      const alreadyNavigatedToPostIndex = handledPendingPostIndexRef.current === postIndex;
+      handledPendingPostIndexRef.current = null;
       const nonokoRedirectPath = nonokoRedirectPathRef.current;
       nonokoRedirectPathRef.current = null;
       resetPublishPostOptions();

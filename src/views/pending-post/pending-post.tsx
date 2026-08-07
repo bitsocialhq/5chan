@@ -48,7 +48,8 @@ const PendingPost = () => {
   const storedPostCommunityAddress = getCommentCommunityAddress(storedPost);
   const hasAddressableStoredPost = Boolean(storedPost?.cid || storedPostCommunityAddress);
   const observedAddressableStoredPostIndexRef = useRef<number | undefined>(undefined);
-  const hadObservedAddressableStoredPost = observedAddressableStoredPostIndexRef.current === normalizedAccountCommentIndex;
+  const hadObservedAddressableStoredPost =
+    typeof normalizedAccountCommentIndex === 'number' && observedAddressableStoredPostIndexRef.current === normalizedAccountCommentIndex;
   const hasLiveOptimisticHandoff = pendingPostNavigationIndex === normalizedAccountCommentIndex;
   const optimisticRoutePost =
     hasLiveOptimisticHandoff && !hasAddressableStoredPost && !hadObservedAddressableStoredPost && routePost?.index === normalizedAccountCommentIndex
