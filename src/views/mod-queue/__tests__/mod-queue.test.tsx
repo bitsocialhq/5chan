@@ -490,6 +490,72 @@ describe('ModQueueView', () => {
     expect(loadingTexts).toContain('looking_for_more_posts');
   });
 
+  it('keeps the settled queue visible until the refreshed queue finishes rebuilding', async () => {
+    testState.viewMode = 'feed';
+    const rejectedComment = {
+      cid: 'just-rejected',
+      communityAddress: 'music-posting.eth',
+      content: 'just rejected body',
+      pendingApproval: true,
+      timestamp: 90_000,
+    };
+    const nextComment = {
+      cid: 'next-pending',
+      communityAddress: 'music-posting.eth',
+      content: 'next pending body',
+      pendingApproval: true,
+      timestamp: 89_000,
+    };
+    const lastComment = {
+      cid: 'last-pending',
+      communityAddress: 'music-posting.eth',
+      content: 'last pending body',
+      pendingApproval: true,
+      timestamp: 88_000,
+    };
+    testState.feed = [rejectedComment, nextComment, lastComment];
+    const getRenderedFeedCids = () => Array.from(container.querySelectorAll('[data-testid="mod-queue-feed-post"]')).map((post) => post.getAttribute('data-cid'));
+
+    await renderModQueue();
+
+    expect(getRenderedFeedCids()).toEqual(['just-rejected', 'next-pending', 'last-pending']);
+
+    testState.feed = [];
+    testState.hasMore = true;
+    testState.queuedCommentHistory = [{ ...rejectedComment, approved: false, pendingApproval: false }];
+    await renderModQueue();
+
+    expect(getRenderedFeedCids()).toEqual(['just-rejected', 'next-pending', 'last-pending']);
+
+    testState.feed = [nextComment];
+    await renderModQueue();
+
+    expect(getRenderedFeedCids()).toEqual(['just-rejected', 'next-pending', 'last-pending']);
+
+    testState.feed = [nextComment, lastComment];
+    testState.hasMore = false;
+    await renderModQueue();
+
+    expect(getRenderedFeedCids()).toEqual(['next-pending', 'last-pending', 'just-rejected']);
+
+    testState.account = { author: { address: '0x456', shortAddress: '0x456' }, id: 'other-account', name: 'other' };
+    testState.feed = [
+      {
+        cid: 'other-account-pending',
+        communityAddress: 'music-posting.eth',
+        content: 'other account pending body',
+        pendingApproval: true,
+        timestamp: 87_000,
+      },
+    ];
+    testState.hasMore = true;
+    await renderModQueue();
+
+    expect(getRenderedFeedCids()).toEqual(['other-account-pending', 'just-rejected']);
+    expect(getRenderedFeedCids()).not.toContain('next-pending');
+    expect(getRenderedFeedCids()).not.toContain('last-pending');
+  });
+
   it('keeps the compact table visible and renders the empty state under its header after loading', async () => {
     testState.hasMore = false;
 
