@@ -356,6 +356,26 @@ describe('PendingPost', () => {
     expect(container.querySelector('[data-testid="post-view"]')).toBeNull();
   });
 
+  it('redirects addressless pending placeholders after their live handoff is cleared', async () => {
+    testState.accountCommentIndex = '0';
+    testState.accountComments = [{ index: 0 }];
+    testState.locationState = { boardPath: 'mu' };
+    testState.post = { index: 0 };
+    usePendingPostNavigationStore.getState().beginPendingPostNavigation(0);
+
+    await renderPendingPost();
+
+    expect(testState.navigateMock).not.toHaveBeenCalled();
+
+    usePendingPostNavigationStore.getState().clearPendingPostNavigation(0);
+    testState.navigateMock.mockClear();
+
+    await renderPendingPost();
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/mu', { replace: true });
+    expect(container.querySelector('[data-testid="post-view"]')).toBeNull();
+  });
+
   it('keeps a mid-retry pending post in place while the failed row is deleted and republished', async () => {
     testState.accountCommentIndex = '0';
     testState.accountComments = [];

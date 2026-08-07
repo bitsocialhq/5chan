@@ -92,7 +92,9 @@ const PendingPost = () => {
 
   const lastPendingBoard = lastPendingBoardRef.current;
   const hasAuthoritativeMissingPost =
-    accountCommentsState === 'succeeded' && hasNormalizedAccountCommentIndex && !hasPendingAccountCommentIndex(accountComments, normalizedAccountCommentIndex);
+    accountCommentsState === 'succeeded' &&
+    hasNormalizedAccountCommentIndex &&
+    (!hasPendingAccountCommentIndex(accountComments, normalizedAccountCommentIndex) || (!hasLiveOptimisticHandoff && !hasAddressableStoredPost));
   const abandonedBoardPath =
     !hasActiveChallenge && !hasAddressablePost && (hasAuthoritativeMissingPost || hadObservedAddressableStoredPost)
       ? pendingBoardPath || (lastPendingBoard && lastPendingBoard.accountCommentIndex === normalizedAccountCommentIndex ? lastPendingBoard.boardPath : undefined)
