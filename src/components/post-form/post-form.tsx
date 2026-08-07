@@ -614,11 +614,11 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
     (accountCommentIndex: number, pendingPost: Comment) => {
       const nonokoRedirectPath = nonokoRedirectPathRef.current;
       const boardPath = pendingPostBoardPathRef.current;
+      pendingPostNavigationIndexRef.current = accountCommentIndex;
 
       if (nonokoRedirectPath) {
         flushSync(() => navigate(nonokoRedirectPath, { flushSync: true, state: getNonokoPendingRouteState(accountCommentIndex) }));
       } else {
-        pendingPostNavigationIndexRef.current = accountCommentIndex;
         flushSync(() => usePendingPostNavigationStore.getState().beginPendingPostNavigation(accountCommentIndex));
         try {
           flushSync(() =>
@@ -846,11 +846,16 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
   // redirect to pending page when pending comment is created
   useEffect(() => {
     if (typeof postIndex === 'number') {
+      const alreadyNavigatedToPostIndex = pendingPostNavigationIndexRef.current === postIndex;
+      pendingPostNavigationIndexRef.current = null;
       const nonokoRedirectPath = nonokoRedirectPathRef.current;
       nonokoRedirectPathRef.current = null;
       resetPublishPostOptions();
       resetFields();
       closeForm();
+      if (alreadyNavigatedToPostIndex) {
+        return;
+      }
       if (nonokoRedirectPath) {
         navigate(nonokoRedirectPath, { state: getNonokoPendingRouteState(postIndex) });
       } else {

@@ -1779,6 +1779,34 @@ describe('PostForm', () => {
     usePendingPostNavigationStore.getState().clearPendingPostNavigation();
   });
 
+  it('does not navigate again when the completed index matches the synchronous handoff', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    const pendingPost = {
+      communityAddress: 'music-posting.eth',
+      content: 'Thread body',
+      index: 7,
+    };
+    testState.publishPostMock.mockImplementation(() => {
+      testState.onPendingPost?.(7, pendingPost);
+      testState.postIndex = 7;
+    });
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'Thread body');
+    await clickByText(table, 'post');
+    await flushEffects();
+
+    expect(testState.navigateMock).toHaveBeenCalledTimes(1);
+    expect(testState.navigateMock).toHaveBeenCalledWith('/pending/7', {
+      flushSync: true,
+      state: { boardPath: 'mu', pendingPost },
+    });
+    expect(testState.resetPublishPostOptionsMock).toHaveBeenCalledTimes(1);
+  });
+
   it('clears the optimistic handoff when pending navigation throws', async () => {
     testState.navigateMock.mockImplementation(() => {
       throw new Error('navigation failed');
