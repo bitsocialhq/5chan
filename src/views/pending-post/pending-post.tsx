@@ -101,19 +101,27 @@ const PendingPost = () => {
       : undefined;
 
   useEffect(() => {
-    if (!isNavigatingToPendingPost) return;
+    if (!isNavigatingToPendingPost || pendingPostNavigationIndex !== normalizedAccountCommentIndex) return;
+
+    const navigationIndex = normalizedAccountCommentIndex;
+    const completeOwnedPendingNavigation = () => {
+      const pendingNavigationStore = usePendingPostNavigationStore.getState();
+      if (pendingNavigationStore.pendingPostNavigationIndex === null || pendingNavigationStore.pendingPostNavigationIndex === navigationIndex) {
+        pendingNavigationStore.completePendingPostNavigation();
+      }
+    };
 
     let secondFrameId: number | undefined;
     const firstFrameId = window.requestAnimationFrame(() => {
-      secondFrameId = window.requestAnimationFrame(() => usePendingPostNavigationStore.getState().completePendingPostNavigation());
+      secondFrameId = window.requestAnimationFrame(completeOwnedPendingNavigation);
     });
 
     return () => {
       window.cancelAnimationFrame(firstFrameId);
       if (typeof secondFrameId === 'number') window.cancelAnimationFrame(secondFrameId);
-      usePendingPostNavigationStore.getState().completePendingPostNavigation();
+      completeOwnedPendingNavigation();
     };
-  }, [isNavigatingToPendingPost]);
+  }, [isNavigatingToPendingPost, normalizedAccountCommentIndex]);
 
   useEffect(() => {
     // A retry deletes this pending row before republishing, briefly invalidating the index. Stay put;

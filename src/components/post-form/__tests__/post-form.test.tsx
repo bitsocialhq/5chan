@@ -1745,6 +1745,7 @@ describe('PostForm', () => {
     expect(testState.resetPublishPostOptionsMock).toHaveBeenCalled();
     expect(usePostFormDraftsStore.getState().forms['/mu']).toBeUndefined();
     expect(testState.navigateMock).toHaveBeenCalledWith('/pending/7', { state: { boardPath: 'mu' } });
+    expect(usePendingPostNavigationStore.getState().pendingPostNavigationIndex).toBe(7);
   });
 
   it('navigates as soon as the pending comment is created without waiting for index state', async () => {

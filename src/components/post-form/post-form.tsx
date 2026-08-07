@@ -871,6 +871,8 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
       if (nonokoRedirectPath) {
         navigate(nonokoRedirectPath, { state: getNonokoPendingRouteState(postIndex) });
       } else {
+        pendingPostNavigationIndexRef.current = postIndex;
+        usePendingPostNavigationStore.getState().beginPendingPostNavigation(postIndex);
         navigate(`/pending/${postIndex}`, pendingPostBoardPath ? { state: { boardPath: pendingPostBoardPath } } : undefined);
       }
     }

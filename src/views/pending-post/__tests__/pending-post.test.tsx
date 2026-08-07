@@ -336,6 +336,36 @@ describe('PendingPost', () => {
     cancelAnimationFrameSpy.mockRestore();
   });
 
+  it('does not complete a newer pending handoff when the previous route cleans up', async () => {
+    let frameId = 0;
+    const requestAnimationFrameSpy = vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => ++frameId);
+    const cancelAnimationFrameSpy = vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);
+
+    try {
+      testState.accountCommentIndex = '0';
+      testState.accountComments = [{ index: 0 }];
+      testState.locationState = { boardPath: 'mu', pendingPost: { communityAddress: 'music-posting.eth', index: 0 } };
+      usePendingPostNavigationStore.getState().beginPendingPostNavigation(0);
+
+      await renderPendingPost();
+
+      testState.accountCommentIndex = '1';
+      testState.accountComments = [{ index: 0 }, { index: 1 }];
+      testState.locationState = { boardPath: 'mu', pendingPost: { communityAddress: 'music-posting.eth', index: 1 } };
+      act(() => usePendingPostNavigationStore.getState().beginPendingPostNavigation(1));
+
+      await renderPendingPost();
+
+      expect(usePendingPostNavigationStore.getState()).toMatchObject({
+        isNavigatingToPendingPost: true,
+        pendingPostNavigationIndex: 1,
+      });
+    } finally {
+      requestAnimationFrameSpy.mockRestore();
+      cancelAnimationFrameSpy.mockRestore();
+    }
+  });
+
   it('redirects abandoned pending posts back to their board after the challenge closes', async () => {
     testState.accountCommentIndex = '0';
     testState.accountComments = [];
