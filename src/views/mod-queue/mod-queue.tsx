@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, useCallback, memo, useRef } from '
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useParams, Link } from 'react-router-dom';
-import { useFeed, Comment, useEditedComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
+import { useAccount, useFeed, Comment, useEditedComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { useFloating, offset, shift, size, flip, autoUpdate } from '@floating-ui/react';
 import { Virtuoso, type Components } from 'react-virtuoso';
 import styles from './mod-queue.module.css';
@@ -47,6 +47,7 @@ import footerStyles from '../../components/footer/footer.module.css';
 import { useModeratedCommunityAddressInputs, useModeratedCommunityAddressesForInputs } from '../../hooks/use-moderated-community-addresses';
 import PostTransferModal, { type PostTransferState } from '../../components/post-transfer-modal/post-transfer-modal';
 import { canMoveCommentToTrash } from '../../lib/comment-transfer';
+import useSettledModQueueFeed from '../../hooks/use-settled-mod-queue-feed';
 
 /** Path for display: directory code, or full address if has TLD, or shortened for long IPNS keys (no dot) */
 const getBoardDisplayPath = (address: string, path: string): string => {
@@ -1051,6 +1052,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   const queuedCommentHistory = useModQueueStore((state) => state.queuedCommentHistory);
   const rememberCommentsInQueue = useModQueueStore((state) => state.rememberCommentsInQueue);
   const isMobile = useIsMobile();
+  const activeAccount = useAccount();
 
   const moderatedCommunityAddressInputs = useModeratedCommunityAddressInputs();
   const rawAccountCommunityAddresses = useModeratedCommunityAddressesForInputs(moderatedCommunityAddressInputs);
@@ -1088,7 +1090,8 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     }),
     [communities],
   );
-  const { feed, hasMore, loadMore, reset } = useFeed(feedOptions);
+  const { feed, hasMore, loadMore, reset, state: feedState } = useFeed(feedOptions);
+  const settledFeed = useSettledModQueueFeed(feed, feedState, `${activeAccount?.id ?? ''}\0${communityAddressesKey}`);
 
   const queuedCommentSnapshots = useMemo(
     () =>
@@ -1105,8 +1108,8 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
   }, [queuedCommentSnapshots, rememberCommentsInQueue]);
 
   const feedWithHistory = useMemo(
-    () => [...feed, ...(getVisibleQueuedCommentHistory(feed, queuedCommentHistory, communityAddresses) as Comment[])],
-    [communityAddresses, feed, queuedCommentHistory],
+    () => [...settledFeed, ...(getVisibleQueuedCommentHistory(settledFeed, queuedCommentHistory, communityAddresses) as Comment[])],
+    [communityAddresses, queuedCommentHistory, settledFeed],
   );
 
   const dismissedCommentCidSet = useMemo(() => new Set(dismissedCommentCids), [dismissedCommentCids]);
@@ -1194,7 +1197,7 @@ const ModQueueView = ({ boardIdentifier: propBoardIdentifier }: ModQueueViewProp
     [footerError, hasMore],
   );
   const isQueueEmpty = !hasVisibleComments;
-  const boardSummaryFeed = feed.length > 0 ? feed : EMPTY_COMMENTS;
+  const boardSummaryFeed = settledFeed.length > 0 ? settledFeed : EMPTY_COMMENTS;
   const visibleFilteredFeed = isQueueEmpty ? EMPTY_COMMENTS : filteredFeed;
   const visibleHasMore = isQueueEmpty ? false : hasMore;
   const visibleLoadMore = isQueueEmpty ? NOOP_LOAD_MORE : loadMore;
