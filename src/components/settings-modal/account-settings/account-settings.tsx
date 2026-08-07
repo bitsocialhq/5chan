@@ -6,6 +6,7 @@ import { getSettingsSectionPath } from '../../../lib/utils/route-utils';
 import { Capacitor } from '@capacitor/core';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getLegacyDefaultBrowserHttpRoutersOptions } from '../../../lib/p2p-browser-config';
+import { getBrowserPureP2PAccountOptions, shouldUpgradeBrowserPureP2PAccount } from '../../../lib/p2p-runtime';
 
 const isAndroid = Capacitor.getPlatform() === 'android';
 const IMPORTED_ACCOUNT_ADDRESSES_STORAGE_KEY = 'importedAccountAddresses';
@@ -72,11 +73,6 @@ type ImportedAccountProtocolOptions = Record<string, unknown> & {
 
 const toImportedAccountProtocolOptions = (protocolOptions: unknown): ImportedAccountProtocolOptions =>
   protocolOptions && typeof protocolOptions === 'object' && !Array.isArray(protocolOptions) ? (protocolOptions as ImportedAccountProtocolOptions) : {};
-
-const hasExplicitHttpRoutersOptions = (protocolOptions: unknown) => {
-  const httpRoutersOptions = toImportedAccountProtocolOptions(protocolOptions).httpRoutersOptions;
-  return Array.isArray(httpRoutersOptions);
-};
 
 // Inner component keyed by account id so state resets when user switches account
 const AccountSettingsEditor = ({
@@ -182,10 +178,18 @@ const AccountSettingsEditor = ({
           accountData.account.subscriptions = uniqueSubscriptions;
         }
 
-        if (accountData.account && !hasExplicitHttpRoutersOptions(accountData.account.pkcOptions)) {
+        const explicitImportedHttpRoutersOptions = toImportedAccountProtocolOptions(accountData.account?.pkcOptions).httpRoutersOptions;
+        if (accountData.account && !Array.isArray(explicitImportedHttpRoutersOptions)) {
           accountData.account.pkcOptions = {
             ...toImportedAccountProtocolOptions(accountData.account.pkcOptions),
             httpRoutersOptions: getLegacyDefaultBrowserHttpRoutersOptions(),
+          };
+        }
+
+        if (accountData.account && shouldUpgradeBrowserPureP2PAccount(accountData.account)) {
+          accountData.account.pkcOptions = {
+            ...getBrowserPureP2PAccountOptions(accountData.account),
+            ...(Array.isArray(explicitImportedHttpRoutersOptions) ? { httpRoutersOptions: explicitImportedHttpRoutersOptions } : {}),
           };
         }
 
@@ -217,7 +221,6 @@ const AccountSettingsEditor = ({
         if (new URLSearchParams(location.search).get('section') !== 'account-settings') {
           navigate(getSettingsSectionPath(location.pathname, 'account-settings', location.search), { replace: true });
         }
-        window.location.reload();
       };
       reader.readAsText(file);
     };
