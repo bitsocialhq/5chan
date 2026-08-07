@@ -70,13 +70,17 @@ vi.mock('../p2p-stats-settings/p2p-stats-settings', () => ({
 
 const LocationProbe = () => {
   const location = useLocation();
-  return <div data-testid='location'>{location.pathname + location.search + location.hash}</div>;
+  return (
+    <div data-testid='location' data-state={JSON.stringify(location.state)}>
+      {location.pathname + location.search + location.hash}
+    </div>
+  );
 };
 
 let root: Root;
 let container: HTMLDivElement;
 
-const render = async (initialEntry = '/all/settings') => {
+const render = async (initialEntry: string | { pathname: string; state?: unknown } = '/all/settings') => {
   await act(async () => {
     root.render(
       createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(React.Fragment, {}, createElement(SettingsModal), createElement(LocationProbe))),
@@ -85,6 +89,7 @@ const render = async (initialEntry = '/all/settings') => {
 };
 
 const getLocationText = () => container.querySelector('[data-testid="location"]')?.textContent ?? '';
+const getLocationState = () => container.querySelector('[data-testid="location"]')?.getAttribute('data-state');
 
 const getSectionToggleByText = (text: string) => {
   const control = Array.from(container.querySelectorAll<HTMLElement>('label, button')).find((candidate) => (candidate.textContent ?? '').includes(text));
@@ -157,6 +162,28 @@ describe('SettingsModal', () => {
 
     expect(getLocationText()).toBe('/all/settings');
     expect(container.querySelector('[data-testid="account-settings"]')).toBeNull();
+  });
+
+  it('preserves pending route state while using and closing settings', async () => {
+    const routeState = {
+      boardPath: 'mu',
+      pendingPost: { communityAddress: 'music-posting.eth', index: 7 },
+    };
+    await render({ pathname: '/pending/7/settings', state: routeState });
+
+    await act(async () => {
+      getSectionToggleByText('interface').click();
+    });
+
+    expect(getLocationText()).toBe('/pending/7/settings?section=interface-settings');
+    expect(getLocationState()).toBe(JSON.stringify(routeState));
+
+    await act(async () => {
+      container.querySelector<HTMLButtonElement>('button[aria-label="close"]')?.click();
+    });
+
+    expect(getLocationText()).toBe('/pending/7');
+    expect(getLocationState()).toBe(JSON.stringify(routeState));
   });
 
   it('expands and collapses all settings sections', async () => {

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BoardsBar from '../boards-bar';
 
@@ -128,7 +128,12 @@ const getLinkHref = (text: string) =>
     .find((element) => element.textContent?.trim() === text)
     ?.getAttribute('href');
 
-const renderBoardsBar = async (initialEntry: string) => {
+const LocationStateProbe = () => {
+  const location = useLocation();
+  return createElement('output', { 'data-testid': 'location-state' }, JSON.stringify(location.state));
+};
+
+const renderBoardsBar = async (initialEntry: string | { pathname: string; state?: unknown }) => {
   await act(async () => {
     root.render(
       createElement(
@@ -137,9 +142,12 @@ const renderBoardsBar = async (initialEntry: string) => {
         createElement(
           Routes,
           {},
-          createElement(Route, { path: '/:boardIdentifier/*', element: createElement(BoardsBar) }),
-          createElement(Route, { path: '/pending/:accountCommentIndex/*', element: createElement(BoardsBar) }),
-          createElement(Route, { path: '*', element: createElement(BoardsBar) }),
+          createElement(Route, { path: '/:boardIdentifier/*', element: createElement(React.Fragment, {}, createElement(BoardsBar), createElement(LocationStateProbe)) }),
+          createElement(Route, {
+            path: '/pending/:accountCommentIndex/*',
+            element: createElement(React.Fragment, {}, createElement(BoardsBar), createElement(LocationStateProbe)),
+          }),
+          createElement(Route, { path: '*', element: createElement(React.Fragment, {}, createElement(BoardsBar), createElement(LocationStateProbe)) }),
         ),
       ),
     );
@@ -306,5 +314,31 @@ describe('BoardsBar', () => {
     const select = container.querySelector('select');
     expect(select).toBeTruthy();
     expect(Array.from(select?.querySelectorAll('option') ?? []).some((option) => option.value === 'mu')).toBe(true);
+  });
+
+  it('keeps the mobile board context from pending route state while the account comment loads', async () => {
+    testState.resolvedCommunityAddress = undefined;
+
+    await renderBoardsBar({
+      pathname: '/pending/7',
+      state: { pendingPost: { communityAddress: 'music-posting.eth', index: 7 } },
+    });
+
+    expect(container.querySelector<HTMLSelectElement>('select')?.value).toBe('mu');
+  });
+
+  it('preserves pending route state when opening settings', async () => {
+    const routeState = {
+      boardPath: 'mu',
+      pendingPost: { communityAddress: 'music-posting.eth', index: 7 },
+    };
+    await renderBoardsBar({ pathname: '/pending/7', state: routeState });
+
+    const settingsLink = Array.from(container.querySelectorAll<HTMLAnchorElement>('a')).find((link) => link.textContent === 'settings');
+    await act(async () => {
+      settingsLink?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+
+    expect(container.querySelector('[data-testid="location-state"]')?.textContent).toBe(JSON.stringify(routeState));
   });
 });

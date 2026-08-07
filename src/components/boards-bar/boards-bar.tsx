@@ -9,6 +9,7 @@ import { useAccountCommunityAddresses } from '../../hooks/use-account-community-
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath, useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
+import { getPendingPostRoutePost } from '../../lib/utils/pending-post-route-state';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import useCreateBoardModalStore from '../../stores/use-create-board-modal-store';
@@ -288,7 +289,11 @@ const BoardsBarDesktop = memo(() => {
         ]
       </span>
       <span className={styles.navTopRight}>
-        [<Link to={!location.pathname.endsWith('settings') ? location.pathname.replace(/\/$/, '') + '/settings' : location.pathname}>{t('settings')}</Link>] [
+        [
+        <Link to={!location.pathname.endsWith('settings') ? location.pathname.replace(/\/$/, '') + '/settings' : location.pathname} state={location.state}>
+          {t('settings')}
+        </Link>
+        ] [
         <button
           type='button'
           tabIndex={0}
@@ -399,7 +404,9 @@ const BoardsBarMobile = memo(({ communityAddress }: { communityAddress?: string 
         {boardSelect}
       </div>
       <div className={styles.pageJump}>
-        <Link to={location.pathname.replace(/\/$/, '') + '/settings'}>{t('settings')}</Link>
+        <Link to={location.pathname.replace(/\/$/, '') + '/settings'} state={location.state}>
+          {t('settings')}
+        </Link>
         <button
           type='button'
           tabIndex={0}
@@ -423,9 +430,10 @@ BoardsBarMobile.displayName = 'BoardsBarMobile';
 
 const BoardsBar = memo(() => {
   const params = useParams();
+  const location = useLocation();
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedCommunityAddress = useResolvedCommunityAddress();
-  const communityAddress = resolvedCommunityAddress || getCommentCommunityAddress(accountComment);
+  const communityAddress = resolvedCommunityAddress || getCommentCommunityAddress(accountComment) || getCommentCommunityAddress(getPendingPostRoutePost(location.state));
 
   return (
     <>

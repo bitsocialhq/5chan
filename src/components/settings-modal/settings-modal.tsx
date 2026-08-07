@@ -37,7 +37,7 @@ const SettingsModal = () => {
   const { t } = useTranslation();
   const account = useAccount();
   const pkcRpc = usePkcRpcSettings();
-  const { hash: locationHash, pathname, search } = useLocation();
+  const { hash: locationHash, pathname, search, state } = useLocation();
   const navigate = useNavigate();
   const hiddenReviewUpgradeKeys = useSettingsUpgradeReviewStore((state) => state.hiddenReviewUpgradeKeys);
   const reviewUpgradeKeys = useSettingsUpgradeReviewStore((state) => state.reviewUpgradeKeys);
@@ -56,8 +56,8 @@ const SettingsModal = () => {
 
   const closeModal = useCallback(() => {
     const newPath = pathname.replace(/\/settings$/, '');
-    navigate(newPath);
-  }, [pathname, navigate]);
+    navigate(newPath, { state });
+  }, [pathname, navigate, state]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -104,22 +104,22 @@ const SettingsModal = () => {
     setExpandedSections(next);
 
     if (isOpening) {
-      navigate(getSettingsSectionPath(pathname, categoryId, search), { replace: true });
+      navigate(getSettingsSectionPath(pathname, categoryId, search), { replace: true, state });
     } else if (next.size === 1) {
       const remaining = next.values().next().value;
-      navigate(getSettingsSectionPath(pathname, remaining ?? null, search), { replace: true });
+      navigate(getSettingsSectionPath(pathname, remaining ?? null, search), { replace: true, state });
     } else {
-      navigate(getSettingsSectionPath(pathname, null, search), { replace: true });
+      navigate(getSettingsSectionPath(pathname, null, search), { replace: true, state });
     }
   };
 
   const handleExpandAll = () => {
     if (allExpanded) {
       setExpandedSections(new Set());
-      navigate(getSettingsSectionPath(pathname, null, search), { replace: true });
+      navigate(getSettingsSectionPath(pathname, null, search), { replace: true, state });
     } else {
       setExpandedSections(new Set(sectionIds));
-      navigate(getSettingsSectionPath(pathname, null, search), { replace: true });
+      navigate(getSettingsSectionPath(pathname, null, search), { replace: true, state });
     }
   };
 

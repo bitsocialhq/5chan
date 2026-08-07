@@ -11,6 +11,7 @@ import { getSpecialBoardByAddress } from '../lib/special-boards';
 import { isSfwBoard, updateFavicon } from '../lib/update-favicon';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
 import { normalizeAccountCommentIndex } from '../lib/utils/account-comment-index-utils';
+import { getPendingPostRoutePost } from '../lib/utils/pending-post-route-state';
 
 const themeClasses = ['yotsuba', 'yotsuba-b', 'futaba', 'burichan', 'tomorrow', 'photon', 'spooky'];
 
@@ -30,6 +31,7 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
   const params = useParams<{ accountCommentIndex?: string; boardIdentifier?: string; commentCid?: string }>();
   const pendingPost = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const pendingPostCommunityAddress = getCommentCommunityAddress(pendingPost);
+  const routePendingPostCommunityAddress = getCommentCommunityAddress(getPendingPostRoutePost(location.state));
 
   const { isEnabled, setIsEnabled } = useSpecialThemeStore();
 
@@ -43,7 +45,7 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
   const isInNotFoundView = isNotFoundView(location.pathname, params);
   const routeIdentifier = params.boardIdentifier;
   const resolvedAddress = useResolvedCommunityAddress();
-  const communityAddress = resolvedAddress || pendingPostCommunityAddress || routeIdentifier;
+  const communityAddress = resolvedAddress || pendingPostCommunityAddress || routePendingPostCommunityAddress || routeIdentifier;
   const activeSpecialTheme = getActiveSpecialTheme();
 
   useEffect(() => {

@@ -4,9 +4,11 @@ import { useAccountComment, useAccountComments } from '@bitsocial/bitsocial-reac
 import { useDirectories } from '../../hooks/use-directories';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
+import { getPendingPostRouteBoardPath, getPendingPostRoutePost } from '../../lib/utils/pending-post-route-state';
 import { getBoardPath } from '../../lib/utils/route-utils';
 import useChallengesStore from '../../stores/use-challenges-store';
 import useFailedPostRetryStore from '../../stores/use-failed-post-retry-store';
+import usePendingPostNavigationStore from '../../stores/use-pending-post-navigation-store';
 import { Post } from '../post/post';
 
 type PendingAccountComment = {
@@ -15,7 +17,7 @@ type PendingAccountComment = {
 
 const hasPendingAccountCommentIndex = (accountComments: PendingAccountComment[] | undefined, accountCommentIndex: number) => {
   if (!accountComments || accountComments.length === 0) {
-    return true;
+    return false;
   }
 
   let hasExplicitIndices = false;
@@ -33,27 +35,32 @@ const hasPendingAccountCommentIndex = (accountComments: PendingAccountComment[] 
   return hasExplicitIndices ? false : accountCommentIndex < accountComments.length;
 };
 
-const getPendingRouteBoardPath = (state: unknown): string | undefined => {
-  if (!state || typeof state !== 'object') {
-    return undefined;
-  }
-
-  const boardPath = (state as { boardPath?: unknown }).boardPath;
-  return typeof boardPath === 'string' && boardPath ? boardPath : undefined;
-};
-
 const PendingPost = () => {
-  const { accountComments } = useAccountComments();
+  const { accountComments, state: accountCommentsState } = useAccountComments();
   const { accountCommentIndex } = useParams<{ accountCommentIndex?: string }>();
   const location = useLocation();
   const normalizedAccountCommentIndex = normalizeAccountCommentIndex(accountCommentIndex);
+  const isNavigatingToPendingPost = usePendingPostNavigationStore((state) => state.isNavigatingToPendingPost);
+  const pendingPostNavigationIndex = usePendingPostNavigationStore((state) => state.pendingPostNavigationIndex);
   const hasNormalizedAccountCommentIndex = normalizedAccountCommentIndex !== undefined;
-  const post = useAccountComment({ commentIndex: normalizedAccountCommentIndex });
+  const storedPost = useAccountComment({ commentIndex: normalizedAccountCommentIndex });
+  const routePost = getPendingPostRoutePost(location.state);
+  const storedPostCommunityAddress = getCommentCommunityAddress(storedPost);
+  const hasAddressableStoredPost = Boolean(storedPost?.cid || storedPostCommunityAddress);
+  const observedAddressableStoredPostIndexRef = useRef<number | undefined>(undefined);
+  const hadObservedAddressableStoredPost =
+    typeof normalizedAccountCommentIndex === 'number' && observedAddressableStoredPostIndexRef.current === normalizedAccountCommentIndex;
+  const hasLiveOptimisticHandoff = pendingPostNavigationIndex === normalizedAccountCommentIndex;
+  const optimisticRoutePost =
+    hasLiveOptimisticHandoff && !hasAddressableStoredPost && !hadObservedAddressableStoredPost && routePost?.index === normalizedAccountCommentIndex
+      ? routePost
+      : undefined;
+  const post = hasAddressableStoredPost ? storedPost : optimisticRoutePost || storedPost;
   const postCommunityAddress = getCommentCommunityAddress(post);
   const hasAddressablePost = Boolean(post?.cid || postCommunityAddress);
   const navigate = useNavigate();
   const directories = useDirectories();
-  const routeBoardPath = getPendingRouteBoardPath(location.state);
+  const routeBoardPath = getPendingPostRouteBoardPath(location.state);
   const postBoardPath = postCommunityAddress ? getBoardPath(postCommunityAddress, directories) : undefined;
   const pendingBoardPath = postBoardPath || routeBoardPath;
   const hasActiveChallenge = useChallengesStore((state) => state.challenges.length > 0);
@@ -66,13 +73,55 @@ const PendingPost = () => {
   }, []);
 
   useEffect(() => {
+    if (hasAddressableStoredPost && typeof normalizedAccountCommentIndex === 'number') {
+      observedAddressableStoredPostIndexRef.current = normalizedAccountCommentIndex;
+      usePendingPostNavigationStore.getState().clearPendingPostHandoff(normalizedAccountCommentIndex);
+    }
+  }, [hasAddressableStoredPost, normalizedAccountCommentIndex]);
+
+  useEffect(() => {
     if (typeof normalizedAccountCommentIndex === 'number' && pendingBoardPath) {
       lastPendingBoardRef.current = { accountCommentIndex: normalizedAccountCommentIndex, boardPath: pendingBoardPath };
     }
   }, [normalizedAccountCommentIndex, pendingBoardPath]);
 
   const isValidAccountCommentIndex =
-    !accountCommentIndex || (hasNormalizedAccountCommentIndex && hasPendingAccountCommentIndex(accountComments, normalizedAccountCommentIndex));
+    !accountCommentIndex ||
+    (hasNormalizedAccountCommentIndex &&
+      (Boolean(optimisticRoutePost) || accountCommentsState !== 'succeeded' || hasPendingAccountCommentIndex(accountComments, normalizedAccountCommentIndex)));
+
+  const lastPendingBoard = lastPendingBoardRef.current;
+  const hasAuthoritativeMissingPost =
+    accountCommentsState === 'succeeded' &&
+    hasNormalizedAccountCommentIndex &&
+    (!hasPendingAccountCommentIndex(accountComments, normalizedAccountCommentIndex) || (!hasLiveOptimisticHandoff && !hasAddressableStoredPost));
+  const abandonedBoardPath =
+    !hasActiveChallenge && !hasAddressablePost && (hasAuthoritativeMissingPost || hadObservedAddressableStoredPost)
+      ? pendingBoardPath || (lastPendingBoard && lastPendingBoard.accountCommentIndex === normalizedAccountCommentIndex ? lastPendingBoard.boardPath : undefined)
+      : undefined;
+
+  useEffect(() => {
+    if (!isNavigatingToPendingPost || pendingPostNavigationIndex !== normalizedAccountCommentIndex) return;
+
+    const navigationIndex = normalizedAccountCommentIndex;
+    const completeOwnedPendingNavigation = () => {
+      const pendingNavigationStore = usePendingPostNavigationStore.getState();
+      if (pendingNavigationStore.pendingPostNavigationIndex === null || pendingNavigationStore.pendingPostNavigationIndex === navigationIndex) {
+        pendingNavigationStore.completePendingPostNavigation();
+      }
+    };
+
+    let secondFrameId: number | undefined;
+    const firstFrameId = window.requestAnimationFrame(() => {
+      secondFrameId = window.requestAnimationFrame(completeOwnedPendingNavigation);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(firstFrameId);
+      if (typeof secondFrameId === 'number') window.cancelAnimationFrame(secondFrameId);
+      completeOwnedPendingNavigation();
+    };
+  }, [isNavigatingToPendingPost, normalizedAccountCommentIndex]);
 
   useEffect(() => {
     // A retry deletes this pending row before republishing, briefly invalidating the index. Stay put;
@@ -80,13 +129,13 @@ const PendingPost = () => {
     if (isRetryingThisPendingPost) {
       return;
     }
+    if (hasActiveChallenge) {
+      return;
+    }
     if (!isValidAccountCommentIndex) {
-      const lastPendingBoard = lastPendingBoardRef.current;
-      const abandonedBoardPath =
-        !hasActiveChallenge && lastPendingBoard && lastPendingBoard.accountCommentIndex === normalizedAccountCommentIndex ? lastPendingBoard.boardPath : undefined;
       navigate(abandonedBoardPath ? `/${abandonedBoardPath}` : '/not-found', { replace: true });
     }
-  }, [hasActiveChallenge, isRetryingThisPendingPost, isValidAccountCommentIndex, navigate, normalizedAccountCommentIndex]);
+  }, [abandonedBoardPath, hasActiveChallenge, isRetryingThisPendingPost, isValidAccountCommentIndex, navigate]);
 
   useEffect(() => {
     if (post?.cid && postBoardPath) {
@@ -99,15 +148,13 @@ const PendingPost = () => {
       return;
     }
 
-    const lastPendingBoard = lastPendingBoardRef.current;
-    const abandonedBoardPath =
-      !hasActiveChallenge && lastPendingBoard && lastPendingBoard.accountCommentIndex === normalizedAccountCommentIndex ? lastPendingBoard.boardPath : undefined;
     if (abandonedBoardPath) {
+      usePendingPostNavigationStore.getState().clearPendingPostNavigation(normalizedAccountCommentIndex);
       navigate(`/${abandonedBoardPath}`, { replace: true });
     }
-  }, [hasActiveChallenge, hasAddressablePost, isRetryingThisPendingPost, isValidAccountCommentIndex, navigate, normalizedAccountCommentIndex]);
+  }, [abandonedBoardPath, hasAddressablePost, isRetryingThisPendingPost, isValidAccountCommentIndex, navigate, normalizedAccountCommentIndex]);
 
-  return <Post post={post} />;
+  return abandonedBoardPath ? null : <Post key={normalizedAccountCommentIndex} post={post} />;
 };
 
 export default PendingPost;
