@@ -154,7 +154,7 @@ const PendingPost = () => {
     }
   }, [abandonedBoardPath, hasAddressablePost, isRetryingThisPendingPost, isValidAccountCommentIndex, navigate, normalizedAccountCommentIndex]);
 
-  return abandonedBoardPath ? null : <Post post={post} />;
+  return abandonedBoardPath ? null : <Post key={normalizedAccountCommentIndex} post={post} />;
 };
 
 export default PendingPost;

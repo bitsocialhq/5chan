@@ -71,9 +71,16 @@ vi.mock('../../../stores/use-failed-post-retry-store', () => ({
     selector({ retryingAccountCommentIndex: testState.retryingAccountCommentIndex }),
 }));
 
-vi.mock('../../post/post', () => ({
-  Post: ({ post }: { post?: TestComment }) => createElement('div', { 'data-testid': 'post-view' }, post?.cid ?? 'no-post'),
-}));
+vi.mock('../../post/post', async () => {
+  const { createElement, memo } = await vi.importActual<typeof import('react')>('react');
+
+  return {
+    Post: memo(
+      ({ post }: { post?: TestComment }) => createElement('div', { 'data-post-index': post?.index, 'data-testid': 'post-view' }, post?.cid ?? 'no-post'),
+      (previousProps, nextProps) => previousProps.post?.cid === nextProps.post?.cid,
+    ),
+  };
+});
 
 let container: HTMLDivElement;
 let root: Root;
@@ -364,6 +371,26 @@ describe('PendingPost', () => {
       requestAnimationFrameSpy.mockRestore();
       cancelAnimationFrameSpy.mockRestore();
     }
+  });
+
+  it('renders a new addressless pending post when the route index changes', async () => {
+    testState.accountCommentIndex = '0';
+    testState.accountComments = [{ index: 0 }];
+    testState.locationState = { boardPath: 'mu', pendingPost: { communityAddress: 'music-posting.eth', index: 0 } };
+    usePendingPostNavigationStore.getState().beginPendingPostNavigation(0);
+
+    await renderPendingPost();
+
+    expect(container.querySelector('[data-testid="post-view"]')?.getAttribute('data-post-index')).toBe('0');
+
+    testState.accountCommentIndex = '1';
+    testState.accountComments = [{ index: 0 }, { index: 1 }];
+    testState.locationState = { boardPath: 'mu', pendingPost: { communityAddress: 'music-posting.eth', index: 1 } };
+    act(() => usePendingPostNavigationStore.getState().beginPendingPostNavigation(1));
+
+    await renderPendingPost();
+
+    expect(container.querySelector('[data-testid="post-view"]')?.getAttribute('data-post-index')).toBe('1');
   });
 
   it('redirects abandoned pending posts back to their board after the challenge closes', async () => {
