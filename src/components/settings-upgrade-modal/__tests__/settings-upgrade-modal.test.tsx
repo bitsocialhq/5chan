@@ -119,7 +119,10 @@ describe('SettingsUpgradeModal', () => {
     expect(getUpgradeCheckbox('https://bsotracker.online')?.checked).toBe(true);
   });
 
-  it('applies only selected HTTP tracker upgrades', async () => {
+  it('applies only selected HTTP tracker upgrades and reloads once', async () => {
+    testState.setAccountMock.mockImplementation(async (account: Record<string, any>) => {
+      testState.account = account;
+    });
     await renderModal();
 
     await act(async () => {
@@ -142,7 +145,25 @@ describe('SettingsUpgradeModal', () => {
         }),
       }),
     );
-    expect(reloadMock).toHaveBeenCalledOnce();
+    await renderModal();
+
+    expect(container.querySelector('dialog')).not.toBeNull();
+    expect(container.textContent).toContain('https://bsotracker.online');
+    expect(container.textContent).not.toContain('https://routerofbitsocial.xyz');
+    expect(reloadMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('reloads once after applying every selected HTTP tracker upgrade', async () => {
+    testState.setAccountMock.mockImplementation(async (account: Record<string, any>) => {
+      testState.account = account;
+    });
+    await renderModal();
+
+    await clickButton('settings_upgrade_apply_selected');
+    await renderModal();
+
+    expect(container.querySelector('dialog')).toBeNull();
+    expect(reloadMock).toHaveBeenCalledTimes(1);
   });
 
   it('remembers when the user keeps current settings', async () => {

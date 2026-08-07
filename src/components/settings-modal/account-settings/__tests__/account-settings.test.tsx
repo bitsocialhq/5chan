@@ -69,6 +69,8 @@ let createdInput: HTMLInputElement | null;
 let createdAnchor: HTMLAnchorElement | null;
 let createObjectUrlSpy: ReturnType<typeof vi.fn>;
 let revokeObjectUrlSpy: ReturnType<typeof vi.fn>;
+const originalLocation = window.location;
+let reloadMock: ReturnType<typeof vi.fn>;
 
 const flushMicrotasks = async () => {
   await act(async () => {
@@ -127,6 +129,15 @@ describe('AccountSettings', () => {
 
     vi.stubGlobal('FileReader', MockFileReader);
 
+    reloadMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: {
+        ...originalLocation,
+        reload: reloadMock,
+      },
+    });
+
     alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
@@ -156,6 +167,10 @@ describe('AccountSettings', () => {
       act(() => root.unmount());
     }
     container?.remove();
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: originalLocation,
+    });
     alertSpy?.mockRestore();
     confirmSpy?.mockRestore();
     consoleLogSpy?.mockRestore();
@@ -350,6 +365,13 @@ describe('AccountSettings', () => {
     expect(hookMocks.setActiveAccount).toHaveBeenCalledWith('Imported');
     expect(alertSpy).toHaveBeenCalledWith('Imported Imported');
     expect(getLocationText()).toBe('/subs/settings?section=account-settings');
+    expect(reloadMock).not.toHaveBeenCalled();
+    expect(importedPayload.account.pkcOptions).toEqual(
+      expect.objectContaining({
+        httpRoutersOptions: LEGACY_DEFAULT_HTTP_ROUTERS,
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      }),
+    );
   });
 
   it('preserves explicit HTTP routers when importing an account backup', async () => {
@@ -380,10 +402,13 @@ describe('AccountSettings', () => {
     await flushMicrotasks();
 
     const importedPayload = JSON.parse(hookMocks.importAccount.mock.calls[0][0]);
-    expect(importedPayload.account.pkcOptions).toEqual({
-      httpRoutersOptions: ['https://router.custom.example'],
-      ipfsGatewayUrls: ['https://gateway.custom.example'],
-    });
+    expect(importedPayload.account.pkcOptions).toEqual(
+      expect.objectContaining({
+        httpRoutersOptions: ['https://router.custom.example'],
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      }),
+    );
+    expect(importedPayload.account.pkcOptions).not.toHaveProperty('ipfsGatewayUrls');
   });
 
   it('preserves an explicit empty HTTP routers list when importing an account backup', async () => {
@@ -414,10 +439,13 @@ describe('AccountSettings', () => {
     await flushMicrotasks();
 
     const importedPayload = JSON.parse(hookMocks.importAccount.mock.calls[0][0]);
-    expect(importedPayload.account.pkcOptions).toEqual({
-      httpRoutersOptions: [],
-      ipfsGatewayUrls: ['https://gateway.custom.example'],
-    });
+    expect(importedPayload.account.pkcOptions).toEqual(
+      expect.objectContaining({
+        httpRoutersOptions: [],
+        libp2pJsClientsOptions: [{ key: 'libp2pjs' }],
+      }),
+    );
+    expect(importedPayload.account.pkcOptions).not.toHaveProperty('ipfsGatewayUrls');
   });
 
   it('activates the resolved account name when an imported account name already exists', async () => {
