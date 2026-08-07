@@ -1,3 +1,23 @@
+## [0.9.17](https://github.com/bitsocialnet/5chan/compare/v0.9.16...v0.9.17) (2026-08-07)
+
+
+### Bug Fixes
+
+* **board-header:** keep banner stable during directory route resolution ([660cdf8](https://github.com/bitsocialnet/5chan/commit/660cdf8a2d4e8d880249208158173bc23b65155a))
+* **mod-queue:** keep settled feed visible during reject refresh ([fd67cb5](https://github.com/bitsocialnet/5chan/commit/fd67cb5b6f3f1397398ac9c72c0475bb1ecf1c6e))
+* **publishing:** show pending threads immediately ([#1192](https://github.com/bitsocialnet/5chan/issues/1192)) ([a609651](https://github.com/bitsocialnet/5chan/commit/a609651f06503ff48dfa7fbf61fc6ca7e97247fd))
+* **scripts:** resolve the pw-session lock path without requiring HOME ([1a7d756](https://github.com/bitsocialnet/5chan/commit/1a7d756d891e93f36b23eb03f21a3156cc4ef86b))
+* **scripts:** treat an omitted agent model as harness-specific in the parity check ([20f8bd9](https://github.com/bitsocialnet/5chan/commit/20f8bd902cebd61d421c9b12c256cd2c9b6b6efd))
+* **settings:** avoid full reload after account import ([327b5e4](https://github.com/bitsocialnet/5chan/commit/327b5e47c0726e8f903a039591fc12a7a8b85643))
+
+
+### Performance Improvements
+
+* **electron:** speed up Windows packaging with ASAR ([#1190](https://github.com/bitsocialnet/5chan/issues/1190)) ([a67c66d](https://github.com/bitsocialnet/5chan/commit/a67c66de0dd77f1405484a2783ff85b4368d9559))
+* **settings:** speed up board settings navigation ([#1191](https://github.com/bitsocialnet/5chan/issues/1191)) ([a9040a5](https://github.com/bitsocialnet/5chan/commit/a9040a54258065c5a9d01ec39dad8e2effd9f7d8))
+
+
+
 ## [0.9.16](https://github.com/bitsocialnet/5chan/compare/v0.9.15...v0.9.16) (2026-07-29)
 
 
@@ -6,6 +26,7 @@
 * **author badges:** recognize legacy developer address ([0f2c564](https://github.com/bitsocialnet/5chan/commit/0f2c56440c70aa86f0171a1029f5ff2ec3523c67))
 * **community status:** use sync lifecycle for availability ([#1187](https://github.com/bitsocialnet/5chan/issues/1187)) ([a91c5b5](https://github.com/bitsocialnet/5chan/commit/a91c5b588bbac989f7638a2a02f46fc3be24949a))
 * **composer:** preserve drafts by location ([#1186](https://github.com/bitsocialnet/5chan/issues/1186)) ([7538403](https://github.com/bitsocialnet/5chan/commit/7538403b4c5642b18c6135b067aab278b70cefc7))
+* **deps:** deduplicate pkc-js for Windows packaging ([f2f6c0e](https://github.com/bitsocialnet/5chan/commit/f2f6c0ecb78bb09662fa47e8bfe211211405f2e6))
 * **directory:** center loading ellipsis in status column ([c48ea43](https://github.com/bitsocialnet/5chan/commit/c48ea43ee3d70d752293c9a8cbbf6ec84dc5ad63))
 * **footer:** point About link to 5chan app page ([829e90d](https://github.com/bitsocialnet/5chan/commit/829e90d65cff8e8e19b1ee9513549664002646f9))
 * **home stats:** include replies in total post count ([0ddf25b](https://github.com/bitsocialnet/5chan/commit/0ddf25bb444fca6fa619a5ffdecdeb6140eb3ae1))
@@ -41,6 +62,7 @@
 
 ### Bug Fixes
 
+* **android:** support TypeScript 7 builds ([eadf048](https://github.com/bitsocialnet/5chan/commit/eadf048d5ebe0d4a8f26042e91240e999e7dedf4))
 * **routing:** avoid nested hashes in shared links ([#1185](https://github.com/bitsocialnet/5chan/issues/1185)) ([e5e4690](https://github.com/bitsocialnet/5chan/commit/e5e46907d67bc799722f74f66313dd63ced0e8fb))
 * **ui:** centralize favicon updates and tighten route ownership for mod views ([56f4517](https://github.com/bitsocialnet/5chan/commit/56f451719ddcc7eef618eb609269d37c982c3ecf))
 * **ui:** hide account author ID on pending replies ([e3f45a6](https://github.com/bitsocialnet/5chan/commit/e3f45a61129619177d4f1619ea71f23ca27a9903))
@@ -53,6 +75,7 @@
 ### Bug Fixes
 
 * **deps:** replace vulnerable decompress with @xhmikosr/decompress ([c6dadc6](https://github.com/bitsocialnet/5chan/commit/c6dadc6355c7be6c9d2546482d26e368cd914450)), closes [#301](https://github.com/bitsocialnet/5chan/issues/301)
+* **deps:** satisfy yauzl API for Windows packaging ([6753f4b](https://github.com/bitsocialnet/5chan/commit/6753f4b3e6555762475e4d0c6389cb4b62a32a4e))
 * **post ids:** never display account identity as a post user id ([#1184](https://github.com/bitsocialnet/5chan/issues/1184)) ([abe1e5a](https://github.com/bitsocialnet/5chan/commit/abe1e5a6a2bf7a746675caea257a2a33898958ea))
 * **trash board:** keep hidden special boards on canonical BSO identity ([e2dc941](https://github.com/bitsocialnet/5chan/commit/e2dc9413a0373ee75c419903c5cd9193a5ec3355))
 
@@ -68,6 +91,7 @@
 * avoid pending post cleanup crash ([5111954](https://github.com/bitsocialnet/5chan/commit/5111954081dd9ec32f1c7a2cffeb275b56b996fe))
 * **mod queue:** restrict trash action to trash board ([9dfd638](https://github.com/bitsocialnet/5chan/commit/9dfd638b71f86966694a0713fee6e762f9f8781a))
 * **post transfer:** publish trash with public key ([d6f83e8](https://github.com/bitsocialnet/5chan/commit/d6f83e8abee2e61d23565b9242df8d481fa66c22))
+* **post transfer:** publish trash with public key ([ad091d2](https://github.com/bitsocialnet/5chan/commit/ad091d2be83031fdc956053c1efa0cc35bbb9260))
 * **subagents:** restrict read-only agent tools and remove machine-specific paths ([0166f2f](https://github.com/bitsocialnet/5chan/commit/0166f2f4e87fa8299008c04774e6532a3907e53e))
 
 
@@ -88,7 +112,11 @@
 
 * **bbcode preview:** allow resizing preview pane ([21056ae](https://github.com/bitsocialnet/5chan/commit/21056ae6b943d3c75c8cbdf3fa727f7c25d8197e))
 * **mod queue:** transfer posts across boards ([#1182](https://github.com/bitsocialnet/5chan/issues/1182)) ([b4a6f0a](https://github.com/bitsocialnet/5chan/commit/b4a6f0a65afcce0414704f891925dc6bf3ba70b0))
-* **trash-board:** add hidden trash board ([099fdd6](https://github.com/bitsocialnet/5chan/commit/099fdd6f3e3506984e473e957aac81e6645294c3))
+
+
+### Reverts
+
+* Revert "chore(release): v0.9.11" ([19530d1](https://github.com/bitsocialnet/5chan/commit/19530d1d993578be274093ab1c196e3e46ddbb87))
 
 
 
@@ -2101,3 +2129,6 @@
 * Revert "fix touch bug" ([777935e](https://github.com/bitsocialnet/5chan/commit/777935ecbe1e3d781bc4bbadf8f824323acc8c8d))
 * Revert "test InfiniteScroll" ([212a0c1](https://github.com/bitsocialnet/5chan/commit/212a0c10e8a563b75eb35f8d20ba8b93d0adec45))
 * Revert "better lint, added InfiniteScroll, debugUtils" ([af0a4c6](https://github.com/bitsocialnet/5chan/commit/af0a4c67de33c544f997ec7bd64d94e5a5a41df3))
+
+
+

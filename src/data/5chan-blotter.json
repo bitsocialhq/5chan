@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.17",
+      "kind": "release",
+      "timestamp": 1786104000,
+      "message": "v0.9.17: New threads appear instantly, faster board settings",
+      "version": "0.9.17"
+    },
+    {
       "id": "release-0.9.16",
       "kind": "release",
       "timestamp": 1785326400,
