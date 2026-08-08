@@ -5,8 +5,8 @@ const testState = vi.hoisted(() => ({
   communities: {} as Record<string, { roles?: Record<string, { role?: string }> }>,
 }));
 
-vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/communities', () => ({
-  default: {
+vi.mock('../../bitsocial-internals/stores', () => ({
+  communitiesStore: {
     getState: () => ({
       communities: testState.communities,
     }),

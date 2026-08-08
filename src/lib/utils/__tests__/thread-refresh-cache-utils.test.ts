@@ -10,8 +10,8 @@ const testState = vi.hoisted(() => ({
   repliesPagesSetStateMock: vi.fn(),
 }));
 
-vi.mock('@bitsocial/bitsocial-react-hooks/dist/lib/localforage-lru', () => ({
-  default: {
+vi.mock('../../bitsocial-internals/utils', () => ({
+  localForageLru: {
     createInstance: ({ name }: { name: string }) => {
       if (name === 'bitsocialReactHooks-comments') {
         return {
@@ -25,8 +25,8 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/lib/localforage-lru', () => ({
   },
 }));
 
-vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/replies-pages', () => ({
-  default: {
+vi.mock('../../bitsocial-internals/stores', () => ({
+  repliesPagesStore: {
     getState: () => testState.repliesPagesState,
     setState: (updater: (state: typeof testState.repliesPagesState) => Partial<typeof testState.repliesPagesState>) => {
       testState.repliesPagesSetStateMock(updater);
