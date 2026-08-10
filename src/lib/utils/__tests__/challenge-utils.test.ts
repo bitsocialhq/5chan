@@ -26,14 +26,14 @@ describe('challenge-utils', () => {
         challengeSuccess: false,
         reason: 'try again later',
       } as never,
-      { communityAddress: 'business-and-finance.bso' },
+      { communityAddress: 'bizraelis.bso' },
     );
 
     expect(warnSpy).toHaveBeenCalledWith(
       'Challenge Verification Failed:',
       expect.objectContaining({ challengeSuccess: false }),
       'Publication:',
-      expect.objectContaining({ communityAddress: 'business-and-finance.bso' }),
+      expect.objectContaining({ communityAddress: 'bizraelis.bso' }),
     );
     expect(alertMock).toHaveBeenCalledWith('Error from /biz/: invalid captcha try again later');
   });
@@ -56,7 +56,7 @@ describe('challenge-utils', () => {
         challengeErrors: ['first error'],
         challengeSuccess: false,
       } as never,
-      { communityAddress: 'business-and-finance.bso' },
+      { communityAddress: 'bizraelis.bso' },
     );
 
     expect(alertMock).toHaveBeenCalledWith('Error from /biz/: first error');

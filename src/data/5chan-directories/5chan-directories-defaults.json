@@ -2,7 +2,7 @@
   "title": "5chan Directory Defaults",
   "description": "Expected 5chan UX defaults by directory code. These defaults apply to the directory, not to individual candidate boards.",
   "createdAt": 1779262179,
-  "updatedAt": 1782467500,
+  "updatedAt": 1784884468,
   "directories": {
     "3": {
       "directoryCode": "3",
@@ -734,6 +734,30 @@
         "The author controls the story of the quest. They can take suggestions from other posters, or not, at their sole discretion. If things don't go your way don't complain!",
         "All threads on this board should be created by the associated quest author. Please refrain from making meta-threads.",
         "Erotic roleplay is not permitted. Frequent explicit descriptions of sexual encounters by a quest author may result in mod intervention."
+      ]
+    },
+    "r": {
+      "directoryCode": "r",
+      "title": "/r/ - Adult Requests",
+      "features": {
+        "pseudonymityMode": "per-reply",
+        "safeForWork": false,
+        "hasFlags": false,
+        "requirePostLink": true,
+        "requirePostLinkIsMedia": true,
+        "bumpLimit": 300,
+        "noSpoilers": true,
+        "noSpoilerReplies": true,
+        "postsPerPage": 15
+      },
+      "rules": [
+        "This board is for asking for help in finding adult images or videos, their source, or more content of a certain kind.",
+        "This board is for adult photoshop and image-editing requests.",
+        "This board is for adult content recommendations and any other non-work-safe request.",
+        "Once you have posted your request, please check the catalog for requests that you can help others with.",
+        "All threads and images should pertain to adult material. For work-safe requests please use /wsr/ - Worksafe Requests and for help with personal matters please use /adv/ - Advice.",
+        "Do not post or request personal information (\"dox\") or calls to invasion (\"raids\").",
+        "Personal army requests of any form are strictly forbidden."
       ]
     },
     "r9k": {

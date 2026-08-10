@@ -1,0 +1,14 @@
+{
+  "description": "Hidden special board for /trash/ on 5chan. This file exists so public seeders discover the board; /trash/ is not a public directory and should not be shown in directory navigation.\n\nhttps://github.com/bitsocialnet/lists/blob/master/5chan-directories/5chan-trash-directory.json",
+  "hidden": true,
+  "createdAt": 1782998375,
+  "updatedAt": 1782998375,
+  "boards": [
+    {
+      "address": "off-topic.bso",
+      "publicKey": "12D3KooWREyT7yBV8tA8uSpps8vX7XS1YM4385ty2MmHFyR9GKmf",
+      "addedAt": 1782998375,
+      "owner": "bitsocialist.bso"
+    }
+  ]
+}

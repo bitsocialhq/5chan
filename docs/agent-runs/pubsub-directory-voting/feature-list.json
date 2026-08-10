@@ -1,0 +1,159 @@
+{
+  "task": "pubsub-directory-voting",
+  "last_updated": "2026-08-09",
+  "decisions": {
+    "signer": "EIP-6963 injected discovery first, WalletConnect fallback for mobile/Electron",
+    "scope": "All three phases: read tally, cast votes, republish + homepage winner",
+    "network": "Testnet only; derive contests from the published lists manifest at runtime, nothing hardcoded"
+  },
+  "verified_facts": [
+    "@bitsocial/pubsub-voting@0.4.0 is the latest release published on npm",
+    "lists/5chan-directory-criteria.jsonc is live: 64 contests, 1:1 with the 64 default directory codes, no per-contest overrides",
+    "bitsocial-seeder v0.6.0 seeds that exact manifest URL by default",
+    "5chan Pass testnet criteria now use the erc5192-min-balance soulbound gate on Base Sepolia at 0xA8e0155E0e7d014EAF3917982db6a9A4dF98C852",
+    "pkc-js 0.0.72 browser build registers pubsub: gossipsub() and fetch: libp2pFetch(); heliaNode accessor is semver-covered",
+    "better-sqlite3 already arrives via pkc-js, so pubsub-voting adds no new native dependency",
+    "pubsub-voting wants viem 2.54.0; the project resolution dedupes pubsub-voting, bitsocial-react-hooks, and bso-resolver onto viem 2.55.8",
+    "https://sepolia.base.org serves eth_call at 1,296,000 blocks deep (full 30-day expiry window) and has multicall3; base-sepolia-rpc.publicnode.com rejects archive requests",
+    "All candidate boards in the vendored directory lists carry both a .bso name and a publicKey, which is what a ballot requires",
+    "Criteria is upvote-only (voteSchema min=1 max=1) and maxVotesPerAddress=1, so the existing -1 button cannot be represented",
+    "Testnet cadence: 1800-block buckets (1h on Base Sepolia) x 720 buckets = 30 day expiry; republishIntervalBuckets = 360 buckets = ~15 days"
+  ],
+  "items": [
+    {
+      "id": "F001",
+      "priority": 1,
+      "status": "done",
+      "description": "Add @bitsocial/pubsub-voting and strip-json-comments at exact versions; add a viem resolution so the three in-tree copies dedupe to one. Confirm the browser field swaps better-sqlite3 out of the bundle.",
+      "verification": ["corepack yarn install - clean", "yarn build - passes", "yarn why viem - single 2.55.8", "library smoke: derived 64 criteria + real topic CIDs off the live manifest"],
+      "files": ["package.json", "yarn.lock"],
+      "notes": "Updated pubsub-voting to 0.4.0 + strip-json-comments 5.0.3; viem resolution 2.55.8 collapses the copies. The live and vendored manifest now use the package's registered erc5192-min-balance gate and current Pass contract. better-sqlite3 absence from the bundle is NOT yet proven - nothing imports the library in app code yet, so re-verify at F004."
+    },
+    {
+      "id": "F015",
+      "priority": 5,
+      "status": "pending",
+      "description": "Handle directory codes that have no voting contest. /trash/ has a directory list but is intentionally outside the published contest manifest, so its page must render the static list with voting cleanly unavailable rather than erroring.",
+      "verification": ["load /trash/ directory page and confirm no console error and no vote UI"],
+      "files": [],
+      "notes": "trash is a special board (TRASH_BOARD_CODE) and is absent from the defaults file, so excluding it is correct. /r/ was added upstream and now has a contest. Do not hardcode exclusions; drive purely off which contests the manifest actually derives."
+    },
+    {
+      "id": "F002",
+      "priority": 2,
+      "status": "pending",
+      "description": "Spike: construct a PubsubVoter in the browser against the pkc Helia node. Highest-risk unknown for the whole task; everything downstream assumes it works. Confirm no MissingPubsubError/MissingBlockstoreError/MissingFetchError.",
+      "verification": ["Load a directory page in playwright-cli and confirm a voter constructs with no construction error in the console"],
+      "files": [],
+      "notes": "Reach the node via account.pkc.clients.libp2pJsClients['libp2pjs'].heliaNode. Only valid in browser-libp2p runtime mode; gateway mode has no Helia node and must degrade to read-only-unavailable."
+    },
+    {
+      "id": "F003",
+      "priority": 3,
+      "status": "pending",
+      "description": "Criteria manifest loader: fetch the lists JSONC at runtime (same URL the seeder uses) with a vendored offline fallback, strip comments, run deriveDirectoryCriteria, and map contestId <-> directory code.",
+      "verification": ["yarn test on the new loader unit tests", "assert all 64 derived documents validate"],
+      "files": [],
+      "notes": "Mirror the existing use-directory-list.ts fetch/localStorage/vendored-fallback pattern. contestId shape is 5chan-dir-{code}-vote-test-1, but parse it rather than assuming the suffix."
+    },
+    {
+      "id": "F004",
+      "priority": 4,
+      "status": "pending",
+      "description": "Voter singleton + seams: ChainClientFactory (baseSepolia for the gate, eth mainnet for .bso resolution), nameResolvers from @bitsocial/bso-resolver, browser IndexedDB storage, no httpRouterUrls.",
+      "verification": ["yarn type-check", "unit test that an unresolvable chain recuses via MissingChainClientError"],
+      "files": [],
+      "notes": "One memoized viem PublicClient per chain so parallel contests coalesce reads. Default Base Sepolia RPC: https://sepolia.base.org (verified archive-deep)."
+    },
+    {
+      "id": "F005",
+      "priority": 5,
+      "status": "pending",
+      "description": "use-vote-tally hook: createContest for the directory being viewed, subscribe to update/error, expose ranking with chainVerified/nameResolved flags. Lazy per-page, not all 64.",
+      "verification": ["yarn doctor", "yarn type-check"],
+      "files": [],
+      "notes": "Must stop() the contest on unmount to leave the topic."
+    },
+    {
+      "id": "F006",
+      "priority": 6,
+      "status": "pending",
+      "description": "Directory page read path: render tally weight into the existing score column, show a verifying state while chainVerified is false, order rows by weight. Phase 1 ships here.",
+      "verification": ["playwright-cli across Blink/Gecko/WebKit, desktop + mobile", "self-review diff against DESIGN.md Do/Don't"],
+      "files": ["src/views/directory/directory.tsx"],
+      "notes": "Score column already exists and currently always renders the em-dash placeholder."
+    },
+    {
+      "id": "F007",
+      "priority": 7,
+      "status": "pending",
+      "description": "Wallet connection: EIP-6963 provider discovery with EIP-1193 fallback, Zustand store for connection state, connect/disconnect UI. Warn (do not block) when the connected address differs from account.author.wallets.eth.address.",
+      "verification": ["playwright-cli with a mock EIP-1193 provider injected"],
+      "files": [],
+      "notes": "The library never reads the bitsocial account; the recovered signature address IS the voter."
+    },
+    {
+      "id": "F008",
+      "priority": 8,
+      "status": "pending",
+      "description": "WalletConnect fallback for mobile and Electron, behind the injected path.",
+      "verification": ["manual connect flow on a mobile viewport"],
+      "files": [],
+      "notes": "Adds a hosted relay dependency; keep it strictly opt-in and lazy-loaded so it stays out of the main bundle."
+    },
+    {
+      "id": "F009",
+      "priority": 9,
+      "status": "pending",
+      "description": "VoteSigner adapter: address() + signBallot(typedData) backed by a viem WalletClient.",
+      "verification": ["unit test against the library's frozen EIP-712 conformance vector"],
+      "files": [],
+      "notes": "pubsub-voting ships a frozen conformance vector; test against it rather than hand-rolling expectations."
+    },
+    {
+      "id": "F010",
+      "priority": 10,
+      "status": "pending",
+      "description": "Cast and withdraw: createContestVote().publish(), +1 becomes a toggle reflecting the user's current vote, remove the -1 button, surface InvalidCommunityNameError and VoteEvictedError.",
+      "verification": ["cast a real vote on testnet against a faucet-minted Pass and observe the tally change"],
+      "files": ["src/views/directory/directory.tsx"],
+      "notes": "Withdraw = publish an empty ballot (LWW supersede). Downvotes are unrepresentable under this criteria."
+    },
+    {
+      "id": "F011",
+      "priority": 11,
+      "status": "pending",
+      "description": "Cast-vote persistence store: remember what this wallet voted for per contest, with the bundle blockNumber, so republish and toggle state survive reload.",
+      "verification": ["yarn test", "reload persistence check in browser"],
+      "files": [],
+      "notes": "Zustand persisted store, keyed by wallet address + contestId."
+    },
+    {
+      "id": "F012",
+      "priority": 12,
+      "status": "pending",
+      "description": "Republish scheduling: compute expiry from republishIntervalBuckets and prompt the user to re-sign before a vote lapses (~15 days on testnet).",
+      "verification": ["unit test the bucket math against a fixed clock"],
+      "files": [],
+      "notes": "The library deliberately never republishes on its own. Needs a re-sign prompt, not a silent background signer."
+    },
+    {
+      "id": "F013",
+      "priority": 13,
+      "status": "pending",
+      "description": "Homepage: join all 64 contests and resolve each directory winner from the live tally instead of the static lists JSON, with the static list as fallback.",
+      "verification": ["low-spec pass via ./scripts/pw-throttle.sh <session> mid", "profile-browsing for rerender cost"],
+      "files": [],
+      "notes": "Unproven cost. 64 gossipsub topics + 64 checkpoint cold-joins in a browser. Seeder raises its fetch stream cap to 256 for exactly this reason. Measure before shipping."
+    },
+    {
+      "id": "F014",
+      "priority": 14,
+      "status": "pending",
+      "description": "Translations for all new user-facing keys via the translate skill, then regenerate llms files if public-facing English content changed.",
+      "verification": ["yarn llms:generate", "yarn build"],
+      "files": [],
+      "notes": "Run translator subagents sequentially, never in parallel (update-translations.js --write is non-atomic)."
+    }
+  ]
+}
