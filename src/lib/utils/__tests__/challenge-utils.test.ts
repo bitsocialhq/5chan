@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { alertChallengeVerificationFailed, getPublicationPreview, getPublicationType, getVotePreview } from '../challenge-utils';
+import { alertChallengeVerificationFailed, getDuplicateMediaChallengeError, getPublicationPreview, getPublicationType, getVotePreview } from '../challenge-utils';
 
 const alertMock = vi.fn();
 const originalAlert = globalThis.alert;
@@ -80,6 +80,21 @@ describe('challenge-utils', () => {
 
     expect(logSpy).toHaveBeenCalledWith('Challenge verification succeeded:', expect.objectContaining({ challengeSuccess: true }));
     expect(alertMock).not.toHaveBeenCalled();
+  });
+
+  it('recognizes the deterministic duplicate-media challenge error', () => {
+    expect(
+      getDuplicateMediaChallengeError({
+        challengeErrors: {
+          allow: 'This media was already posted recently.',
+          review: 'This media was already posted recently.',
+        },
+        challengeSuccess: false,
+      } as never),
+    ).toBe('This media was already posted recently.');
+    expect(getDuplicateMediaChallengeError({ challengeErrors: ['different failure'], challengeSuccess: false } as never)).toBeUndefined();
+    expect(getDuplicateMediaChallengeError({ challengeErrors: ['Prefix: This media was already posted recently.'], challengeSuccess: false } as never)).toBeUndefined();
+    expect(getDuplicateMediaChallengeError({ challengeSuccess: true } as never)).toBeUndefined();
   });
 
   it('classifies publication types and vote previews', () => {
