@@ -668,6 +668,38 @@ describe('Post', () => {
     expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
   });
 
+  it('keeps the local account comment while the canonical comment is only a loading shell', async () => {
+    testState.commentsByCid = {
+      'owned-loading-cid': {
+        cid: 'owned-loading-cid',
+        state: 'updating',
+        communityAddress: 'music-posting.eth',
+      },
+    };
+    testState.accountCommentsByCid = {
+      'owned-loading-cid': {
+        cid: 'owned-loading-cid',
+        postCid: 'owned-loading-cid',
+        author: {
+          address: 'account-author',
+        },
+        content: 'local body',
+        number: 13,
+        replyCount: 0,
+        communityAddress: 'music-posting.eth',
+        title: 'Local thread',
+      },
+    };
+
+    await renderPostPage('/mu/thread/owned-loading-cid');
+
+    const desktopPresenter = container.querySelector('[data-testid="post-desktop"]');
+    expect(desktopPresenter?.getAttribute('data-author-address')).toBe('account-author');
+    expect(desktopPresenter?.getAttribute('data-number')).toBe('13');
+    expect(desktopPresenter?.getAttribute('data-reply-count')).toBe('0');
+    expect(document.title).toBe('/mu/ - Local thread... - 5chan');
+  });
+
   it('keeps current thread data while restoring the local account author', async () => {
     testState.commentsByCid = {
       'owned-cid': {

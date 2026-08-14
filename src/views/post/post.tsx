@@ -146,9 +146,9 @@ const mergeLocalAccountComment = (comment: CommentWithRefresh | undefined, accou
   if (!comment) return accountComment;
   if (comment.cid && accountComment.cid && comment.cid !== accountComment.cid) return comment;
 
-  // The persisted account copy can lag mutable fields such as replies; only its
-  // author identity is needed to restore owner controls on the canonical comment.
-  return mergeLocalCommentAuthor(comment, accountComment);
+  // Use the persisted account copy only while the canonical comment is a loading
+  // shell, then retain only its author identity once canonical data is renderable.
+  return mergeLocalCommentAuthor(mergeCommentFallback(comment, accountComment), accountComment);
 };
 
 // useComment may not return cached feed data immediately due to its updatedAt comparison logic.
