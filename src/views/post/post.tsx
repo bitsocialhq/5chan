@@ -92,7 +92,6 @@ const mergeCommentFallback = (comment: CommentWithRefresh | undefined, fallback:
   const hasRenderableData =
     comment.timestamp !== undefined ||
     comment.number !== undefined ||
-    comment.replyCount !== undefined ||
     !!comment.content ||
     !!comment.title ||
     !!comment.link ||

@@ -673,6 +673,7 @@ describe('Post', () => {
       'owned-loading-cid': {
         cid: 'owned-loading-cid',
         state: 'updating',
+        replyCount: 0,
         communityAddress: 'music-posting.eth',
       },
     };
