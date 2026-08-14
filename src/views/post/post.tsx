@@ -146,19 +146,14 @@ const mergeLocalAccountComment = (comment: CommentWithRefresh | undefined, accou
   if (!comment) return accountComment;
   if (comment.cid && accountComment.cid && comment.cid !== accountComment.cid) return comment;
 
-  const mergedComment = mergeDefinedFields(comment, accountComment) ?? comment;
-  // mergeDefinedFields replaces author wholesale, so re-merge author field-wise from the
-  // published comment (mergeLocalCommentAuthor also preserves the published User ID)
-  const commentWithMergedAuthor = mergeLocalCommentAuthor(comment, accountComment);
-  return {
-    ...mergedComment,
-    ...(commentWithMergedAuthor?.author ? { author: commentWithMergedAuthor.author } : {}),
-  };
+  // The persisted account copy can lag mutable fields such as replies; only its
+  // author identity is needed to restore owner controls on the canonical comment.
+  return mergeLocalCommentAuthor(comment, accountComment);
 };
 
 // useComment may not return cached feed data immediately due to its updatedAt comparison logic.
 // This hook falls back to the communities pages store and then overlays a matching
-// local account comment so author controls keep working after publish navigation.
+// local account author so author controls keep working after publish navigation.
 const useCommentWithFeedCache = (options: { commentCid: string | undefined; autoUpdate?: boolean; community?: CommunityIdentifier }): CommentWithRefresh | undefined => {
   const comment = useComment(options);
   const cachedComment = useCommunitiesPagesStore((state) => state.comments[options?.commentCid || '']);
