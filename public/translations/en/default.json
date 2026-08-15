@@ -481,5 +481,15 @@
   "modQueue.transferRepliesNotice": "Replies are not moved. They are deleted with the original post.",
   "modQueue.transferTemporaryAccountNotice": "5chan will create a new temporary account just for this copied post, then delete it after publishing.",
   "trash": "Trash",
-  "site_legal_meta_powered_by": "Powered by"
+  "site_legal_meta_powered_by": "Powered by",
+  "archive_search_title": "/search/ - Archive Search",
+  "search_posts_or_board": "Search posts or enter a board",
+  "archive_search_subtitle": "Search indexed posts across 5chan boards.",
+  "search_results_heading": "Showing {{count}} of {{total}} results for “{{query}}”",
+  "search_no_results": "No indexed posts matched. Try broader terms.",
+  "change_provider": "change provider",
+  "results_provided_by": "Results provided by",
+  "search_provider_unavailable": "The search provider is unavailable. Try again later or change provider.",
+  "current_provider": "current provider",
+  "search_provider_directory_subtitle": "Choose which independent indexer powers /search/. Providers can see your search terms."
 }

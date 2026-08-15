@@ -185,6 +185,19 @@ describe('BoardHeader', () => {
     expect(container.textContent).toContain('all_subtitle');
   });
 
+  it('renders the archive search title without board status chrome', async () => {
+    await renderHeader('/search');
+
+    expect(container.textContent).toContain('archive_search_title');
+    expect(container.textContent).toContain('archive_search_subtitle');
+    expect(container.querySelector('[data-testid="tooltip"]')).toBeNull();
+
+    act(() => root.unmount());
+    root = createRoot(container);
+    await renderHeader('/search/directory');
+    expect(container.textContent).toContain('search_provider_directory_subtitle');
+  });
+
   it('renders a clickable subscriptions subtitle that navigates to subscription settings', async () => {
     await renderHeader('/subs');
 

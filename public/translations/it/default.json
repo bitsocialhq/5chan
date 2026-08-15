@@ -462,5 +462,15 @@
   "modQueue.transferRepliesNotice": "Le risposte non vengono spostate. Verranno eliminate insieme al post originale.",
   "modQueue.transferTemporaryAccountNotice": "5chan creerà un nuovo account temporaneo solo per questo post copiato, poi lo eliminerà dopo la pubblicazione.",
   "trash": "Cestino",
-  "site_legal_meta_powered_by": "Basato su"
+  "site_legal_meta_powered_by": "Basato su",
+  "archive_search_title": "/search/ - Ricerca nell'archivio",
+  "search_posts_or_board": "Cerca post o inserisci una board",
+  "archive_search_subtitle": "Cerca i post indicizzati nelle board di 5chan.",
+  "search_results_heading": "Visualizzazione di {{count}} risultati su {{total}} per “{{query}}”",
+  "search_no_results": "Nessun post indicizzato corrisponde alla ricerca. Prova con termini più generici.",
+  "change_provider": "Cambia provider",
+  "results_provided_by": "Risultati forniti da",
+  "search_provider_unavailable": "Il provider di ricerca non è disponibile. Riprova più tardi o cambia provider.",
+  "current_provider": "provider attuale",
+  "search_provider_directory_subtitle": "Scegli quale indicizzatore indipendente gestisce /search/. I provider possono vedere i tuoi termini di ricerca."
 }

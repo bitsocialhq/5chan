@@ -462,5 +462,15 @@
   "modQueue.transferRepliesNotice": "Răspunsurile nu sunt mutate. Vor fi șterse odată cu postarea originală.",
   "modQueue.transferTemporaryAccountNotice": "5chan va crea un cont temporar nou doar pentru această postare copiată, apoi îl va șterge după publicare.",
   "trash": "Coș",
-  "site_legal_meta_powered_by": "Susținut de"
+  "site_legal_meta_powered_by": "Susținut de",
+  "archive_search_title": "/search/ - Căutare în arhivă",
+  "search_posts_or_board": "Caută postări sau introdu un board",
+  "archive_search_subtitle": "Caută postări indexate pe forumurile 5chan.",
+  "search_results_heading": "Se afișează {{count}} din {{total}} rezultate pentru „{{query}}”",
+  "search_no_results": "Nicio postare indexată nu s-a potrivit. Încercați termeni mai generali.",
+  "change_provider": "Schimbați furnizorul",
+  "results_provided_by": "Rezultate furnizate de",
+  "search_provider_unavailable": "Furnizorul de căutare nu este disponibil. Încercați din nou mai târziu sau schimbați furnizorul.",
+  "current_provider": "furnizor actual",
+  "search_provider_directory_subtitle": "Alegeți ce indexator independent deservește /search/. Furnizorii vă pot vedea termenii de căutare."
 }

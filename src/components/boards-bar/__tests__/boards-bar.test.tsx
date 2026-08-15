@@ -198,6 +198,7 @@ describe('BoardsBar', () => {
     expect(testState.initializeVisibilityMock).toHaveBeenCalledTimes(1);
     expect(container.textContent).toContain('all');
     expect(container.textContent).toContain('subs');
+    expect(container.textContent).toContain('search');
     expect(container.textContent).toContain('mod');
     expect(container.textContent).toContain('custom.eth');
     expect(container.textContent).toContain('mu');
@@ -267,6 +268,22 @@ describe('BoardsBar', () => {
     });
 
     expect(testState.navigateMock).toHaveBeenCalledWith('/new-board.eth');
+  });
+
+  it('submits ordinary desktop search terms to the archive search route', async () => {
+    await renderBoardsBar('/mu');
+
+    await act(async () => {
+      findExactText('Search')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const desktopSearchInput = container.querySelector<HTMLInputElement>('input[type="text"]');
+    await act(async () => {
+      if (desktopSearchInput) desktopSearchInput.value = 'lost thread';
+      desktopSearchInput?.form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/search?q=lost%20thread');
   });
 
   it('keeps catalog navigation on desktop multiboard and board links', async () => {

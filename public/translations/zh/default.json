@@ -462,5 +462,15 @@
   "modQueue.transferRepliesNotice": "回复不会被移动。它们会随原帖一起删除。",
   "modQueue.transferTemporaryAccountNotice": "5chan 会专门为这个复制后的帖子创建一个新的临时账号，并在发布后删除它。",
   "trash": "垃圾箱",
-  "site_legal_meta_powered_by": "技术支持："
+  "site_legal_meta_powered_by": "技术支持：",
+  "archive_search_title": "/search/ - 归档搜索",
+  "search_posts_or_board": "搜索帖子或输入版块",
+  "archive_search_subtitle": "搜索 5chan 各版块中已编入索引的帖子。",
+  "search_results_heading": "正在显示“{{query}}”的 {{total}} 条结果中的 {{count}} 条",
+  "search_no_results": "没有匹配的已索引帖子。请尝试更宽泛的搜索词。",
+  "change_provider": "切换提供商",
+  "results_provided_by": "结果提供方",
+  "search_provider_unavailable": "搜索提供商不可用。请稍后重试或更换提供商。",
+  "current_provider": "当前提供商",
+  "search_provider_directory_subtitle": "选择由哪个独立索引器为 /search/ 提供支持。提供商可以看到你的搜索词。"
 }

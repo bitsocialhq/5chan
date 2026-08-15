@@ -7,7 +7,7 @@ import getShortAddress from '../../lib/get-short-address';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
-import { isArchiveRoute, isDirectoryListRoute } from '../../lib/utils/route-utils';
+import { isArchiveRoute, isDirectoryListRoute, isSearchDirectoryRoute, isSearchRoute } from '../../lib/utils/route-utils';
 import { getSpecialBoardByAddress } from '../../lib/special-boards';
 import styles from './board-header.module.css';
 import { useDirectories } from '../../hooks/use-directories';
@@ -57,7 +57,9 @@ const BoardHeader = memo(() => {
   const isInModView = isModView(location.pathname);
   const isInArchiveView = isArchiveRoute(location.pathname);
   const isInDirectoryListView = isDirectoryListRoute(location.pathname);
-  const bannerKey = isInAllView ? 'all' : isInSubscriptionsView ? 'subscriptions' : isInModView ? 'mod' : params.boardIdentifier || 'board';
+  const isInSearchView = isSearchRoute(location.pathname);
+  const isInSearchDirectoryView = isSearchDirectoryRoute(location.pathname);
+  const bannerKey = isInAllView ? 'all' : isInSubscriptionsView ? 'subscriptions' : isInModView ? 'mod' : isInSearchView ? 'search' : params.boardIdentifier || 'board';
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || getCommentCommunityAddress(accountComment) || getCommentCommunityAddress(getPendingPostRoutePost(location.state));
@@ -86,16 +88,22 @@ const BoardHeader = memo(() => {
       ? '/subs/ - Subscriptions'
       : isInModView
         ? '/mod/ - Boards You Moderate'
-        : defaultCommunity?.title || specialBoard?.title || stableCommunity?.title;
+        : isInSearchView
+          ? t('archive_search_title')
+          : defaultCommunity?.title || specialBoard?.title || stableCommunity?.title;
   const subtitle = isInAllView
     ? t('all_subtitle')
     : isInSubscriptionsView
       ? subscriptionsSubtitle
       : isInModView
         ? ''
-        : isInDirectoryListView
-          ? t('directory_subtitle', { boardIdentifier: params.boardIdentifier })
-          : `${specialBoard?.address || address || communityAddress || ''}`;
+        : isInSearchDirectoryView
+          ? t('search_provider_directory_subtitle')
+          : isInSearchView
+            ? t('archive_search_subtitle')
+            : isInDirectoryListView
+              ? t('directory_subtitle', { boardIdentifier: params.boardIdentifier })
+              : `${specialBoard?.address || address || communityAddress || ''}`;
 
   return (
     <div className={`${styles.content} ${shouldShowSnow() ? styles.garland : ''}`}>
@@ -111,7 +119,7 @@ const BoardHeader = memo(() => {
               ? shortAddress.slice(0, -4)
               : shortAddress
             : communityAddress && getShortAddress(communityAddress))}
-        {!isInAllView && !isInSubscriptionsView && !isInModView && !isInDirectoryListView && <OfflineIndicator communityAddress={communityAddress} />}
+        {!isInAllView && !isInSubscriptionsView && !isInModView && !isInSearchView && !isInDirectoryListView && <OfflineIndicator communityAddress={communityAddress} />}
       </div>
       <div className={styles.boardSubtitle}>
         {isInSubscriptionsView ? (

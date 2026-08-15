@@ -462,5 +462,15 @@
   "modQueue.transferRepliesNotice": "Përgjigjet nuk zhvendosen. Ato fshihen bashkë me postimin origjinal.",
   "modQueue.transferTemporaryAccountNotice": "5chan do të krijojë një llogari të re të përkohshme vetëm për këtë postim të kopjuar, pastaj do ta fshijë pas publikimit.",
   "trash": "Kosh",
-  "site_legal_meta_powered_by": "Mundësuar nga"
+  "site_legal_meta_powered_by": "Mundësuar nga",
+  "archive_search_title": "/search/ - Kërkim në arkiv",
+  "search_posts_or_board": "Kërko postime ose fut një board",
+  "archive_search_subtitle": "Kërkoni postime të indeksuara në forumet e 5chan.",
+  "search_results_heading": "Po shfaqen {{count}} nga {{total}} rezultate për “{{query}}”",
+  "search_no_results": "Asnjë postim i indeksuar nuk përputhej. Provoni terma më të përgjithshëm.",
+  "change_provider": "Ndryshoni ofruesin",
+  "results_provided_by": "Rezultatet ofrohen nga",
+  "search_provider_unavailable": "Ofruesi i kërkimit nuk është i disponueshëm. Provoni përsëri më vonë ose ndryshoni ofruesin.",
+  "current_provider": "ofruesi aktual",
+  "search_provider_directory_subtitle": "Zgjidhni cili indeksues i pavarur mundëson /search/. Ofruesit mund t’i shohin termat tuaj të kërkimit."
 }

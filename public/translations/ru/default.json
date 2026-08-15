@@ -462,5 +462,15 @@
   "modQueue.transferRepliesNotice": "Ответы не перемещаются. Они будут удалены вместе с исходным постом.",
   "modQueue.transferTemporaryAccountNotice": "5chan создаст новый временный аккаунт только для этой скопированной публикации, а затем удалит его после публикации.",
   "trash": "Корзина",
-  "site_legal_meta_powered_by": "Работает на базе"
+  "site_legal_meta_powered_by": "Работает на базе",
+  "archive_search_title": "/search/ - Поиск по архиву",
+  "search_posts_or_board": "Ищите посты или введите доску",
+  "archive_search_subtitle": "Ищите проиндексированные посты на досках 5chan.",
+  "search_results_heading": "Показано {{count}} из {{total}} результатов по запросу «{{query}}»",
+  "search_no_results": "Подходящих проиндексированных постов не найдено. Попробуйте использовать более общие запросы.",
+  "change_provider": "Сменить провайдера",
+  "results_provided_by": "Результаты от",
+  "search_provider_unavailable": "Поисковый провайдер недоступен. Попробуйте позже или смените провайдера.",
+  "current_provider": "текущий провайдер",
+  "search_provider_directory_subtitle": "Выберите, какой независимый индексатор будет обслуживать /search/. Провайдеры могут видеть ваши поисковые запросы."
 }

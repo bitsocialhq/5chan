@@ -14,10 +14,10 @@ import useDirectoryModalStore from '../../stores/use-directory-modal-store';
 import useHomepageStatsOptionsStore, { type HomepageStatsScope } from '../../stores/use-homepage-stats-options-store';
 import DisclaimerModal from '../../components/disclaimer-modal';
 import DirectoryModal from '../../components/directory-modal';
-import { extractDirectoryFromTitle, getBoardPath } from '../../lib/utils/route-utils';
+import { extractDirectoryFromTitle } from '../../lib/utils/route-utils';
+import { getSearchDestination } from '../../lib/search-navigation';
 import { isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { useFeedStateString } from '../../hooks/use-state-string';
-import lowerCase from 'lodash/lowerCase';
 
 // https://github.com/bitsocialnet/lists/tree/master/5chan-directories
 
@@ -29,11 +29,8 @@ const SearchBar = () => {
 
   const handleSearchSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const searchInput = searchInputRef.current?.value;
-    if (searchInput) {
-      const boardPath = getBoardPath(searchInput, directories);
-      navigate(`/${boardPath}`);
-    }
+    const destination = getSearchDestination(searchInputRef.current?.value ?? '', directories);
+    if (destination) navigate(destination);
   };
 
   return (
@@ -45,8 +42,8 @@ const SearchBar = () => {
           spellCheck='false'
           autoCapitalize='off'
           type='text'
-          aria-label={lowerCase(t('enter_board_address'))}
-          placeholder={lowerCase(t('enter_board_address'))}
+          aria-label={t('search_posts_or_board')}
+          placeholder={t('search_posts_or_board')}
           ref={searchInputRef}
         />
         <button type='submit' className={styles.searchButton}>

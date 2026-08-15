@@ -154,6 +154,16 @@ export const isDirectoryListRoute = (pathname: string): boolean => {
   return normalizedPath.endsWith('/directory');
 };
 
+export const isSearchRoute = (pathname: string): boolean => {
+  const normalizedPath = pathname.replace(/\/+$/, '').replace(/\/settings$/, '');
+  return normalizedPath === '/search' || normalizedPath === '/search/directory';
+};
+
+export const isSearchDirectoryRoute = (pathname: string): boolean => {
+  const normalizedPath = pathname.replace(/\/+$/, '').replace(/\/settings$/, '');
+  return normalizedPath === '/search/directory';
+};
+
 export const isFeedRoute = (pathname: string): boolean => {
   const normalizedPath = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
 
@@ -161,6 +171,7 @@ export const isFeedRoute = (pathname: string): boolean => {
   if (normalizedPath.startsWith('/pending/')) return false;
   if (isArchiveRoute(normalizedPath)) return false;
   if (isDirectoryListRoute(normalizedPath)) return false;
+  if (isSearchRoute(normalizedPath)) return false;
   if (isBoardModRoute(normalizedPath) || isModQueueRoute(normalizedPath)) return false;
 
   const pathWithoutSettings = normalizedPath.replace(/\/settings$/, '');
@@ -325,7 +336,13 @@ export const getFeedCacheKey = (pathname: string, search = ''): string | null =>
     return null;
   }
 
-  if (isArchiveRoute(normalizedPath) || isDirectoryListRoute(normalizedPath) || isBoardModRoute(normalizedPath) || isModQueueRoute(normalizedPath)) {
+  if (
+    isArchiveRoute(normalizedPath) ||
+    isDirectoryListRoute(normalizedPath) ||
+    isSearchRoute(normalizedPath) ||
+    isBoardModRoute(normalizedPath) ||
+    isModQueueRoute(normalizedPath)
+  ) {
     return null;
   }
 

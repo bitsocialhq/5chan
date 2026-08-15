@@ -462,5 +462,15 @@
   "modQueue.transferRepliesNotice": "답글은 이동되지 않습니다. 원본 게시글과 함께 삭제됩니다.",
   "modQueue.transferTemporaryAccountNotice": "5chan은 이 복사된 게시글만을 위한 새 임시 계정을 만든 뒤 게시 후 삭제합니다.",
   "trash": "휴지통",
-  "site_legal_meta_powered_by": "제공:"
+  "site_legal_meta_powered_by": "제공:",
+  "archive_search_title": "/search/ - 아카이브 검색",
+  "search_posts_or_board": "게시물을 검색하거나 게시판을 입력하세요",
+  "archive_search_subtitle": "5chan 게시판 전체에서 색인된 게시물을 검색하세요.",
+  "search_results_heading": "“{{query}}” 검색 결과 {{total}}개 중 {{count}}개 표시",
+  "search_no_results": "일치하는 색인된 게시물이 없습니다. 더 일반적인 검색어를 사용해 보세요.",
+  "change_provider": "제공업체 변경",
+  "results_provided_by": "결과 제공자",
+  "search_provider_unavailable": "검색 제공업체를 사용할 수 없습니다. 나중에 다시 시도하거나 제공업체를 변경하세요.",
+  "current_provider": "현재 제공업체",
+  "search_provider_directory_subtitle": "어떤 독립 인덱서가 /search/를 구동할지 선택하세요. 제공업체는 검색어를 볼 수 있습니다."
 }

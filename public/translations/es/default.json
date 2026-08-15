@@ -462,5 +462,15 @@
   "modQueue.transferRepliesNotice": "Las respuestas no se mueven. Se eliminan junto con la publicación original.",
   "modQueue.transferTemporaryAccountNotice": "5chan creará una nueva cuenta temporal solo para esta publicación copiada y la eliminará después de publicarla.",
   "trash": "Papelera",
-  "site_legal_meta_powered_by": "Con tecnología de"
+  "site_legal_meta_powered_by": "Con tecnología de",
+  "archive_search_title": "/search/ - Búsqueda en el archivo",
+  "search_posts_or_board": "Busca publicaciones o introduce un tablón",
+  "archive_search_subtitle": "Busca publicaciones indexadas en los tablones de 5chan.",
+  "search_results_heading": "Mostrando {{count}} de {{total}} resultados para «{{query}}»",
+  "search_no_results": "No se encontraron publicaciones indexadas que coincidieran. Prueba con términos más generales.",
+  "change_provider": "Cambiar proveedor",
+  "results_provided_by": "Resultados proporcionados por",
+  "search_provider_unavailable": "El proveedor de búsqueda no está disponible. Inténtalo de nuevo más tarde o cambia de proveedor.",
+  "current_provider": "proveedor actual",
+  "search_provider_directory_subtitle": "Elige qué indexador independiente gestiona /search/. Los proveedores pueden ver tus términos de búsqueda."
 }

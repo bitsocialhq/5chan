@@ -462,5 +462,15 @@
   "modQueue.transferRepliesNotice": "Odpovědi se nepřesunou. Budou odstraněny spolu s původním příspěvkem.",
   "modQueue.transferTemporaryAccountNotice": "5chan vytvoří nový dočasný účet jen pro tento zkopírovaný příspěvek a po zveřejnění ho smaže.",
   "trash": "Koš",
-  "site_legal_meta_powered_by": "Používá technologii"
+  "site_legal_meta_powered_by": "Používá technologii",
+  "archive_search_title": "/search/ - Vyhledávání v archivu",
+  "search_posts_or_board": "Hledejte v příspěvcích nebo zadejte fórum",
+  "archive_search_subtitle": "Prohledávejte indexované příspěvky napříč nástěnkami 5chan.",
+  "search_results_heading": "Zobrazeno {{count}} z {{total}} výsledků pro „{{query}}“",
+  "search_no_results": "Žádné indexované příspěvky neodpovídají. Zkuste obecnější výrazy.",
+  "change_provider": "Změnit poskytovatele",
+  "results_provided_by": "Výsledky poskytuje",
+  "search_provider_unavailable": "Poskytovatel vyhledávání není k dispozici. Zkuste to později nebo změňte poskytovatele.",
+  "current_provider": "aktuální poskytovatel",
+  "search_provider_directory_subtitle": "Zvolte, který nezávislý indexer bude zajišťovat /search/. Poskytovatelé mohou vidět vaše hledané výrazy."
 }

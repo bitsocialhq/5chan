@@ -462,5 +462,15 @@
   "modQueue.transferRepliesNotice": "A válaszok nem kerülnek át. Az eredeti bejegyzéssel együtt törlődnek.",
   "modQueue.transferTemporaryAccountNotice": "A 5chan új ideiglenes fiókot hoz létre csak ehhez a másolt bejegyzéshez, majd közzététel után törli.",
   "trash": "Kuka",
-  "site_legal_meta_powered_by": "Működteti:"
+  "site_legal_meta_powered_by": "Működteti:",
+  "archive_search_title": "/search/ - Keresés az archívumban",
+  "search_posts_or_board": "Keress a bejegyzések között, vagy adj meg egy boardot",
+  "archive_search_subtitle": "Keressen indexelt bejegyzéseket a 5chan tábláin.",
+  "search_results_heading": "„{{query}}” keresés — {{count}} / {{total}} találat megjelenítve",
+  "search_no_results": "Egy indexelt bejegyzés sem egyezett. Próbáljon általánosabb kifejezéseket.",
+  "change_provider": "Szolgáltató váltása",
+  "results_provided_by": "A találatokat biztosítja",
+  "search_provider_unavailable": "A keresési szolgáltató nem érhető el. Próbálja újra később, vagy váltson szolgáltatót.",
+  "current_provider": "jelenlegi szolgáltató",
+  "search_provider_directory_subtitle": "Válassza ki, melyik független indexelő működtesse a /search/ keresőt. A szolgáltatók láthatják az Ön keresőkifejezéseit."
 }

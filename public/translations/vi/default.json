@@ -462,5 +462,15 @@
   "modQueue.transferRepliesNotice": "Các trả lời sẽ không được chuyển. Chúng sẽ bị xóa cùng với bài viết gốc.",
   "modQueue.transferTemporaryAccountNotice": "5chan sẽ tạo một tài khoản tạm thời mới chỉ cho bài viết được sao chép này, rồi xóa tài khoản đó sau khi đăng.",
   "trash": "Thùng rác",
-  "site_legal_meta_powered_by": "Được cung cấp bởi"
+  "site_legal_meta_powered_by": "Được cung cấp bởi",
+  "archive_search_title": "/search/ - Tìm kiếm trong kho lưu trữ",
+  "search_posts_or_board": "Tìm bài đăng hoặc nhập một board",
+  "archive_search_subtitle": "Tìm kiếm các bài đăng đã được lập chỉ mục trên các diễn đàn 5chan.",
+  "search_results_heading": "Đang hiển thị {{count}} trong số {{total}} kết quả cho “{{query}}”",
+  "search_no_results": "Không có bài đăng được lập chỉ mục nào khớp. Hãy thử các từ khóa khái quát hơn.",
+  "change_provider": "Đổi nhà cung cấp",
+  "results_provided_by": "Kết quả được cung cấp bởi",
+  "search_provider_unavailable": "Nhà cung cấp tìm kiếm không khả dụng. Hãy thử lại sau hoặc đổi nhà cung cấp.",
+  "current_provider": "nhà cung cấp hiện tại",
+  "search_provider_directory_subtitle": "Chọn trình lập chỉ mục độc lập hỗ trợ /search/. Nhà cung cấp có thể thấy các cụm từ tìm kiếm của bạn."
 }

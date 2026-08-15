@@ -462,5 +462,15 @@
   "modQueue.transferRepliesNotice": "جوابات منتقل نہیں ہوں گے۔ وہ اصل پوسٹ کے ساتھ حذف ہو جائیں گے۔",
   "modQueue.transferTemporaryAccountNotice": "5chan صرف اس کاپی شدہ پوسٹ کے لیے ایک نیا عارضی اکاؤنٹ بنائے گا، پھر شائع ہونے کے بعد اسے حذف کر دے گا۔",
   "trash": "ردی",
-  "site_legal_meta_powered_by": "کے ذریعے تقویت یافتہ"
+  "site_legal_meta_powered_by": "کے ذریعے تقویت یافتہ",
+  "archive_search_title": "/search/ - آرکائیو میں تلاش",
+  "search_posts_or_board": "پوسٹس تلاش کریں یا بورڈ درج کریں",
+  "archive_search_subtitle": "5chan بورڈز پر انڈیکس شدہ پوسٹس تلاش کریں۔",
+  "search_results_heading": "“{{query}}” کے لیے {{total}} نتائج میں سے {{count}} دکھائے جا رہے ہیں",
+  "search_no_results": "کوئی انڈیکس شدہ پوسٹ مماثل نہیں تھی۔ مزید عمومی اصطلاحات آزمائیں۔",
+  "change_provider": "فراہم کنندہ تبدیل کریں",
+  "results_provided_by": "نتائج کا فراہم کنندہ",
+  "search_provider_unavailable": "تلاش کا فراہم کنندہ دستیاب نہیں ہے۔ بعد میں دوبارہ کوشش کریں یا فراہم کنندہ تبدیل کریں۔",
+  "current_provider": "موجودہ فراہم کنندہ",
+  "search_provider_directory_subtitle": "منتخب کریں کہ کون سا آزاد اشاریہ ساز /search/ کو چلاتا ہے۔ فراہم کنندگان آپ کی تلاش کی اصطلاحات دیکھ سکتے ہیں۔"
 }

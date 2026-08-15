@@ -27,6 +27,7 @@ import {
   isDirectoryBoard,
   isArchiveRoute,
   isDirectoryListRoute,
+  isSearchRoute,
   isLegacyBoardModQueueRoute,
   isPostRoute,
   isPendingPostRoute,
@@ -59,6 +60,8 @@ import BoardsBar from './components/boards-bar/boards-bar';
 import ExternalQuoteStatus from './components/external-quote-status/external-quote-status';
 import ModEmptyState from './components/mod-empty-state/mod-empty-state';
 import SettingsModal from './components/settings-modal';
+import Search from './views/search/search';
+import SearchDirectory from './views/search/search-directory';
 
 const AccountDataEditor = lazy(() => import('./views/account-data-editor'));
 const BoardsBarEditModal = lazy(() => import('./components/boards-bar-edit-modal'));
@@ -98,8 +101,9 @@ const BoardLayout = () => {
   const isOnModQueueRoute = isModQueueRoute(pathname);
   const isOnArchiveRoute = isArchiveRoute(pathname);
   const isOnDirectoryRoute = isDirectoryListRoute(pathname);
-  const shouldRenderOutlet = isOnPostRoute || isOnPendingPostRoute || isOnModQueueRoute || isOnArchiveRoute || isOnDirectoryRoute;
-  const shouldRenderBoardBlotter = !isOnArchiveRoute && !isOnDirectoryRoute && !isOnModQueueRoute;
+  const isOnSearchRoute = isSearchRoute(pathname);
+  const shouldRenderOutlet = isOnPostRoute || isOnPendingPostRoute || isOnModQueueRoute || isOnArchiveRoute || isOnDirectoryRoute || isOnSearchRoute;
+  const shouldRenderBoardBlotter = !isOnArchiveRoute && !isOnDirectoryRoute && !isOnSearchRoute && !isOnModQueueRoute;
   const isInCatalogView = isCatalogView(pathname, params);
   // Christmas snow
   const { isEnabled: isSpecialEnabled } = useSpecialThemeStore();
@@ -196,7 +200,7 @@ const BoardLayout = () => {
               <DesktopBoardButtons />
             </>
           )}
-      {!isOnModQueueRoute && (
+      {!isOnModQueueRoute && !isOnSearchRoute && (
         <Activity mode={isNavigatingToPendingPost ? 'hidden' : 'visible'}>
           <FeedCacheContainer />
         </Activity>
@@ -351,12 +355,18 @@ const App = () => {
             <Route path='/directory' element={<Navigate to='/not-found' replace />} />
             <Route path='/directory/settings' element={<Navigate to='/not-found' replace />} />
 
+            <Route path='/search' element={<Search />} />
+            <Route path='/search/settings' element={<Search />} />
+            <Route path='/search/directory' element={<SearchDirectory />} />
+            <Route path='/search/directory/settings' element={<SearchDirectory />} />
+
             {/* Invalid subpaths: old URLs and unknown paths -> not-found */}
             <Route path='/mod/modqueue' element={<Navigate to='/not-found' replace />} />
             <Route path='/mod/modqueue/settings' element={<Navigate to='/not-found' replace />} />
             <Route path='/all/*' element={<Navigate to='/not-found' replace />} />
             <Route path='/subs/*' element={<Navigate to='/not-found' replace />} />
             <Route path='/mod/*' element={<Navigate to='/not-found' replace />} />
+            <Route path='/search/*' element={<Navigate to='/not-found' replace />} />
 
             <Route path='/:boardIdentifier/catalog' element={catalogFeedElement} />
             <Route path='/:boardIdentifier/catalog/settings' element={catalogFeedElement} />

@@ -462,5 +462,15 @@
   "modQueue.transferRepliesNotice": "لن تُنقل الردود. سيتم حذفها مع المنشور الأصلي.",
   "modQueue.transferTemporaryAccountNotice": "سينشئ 5chan حسابا مؤقتا جديدا لهذا المنشور المنسوخ فقط، ثم يحذفه بعد النشر.",
   "trash": "سلة المهملات",
-  "site_legal_meta_powered_by": "مدعوم من"
+  "site_legal_meta_powered_by": "مدعوم من",
+  "archive_search_title": "/search/ - البحث في الأرشيف",
+  "search_posts_or_board": "ابحث في المنشورات أو أدخل منتدى",
+  "archive_search_subtitle": "ابحث في المنشورات المفهرسة عبر لوحات 5chan.",
+  "search_results_heading": "عرض النتائج للبحث عن «{{query}}»: {{count}} من أصل {{total}}",
+  "search_no_results": "لم تتطابق أي منشورات مفهرسة. جرّب مصطلحات أوسع نطاقًا.",
+  "change_provider": "تغيير مزود الخدمة",
+  "results_provided_by": "النتائج مقدمة من",
+  "search_provider_unavailable": "مزوّد البحث غير متاح. حاول مرة أخرى لاحقًا أو غيّر المزوّد.",
+  "current_provider": "مزود الخدمة الحالي",
+  "search_provider_directory_subtitle": "اختر أي مفهرس مستقل يشغّل /search/. يمكن للمزوّدين رؤية عبارات البحث الخاصة بك."
 }

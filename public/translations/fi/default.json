@@ -462,5 +462,15 @@
   "modQueue.transferRepliesNotice": "Vastauksia ei siirretä. Ne poistetaan alkuperäisen viestin mukana.",
   "modQueue.transferTemporaryAccountNotice": "5chan luo uuden väliaikaisen tilin vain tätä kopioitua viestiä varten ja poistaa sen julkaisun jälkeen.",
   "trash": "Roskakori",
-  "site_legal_meta_powered_by": "Palvelun tarjoaa"
+  "site_legal_meta_powered_by": "Palvelun tarjoaa",
+  "archive_search_title": "/search/ - Arkistohaku",
+  "search_posts_or_board": "Hae viestejä tai syötä lauta",
+  "archive_search_subtitle": "Hae indeksoituja viestejä 5chan-foorumeilta.",
+  "search_results_heading": "Näytetään {{count}}/{{total}} tulosta haulle ”{{query}}”",
+  "search_no_results": "Indeksoituja julkaisuja ei löytynyt. Kokeile yleisempiä hakusanoja.",
+  "change_provider": "Vaihda palveluntarjoajaa",
+  "results_provided_by": "Tulokset tarjoaa",
+  "search_provider_unavailable": "Hakupalveluntarjoaja ei ole käytettävissä. Yritä myöhemmin uudelleen tai vaihda palveluntarjoajaa.",
+  "current_provider": "nykyinen palveluntarjoaja",
+  "search_provider_directory_subtitle": "Valitse, mikä riippumaton indeksoija tarjoaa /search/-haun. Palveluntarjoajat voivat nähdä hakutermisi."
 }
