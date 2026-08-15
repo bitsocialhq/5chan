@@ -12,7 +12,7 @@ const ipfsClientMacPath = path.join(ipfsClientsPath, 'mac');
 const ipfsClientLinuxPath = path.join(ipfsClientsPath, 'linux');
 const kuboReleaseBaseUrl = 'https://github.com/ipfs/kubo/releases/download';
 
-const ipfsClientVersion = '0.42.0';
+const ipfsClientVersion = '0.43.0';
 
 // Resolve desired build arch: allow overriding via env (so cross-arch builds pick correct binary)
 const resolveBuildArch = () => {
