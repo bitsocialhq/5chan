@@ -12,7 +12,7 @@ const ipfsClientMacPath = path.join(ipfsClientsPath, 'mac');
 const ipfsClientLinuxPath = path.join(ipfsClientsPath, 'linux');
 const kuboReleaseBaseUrl = 'https://github.com/ipfs/kubo/releases/download';
 
-const ipfsClientVersion = '0.42.0';
+const ipfsClientVersion = '0.43.0';
 
 // Resolve desired build arch: allow overriding via env (so cross-arch builds pick correct binary)
 const resolveBuildArch = () => {
@@ -102,18 +102,22 @@ const downloadAndExtract = async (url, destinationPath) => {
     binName += '.exe';
   }
   const binPath = path.join(destinationPath, binName);
-  if (fs.pathExistsSync(binPath)) {
+  const sourceMarkerPath = path.join(destinationPath, '.kubo-source');
+  const cachedSource = fs.pathExistsSync(sourceMarkerPath) ? fs.readFileSync(sourceMarkerPath, 'utf8').trim() : undefined;
+  if (fs.pathExistsSync(binPath) && cachedSource === url) {
     return;
   }
   console.log(`Downloading IPFS client from ${url} to ${destinationPath}`);
   const split = url.split('/');
   const fileName = split[split.length - 1];
   const archivePath = path.join(destinationPath, fileName);
+  const extractedPath = path.join(destinationPath, 'kubo');
   const file = await downloadWithRetry(url);
   fs.ensureDirSync(destinationPath);
   await fs.writeFile(archivePath, file);
   console.log(`Downloaded archive to ${archivePath}`);
   console.log(`Extracting ${archivePath} to ${destinationPath}`);
+  fs.removeSync(extractedPath);
   try {
     await decompress(archivePath, destinationPath);
     console.log('Decompression complete');
@@ -121,13 +125,14 @@ const downloadAndExtract = async (url, destinationPath) => {
     console.error('Error during decompression:', err);
     throw err;
   }
-  const extractedPath = path.join(destinationPath, 'kubo');
   const extractedBinPath = path.join(extractedPath, binName);
   console.log(`Moving binary from ${extractedBinPath} to ${binPath}`);
-  fs.moveSync(extractedBinPath, binPath);
+  fs.moveSync(extractedBinPath, binPath, { overwrite: true });
+  fs.writeFileSync(sourceMarkerPath, `${url}\n`);
   console.log('Binary moved');
   console.log('Cleaning up temporary files');
   fs.removeSync(archivePath);
+  fs.removeSync(extractedPath);
   console.log('Cleanup complete');
 };
 

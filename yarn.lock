@@ -10,7 +10,7 @@ __metadata:
   resolution: "5chan@workspace:."
   dependencies:
     "@bbob/parser": "npm:4.3.1"
-    "@bitsocial/bitsocial-react-hooks": "npm:0.1.36"
+    "@bitsocial/bitsocial-react-hooks": "npm:0.1.37"
     "@bitsocial/bso-resolver": "npm:0.0.10"
     "@capacitor/android": "npm:7.4.5"
     "@capacitor/app": "npm:7.0.1"
@@ -27,7 +27,7 @@ __metadata:
     "@electron-forge/plugin-auto-unpack-natives": "npm:7.8.0"
     "@electron/rebuild": "npm:3.7.2"
     "@floating-ui/react": "npm:0.26.1"
-    "@pkcprotocol/pkc-js": "npm:0.0.78"
+    "@pkcprotocol/pkc-js": "npm:0.0.81"
     "@react-spring/web": "npm:10.0.3"
     "@reforged/maker-appimage": "npm:5.1.1"
     "@ruffle-rs/ruffle": "npm:0.2.0"
@@ -1582,12 +1582,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bitsocial/bitsocial-react-hooks@npm:0.1.36":
-  version: 0.1.36
-  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.36"
+"@bitsocial/bitsocial-react-hooks@npm:0.1.37":
+  version: 0.1.37
+  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.37"
   dependencies:
     "@bitsocial/bso-resolver": "npm:0.0.10"
-    "@pkcprotocol/pkc-js": "npm:0.0.78"
+    "@pkcprotocol/pkc-js": "npm:0.0.81"
     "@pkcprotocol/pkc-logger": "npm:0.1.0"
     assert: "npm:2.1.0"
     ethers: "npm:5.8.0"
@@ -1603,7 +1603,7 @@ __metadata:
     zustand: "npm:4.5.7"
   peerDependencies:
     react: ">=16.8"
-  checksum: 10c0/282be80dcc09aa3b3c0ff7b6308a9fbb30ba2ccba8e67970a5d117cc79b14b11c8c7ecbc44b8a5b22b0d7f29f35a1ab109258a5229b05da5ccdf9ec8f261d95c
+  checksum: 10c0/7323a8c1a6a1324e10aab44bdf0765c1b5b1c13f206758836894e76b60f286033c7bcf0b5012af402fdbca5983c0b0c48d652ffb781e62da575afd5d8ec72af6
   languageName: node
   linkType: hard
 
@@ -6531,9 +6531,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pkcprotocol/pkc-js@npm:0.0.78":
-  version: 0.0.78
-  resolution: "@pkcprotocol/pkc-js@npm:0.0.78"
+"@pkcprotocol/pkc-js@npm:0.0.81":
+  version: 0.0.81
+  resolution: "@pkcprotocol/pkc-js@npm:0.0.81"
   dependencies:
     "@enhances/with-resolvers": "npm:0.0.5"
     "@helia/block-brokers": "npm:5.2.4"
@@ -6586,7 +6586,6 @@ __metadata:
     retry: "npm:0.13.1"
     rpc-websockets: "npm:9.3.8"
     safe-stable-stringify: "npm:2.4.3"
-    tcp-port-used: "npm:1.0.2"
     tiny-typed-emitter: "npm:2.1.0"
     tinycache: "npm:1.1.2"
     ts-custom-error: "npm:3.3.1"
@@ -6596,7 +6595,7 @@ __metadata:
     uuid: "npm:13.0.0"
     ws: "npm:8.20.0"
     zod: "npm:4.3.6"
-  checksum: 10c0/67f4bdd33b1afcdafd1c38854b08cadd43b7f71fd3c6c59fcc58ce7722f52440aa21020854b643d2bba2fc25d40977326fe967f44bc6d9fb54390e3ec5d2cb8f
+  checksum: 10c0/31307eac664b2918ff4bee0873f1953fb2b405be5230eb961c226792ae0b7bc1bdfb14e47191e0ec1727d4239fe1fc4b2962904425f6f3246ef4b4f7b52f57db
   languageName: node
   linkType: hard
 
