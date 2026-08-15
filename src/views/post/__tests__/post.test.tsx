@@ -229,6 +229,7 @@ vi.mock('../../../components/post-desktop/post-desktop', () => ({
         'data-author-short-address': post?.author?.shortAddress || '',
         'data-number': post?.number === undefined ? '' : String(post.number),
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
+        'data-reply-count': post?.replyCount === undefined ? '' : String(post.replyCount),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
         'data-roles-present': String(roles !== undefined),
         'data-transfer-enabled': String(typeof onTransfer === 'function'),
@@ -263,6 +264,7 @@ vi.mock('../../../components/post-mobile/post-mobile', () => ({
         'data-author-short-address': post?.author?.shortAddress || '',
         'data-number': post?.number === undefined ? '' : String(post.number),
         'data-pending-approval': post?.pendingApproval === undefined ? '' : String(post.pendingApproval),
+        'data-reply-count': post?.replyCount === undefined ? '' : String(post.replyCount),
         'data-replies': replyPaginationOverride?.replies?.map((reply) => reply.cid).join(',') || '',
         'data-roles-present': String(roles !== undefined),
         'data-transfer-enabled': String(typeof onTransfer === 'function'),
@@ -666,7 +668,40 @@ describe('Post', () => {
     expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
   });
 
-  it('overlays local account comments on thread pages so author controls receive account author data', async () => {
+  it('keeps the local account comment while the canonical comment is only a loading shell', async () => {
+    testState.commentsByCid = {
+      'owned-loading-cid': {
+        cid: 'owned-loading-cid',
+        state: 'updating',
+        replyCount: 0,
+        communityAddress: 'music-posting.eth',
+      },
+    };
+    testState.accountCommentsByCid = {
+      'owned-loading-cid': {
+        cid: 'owned-loading-cid',
+        postCid: 'owned-loading-cid',
+        author: {
+          address: 'account-author',
+        },
+        content: 'local body',
+        number: 13,
+        replyCount: 0,
+        communityAddress: 'music-posting.eth',
+        title: 'Local thread',
+      },
+    };
+
+    await renderPostPage('/mu/thread/owned-loading-cid');
+
+    const desktopPresenter = container.querySelector('[data-testid="post-desktop"]');
+    expect(desktopPresenter?.getAttribute('data-author-address')).toBe('account-author');
+    expect(desktopPresenter?.getAttribute('data-number')).toBe('13');
+    expect(desktopPresenter?.getAttribute('data-reply-count')).toBe('0');
+    expect(document.title).toBe('/mu/ - Local thread... - 5chan');
+  });
+
+  it('keeps current thread data while restoring the local account author', async () => {
     testState.commentsByCid = {
       'owned-cid': {
         cid: 'owned-cid',
@@ -688,6 +723,7 @@ describe('Post', () => {
           address: 'account-author',
         },
         content: 'local body',
+        replyCount: 0,
         communityAddress: 'music-posting.eth',
         title: 'Local thread',
       },
@@ -698,7 +734,9 @@ describe('Post', () => {
     const desktopPresenter = container.querySelector('[data-testid="post-desktop"]');
     expect(desktopPresenter?.getAttribute('data-author-address')).toBe('account-author');
     expect(desktopPresenter?.getAttribute('data-number')).toBe('14');
+    expect(desktopPresenter?.getAttribute('data-reply-count')).toBe('3');
     expect(container.querySelector('[data-testid="thread-footer-first-row"]')?.textContent).toBe('owned-cid:14:music-posting.eth:false');
+    expect(document.title).toBe('/mu/ - Remote thread... - 5chan');
   });
 
   it('restores the active account author when a mapped account comment only has anonymous author metadata', async () => {

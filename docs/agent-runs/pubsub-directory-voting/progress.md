@@ -84,3 +84,27 @@ Append one entry per session.
   imported by `scripts/sync-directories.js`, which Knip does not treat as an app entry.
 - Blockers: none
 - Next: F002 — the browser `PubsubVoter` construction spike against the pkc Helia node.
+
+## 2026-08-15 — Session 3: master sync before F002
+
+- Item: task-state refresh before F002
+- Summary: Merged current `origin/master` into the published WIP branch. Resolved the
+  `package.json` overlap by preserving the voting dependencies and viem dedupe while
+  taking master’s hooks 0.1.37, pkc-js 0.0.81, React Router 7.18.2, Kubo 0.43.0 packaging,
+  and current security resolutions.
+- Package decision: npm still reports `@bitsocial/pubsub-voting@0.4.1` as latest. Its
+  immutable package delta from 0.4.0 is terminology/documentation plus equivalent
+  declaration comments, with no runtime, API, protocol, or dependency change, so the
+  branch remains on 0.4.0.
+- Verification: pre-merge and post-merge `./scripts/agent-init.sh --smoke`; `corepack
+  yarn install`; `corepack yarn build`; `corepack yarn lint`; `corepack yarn
+  type-check`; `corepack yarn why` for pubsub-voting, hooks, pkc-js, and viem; full
+  `corepack yarn test --run` (169 files, 1,425 tests).
+- Test note: the first full-suite run hit the existing intermittent
+  `directory-list-lookup-utils.test.ts` module-mock isolation failure. The exact file
+  passed 5/5, and the unchanged full-suite retry passed. No feature code was changed for it.
+- Advisory: `corepack yarn knip` still reports pubsub-voting and strip-json-comments as
+  unused because F002 has not imported them into app code yet.
+- Blockers: none
+- Next: F002 — construct `PubsubVoter` against the shared browser Helia node and prove
+  clean unavailable behavior in gateway mode.

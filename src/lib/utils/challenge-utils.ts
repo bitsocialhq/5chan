@@ -15,6 +15,10 @@ const resolveBoardIdentifier = (communityAddress: unknown): string => {
 
 type ChallengeAnswersInput = string[] | { challengeAnswers?: string[] };
 
+// Optional integration contract with @bitsocial/ai-moderation-challenge. Providers that do not
+// return this exact failure continue through 5chan's generic challenge-error handling.
+const DUPLICATE_MEDIA_CHALLENGE_ERROR = 'This media was already posted recently.';
+
 export type ChallengePublication = Partial<Omit<Comment, 'publishChallengeAnswers'>> & {
   author?: unknown;
   commentCid?: string;
@@ -79,27 +83,40 @@ export const redactGeneratedFortuneFromChallenge = <T>(challenge: T): T => {
   return redactedChallenge as T;
 };
 
+const getChallengeVerificationErrorMessages = (challengeVerification: ChallengeVerification): string[] => {
+  const errorMessages: string[] = [];
+  if (challengeVerification?.challengeErrors) {
+    if (
+      typeof challengeVerification.challengeErrors === 'object' &&
+      challengeVerification.challengeErrors !== null &&
+      !Array.isArray(challengeVerification.challengeErrors)
+    ) {
+      errorMessages.push(...Object.values(challengeVerification.challengeErrors).filter((val): val is string => typeof val === 'string'));
+    } else if (Array.isArray(challengeVerification.challengeErrors)) {
+      errorMessages.push(...challengeVerification.challengeErrors.filter((val): val is string => typeof val === 'string'));
+    }
+  }
+
+  if (typeof challengeVerification?.reason === 'string' && challengeVerification.reason) {
+    errorMessages.push(challengeVerification.reason);
+  }
+  return errorMessages;
+};
+
+export const getDuplicateMediaChallengeError = (challengeVerification: ChallengeVerification): string | undefined => {
+  if (challengeVerification?.challengeSuccess !== false) return undefined;
+  return getChallengeVerificationErrorMessages(challengeVerification).find((message) => message === DUPLICATE_MEDIA_CHALLENGE_ERROR);
+};
+
 export const alertChallengeVerificationFailed = (challengeVerification: ChallengeVerification, publication: ChallengePublication | undefined) => {
   if (challengeVerification?.challengeSuccess === false) {
     console.warn('Challenge Verification Failed:', challengeVerification, 'Publication:', redactGeneratedFortuneFromPublication(publication));
 
-    let errorMessages: string[] = [];
+    const errorMessages = getChallengeVerificationErrorMessages(challengeVerification);
     if (challengeVerification?.challengeErrors) {
-      if (
-        typeof challengeVerification.challengeErrors === 'object' &&
-        challengeVerification.challengeErrors !== null &&
-        !Array.isArray(challengeVerification.challengeErrors)
-      ) {
-        errorMessages = Object.values(challengeVerification.challengeErrors).filter((val): val is string => typeof val === 'string');
-      } else if (Array.isArray(challengeVerification.challengeErrors)) {
-        errorMessages = [...challengeVerification.challengeErrors];
-      } else {
+      if (typeof challengeVerification.challengeErrors !== 'object' || challengeVerification.challengeErrors === null) {
         console.warn('challengeVerification.challengeErrors is not an object or array:', challengeVerification.challengeErrors);
       }
-    }
-
-    if (challengeVerification?.reason) {
-      errorMessages.push(challengeVerification.reason);
     }
 
     const finalMessage = errorMessages.filter(Boolean).join(' ');

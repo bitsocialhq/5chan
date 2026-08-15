@@ -45,6 +45,8 @@ const testState = vi.hoisted(() => ({
   mediaHostingRuntime: 'web' as 'web' | 'android' | 'electron',
   navigateMock: vi.fn(),
   onAbandonPost: undefined as undefined | (() => void),
+  onDuplicateMediaRejected: undefined as undefined | ((error: string) => void),
+  onPublishAccepted: undefined as undefined | (() => void),
   onPublishError: undefined as undefined | ((error: Error) => void),
   onPendingPost: undefined as undefined | ((accountCommentIndex: number, pendingPost: Record<string, unknown>) => void),
   offlineTitle: 'offline board',
@@ -214,16 +216,22 @@ vi.mock('../../../hooks/use-publish-post', async () => {
     default: ({
       communityAddress,
       onAbandonPost,
+      onDuplicateMediaRejected,
+      onPublishAccepted,
       onPublishError,
       onPendingPost,
     }: {
       communityAddress?: string;
       onAbandonPost?: () => void;
+      onDuplicateMediaRejected?: (error: string) => void;
+      onPublishAccepted?: () => void;
       onPublishError?: (error: Error) => void;
       onPendingPost?: (accountCommentIndex: number, pendingPost: Record<string, unknown>) => void;
     }) => {
       const [, forceUpdate] = React.useReducer((value: number) => value + 1, 0);
       testState.onAbandonPost = onAbandonPost;
+      testState.onDuplicateMediaRejected = onDuplicateMediaRejected;
+      testState.onPublishAccepted = onPublishAccepted;
       testState.onPublishError = onPublishError;
       testState.onPendingPost = onPendingPost;
       const getPublishPostOptions = React.useCallback(
@@ -599,6 +607,8 @@ describe('PostForm', () => {
     testState.mediaHostingRuntime = 'web';
     testState.offlineTitle = 'offline board';
     testState.onAbandonPost = undefined;
+    testState.onDuplicateMediaRejected = undefined;
+    testState.onPublishAccepted = undefined;
     testState.onPublishError = undefined;
     testState.onPendingPost = undefined;
     testState.postIndex = undefined;
@@ -1776,8 +1786,79 @@ describe('PostForm', () => {
     expect(pendingNavigationStates).toEqual([true]);
     expect(usePendingPostNavigationStore.getState().pendingPostNavigationIndex).toBe(7);
     expect(container.querySelector('table')).toBeNull();
+    expect(usePostFormDraftsStore.getState().forms['/mu']).toMatchObject({
+      draft: { content: 'Thread body' },
+      isOpen: false,
+    });
     unsubscribe();
     usePendingPostNavigationStore.getState().clearPendingPostNavigation();
+  });
+
+  it('restores the preserved draft with an inline error after duplicate media rejection', async () => {
+    const pendingPost = {
+      communityAddress: 'music-posting.eth',
+      content: 'Thread body',
+      index: 7,
+      link: 'https://files.catbox.moe/98w833.png',
+    };
+    testState.publishPostMock.mockImplementation(() => {
+      testState.onPendingPost?.(7, pendingPost);
+    });
+
+    await renderPostForm('/all');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const linkInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[3];
+    await dispatchChange(table.querySelector('select') as HTMLSelectElement, 'music-posting.eth');
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'Thread body');
+    await dispatchInput(linkInput, 'https://files.catbox.moe/98w833.png');
+    await clickByText(table, 'post');
+
+    await act(async () => {
+      testState.onDuplicateMediaRejected?.('This media was already posted recently.');
+      testState.onAbandonPost?.();
+    });
+
+    expect(testState.navigateMock).toHaveBeenLastCalledWith('/all', { flushSync: true, replace: true });
+    expect(usePendingPostNavigationStore.getState().pendingPostNavigationIndex).toBeNull();
+    expect(usePostFormDraftsStore.getState().forms['/all']).toMatchObject({
+      draft: {
+        communityAddress: 'music-posting.eth',
+        content: 'Thread body',
+        link: 'https://files.catbox.moe/98w833.png',
+      },
+      isOpen: true,
+      submissionError: 'error: This media was already posted recently.',
+    });
+
+    const restoredTable = container.querySelector('table') as HTMLTableElement;
+    expect(restoredTable.querySelector('textarea')?.value).toBe('Thread body');
+    expect(restoredTable.querySelectorAll<HTMLInputElement>('input[type="text"]')[3]?.value).toBe('https://files.catbox.moe/98w833.png');
+    expect(restoredTable.querySelector('tfoot')?.textContent).toContain('error: This media was already posted recently.');
+  });
+
+  it('clears the preserved draft after challenge verification accepts the post', async () => {
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+    const pendingPost = {
+      communityAddress: 'music-posting.eth',
+      content: 'Thread body',
+      index: 7,
+    };
+    testState.publishPostMock.mockImplementation(() => {
+      testState.onPendingPost?.(7, pendingPost);
+    });
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    await dispatchInput(table.querySelector('textarea') as HTMLTextAreaElement, 'Thread body');
+    await clickByText(table, 'post');
+
+    expect(usePostFormDraftsStore.getState().forms['/mu']?.isOpen).toBe(false);
+    await act(async () => testState.onPublishAccepted?.());
+    expect(usePostFormDraftsStore.getState().forms['/mu']).toBeUndefined();
   });
 
   it('does not navigate again when the completed index matches the synchronous handoff', async () => {
@@ -1806,6 +1887,10 @@ describe('PostForm', () => {
       state: { boardPath: 'mu', pendingPost },
     });
     expect(testState.resetPublishPostOptionsMock).toHaveBeenCalledTimes(1);
+    expect(usePostFormDraftsStore.getState().forms['/mu']).toMatchObject({
+      draft: { content: 'Thread body' },
+      isOpen: false,
+    });
   });
 
   it('clears the optimistic handoff when pending navigation throws', async () => {

@@ -591,12 +591,15 @@ const PostFormErrorRow = ({ ariaLive, children }: { ariaLive?: 'polite'; childre
   </tr>
 );
 
-const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void; draftKey: string; postCid: string }) => {
+const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: () => void; draftKey: string; hideForm: () => void; postCid: string }) => {
   const { t } = useTranslation();
   const params = useParams();
   const location = useLocation();
   const account = useAccount();
   const draft = usePostFormDraftsStore((state) => state.forms[draftKey]?.draft ?? EMPTY_POST_FORM_STATE.draft);
+  const submissionError = usePostFormDraftsStore((state) => state.forms[draftKey]?.submissionError);
+  const clearSubmissionError = usePostFormDraftsStore((state) => state.clearSubmissionError);
+  const showSubmissionError = usePostFormDraftsStore((state) => state.showSubmissionError);
   const updateStoredDraft = usePostFormDraftsStore((state) => state.updateDraft);
   const updateDraft = useCallback((nextDraft: Partial<PostFormDraft>) => updateStoredDraft(draftKey, nextDraft), [draftKey, updateStoredDraft]);
   const hasRestoredDraftRef = useRef(Boolean(draft.communityAddress || draft.content || draft.link || draft.options || draft.spoiler || draft.title));
@@ -611,6 +614,7 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
   const pendingPostBoardPathRef = useRef<string | undefined>(undefined);
   const handledPendingPostIndexRef = useRef<number | null>(null);
   const pendingPostNavigationIndexRef = useRef<number | null>(null);
+  const duplicateMediaReturnPathRef = useRef<string | null>(null);
   const navigateToPendingPost = useCallback(
     (accountCommentIndex: number, pendingPost: Comment) => {
       const nonokoRedirectPath = nonokoRedirectPathRef.current;
@@ -636,23 +640,25 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
           throw error;
         }
       }
-      closeForm();
+      hideForm();
     },
-    [closeForm, navigate],
+    [hideForm, navigate],
   );
   const navigateAfterAbandon = useCallback(() => {
     const boardPath = pendingPostBoardPathRef.current;
+    const duplicateMediaReturnPath = duplicateMediaReturnPathRef.current;
     const pendingPostNavigationIndex = pendingPostNavigationIndexRef.current;
     const activePendingPostNavigationIndex = usePendingPostNavigationStore.getState().pendingPostNavigationIndex;
     if (activePendingPostNavigationIndex !== null && activePendingPostNavigationIndex !== pendingPostNavigationIndex) {
       return;
     }
+    duplicateMediaReturnPathRef.current = null;
     pendingPostNavigationIndexRef.current = null;
     if (pendingPostNavigationIndex !== null) {
       usePendingPostNavigationStore.getState().clearPendingPostNavigation(pendingPostNavigationIndex);
     }
-    if (boardPath) {
-      flushSync(() => navigate(`/${boardPath}`, { flushSync: true, replace: true }));
+    if (duplicateMediaReturnPath || boardPath) {
+      flushSync(() => navigate(duplicateMediaReturnPath ?? `/${boardPath}`, { flushSync: true, replace: true }));
     }
   }, [navigate]);
   const clearPendingPostHandoffAfterPublishError = useCallback(() => {
@@ -662,9 +668,18 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
       usePendingPostNavigationStore.getState().clearPendingPostHandoff(pendingPostNavigationIndex);
     }
   }, []);
+  const handleDuplicateMediaRejection = useCallback(
+    (error: string) => {
+      duplicateMediaReturnPathRef.current = draftKey;
+      showSubmissionError(draftKey, `${t('error')}: ${error}`);
+    },
+    [draftKey, showSubmissionError, t],
+  );
   const { setPublishPostOptions, postIndex, publishPost, publishPostError, publishPostOptions, resetPublishPostOptions } = usePublishPost({
     communityAddress,
     onAbandonPost: navigateAfterAbandon,
+    onDuplicateMediaRejected: handleDuplicateMediaRejection,
+    onPublishAccepted: closeForm,
     onPublishError: clearPendingPostHandoffAfterPublishError,
     onPendingPost: navigateToPendingPost,
   });
@@ -794,6 +809,7 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
       checkPostOptions.cancel();
       setLengthError(null);
       setFormError(null);
+      clearSubmissionError(draftKey);
       nonokoRedirectPathRef.current = null;
       handledPendingPostIndexRef.current = null;
       pendingPostNavigationIndexRef.current = null;
@@ -863,11 +879,11 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
       const nonokoRedirectPath = nonokoRedirectPathRef.current;
       nonokoRedirectPathRef.current = null;
       resetPublishPostOptions();
-      resetFields();
-      closeForm();
       if (alreadyNavigatedToPostIndex) {
         return;
       }
+      resetFields();
+      closeForm();
       if (nonokoRedirectPath) {
         navigate(nonokoRedirectPath, { state: getNonokoPendingRouteState(postIndex) });
       } else {
@@ -1161,6 +1177,7 @@ const PostFormTable = ({ closeForm, draftKey, postCid }: { closeForm: () => void
               {isPostOptionsValidationError(formError) ? <PostOptionsErrorMessage error={formError} directories={directories} /> : formError}
             </PostFormErrorRow>
           ) : null}
+          {submissionError ? <PostFormErrorRow>{submissionError}</PostFormErrorRow> : null}
           {publishPostError ? <PostFormErrorRow>{publishPostError}</PostFormErrorRow> : null}
           {publishReplyError ? <PostFormErrorRow>{publishReplyError}</PostFormErrorRow> : null}
         </tfoot>
@@ -1185,7 +1202,9 @@ const PostForm = () => {
   const showForm = usePostFormDraftsStore((state) => state.forms[draftKey]?.isOpen ?? false);
   const openForm = usePostFormDraftsStore((state) => state.openForm);
   const clearForm = usePostFormDraftsStore((state) => state.clearForm);
+  const hideStoredForm = usePostFormDraftsStore((state) => state.closeForm);
   const closeForm = useCallback(() => clearForm(draftKey), [clearForm, draftKey]);
+  const hideForm = useCallback(() => hideStoredForm(draftKey), [draftKey, hideStoredForm]);
   const toggleForm = useCallback(() => {
     if (showForm) {
       closeForm();
@@ -1231,7 +1250,7 @@ const PostForm = () => {
             <button type='button' className={`${styles.showFormButton} button`} onClick={toggleForm}>
               {showForm ? t('close_post_form') : isInPostView ? t('post_a_reply') : t('start_new_thread')}
             </button>
-            {showForm && <PostFormTable key={draftKey} closeForm={closeForm} draftKey={draftKey} postCid={postCid} />}
+            {showForm && <PostFormTable key={draftKey} closeForm={closeForm} draftKey={draftKey} hideForm={hideForm} postCid={postCid} />}
           </>
         )}
         {isInCatalogView && <hr />}
@@ -1259,7 +1278,7 @@ const PostForm = () => {
           ]
         </div>
       ) : (
-        <PostFormTable key={draftKey} closeForm={closeForm} draftKey={draftKey} postCid={postCid} />
+        <PostFormTable key={draftKey} closeForm={closeForm} draftKey={draftKey} hideForm={hideForm} postCid={postCid} />
       )}
     </div>
   );

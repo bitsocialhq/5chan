@@ -1,19 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Comment, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
+import { ChallengeVerification, Comment, usePublishComment } from '@bitsocial/bitsocial-react-hooks';
 import { useShallow } from 'zustand/react/shallow';
 import usePublishPostStore from '../stores/use-publish-post-store';
 import useChallengesStore from '../stores/use-challenges-store';
 import usePublishAuthorDomainGuard, { getPublishAuthorDomainErrorMessage } from './use-publish-author-domain-guard';
 import usePendingPublishRequest from './use-pending-publish-request';
+import { getDuplicateMediaChallengeError } from '../lib/utils/challenge-utils';
 
 type UsePublishPostOptions = {
   communityAddress?: string;
   onAbandonPost?: () => void;
+  onDuplicateMediaRejected?: (error: string) => void;
+  onPublishAccepted?: () => void;
   onPublishError?: (error: Error) => void;
   onPendingPost?: (accountCommentIndex: number, pendingPost: Comment) => void;
 };
 
-const usePublishPost = ({ communityAddress, onAbandonPost, onPublishError, onPendingPost }: UsePublishPostOptions) => {
+const usePublishPost = ({ communityAddress, onAbandonPost, onDuplicateMediaRejected, onPublishAccepted, onPublishError, onPendingPost }: UsePublishPostOptions) => {
   const { author, title, content, link, flairs, spoiler, publishCommentOptions } = usePublishPostStore(
     useShallow((state) => ({
       author: state.author,
@@ -92,11 +95,23 @@ const usePublishPost = ({ communityAddress, onAbandonPost, onPublishError, onPen
         onPublishError?.(error);
         publishCommentOptions.onError?.(error);
       },
+      onChallengeVerification: async (challengeVerification: ChallengeVerification, comment: Comment) => {
+        const duplicateMediaError = getDuplicateMediaChallengeError(challengeVerification);
+        if (duplicateMediaError) {
+          onDuplicateMediaRejected?.(duplicateMediaError);
+          await abandonCurrentPublish();
+          return;
+        }
+        if (challengeVerification.challengeSuccess === true) {
+          onPublishAccepted?.();
+        }
+        publishCommentOptions.onChallengeVerification?.(challengeVerification, comment);
+      },
       onChallenge: async (...args: any[]) => {
         addChallenge(args, abandonCurrentPublish);
       },
     }),
-    [abandonCurrentPublish, addChallenge, onPendingPost, onPublishError, publishCommentOptions],
+    [abandonCurrentPublish, addChallenge, onDuplicateMediaRejected, onPendingPost, onPublishAccepted, onPublishError, publishCommentOptions],
   );
 
   const { index, publishComment, abandonPublish } = usePublishComment(publishOptionsWithAbandon);

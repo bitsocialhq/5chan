@@ -132,6 +132,8 @@ For device testing on a USB-connected Android phone (without relying on `5chan.l
 
 Bitsocial communities can require users to solve one or more anti-spam challenges before a publication is accepted. 5chan already supports multiple challenge types, including `url/iframe` challenges so [Mintpass](https://github.com/bitsocialnet/mintpass) communities can run their iframe flow directly inside a modal. The modal first shows a hostname confirmation (showing only the host for mintpass.org, full URL otherwise), then opens the HTTPS iframe with the current theme, replaces `{userAddress}` tokens with the signed-in address, and submits automatically when the user finishes.
 
+5chan also has an optional UX integration with [`@bitsocial/ai-moderation-challenge`](https://github.com/bitsocialnet/ai-moderation-challenge): when a failed verification contains the exact message `This media was already posted recently.`, 5chan abandons the rejected pending publication, returns to the originating post form, preserves the draft, and shows the message inline. This string is an intentionally small cross-package contract rather than a package dependency. Challenges that omit it, or return any other error, continue through the normal generic challenge-error flow.
+
 ### Build
 
 The Linux/Windows/macOS/Android build scripts are in [.github/workflows/release.yml](https://github.com/bitsocialnet/5chan/blob/master/.github/workflows/release.yml)

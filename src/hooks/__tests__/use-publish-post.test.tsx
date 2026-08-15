@@ -16,6 +16,8 @@ const testState = vi.hoisted(() => ({
   lastPublishOptions: undefined as Record<string, any> | undefined,
   publishAuthorBlockedReason: undefined as 'resolving' | 'unresolved' | 'mismatch' | undefined,
   publishCommentMock: vi.fn(),
+  duplicateMediaRejectedMock: vi.fn(),
+  publishAcceptedMock: vi.fn(),
   publishErrorNavigationMock: vi.fn(),
   pendingPostNavigationMock: vi.fn(),
 }));
@@ -47,6 +49,8 @@ const HookHarness = () => {
   latestValue = usePublishPost({
     communityAddress: 'music.eth',
     onAbandonPost: testState.abandonNavigationMock,
+    onDuplicateMediaRejected: testState.duplicateMediaRejectedMock,
+    onPublishAccepted: testState.publishAcceptedMock,
     onPublishError: testState.publishErrorNavigationMock,
     onPendingPost: testState.pendingPostNavigationMock,
   });
@@ -159,6 +163,46 @@ describe('usePublishPost', () => {
     expect(testState.publishErrorNavigationMock).toHaveBeenCalledWith(error);
     expect(existingOnError).toHaveBeenCalledWith(error);
     expect(testState.publishErrorNavigationMock.mock.invocationCallOrder[0]).toBeLessThan(existingOnError.mock.invocationCallOrder[0]);
+  });
+
+  it('abandons duplicate media publications and reports the error without showing the generic challenge alert', async () => {
+    const existingOnChallengeVerification = vi.fn();
+    usePublishPostStore.setState({ publishCommentOptions: { onChallengeVerification: existingOnChallengeVerification } });
+    renderHook();
+
+    await act(async () => {
+      await testState.lastPublishOptions?.onChallengeVerification?.(
+        {
+          challengeErrors: {
+            allow: 'This media was already posted recently.',
+            review: 'This media was already posted recently.',
+          },
+          challengeSuccess: false,
+        },
+        { communityAddress: 'music.eth' },
+      );
+    });
+
+    expect(testState.duplicateMediaRejectedMock).toHaveBeenCalledWith('This media was already posted recently.');
+    expect(testState.abandonNavigationMock).toHaveBeenCalledTimes(1);
+    expect(testState.abandonPublishMock).toHaveBeenCalledTimes(1);
+    expect(existingOnChallengeVerification).not.toHaveBeenCalled();
+  });
+
+  it('clears the preserved draft on successful challenge verification and forwards the verification', async () => {
+    const existingOnChallengeVerification = vi.fn();
+    const verification = { challengeSuccess: true };
+    const comment = { communityAddress: 'music.eth' };
+    usePublishPostStore.setState({ publishCommentOptions: { onChallengeVerification: existingOnChallengeVerification } });
+    renderHook();
+
+    await act(async () => {
+      await testState.lastPublishOptions?.onChallengeVerification?.(verification, comment);
+    });
+
+    expect(testState.publishAcceptedMock).toHaveBeenCalledTimes(1);
+    expect(existingOnChallengeVerification).toHaveBeenCalledWith(verification, comment);
+    expect(testState.abandonPublishMock).not.toHaveBeenCalled();
   });
 
   it('blocks publish when the active account address is a domain that is not verified yet', async () => {

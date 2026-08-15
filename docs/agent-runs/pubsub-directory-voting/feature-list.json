@@ -1,17 +1,17 @@
 {
   "task": "pubsub-directory-voting",
-  "last_updated": "2026-08-09",
+  "last_updated": "2026-08-15",
   "decisions": {
     "signer": "EIP-6963 injected discovery first, WalletConnect fallback for mobile/Electron",
     "scope": "All three phases: read tally, cast votes, republish + homepage winner",
     "network": "Testnet only; derive contests from the published lists manifest at runtime, nothing hardcoded"
   },
   "verified_facts": [
-    "@bitsocial/pubsub-voting@0.4.0 is the latest release published on npm",
+    "@bitsocial/pubsub-voting@0.4.1 is the latest npm release, but it changes only package/README terminology and equivalent declaration comments; 5chan remains on runtime-equivalent 0.4.0",
     "lists/5chan-directory-criteria.jsonc is live: 64 contests, 1:1 with the 64 default directory codes, no per-contest overrides",
     "bitsocial-seeder v0.6.0 seeds that exact manifest URL by default",
     "5chan Pass testnet criteria now use the erc5192-min-balance soulbound gate on Base Sepolia at 0xA8e0155E0e7d014EAF3917982db6a9A4dF98C852",
-    "pkc-js 0.0.72 browser build registers pubsub: gossipsub() and fetch: libp2pFetch(); heliaNode accessor is semver-covered",
+    "5chan and bitsocial-react-hooks now resolve pkc-js 0.0.81; F002 must exercise its browser heliaNode path before app integration",
     "better-sqlite3 already arrives via pkc-js, so pubsub-voting adds no new native dependency",
     "pubsub-voting wants viem 2.54.0; the project resolution dedupes pubsub-voting, bitsocial-react-hooks, and bso-resolver onto viem 2.55.8",
     "https://sepolia.base.org serves eth_call at 1,296,000 blocks deep (full 30-day expiry window) and has multicall3; base-sepolia-rpc.publicnode.com rejects archive requests",
@@ -27,7 +27,7 @@
       "description": "Add @bitsocial/pubsub-voting and strip-json-comments at exact versions; add a viem resolution so the three in-tree copies dedupe to one. Confirm the browser field swaps better-sqlite3 out of the bundle.",
       "verification": ["corepack yarn install - clean", "yarn build - passes", "yarn why viem - single 2.55.8", "library smoke: derived 64 criteria + real topic CIDs off the live manifest"],
       "files": ["package.json", "yarn.lock"],
-      "notes": "Updated pubsub-voting to 0.4.0 + strip-json-comments 5.0.3; viem resolution 2.55.8 collapses the copies. The live and vendored manifest now use the package's registered erc5192-min-balance gate and current Pass contract. better-sqlite3 absence from the bundle is NOT yet proven - nothing imports the library in app code yet, so re-verify at F004."
+      "notes": "Updated pubsub-voting to 0.4.0 + strip-json-comments 5.0.3; 0.4.1 is runtime-equivalent and not needed. The viem resolution 2.55.8 collapses the copies. The live and vendored manifest now use the package's registered erc5192-min-balance gate and current Pass contract. better-sqlite3 absence from the bundle is NOT yet proven - nothing imports the library in app code yet, so re-verify at F004."
     },
     {
       "id": "F015",
