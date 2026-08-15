@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.18",
+      "kind": "release",
+      "timestamp": 1786795200,
+      "message": "v0.9.18: Recently posted media alerts without losing your draft",
+      "version": "0.9.18"
+    },
+    {
       "id": "release-0.9.17",
       "kind": "release",
       "timestamp": 1786104000,
