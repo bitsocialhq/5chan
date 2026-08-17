@@ -50,11 +50,11 @@ const OfflineIndicator = ({ communityAddress }: { communityAddress: string | und
   );
 };
 
-/** `5chan Search “query” N comments`, mirroring the hardcoded titles of the other multiboard views. */
+/** ``5chan Search `query` N comments``, mirroring the hardcoded titles of the other multiboard views. */
 const getSearchTitle = (query: string, total: number | null): string => {
   if (!query) return '5chan Search';
-  if (total === null) return `5chan Search \u201c${query}\u201d`;
-  return `5chan Search \u201c${query}\u201d ${total} comments`;
+  if (total === null) return `5chan Search \`${query}\``;
+  return `5chan Search \`${query}\` ${total} comments`;
 };
 
 const SearchProviderSubtitle = ({ query }: { query: string }) => {

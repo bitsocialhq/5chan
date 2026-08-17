@@ -190,7 +190,7 @@ describe('BoardHeader', () => {
   it('titles the archive search with its query and provider, without board status chrome', async () => {
     await renderHeader('/search?q=esteban');
 
-    expect(container.textContent).toContain('5chan Search \u201cesteban\u201d');
+    expect(container.textContent).toContain('5chan Search `esteban`');
     expect(container.textContent).toContain('results_provided_by');
     expect(container.textContent).toContain('5archive.org');
     expect(container.querySelector('a[href="/search/directory"]')).toBeTruthy();
@@ -206,13 +206,13 @@ describe('BoardHeader', () => {
     useSearchSummaryStore.getState().setSummary('esteban', 29);
     await renderHeader('/search?q=esteban');
 
-    expect(container.textContent).toContain('5chan Search \u201cesteban\u201d 29 comments');
+    expect(container.textContent).toContain('5chan Search `esteban` 29 comments');
 
     // A count from an earlier query is never shown for the current one.
     act(() => root.unmount());
     root = createRoot(container);
     await renderHeader('/search?q=other');
-    expect(container.textContent).toContain('5chan Search \u201cother\u201d');
+    expect(container.textContent).toContain('5chan Search `other`');
     expect(container.textContent).not.toContain('29 comments');
   });
 
