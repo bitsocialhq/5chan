@@ -14,9 +14,17 @@ describe('getSearchDestination', () => {
     expect(getSearchDestination('unlisted-board.bso', directories)).toBe('/unlisted-board.bso');
   });
 
+  it('opens a board typed by the name the homepage lists it under', () => {
+    expect(getSearchDestination('Music', directories)).toBe('/mu');
+    expect(getSearchDestination('technology', directories)).toBe('/g');
+    expect(getSearchDestination('/mu/ - Music', directories)).toBe('/mu');
+  });
+
   it('routes ordinary terms to archive search', () => {
     expect(getSearchDestination('old internet culture', directories)).toBe('/search?q=old%20internet%20culture');
     expect(getSearchDestination('bitcoin', directories)).toBe('/search?q=bitcoin');
+    // Only the full board name opens a board; a partial one stays a post search.
+    expect(getSearchDestination('music posting', directories)).toBe('/search?q=music%20posting');
   });
 
   it('ignores empty input', () => {

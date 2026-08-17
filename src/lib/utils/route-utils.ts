@@ -11,6 +11,12 @@ export const extractDirectoryFromTitle = (title: string): string | null => {
   return match ? match[1] : null;
 };
 
+/** The board name a directory title displays: "/mu/ - Music" -> "Music". */
+export const getBoardNameFromDirectoryTitle = (title: string): string => {
+  const match = title.match(/^\/[^/]+\/\s*-\s*(.+)$/);
+  return match?.[1]?.trim() || title.trim();
+};
+
 // Cache for directory-to-address map
 let cachedCommunitiesForDirectory: DirectoryCommunity[] | null = null;
 let cachedDirectoryToAddressMap: Map<string, string> | null = null;

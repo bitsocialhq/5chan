@@ -2,17 +2,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAccountCommunityAddresses } from '../../../hooks/use-account-community-addresses';
 import { useDirectoriesState, DirectoryCommunity } from '../../../hooks/use-directories';
-import { getBoardPath } from '../../../lib/utils/route-utils';
+import { getBoardNameFromDirectoryTitle, getBoardPath } from '../../../lib/utils/route-utils';
 import useDisclaimerModalStore from '../../../stores/use-disclaimer-modal-store';
 import useDirectoryModalStore from '../../../stores/use-directory-modal-store';
 import useBoardsFilterStore from '../../../stores/use-boards-filter-store';
 import BoardsFilterModal from './boards-filter-modal';
 import styles from '../home.module.css';
-
-const getBoardNameFromDirectoryTitle = (title: string): string => {
-  const match = title.match(/^\/[^/]+\/\s*-\s*(.+)$/);
-  return match?.[1]?.trim() || title.trim();
-};
 
 const NSFWBadge = () => {
   return (

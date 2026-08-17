@@ -1,6 +1,6 @@
 import { type DirectoryCommunity, findDirectoryByAddress } from '../hooks/use-directories';
 import { getSpecialBoardByAddress, getSpecialBoardByCode } from './special-boards';
-import { getBoardPath } from './utils/route-utils';
+import { getBoardNameFromDirectoryTitle, getBoardPath } from './utils/route-utils';
 
 const BOARD_ADDRESS_SUFFIX = /\.(?:bso|eth|sol)$/i;
 
@@ -37,9 +37,23 @@ const isBoardInput = (value: string, directories: DirectoryCommunity[]): boolean
   return BOARD_ADDRESS_SUFFIX.test(value) || value.startsWith('12D3Koo') || value.length > 40;
 };
 
+/** Boards are listed by name on the homepage, so the name opens them too, not just the code or address. */
+const findDirectoryByBoardName = (value: string, directories: DirectoryCommunity[]): DirectoryCommunity | undefined => {
+  const name = value.toLowerCase();
+  return directories.find((directory) => {
+    const title = directory.title?.trim();
+    if (!title) return false;
+    return title.toLowerCase() === name || getBoardNameFromDirectoryTitle(title).toLowerCase() === name;
+  });
+};
+
 export const getSearchDestination = (input: string, directories: DirectoryCommunity[]): string | null => {
   const value = normalizeBoardInput(input);
   if (!value) return null;
   if (isBoardInput(value, directories)) return `/${getBoardPath(value, directories)}`;
+
+  const namedDirectory = findDirectoryByBoardName(value, directories);
+  if (namedDirectory) return `/${getBoardPath(namedDirectory.address, directories)}`;
+
   return `/search?q=${encodeURIComponent(value.slice(0, MAX_SEARCH_QUERY_LENGTH))}`;
 };
