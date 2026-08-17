@@ -202,7 +202,6 @@ const SearchResults = ({ isCatalogView, page, provider, query }: SearchControlsP
 
   return (
     <>
-      <h4 className={styles.summary}>{t('search_results_heading', { count: result.posts.length, total: result.total, query: result.query })}</h4>
       {matches.length === 0 ? (
         <div className={styles.empty}>{t('search_no_results')}</div>
       ) : isCatalogView ? (
@@ -297,7 +296,6 @@ const Search = () => {
       <SearchMobileTopControls isCatalogView={isCatalogView} query={query} />
       <hr className={styles.desktopDivider} />
       <SearchDesktopTopControls isCatalogView={isCatalogView} query={query} />
-      <hr className={styles.divider} />
       {query ? (
         <SearchErrorBoundary
           key={`${provider.id}:${query}:${page}:${retryKey}`}
@@ -318,7 +316,7 @@ const Search = () => {
             fallback={
               <>
                 <div className={styles.loading}>
-                  <LoadingEllipsis centered string={t('loading')} />
+                  <LoadingEllipsis string={t('loading')} />
                 </div>
                 <SearchFooter isCatalogView={isCatalogView} page={page} query={query} totalPages={1} />
               </>
