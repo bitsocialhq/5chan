@@ -24,6 +24,16 @@
   color: var(--board-address-text-color);
 }
 
+.boardSubtitle a {
+  color: var(--post-link-text-color);
+  text-decoration: var(--post-content-link-text-decoration);
+}
+
+.boardSubtitle a:hover {
+  color: var(--post-link-text-color-hover);
+  text-decoration: var(--post-content-link-text-decoration-hover);
+}
+
 .clickableSubtitle {
   appearance: none;
   background: transparent;
