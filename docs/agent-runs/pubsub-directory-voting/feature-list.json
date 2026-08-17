@@ -8,10 +8,11 @@
   },
   "verified_facts": [
     "@bitsocial/pubsub-voting@0.4.1 is the latest npm release, but it changes only package/README terminology and equivalent declaration comments; 5chan remains on runtime-equivalent 0.4.0",
-    "lists/5chan-directory-criteria.jsonc is live: 64 contests, 1:1 with the 64 default directory codes, no per-contest overrides",
+    "lists/5chan-directory-criteria.jsonc is live and byte-identical to the vendored fallback: 64 valid unique contests, 1:1 with the 64 default directory codes, no per-contest overrides",
     "bitsocial-seeder v0.6.0 seeds that exact manifest URL by default",
     "5chan Pass testnet criteria now use the erc5192-min-balance soulbound gate on Base Sepolia at 0xA8e0155E0e7d014EAF3917982db6a9A4dF98C852",
     "5chan and bitsocial-react-hooks now resolve pkc-js 0.0.81; F002 must exercise its browser heliaNode path before app integration",
+    "Rinse12/pubsub-voting-website and bso-board-vote.netlify.app use the same one-node architecture through pkc.clients.libp2pJsClients[key].heliaNode; the reference app currently pins pubsub-voting 0.4.0 and pkc-js 0.0.76",
     "better-sqlite3 already arrives via pkc-js, so pubsub-voting adds no new native dependency",
     "pubsub-voting wants viem 2.54.0; the project resolution dedupes pubsub-voting, bitsocial-react-hooks, and bso-resolver onto viem 2.55.8",
     "https://sepolia.base.org serves eth_call at 1,296,000 blocks deep (full 30-day expiry window) and has multicall3; base-sepolia-rpc.publicnode.com rejects archive requests",
@@ -41,20 +42,34 @@
     {
       "id": "F002",
       "priority": 2,
-      "status": "pending",
+      "status": "done",
       "description": "Spike: construct a PubsubVoter in the browser against the pkc Helia node. Highest-risk unknown for the whole task; everything downstream assumes it works. Confirm no MissingPubsubError/MissingBlockstoreError/MissingFetchError.",
-      "verification": ["Load a directory page in playwright-cli and confirm a voter constructs with no construction error in the console"],
-      "files": [],
-      "notes": "Reach the node via account.pkc.clients.libp2pJsClients['libp2pjs'].heliaNode. Only valid in browser-libp2p runtime mode; gateway mode has no Helia node and must degrade to read-only-unavailable."
+      "verification": [
+        "Focused hook + directory tests: 11 passed",
+        "Full suite: 170 files, 1,429 tests passed",
+        "Playwright Chrome, Firefox, and WebKit: /b/directory reached data-pubsub-voter-state=ready without a MissingPubsubError, MissingBlockstoreError, MissingFetchError, or voter-construction error",
+        "Fresh Chrome gateway-mode session: /b/directory remained data-pubsub-voter-state=unavailable without a construction error",
+        "Production build passed and contains no better-sqlite3 or node-gyp-build references",
+        "React Doctor changed-files scope, lint, and type-check passed"
+      ],
+      "files": ["src/hooks/use-pubsub-voter.ts", "src/hooks/__tests__/use-pubsub-voter.test.tsx", "src/views/directory/directory.tsx", "src/views/directory/__tests__/directory.test.tsx"],
+      "notes": "The spike reaches the exact public account.pkc.clients.libp2pJsClients['libp2pjs'].heliaNode seam, constructs a read-only in-memory voter, and destroys it on route cleanup. It intentionally supplies no chain clients yet; F004 owns the memoized Base Sepolia/mainnet clients, .bso resolvers, browser persistence, and singleton lifetime. Gateway mode has no Helia node and degrades cleanly to unavailable."
     },
     {
       "id": "F003",
       "priority": 3,
-      "status": "pending",
+      "status": "done",
       "description": "Criteria manifest loader: fetch the lists JSONC at runtime (same URL the seeder uses) with a vendored offline fallback, strip comments, run deriveDirectoryCriteria, and map contestId <-> directory code.",
-      "verification": ["yarn test on the new loader unit tests", "assert all 64 derived documents validate"],
-      "files": [],
-      "notes": "Mirror the existing use-directory-list.ts fetch/localStorage/vendored-fallback pattern. contestId shape is 5chan-dir-{code}-vote-test-1, but parse it rather than assuming the suffix."
+      "verification": [
+        "Focused loader tests: 6 passed",
+        "Live and vendored manifest SHA-256 match: 35e1bb1772e37a456912ea3958588eb2ffa0a534209ace21e969d4b4d9145d25",
+        "Live manifest smoke: 64 derived criteria and 64 unique contest ids",
+        "Malformed and duplicate directory mappings are rejected before caching",
+        "Runtime success, one-hour cache reuse, local fallback, and vendored offline fallback are covered",
+        "Full suite: 171 files, 1,435 tests passed"
+      ],
+      "files": ["src/lib/directory-vote-criteria.ts", "src/lib/__tests__/directory-vote-criteria.test.ts"],
+      "notes": "The loader exposes an immediate validated local/vendored snapshot plus a deduplicated refresh from the same raw GitHub URL used by the seeder. Remote JSONC is fully derived and indexed before it can replace the cache. contestId parsing accepts version changes while still requiring the 5chan-dir-{code}-vote-test-{number} shape; no directory exclusions are hardcoded."
     },
     {
       "id": "F004",

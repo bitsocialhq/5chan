@@ -108,3 +108,55 @@ Append one entry per session.
 - Blockers: none
 - Next: F002 — construct `PubsubVoter` against the shared browser Helia node and prove
   clean unavailable behavior in gateway mode.
+
+## 2026-08-15 — Session 3 (cont.): F002 shared-Helia construction spike
+
+- Item: F002 (done)
+- Summary: Added a small read-only `PubsubVoter` lifecycle hook that reaches pkc-js through
+  the public `account.pkc.clients.libp2pJsClients['libp2pjs'].heliaNode` accessor. The
+  directory route exposes a nonvisual construction-state marker for runtime verification.
+  Browser-libp2p mode constructs successfully; gateway mode has no Helia node and reports
+  unavailable without throwing. The hook uses in-memory voter storage and no chain clients
+  by design; F004 will replace those spike settings with the shared production singleton,
+  Base Sepolia/mainnet clients, `.bso` resolvers, and IndexedDB persistence.
+- Reference check: Inspected `Rinse12/pubsub-voting-website`,
+  `bso-board-vote.netlify.app`, and the testnet 5chan Pass faucet. The reference voting app
+  confirms the same one-PKC-node architecture and currently runs pubsub-voting 0.4.0 with
+  pkc-js 0.0.76, reinforcing that 5chan's existing pubsub-voting 0.4.0 and newer pkc-js
+  0.0.81 need no package upgrade for this integration.
+- Files: `src/hooks/use-pubsub-voter.ts`,
+  `src/hooks/__tests__/use-pubsub-voter.test.tsx`,
+  `src/views/directory/directory.tsx`,
+  `src/views/directory/__tests__/directory.test.tsx`, feature list, this file
+- Verification: focused tests (11), full suite (170 files / 1,429 tests), production build,
+  lint, type-check, changed-files React Doctor, Chrome/Firefox/WebKit `ready` checks, fresh
+  Chrome gateway-mode `unavailable` check, and browser bundle scan with no
+  `better-sqlite3`/`node-gyp-build` references.
+- Advisory: repo-wide React Doctor still reports pre-existing findings outside this diff;
+  Knip now recognizes pubsub-voting as used and retains only the known false positive for
+  `strip-json-comments` imported by `scripts/sync-directories.js`.
+- Blockers: none
+- Next: F003 — finish the runtime criteria manifest loader and its 64-contest mapping tests,
+  then F004 — turn the proven construction seam into the shared production voter singleton.
+
+## 2026-08-15 — Session 3 (cont.): F003 runtime criteria loader
+
+- Item: F003 (done)
+- Summary: Added a framework-independent JSONC loader for the published directory voting
+  manifest. It derives criteria through pubsub-voting's canonical helper, builds both
+  directory-code and contest-id indexes, rejects malformed or duplicate slot mappings, and
+  validates a remote response before replacing the last good local copy. Consumers can read
+  the cached/vendored snapshot immediately and request one deduplicated runtime refresh; a
+  successful response is reused for one hour, while failures retry after one minute.
+- Live evidence: The canonical raw GitHub manifest and vendored fallback have the same
+  SHA-256 (`35e1bb1772e37a456912ea3958588eb2ffa0a534209ace21e969d4b4d9145d25`).
+  A live derivation produced 64 criteria with 64 unique contest ids.
+- Files: `src/lib/directory-vote-criteria.ts`,
+  `src/lib/__tests__/directory-vote-criteria.test.ts`, feature list, this file
+- Verification: six focused tests covering the 64-contest set, `/b/` and `/r/` mappings,
+  intentional `/trash/` absence, JSONC stripping, invalid and duplicate mappings, validated
+  remote caching, cache reuse, and offline fallback; full suite (171 files / 1,435 tests),
+  production build, changed-files React Doctor, lint, and type-check pass.
+- Blockers: none
+- Next: F004 — production voter singleton with Base Sepolia/mainnet chain clients, `.bso`
+  resolvers, and browser IndexedDB persistence, using the F002 Helia seam and F003 criteria.
