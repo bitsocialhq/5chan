@@ -1,18 +1,18 @@
 {
   "task": "pubsub-directory-voting",
-  "last_updated": "2026-08-15",
+  "last_updated": "2026-08-17",
   "decisions": {
     "signer": "EIP-6963 injected discovery first, WalletConnect fallback for mobile/Electron",
     "scope": "All three phases: read tally, cast votes, republish + homepage winner",
     "network": "Testnet only; derive contests from the published lists manifest at runtime, nothing hardcoded"
   },
   "verified_facts": [
-    "@bitsocial/pubsub-voting@0.4.1 is the latest npm release, but it changes only package/README terminology and equivalent declaration comments; 5chan remains on runtime-equivalent 0.4.0",
+    "@bitsocial/pubsub-voting@0.5.0 is the latest npm release; it requires the gate tree plus top-level bucketChainId criteria schema and re-topics every contest",
     "lists/5chan-directory-criteria.jsonc is live and byte-identical to the vendored fallback: 64 valid unique contests, 1:1 with the 64 default directory codes, no per-contest overrides",
-    "bitsocial-seeder v0.6.0 seeds that exact manifest URL by default",
+    "bitsocial-seeder v0.10.0 uses pubsub-voting 0.5.0 and seeds that exact manifest URL by default",
     "5chan Pass testnet criteria now use the erc5192-min-balance soulbound gate on Base Sepolia at 0xA8e0155E0e7d014EAF3917982db6a9A4dF98C852",
-    "5chan and bitsocial-react-hooks now resolve pkc-js 0.0.81; F002 must exercise its browser heliaNode path before app integration",
-    "Rinse12/pubsub-voting-website and bso-board-vote.netlify.app use the same one-node architecture through pkc.clients.libp2pJsClients[key].heliaNode; the reference app currently pins pubsub-voting 0.4.0 and pkc-js 0.0.76",
+    "5chan and bitsocial-react-hooks resolve pkc-js 0.0.81; F002 exercised its browser heliaNode path successfully before app integration",
+    "Rinse12/pubsub-voting-website and bso-board-vote.netlify.app use the same one-node architecture through pkc.clients.libp2pJsClients[key].heliaNode; the reference app snapshot inspected on 2026-08-15 pinned pubsub-voting 0.4.0 and pkc-js 0.0.76",
     "better-sqlite3 already arrives via pkc-js, so pubsub-voting adds no new native dependency",
     "pubsub-voting wants viem 2.54.0; the project resolution dedupes pubsub-voting, bitsocial-react-hooks, and bso-resolver onto viem 2.55.8",
     "https://sepolia.base.org serves eth_call at 1,296,000 blocks deep (full 30-day expiry window) and has multicall3; base-sepolia-rpc.publicnode.com rejects archive requests",
@@ -28,7 +28,7 @@
       "description": "Add @bitsocial/pubsub-voting and strip-json-comments at exact versions; add a viem resolution so the three in-tree copies dedupe to one. Confirm the browser field swaps better-sqlite3 out of the bundle.",
       "verification": ["corepack yarn install - clean", "yarn build - passes", "yarn why viem - single 2.55.8", "library smoke: derived 64 criteria + real topic CIDs off the live manifest"],
       "files": ["package.json", "yarn.lock"],
-      "notes": "Updated pubsub-voting to 0.4.0 + strip-json-comments 5.0.3; 0.4.1 is runtime-equivalent and not needed. The viem resolution 2.55.8 collapses the copies. The live and vendored manifest now use the package's registered erc5192-min-balance gate and current Pass contract. better-sqlite3 absence from the bundle is NOT yet proven - nothing imports the library in app code yet, so re-verify at F004."
+      "notes": "Updated pubsub-voting to 0.5.0 + strip-json-comments 5.0.3. The viem resolution 2.55.8 collapses the copies. The live and vendored manifest use 0.5.0's gate tree and numeric bucketChainId with the registered erc5192-min-balance rule and current Pass contract. This cutover re-topics all 64 contests. The F002 production bundle contains no better-sqlite3 or node-gyp-build references; re-verify when F004 adds storage and chain clients."
     },
     {
       "id": "F015",
@@ -62,7 +62,7 @@
       "description": "Criteria manifest loader: fetch the lists JSONC at runtime (same URL the seeder uses) with a vendored offline fallback, strip comments, run deriveDirectoryCriteria, and map contestId <-> directory code.",
       "verification": [
         "Focused loader tests: 6 passed",
-        "Live and vendored manifest SHA-256 match: 35e1bb1772e37a456912ea3958588eb2ffa0a534209ace21e969d4b4d9145d25",
+        "Live and vendored 0.5.0 manifest SHA-256 match: 2b5db8aaf0a12720e14962ee345d19229fbac0348c96d47e8141f6cb8b5c3e8d",
         "Live manifest smoke: 64 derived criteria and 64 unique contest ids",
         "Malformed and duplicate directory mappings are rejected before caching",
         "Runtime success, one-hour cache reuse, local fallback, and vendored offline fallback are covered",
@@ -75,7 +75,7 @@
       "id": "F004",
       "priority": 4,
       "status": "pending",
-      "description": "Voter singleton + seams: ChainClientFactory (baseSepolia for the gate, eth mainnet for .bso resolution), nameResolvers from @bitsocial/bso-resolver, browser IndexedDB storage, no httpRouterUrls.",
+      "description": "Voter singleton + seams: ChainClientFactory keyed by numeric chainId (84532 for the Base Sepolia bucket/gate), eth mainnet client for .bso resolution, nameResolvers from @bitsocial/bso-resolver, browser IndexedDB storage, no httpRouterUrls.",
       "verification": ["yarn type-check", "unit test that an unresolvable chain recuses via MissingChainClientError"],
       "files": [],
       "notes": "One memoized viem PublicClient per chain so parallel contests coalesce reads. Default Base Sepolia RPC: https://sepolia.base.org (verified archive-deep)."

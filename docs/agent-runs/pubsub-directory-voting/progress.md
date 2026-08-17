@@ -160,3 +160,27 @@ Append one entry per session.
 - Blockers: none
 - Next: F004 — production voter singleton with Base Sepolia/mainnet chain clients, `.bso`
   resolvers, and browser IndexedDB persistence, using the F002 Helia seam and F003 criteria.
+
+## 2026-08-17 — Session 4: pubsub-voting 0.5.0 criteria cutover
+
+- Item: F001 compatibility refresh
+- Summary: Updated `@bitsocial/pubsub-voting` from 0.4.0 to 0.5.0 and refreshed the
+  vendored criteria from the canonical lists repository. This is a coordinated protocol
+  cutover: criteria now use `gate: { rule: ... }`, a top-level numeric `bucketChainId`, and
+  no longer repeat a chain ticker inside the rule or `requires`. All 64 contest criteria
+  receive new CIDs and therefore new pubsub topics; votes on the old topics are not migrated.
+- Compatibility evidence: npm and GitHub publish 0.5.0 as latest. The canonical manifest
+  migrated in bitsocialnet/lists commit `240409439`, and bitsocial-seeder 0.10.0 also pins
+  pubsub-voting 0.5.0, so 5chan, the list, and the seeder derive the same topics.
+- Verification: live and vendored manifest SHA-256 match
+  (`2b5db8aaf0a12720e14962ee345d19229fbac0348c96d47e8141f6cb8b5c3e8d`); 0.5.0
+  library smoke derives 64 criteria and 64 unique topics; focused hook/loader tests,
+  production build, lint, type-check, changed-files React Doctor, and the full suite
+  (171 files / 1,435 tests) pass. The browser JavaScript bundle contains no
+  `better-sqlite3` or `node-gyp-build` references.
+- Advisory: Knip retains only the known `strip-json-comments` false positive; it is imported
+  by `scripts/sync-directories.js`, which Knip does not treat as an application entry.
+- Files: `package.json`, `yarn.lock`, `src/data/5chan-directory-criteria.jsonc`, feature list,
+  this file
+- Next: F004 — production voter singleton with chain clients keyed by numeric chain id,
+  `.bso` resolvers, and browser IndexedDB persistence.
