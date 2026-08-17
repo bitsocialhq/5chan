@@ -1,6 +1,5 @@
 {
   "what_is_5chan": "Çfarë është 5chan?",
-  "go": "shko",
   "5chan_description": "5chan është një imageboard plotësisht i decentralizuar dhe me burim të hapur, ku kushdo mund të krijojë dhe të zotërojë kriptografikisht borda të pakufizuara. Pronarët e bordave hostojnë dhe moderojnë bordin e tyre dhe vendosin <1>Rules</1> e tij. Të gjitha të dhënat janë vetëm teksti dhe ndahen peer-to-peer, duke përfshirë lidhjet për imazhe të ngulitura. Shikoni <2>FAQs</2> për të mësuar më shumë. Mos ngurroni të klikoni në një bord më poshtë që ju intereson dhe filloni!",
   "no_global_rules_info": "5chan është një aplikacion pa server, kjo faqe është vetëm një mënyrë për ta hapur. Për të shmangur varësinë nga disponueshmëria e faqes, <1>shkarkoni aplikacionin</1>.",
   "boards": "forume",

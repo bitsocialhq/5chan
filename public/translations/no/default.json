@@ -1,6 +1,5 @@
 {
   "what_is_5chan": "Hva er 5chan?",
-  "go": "gå",
   "5chan_description": "5chan er et fullstendig desentralisert og åpen kildekode-imageboard, hvor hvem som helst kan opprette og kryptografisk eie ubegrensede boards. Board-eiere hoster og modererer sitt board og setter dets <1>Rules</1>. Alle data er kun tekst og deles peer-to-peer, inkludert lenker for å bygge inn bilder. Sjekk <2>FAQs</2> for å lære mer. Klikk gjerne på et board nedenfor som interesserer deg og kom i gang!",
   "no_global_rules_info": "5chan er en serverløs app, denne nettsiden er bare én måte å åpne den på. For å unngå å stole på nettsidens oppetid, <1>last ned appen</1>.",
   "boards": "fora",

@@ -1,6 +1,5 @@
 {
   "what_is_5chan": "What is 5chan?",
-  "go": "go",
   "5chan_description": "5chan is a fully decentralized and open-source imageboard, where anyone can create and cryptographically own unlimited boards. Board owners host and moderate their board, and set its <1>Rules</1>. All data is text-only and it's shared peer-to-peer, including links to embed images. Check out the <2>FAQs</2> to learn more. Feel free to click on a board below that interests you and jump right in!",
   "no_global_rules_info": "5chan is a serverless app, this website is just one way to open it. To avoid relying on the website's uptime, <1>download the app</1>.",
   "app_p2p_info": "You can always connect to any board, fully P2P, nobody can stop you. Simply paste its address in the search field above.",

@@ -1,6 +1,5 @@
 {
   "what_is_5chan": "5chan nedir?",
-  "go": "git",
   "5chan_description": "5chan, herkesin sınırsız board oluşturabileceği ve kriptografik olarak sahip olabileceği tamamen merkeziyetsiz ve açık kaynaklı bir imageboard'dur. Board sahipleri boardlarını barındırır ve moderatörlük yapar, <1>Rules</1> ayarlar. Tüm veriler yalnızca metindir ve gömülü resimlerin bağlantıları dahil peer-to-peer paylaşılır. Daha fazla bilgi için <2>FAQs</2> bölümüne bakın. İlginizi çeken bir boarda tıklayıp hemen başlayın!",
   "no_global_rules_info": "5chan sunucusuz bir uygulamadır, bu web sitesi onu açmanın sadece bir yoludur. Web sitesinin çalışma süresine güvenmemek için <1>uygulamayı indirin</1>.",
   "boards": "forumlar",

@@ -1,6 +1,5 @@
 {
   "what_is_5chan": "Ano ang 5chan?",
-  "go": "pumunta",
   "5chan_description": "Ang 5chan ay isang ganap na desentralisado at open-source na imageboard, kung saan sinuman ay maaaring lumikha at kriptograpikong magmay-ari ng walang limitasyong mga board. Ang mga may-ari ng board ay nagho-host at nagmo-moderate ng kanilang board, at nagtatakda ng <1>Rules</1> nito. Lahat ng data ay text-only at ibinabahagi peer-to-peer, kasama ang mga link para sa embed na mga larawan. Tingnan ang <2>FAQs</2> para matuto pa. Huwag mag-atubiling i-click ang anumang board sa ibaba na interesado ka at sumali na!",
   "no_global_rules_info": "Ang 5chan ay isang serverless na app, ang website na ito ay isang paraan lamang para buksan ito. Upang hindi umasa sa uptime ng website, <1>i-download ang app</1>.",
   "boards": "mga board",

@@ -1,6 +1,5 @@
 {
   "what_is_5chan": "¿Qué es 5chan?",
-  "go": "ir",
   "5chan_description": "5chan es un imageboard totalmente descentralizado y de código abierto, donde cualquiera puede crear y poseer criptográficamente tableros ilimitados. Los propietarios de tableros alojan y moderan su tablero y establecen sus <1>Rules</1>. Todos los datos son solo texto y se comparten peer-to-peer, incluyendo enlaces para incrustar imágenes. Consulta las <2>FAQs</2> para saber más. ¡Haz clic en cualquier tablero de abajo que te interese y empieza!",
   "no_global_rules_info": "5chan es una aplicación sin servidor, este sitio web es solo una forma de abrirla. Para no depender del tiempo de actividad del sitio, <1>descarga la aplicación</1>.",
   "boards": "foros",

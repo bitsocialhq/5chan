@@ -1,6 +1,5 @@
 {
   "what_is_5chan": "Mikä on 5chan?",
-  "go": "mennä",
   "5chan_description": "5chan on täysin hajautettu ja avoimen lähdekoodin imageboard, jossa kuka tahansa voi luoda ja kryptografisesti omistaa rajattomasti lautia. Lautan omistajat isännöivät ja moderointavat lautaa ja asettavat sen <1>Rules</1>. Kaikki data on vain tekstiä ja jaetaan peer-to-peer -verkossa, mukaan lukien linkit upotettaviin kuviin. Lue lisää <2>FAQs</2>-osiosta. Voit vapaasti klikata alla olevaa lautaa, joka kiinnostaa sinua, ja aloittaa!",
   "no_global_rules_info": "5chan on palvelimeton sovellus, tämä verkkosivusto on vain yksi tapa avata se. Jotta et joutuisi luottamaan verkkosivuston saatavuuteen, <1>lataa sovellus</1>.",
   "boards": "foorumit",

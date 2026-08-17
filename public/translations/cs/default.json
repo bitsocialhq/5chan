@@ -1,6 +1,5 @@
 {
   "what_is_5chan": "Co je 5chan?",
-  "go": "jít",
   "5chan_description": "5chan je plně decentralizované a open-source imageboard, kde kdokoli může vytvářet a kryptograficky vlastnit neomezený počet desek. Majitelé desek hostují a moderují svou desku a nastavují její <1>Rules</1>. Všechna data jsou pouze textová a sdílená peer-to-peer, včetně odkazů na vložené obrázky. Pro více informací se podívejte na <2>FAQs</2>. Klikněte na libovolnou desku níže a můžete začít!",
   "no_global_rules_info": "5chan je bezserverová aplikace, tento web je jen jeden způsob, jak ji otevřít. Abyste se nebyli závislí na dostupnosti webu, <1>stáhněte si aplikaci</1>.",
   "boards": "nástěnky",
