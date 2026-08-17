@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useAccountComment } from '@bitsocial/bitsocial-react-hooks';
-import { isAllView, isModView, isNotFoundView, isSubscriptionsView } from '../lib/utils/view-utils';
+import { isAllView, isModView, isNotFoundView, isSearchView, isSubscriptionsView } from '../lib/utils/view-utils';
 import useThemeStore from '../stores/use-theme-store';
 import { useDirectories } from './use-directories';
 import { useResolvedCommunityAddress } from './use-resolved-community-address';
@@ -43,6 +43,8 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInModView = isModView(location.pathname);
   const isInNotFoundView = isNotFoundView(location.pathname, params);
+  // Search spans every board, so it shares the theme of the other multiboard views.
+  const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView || isSearchView(location.pathname);
   const routeIdentifier = params.boardIdentifier;
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || pendingPostCommunityAddress || routePendingPostCommunityAddress || routeIdentifier;
@@ -70,7 +72,7 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
     }
 
     let storedTheme = null;
-    if (isInAllView || isInSubscriptionsView || isInModView) {
+    if (isMultiboardView) {
       storedTheme = themes.nsfw;
     } else if (communityAddress) {
       const community = directories.find((entry) => entry.address === communityAddress);
@@ -83,7 +85,7 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
     }
 
     return storedTheme || 'yotsuba';
-  }, [location.pathname, isEnabled, activeSpecialTheme, isInAllView, isInSubscriptionsView, isInModView, communityAddress, directories, themes]);
+  }, [location.pathname, isEnabled, activeSpecialTheme, isMultiboardView, communityAddress, directories, themes]);
 
   const sfw = isSfwBoard({
     pathname: location.pathname,
@@ -108,7 +110,7 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
 
   const setCommunityTheme = useCallback(
     async (newTheme: string) => {
-      if (isInAllView || isInSubscriptionsView || isInModView) {
+      if (isMultiboardView) {
         await setThemeStore('nsfw', newTheme);
       } else if (communityAddress) {
         const community = directories.find((entry) => entry.address === communityAddress);
@@ -120,7 +122,7 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
         }
       }
     },
-    [isInAllView, isInSubscriptionsView, isInModView, communityAddress, directories, setThemeStore],
+    [isMultiboardView, communityAddress, directories, setThemeStore],
   );
 
   return [currentTheme, setCommunityTheme];
