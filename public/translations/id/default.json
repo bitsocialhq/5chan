@@ -1,5 +1,6 @@
 {
   "what_is_5chan": "Apa itu 5chan?",
+  "go": "pergi",
   "5chan_description": "5chan adalah imageboard yang sepenuhnya terdesentralisasi dan open-source, di mana siapa pun dapat membuat dan secara kriptografis memiliki board tanpa batas. Pemilik board menghosting dan memoderasi board mereka serta menetapkan <1>Rules</1>-nya. Semua data hanya berupa teks dan dibagikan peer-to-peer, termasuk tautan untuk menyematkan gambar. Lihat <2>FAQs</2> untuk mempelajari lebih lanjut. Silakan klik board di bawah yang menarik minat Anda dan mulai!",
   "no_global_rules_info": "5chan adalah aplikasi tanpa server, situs web ini hanyalah salah satu cara untuk membukanya. Untuk menghindari ketergantungan pada ketersediaan situs, <1>unduh aplikasinya</1>.",
   "boards": "papan pesan",

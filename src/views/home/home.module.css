@@ -90,6 +90,46 @@
   color: var(--homepage-infobox-link-text-color);
 }
 
+.searchBar form {
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.searchBar input {
+  font-size: 18px;
+  height: 30px;
+  box-sizing: border-box;
+  appearance: none;
+  border-radius: 0px;
+  border: 1px solid rgb(170, 170, 170);
+  outline: none;
+  flex-grow: 1;
+  min-width: 0;
+  max-width: 400px;
+}
+
+.searchBar input {
+  width: 400px;
+  padding: 3px 10px;
+}
+
+.searchBar input:focus {
+  border-color: #ea8;
+}
+
+.searchButton {
+  margin-left: 4px;
+  padding: 3px 5px;
+  display: inline-block;
+  text-transform: capitalize;
+  font-size: 14px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
 .filterModal {
   position: absolute;
   top: 30px;

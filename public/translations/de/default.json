@@ -1,5 +1,6 @@
 {
   "what_is_5chan": "Was ist 5chan?",
+  "go": "gehen",
   "5chan_description": "5chan ist ein vollständig dezentrales und quelloffenes Imageboard, auf dem jeder unbegrenzt Boards erstellen und kryptografisch besitzen kann. Board-Inhaber hosten und moderieren ihr Board und legen dessen <1>Rules</1> fest. Alle Daten sind rein textbasiert und werden peer-to-peer geteilt, inklusive Links zu eingebetteten Bildern. Schau dir die <2>FAQs</2> an, um mehr zu erfahren. Klicke einfach auf ein Board unten, das dich interessiert, und leg los!",
   "no_global_rules_info": "5chan ist eine serverlose App, diese Website ist nur eine Möglichkeit, sie zu öffnen. Um nicht von der Verfügbarkeit der Website abhängig zu sein, <1>lade die App herunter</1>.",
   "boards": "Foren",

@@ -1,5 +1,6 @@
 {
   "what_is_5chan": "Mi az a 5chan?",
+  "go": "menni",
   "5chan_description": "A 5chan egy teljesen decentralizált és nyílt forráskódú imageboard, ahol bárki létrehozhat és kriptográfiailag birtokolhat korlátlan számú fórumot. A fórum tulajdonosok hostolják és moderálják fórumukat, és beállítják annak <1>Rules</1>. Minden adat csak szöveges és peer-to-peer módon osztozik meg, beleértve a beágyazott képek linkjeit is. Nézd meg a <2>FAQs</2> oldalt, hogy többet tudj meg. Nyugodtan kattints egy alábbi fórumra, ami érdekel, és kezdd el!",
   "no_global_rules_info": "A 5chan egy szerver nélküli alkalmazás, ez a weboldal csak egy módja annak, hogy megnyisd. Hogy ne a weboldal elérhetőségétől függj, <1>töltsd le az alkalmazást</1>.",
   "boards": "fórumok",

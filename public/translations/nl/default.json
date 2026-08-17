@@ -1,5 +1,6 @@
 {
   "what_is_5chan": "Wat is 5chan?",
+  "go": "gaan",
   "5chan_description": "5chan is een volledig gedecentraliseerd en open-source imageboard, waar iedereen onbeperkt boards kan aanmaken en cryptografisch bezitten. Board-eigenaren hosten en modereren hun board en stellen de <1>Rules</1> in. Alle data is alleen tekst en wordt peer-to-peer gedeeld, inclusief links voor ingesloten afbeeldingen. Bekijk de <2>FAQs</2> voor meer informatie. Klik gerust op een board hieronder dat je interesseert en begin!",
   "no_global_rules_info": "5chan is een serverloze app, deze website is slechts één manier om deze te openen. Om niet af te hangen van de beschikbaarheid van de website, <1>download de app</1>.",
   "boards": "forums",

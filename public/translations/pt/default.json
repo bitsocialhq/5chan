@@ -1,5 +1,6 @@
 {
   "what_is_5chan": "O que é 5chan?",
+  "go": "vai",
   "5chan_description": "5chan é um imageboard totalmente descentralizado e de código aberto, onde qualquer pessoa pode criar e possuir criptograficamente boards ilimitados. Os proprietários de boards hospedam e moderam seu board e definem suas <1>Rules</1>. Todos os dados são apenas texto e compartilhados peer-to-peer, incluindo links para incorporar imagens. Confira as <2>FAQs</2> para saber mais. Sinta-se à vontade para clicar em um board abaixo que te interessa e comece!",
   "no_global_rules_info": "5chan é um aplicativo sem servidor, este site é apenas uma forma de abri-lo. Para não depender da disponibilidade do site, <1>baixe o aplicativo</1>.",
   "boards": "fóruns",

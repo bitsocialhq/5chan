@@ -1,5 +1,6 @@
 {
   "what_is_5chan": "Vad är 5chan?",
+  "go": "gå",
   "5chan_description": "5chan är en helt decentraliserad och öppen källkod imageboard, där vem som helst kan skapa och kryptografiskt äga obegränsade tavlor. Tavlägare hostar och modererar sin tavla och sätter dess <1>Rules</1>. All data är endast text och delas peer-to-peer, inklusive länkar för inbäddade bilder. Kolla in <2>FAQs</2> för att lära dig mer. Klicka gärna på en tavla nedan som intresserar dig och börja!",
   "no_global_rules_info": "5chan är en serverlös app, denna webbplats är bara ett sätt att öppna den. För att inte vara beroende av webbplatsens drifttid, <1>ladda ner appen</1>.",
   "boards": "forum",

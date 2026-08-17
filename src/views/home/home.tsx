@@ -1,5 +1,5 @@
-import { memo, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { memo, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import styles from './home.module.css';
 import { type DirectoryCommunity, useDirectories, useDirectoryAddresses } from '../../hooks/use-directories';
@@ -15,10 +15,44 @@ import useHomepageStatsOptionsStore, { type HomepageStatsScope } from '../../sto
 import DisclaimerModal from '../../components/disclaimer-modal';
 import DirectoryModal from '../../components/directory-modal';
 import { extractDirectoryFromTitle } from '../../lib/utils/route-utils';
+import { getSearchDestination } from '../../lib/search-navigation';
 import { isWebRuntime } from '../../lib/media-hosting/show-upload-controls';
 import { useFeedStateString } from '../../hooks/use-state-string';
 
 // https://github.com/bitsocialnet/lists/tree/master/5chan-directories
+
+const SearchBar = () => {
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const directories = useDirectories();
+
+  const handleSearchSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const destination = getSearchDestination(searchInputRef.current?.value ?? '', directories);
+    if (destination) navigate(destination);
+  };
+
+  return (
+    <div className={styles.searchBar}>
+      <form onSubmit={handleSearchSubmit}>
+        <input
+          autoCorrect='off'
+          autoComplete='off'
+          spellCheck='false'
+          autoCapitalize='off'
+          type='text'
+          aria-label={t('search_posts_or_board')}
+          placeholder={t('search_posts_or_board')}
+          ref={searchInputRef}
+        />
+        <button type='submit' className={styles.searchButton}>
+          {t('go')}
+        </button>
+      </form>
+    </div>
+  );
+};
 
 const InfoBox = () => {
   const { t } = useTranslation();
@@ -359,6 +393,7 @@ const Home = () => {
       <DirectoryModal />
       <div className={styles.content}>
         <HomeLogo />
+        <SearchBar />
         <InfoBox />
         <BoardsList multisub={directories} />
         <PopularThreadsBox directories={directories} directoryAddresses={directoryAddresses} />

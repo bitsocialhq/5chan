@@ -1,5 +1,6 @@
 {
   "what_is_5chan": "Ce este 5chan?",
+  "go": "du-te",
   "5chan_description": "5chan este un imageboard complet descentralizat și open-source, unde oricine poate crea și deține criptografic panouri nelimitate. Proprietarii de panouri găzduiesc și moderază panoul lor și îi stabilesc <1>Rules</1>. Toate datele sunt doar text și sunt partajate peer-to-peer, inclusiv linkuri pentru imagini încorporate. Consultați <2>FAQs</2> pentru a afla mai multe. Nu ezitați să dați clic pe un panou de mai jos care vă interesează și să începeți!",
   "no_global_rules_info": "5chan este o aplicație fără server, acest site web este doar o modalitate de a-l deschide. Pentru a nu depinde de disponibilitatea site-ului, <1>descarcă aplicația</1>.",
   "boards": "forumuri",
