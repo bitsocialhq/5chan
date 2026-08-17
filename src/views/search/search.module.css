@@ -53,7 +53,6 @@
 }
 
 .providerNote a,
-.result a,
 .pagination a,
 .directoryNav a,
 .providerTable a {
@@ -62,7 +61,6 @@
 }
 
 .providerNote a:hover,
-.result a:hover,
 .pagination a:hover,
 .directoryNav a:hover,
 .providerTable a:hover {
@@ -101,50 +99,14 @@
 }
 
 .results {
-  width: min(900px, calc(100% - 10px));
-  margin: 0 auto;
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 
-.result {
-  display: block;
-  width: fit-content;
-  max-width: 100%;
-  box-sizing: border-box;
-  margin: 0 0 4px;
-  padding: 3px 5px;
-  border: var(--reply-desktop-border);
-  border-top: var(--reply-desktop-border-top, var(--reply-desktop-border));
-  border-left: var(--reply-desktop-border-left, var(--reply-desktop-border));
-  background: var(--reply-desktop-background-color);
-  overflow-wrap: anywhere;
-}
-
-.resultInfo {
-  font-size: 12px;
-}
-
-.boardLink,
-.subject,
-.name {
-  font-weight: 700;
-}
-
-.subject {
-  color: var(--post-subject-text-color);
-}
-
-.name {
-  color: var(--post-name-text-color);
-}
-
-.archived {
-  font-weight: 700;
-}
-
-.message {
-  margin: 8px 24px 8px 32px;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+/* Registered by use-search-match-highlight while the results are on screen. */
+:global(::highlight(search-match)) {
+  background-color: #ff0;
+  color: #000;
 }
 
 .pagination {
@@ -220,20 +182,6 @@
 
   .searchForm input {
     font-size: 16px;
-  }
-
-  .results {
-    width: calc(100% - 10px);
-  }
-
-  .result {
-    width: 100%;
-    margin-bottom: 5px;
-  }
-
-  .message {
-    margin: 8px 12px;
-    font-size: 11pt;
   }
 
   .providerTable {

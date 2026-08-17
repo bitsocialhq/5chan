@@ -10,7 +10,7 @@ import { hashStringToColor, getTextColorForBackground } from '../../lib/utils/po
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isPendingApprovalAwaiting } from '../../lib/utils/pending-approval-moderation';
 import { isValidURL, parseHttpUrl } from '../../lib/utils/url-utils';
-import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSearchView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay, truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
@@ -571,9 +571,7 @@ interface PostMediaProps {
   linkWidth?: number;
   parentCid?: string;
   communityAddress?: string;
-  isInAllView: boolean;
-  isInSubscriptionsView: boolean;
-  isInModView: boolean;
+  showBoardLabel: boolean;
 }
 
 const PostMedia = ({
@@ -587,9 +585,7 @@ const PostMedia = ({
   linkWidth,
   parentCid,
   communityAddress,
-  isInAllView,
-  isInSubscriptionsView,
-  isInModView,
+  showBoardLabel,
 }: PostMediaProps) => {
   const { t } = useTranslation();
   const { url } = commentMediaInfo || {};
@@ -626,7 +622,7 @@ const PostMedia = ({
   return (
     <div className={styles.file}>
       <div className={styles.fileText}>
-        {communityAddress && (isInAllView || isInSubscriptionsView || isInModView) && boardPath && !parentCid && (
+        {communityAddress && showBoardLabel && boardPath && (
           <>
             {t('board')}: <Link to={`/${boardPath}`}>{displayBoardPath}</Link>{' '}
           </>
@@ -744,11 +740,6 @@ const Reply = ({
   const isRouteLinkToReply = cid ? location.pathname.startsWith(route) : false;
   const { hidden } = useHide({ cid });
 
-  const isInAllView = isAllView(location.pathname);
-  const params = useParams();
-  const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
-  const isInModView = isModView(location.pathname);
-
   const commentMediaInfo = useCommentMediaInfo(link, thumbnailUrl, linkWidth, linkHeight);
   const hasThumbnail = getHasThumbnail(commentMediaInfo, link);
   const { canDeleteFailedPost, canRetryFailedPost, isDeletingFailedPost, isRetryingFailedPost, onDeleteFailedPost, onRetryFailedPost } = useDeleteFailedPost(post);
@@ -787,9 +778,7 @@ const Reply = ({
             linkWidth={linkWidth}
             parentCid={parentCid}
             communityAddress={communityAddress}
-            isInAllView={isInAllView}
-            isInSubscriptionsView={isInSubscriptionsView}
-            isInModView={isInModView}
+            showBoardLabel={false}
           />
         )}
         {post && !hidden && (!(removed || deleted || purged) || ((removed || deleted) && reason) || purged) && (
@@ -831,7 +820,10 @@ const PostDesktop = ({
   const isInAllView = isAllView(location.pathname);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInModView = isModView(location.pathname);
-  const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView;
+  // Search results come from every board, and unlike the multiboard feeds they can be replies too.
+  const isInSearchView = isSearchView(location.pathname);
+  const isMultiboardView = isInAllView || isInSubscriptionsView || isInModView || isInSearchView;
+  const showBoardLabel = isMultiboardView && (!parentCid || isInSearchView);
   const directories = useDirectories();
   const boardPath = communityAddress ? getBoardPath(communityAddress, directories) : undefined;
   const deleteFailedPostRedirectPath = isInPendingPostView ? (boardPath ? `/${boardPath}` : '/') : undefined;
@@ -846,10 +838,15 @@ const PostDesktop = ({
 
   const { hidden, unhide, hide } = useHide({ cid });
   const isHidden = hidden && !isInPostPageView;
+  // The board label lives in the file line when media is rendered, and in a line of its own otherwise.
+  const hasRenderedMedia = !!link && !isHidden && !(deleted || removed || purged) && isValidURL(link);
 
   const { showOmittedReplies, setShowOmittedReplies } = useShowOmittedReplies();
 
   const hasReplyPaginationOverride = !!replyPaginationOverride;
+  // Caller-supplied replies (a search result shown in its thread) are all there is to render here,
+  // so the omitted count still links to the thread but cannot be expanded in place.
+  const canExpandOmittedReplies = !hasReplyPaginationOverride;
   const shouldUsePreview = showReplies && !isModQueue && !showAllReplies && !hasReplyPaginationOverride;
   const shouldFetchFull = showReplies && !isModQueue && !hasReplyPaginationOverride && (showAllReplies || showOmittedReplies[cid]);
 
@@ -1133,14 +1130,14 @@ const PostDesktop = ({
           className={`${styles.opContainer} ${shouldShowSnow() && hasThumbnail ? styles.xmasHatWrapper : ''}`}
         >
           {shouldShowSnow() && hasThumbnail && <img src='assets/xmashat.gif' className={styles.xmasHat} alt='' />}
-          {!link && !parentCid && communityAddress && isMultiboardView && boardPath && (
+          {!hasRenderedMedia && communityAddress && showBoardLabel && boardPath && (
             <div className={styles.file}>
               <div className={styles.fileText}>
                 {t('board')}: <Link to={`/${boardPath}`}>{displayBoardPath}</Link>
               </div>
             </div>
           )}
-          {link && !isHidden && !(deleted || removed || purged) && isValidURL(link) && (
+          {hasRenderedMedia && (
             <PostMedia
               commentMediaInfo={commentMediaInfo}
               hasThumbnail={hasThumbnail}
@@ -1152,9 +1149,7 @@ const PostDesktop = ({
               linkWidth={linkWidth}
               parentCid={parentCid}
               communityAddress={communityAddress}
-              isInAllView={isInAllView}
-              isInSubscriptionsView={isInSubscriptionsView}
-              isInModView={isInModView}
+              showBoardLabel={showBoardLabel}
             />
           )}
           <PostInfo
@@ -1180,20 +1175,22 @@ const PostDesktop = ({
         </div>
         {!isHidden && !isInPendingPostView && showReplies && repliesCount > 0 && !isInPostPageView && (
           <span className={styles.summary}>
-            <button
-              type='button'
-              aria-label={showOmittedReplies[cid] ? t('hide_replies') : t('show_replies')}
-              className={`${showOmittedReplies[cid] ? styles.hideOmittedReplies : styles.showOmittedReplies} ${styles.omittedRepliesButtonWrapper}`}
-              tabIndex={0}
-              onClick={() => setShowOmittedReplies(cid, !showOmittedReplies[cid])}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setShowOmittedReplies(cid, !showOmittedReplies[cid]);
-                }
-              }}
-            />
-            {showOmittedReplies[cid] ? (
+            {canExpandOmittedReplies && (
+              <button
+                type='button'
+                aria-label={showOmittedReplies[cid] ? t('hide_replies') : t('show_replies')}
+                className={`${showOmittedReplies[cid] ? styles.hideOmittedReplies : styles.showOmittedReplies} ${styles.omittedRepliesButtonWrapper}`}
+                tabIndex={0}
+                onClick={() => setShowOmittedReplies(cid, !showOmittedReplies[cid])}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setShowOmittedReplies(cid, !showOmittedReplies[cid]);
+                  }
+                }}
+              />
+            )}
+            {canExpandOmittedReplies && showOmittedReplies[cid] ? (
               t('showing_all_replies')
             ) : linksCount > 0 ? (
               <Trans

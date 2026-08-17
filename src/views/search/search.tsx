@@ -1,14 +1,13 @@
-import { Component, Suspense, use, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { Component, Suspense, use, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import capitalize from 'lodash/capitalize';
 import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
-import { type DirectoryCommunity, useDirectories } from '../../hooks/use-directories';
-import { clearIndexerSearch, getIndexerSearch, getProviderPostUrl, type IndexedPost } from '../../lib/search-indexer';
+import useSearchMatchHighlight from '../../hooks/use-search-match-highlight';
+import { clearIndexerSearch, getIndexedPostComment, getIndexerSearch } from '../../lib/search-indexer';
 import { getSearchProvider, type SearchProvider } from '../../lib/search-providers';
-import { getBoardPath } from '../../lib/utils/route-utils';
-import { getFormattedDate } from '../../lib/utils/time-utils';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
+import { Post } from '../post/post';
 import styles from './search.module.css';
 
 const getPage = (value: string | null): number => {
@@ -41,52 +40,43 @@ const SearchProviderAttribution = ({ provider, query }: { provider: SearchProvid
   );
 };
 
-const SearchResult = ({ directories, post, provider }: { directories: DirectoryCommunity[]; post: IndexedPost; provider: SearchProvider }) => {
-  const { t } = useTranslation();
-  const boardPath = getBoardPath(post.community_address, directories);
-  const providerPostUrl = getProviderPostUrl(provider, boardPath, post.cid);
-  const content = post.content?.trim() ?? '';
-  const excerpt = content.length > 600 ? `${content.slice(0, 600)}…` : content;
-
-  return (
-    <article className={styles.result}>
-      <div className={styles.resultInfo}>
-        <Link to={`/${boardPath}`} className={styles.boardLink}>
-          /{boardPath}/
-        </Link>{' '}
-        {post.title ? <span className={styles.subject}>{post.title}</span> : null}
-        {post.title ? ' ' : null}
-        <span className={styles.name}>{post.author_name || capitalize(t('anonymous'))}</span>{' '}
-        <time dateTime={new Date(post.timestamp * 1000).toISOString()}>{getFormattedDate(post.timestamp)}</time> {post.depth > 0 ? `${t('reply')} ` : null}
-        {post.archived ? <span className={styles.archived}>[{t('archived')}]</span> : null}
-        {' ['}
-        <a href={providerPostUrl} target='_blank' rel='noreferrer noopener'>
-          {t('view')}
-        </a>
-        {']'}
-      </div>
-      {excerpt ? <blockquote className={styles.message}>{excerpt}</blockquote> : null}
-    </article>
-  );
-};
-
 const SearchResults = ({ page, provider, query }: { page: number; provider: SearchProvider; query: string }) => {
   const { t } = useTranslation();
-  const directories = useDirectories();
   const result = use(getIndexerSearch(provider, query, page));
+  const resultsRef = useRef<HTMLDivElement>(null);
+  // A matched reply is shown in its thread: the OP, then that one reply.
+  const matches = useMemo(
+    () =>
+      result.posts.map((post) => {
+        const comment = getIndexedPostComment(post);
+        const threadPost = post.depth > 0 ? result.threadPosts[post.post_cid] : undefined;
+        return {
+          comment,
+          threadComment: threadPost ? getIndexedPostComment(threadPost) : undefined,
+          replyPaginationOverride: { hasMore: false, replies: [comment] },
+        };
+      }),
+    [result],
+  );
   const hasPrevious = result.page > 1;
   const hasNext = result.page * result.limit < result.total;
+
+  useSearchMatchHighlight(resultsRef, query);
 
   return (
     <>
       <h4 className={styles.summary}>{t('search_results_heading', { count: result.posts.length, total: result.total, query: result.query })}</h4>
-      {result.posts.length === 0 ? (
+      {matches.length === 0 ? (
         <div className={styles.empty}>{t('search_no_results')}</div>
       ) : (
-        <div className={styles.results}>
-          {result.posts.map((post) => (
-            <SearchResult key={post.cid} directories={directories} post={post} provider={provider} />
-          ))}
+        <div className={styles.results} ref={resultsRef}>
+          {matches.map(({ comment, replyPaginationOverride, threadComment }) =>
+            threadComment ? (
+              <Post key={comment.cid} post={threadComment} replyPaginationOverride={replyPaginationOverride} />
+            ) : (
+              <Post key={comment.cid} post={comment} showReplies={false} />
+            ),
+          )}
         </div>
       )}
       {(hasPrevious || hasNext) && (

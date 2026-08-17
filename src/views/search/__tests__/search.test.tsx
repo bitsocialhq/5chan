@@ -75,8 +75,54 @@ describe('archive search', () => {
     vi.unstubAllGlobals();
   });
 
-  it('renders indexed results and provider attribution from the selected provider', async () => {
+  it('renders a matched reply under its thread OP with the regular post components', async () => {
     const query = `hello-${Date.now()}`;
+    const matchedReply = {
+      archived: 1,
+      author_address: null,
+      author_name: 'Archive Anon',
+      cid: 'reply-cid',
+      community_address: 'music-posting.bso',
+      content: 'A preserved reply',
+      deleted: 0,
+      depth: 1,
+      indexed_at: 1_700_000_100,
+      parent_cid: 'post-cid',
+      post_cid: 'post-cid',
+      raw: JSON.stringify({ comment: {}, commentUpdate: { number: 42 } }),
+      removed: 0,
+      reply_count: 0,
+      timestamp: 1_700_000_000,
+      title: null,
+    };
+    const threadPost = { ...matchedReply, cid: 'post-cid', content: 'The thread OP', depth: 0, parent_cid: null, title: 'Thread subject' };
+    const fetchMock = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve({
+        ok: true,
+        json: async () => (url.includes('/api/posts/') ? { post: threadPost } : { query, page: 1, limit: 25, total: 1, posts: [matchedReply] }),
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await renderRoute(`/search?q=${encodeURIComponent(query)}`);
+
+    await vi.waitFor(() => expect(container.textContent).toContain('A preserved reply'));
+    expect(container.textContent).toContain('results_provided_by');
+    expect(container.textContent).toContain('5archive.org');
+    // The matched reply is shown inside its thread.
+    expect(container.textContent).toContain('The thread OP');
+    expect(container.textContent).toContain('Thread subject');
+    // Post components render the post number, the archived icon and a board link, like the board views do.
+    expect(container.textContent).toContain('Archive Anon');
+    expect(container.textContent).toContain('42');
+    expect(container.querySelector<HTMLImageElement>('img[title="archived"]')).toBeTruthy();
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/mu"]')).toBeTruthy();
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/mu/thread/reply-cid"]')).toBeTruthy();
+    expect(container.querySelector<HTMLAnchorElement>(`a[href="/search/directory?q=${encodeURIComponent(query)}"]`)).toBeTruthy();
+  });
+
+  it('renders a matched thread OP on its own, without its replies', async () => {
+    const query = `op-${Date.now()}`;
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -86,19 +132,19 @@ describe('archive search', () => {
         total: 1,
         posts: [
           {
-            archived: 1,
+            archived: 0,
             author_address: null,
-            author_name: 'Archive Anon',
-            cid: 'reply-cid',
+            author_name: null,
+            cid: 'post-cid',
             community_address: 'music-posting.bso',
-            content: 'A preserved reply',
+            content: 'A preserved thread',
             deleted: 0,
-            depth: 1,
+            depth: 0,
             indexed_at: 1_700_000_100,
-            parent_cid: 'post-cid',
+            parent_cid: null,
             post_cid: 'post-cid',
             removed: 0,
-            reply_count: 0,
+            reply_count: 3,
             timestamp: 1_700_000_000,
             title: null,
           },
@@ -109,13 +155,9 @@ describe('archive search', () => {
 
     await renderRoute(`/search?q=${encodeURIComponent(query)}`);
 
-    await vi.waitFor(() => expect(container.textContent).toContain('A preserved reply'));
-    expect(container.textContent).toContain('results_provided_by');
-    expect(container.textContent).toContain('5archive.org');
-    expect(container.textContent).toContain('archived');
-    expect(container.querySelector<HTMLAnchorElement>('a[href="/mu"]')).toBeTruthy();
-    expect(container.querySelector<HTMLAnchorElement>('a[href="https://5archive.org/mu/thread/reply-cid"]')).toBeTruthy();
-    expect(container.querySelector<HTMLAnchorElement>(`a[href="/search/directory?q=${encodeURIComponent(query)}"]`)).toBeTruthy();
+    await vi.waitFor(() => expect(container.textContent).toContain('A preserved thread'));
+    // Only the search request: an OP match needs no thread lookup.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('does not query the provider until a search term is present', async () => {
