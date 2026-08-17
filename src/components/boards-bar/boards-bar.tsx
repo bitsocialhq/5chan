@@ -215,7 +215,7 @@ const BoardsBarDesktop = memo(() => {
   return (
     <div className={styles.boardNavDesktop}>
       <span className={styles.boardList}>
-        [<Link to={`/all${catalogSuffix}`}>all</Link> / <Link to={`/subs${catalogSuffix}`}>subs</Link> / <Link to='/search'>search</Link>
+        [<Link to={`/all${catalogSuffix}`}>all</Link> / <Link to={`/subs${catalogSuffix}`}>subs</Link>
         {accountCommunityAddresses.length > 0 && (
           <>
             {' '}
