@@ -156,7 +156,12 @@ export const isDirectoryListRoute = (pathname: string): boolean => {
 
 export const isSearchRoute = (pathname: string): boolean => {
   const normalizedPath = pathname.replace(/\/+$/, '').replace(/\/settings$/, '');
-  return normalizedPath === '/search' || normalizedPath === '/search/directory';
+  return normalizedPath === '/search' || normalizedPath === '/search/catalog' || normalizedPath === '/search/directory';
+};
+
+export const isSearchCatalogRoute = (pathname: string): boolean => {
+  const normalizedPath = pathname.replace(/\/+$/, '').replace(/\/settings$/, '');
+  return normalizedPath === '/search/catalog';
 };
 
 export const isSearchDirectoryRoute = (pathname: string): boolean => {

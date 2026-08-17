@@ -49,6 +49,7 @@ const renderRoute = async (entry: string | { pathname: string; search?: string; 
             Routes,
             {},
             createElement(Route, { path: '/search', element: createElement(Search) }),
+            createElement(Route, { path: '/search/catalog', element: createElement(Search) }),
             createElement(Route, { path: '/search/directory', element: createElement(SearchDirectory) }),
           ),
           createElement(LocationProbe),
@@ -107,8 +108,6 @@ describe('archive search', () => {
     await renderRoute(`/search?q=${encodeURIComponent(query)}`);
 
     await vi.waitFor(() => expect(container.textContent).toContain('A preserved reply'));
-    expect(container.textContent).toContain('results_provided_by');
-    expect(container.textContent).toContain('5archive.org');
     // The matched reply is shown inside its thread.
     expect(container.textContent).toContain('The thread OP');
     expect(container.textContent).toContain('Thread subject');
@@ -120,6 +119,8 @@ describe('archive search', () => {
     expect(container.querySelector<HTMLAnchorElement>('a[href="/mu/thread/reply-cid"]')).toBeTruthy();
     // The query travels in the router state, not in the provider directory URL.
     expect(container.querySelector<HTMLAnchorElement>('a[href="/search/directory"]')).toBeTruthy();
+    // The provider attribution moved to the board header, which this test does not render.
+    expect(container.textContent).not.toContain('results_provided_by');
   });
 
   it('renders a matched thread OP on its own, without its replies', async () => {
@@ -159,6 +160,44 @@ describe('archive search', () => {
     await vi.waitFor(() => expect(container.textContent).toContain('A preserved thread'));
     // Only the search request: an OP match needs no thread lookup.
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the matched threads as catalog tiles, one tile per thread', async () => {
+    const query = `catalog-${Date.now()}`;
+    const matchedReply = {
+      archived: 0,
+      author_address: null,
+      author_name: null,
+      cid: 'reply-cid',
+      community_address: 'music-posting.bso',
+      content: 'A preserved reply',
+      deleted: 0,
+      depth: 1,
+      indexed_at: 1_700_000_100,
+      parent_cid: 'post-cid',
+      post_cid: 'post-cid',
+      removed: 0,
+      reply_count: 0,
+      timestamp: 1_700_000_000,
+      title: null,
+    };
+    const otherReply = { ...matchedReply, cid: 'other-reply-cid', content: 'Another preserved reply' };
+    const threadPost = { ...matchedReply, cid: 'post-cid', content: 'The thread OP', depth: 0, parent_cid: null, reply_count: 2, title: 'Thread subject' };
+    const fetchMock = vi.fn().mockImplementation((url: string) =>
+      Promise.resolve({
+        ok: true,
+        json: async () => (url.includes('/api/posts/') ? { post: threadPost } : { query, page: 1, limit: 25, total: 2, posts: [matchedReply, otherReply] }),
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await renderRoute({ pathname: '/search/catalog', search: `?q=${encodeURIComponent(query)}` });
+
+    await vi.waitFor(() => expect(container.textContent).toContain('Thread subject'));
+    // Both matches belong to the same thread, so the catalog shows it once.
+    expect(container.querySelectorAll('a[href="/mu/thread/post-cid"]').length).toBe(1);
+    // The catalog links back to the search results.
+    expect(container.querySelector<HTMLAnchorElement>(`a[href="/search?q=${encodeURIComponent(query)}"]`)).toBeTruthy();
   });
 
   it('does not query the provider until a search term is present', async () => {

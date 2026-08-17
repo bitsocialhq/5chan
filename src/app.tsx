@@ -357,6 +357,8 @@ const App = () => {
 
             <Route path='/search' element={<Search />} />
             <Route path='/search/settings' element={<Search />} />
+            <Route path='/search/catalog' element={<Search />} />
+            <Route path='/search/catalog/settings' element={<Search />} />
             <Route path='/search/directory' element={<SearchDirectory />} />
             <Route path='/search/directory/settings' element={<SearchDirectory />} />
 

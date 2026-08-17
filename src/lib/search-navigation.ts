@@ -3,7 +3,25 @@ import { getSpecialBoardByAddress, getSpecialBoardByCode } from './special-board
 import { getBoardPath } from './utils/route-utils';
 
 const BOARD_ADDRESS_SUFFIX = /\.(?:bso|eth|sol)$/i;
-const MAX_SEARCH_QUERY_LENGTH = 200;
+
+export const MAX_SEARCH_QUERY_LENGTH = 200;
+export const SEARCH_PATH = '/search';
+export const SEARCH_CATALOG_PATH = '/search/catalog';
+export const SEARCH_DIRECTORY_PATH = '/search/directory';
+
+export const getSearchPageHref = (basePath: string, query: string, page = 1): { pathname: string; search: string } => {
+  const params = new URLSearchParams({ q: query });
+  if (page > 1) params.set('page', String(page));
+  return { pathname: basePath, search: `?${params.toString()}` };
+};
+
+export const getSearchPath = (query: string, page = 1): string => {
+  const { pathname, search } = getSearchPageHref(SEARCH_PATH, query, page);
+  return `${pathname}${search}`;
+};
+
+/** Keeps the current query out of the provider directory URL while still allowing a return to it. */
+export const getSearchDirectoryLinkState = (query: string) => (query ? { returnPath: getSearchPath(query) } : undefined);
 
 const normalizeBoardInput = (value: string): string => {
   const trimmed = value.trim();
