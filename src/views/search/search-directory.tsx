@@ -1,17 +1,24 @@
 import { useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SEARCH_PROVIDERS } from '../../lib/search-providers';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
 import styles from './search.module.css';
 
+const SEARCH_PATH = '/search';
+
+/** The search that linked here travels in the router state, so the query stays out of this URL. */
+const getReturnPath = (state: unknown): string => {
+  const returnPath = (state as { returnPath?: unknown } | null)?.returnPath;
+  return typeof returnPath === 'string' && returnPath.startsWith(`${SEARCH_PATH}?`) ? returnPath : SEARCH_PATH;
+};
+
 const SearchDirectory = () => {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
-  const query = (searchParams.get('q') ?? '').trim();
+  const location = useLocation();
   const selectedProviderId = useSearchProviderStore((state) => state.selectedProviderId);
   const setSelectedProviderId = useSearchProviderStore((state) => state.setSelectedProviderId);
-  const returnPath = query ? `/search?q=${encodeURIComponent(query)}` : '/search';
+  const returnPath = getReturnPath(location.state);
 
   useEffect(() => {
     document.title = `${t('change_provider')} - ${t('archive_search_title')} - 5chan`;

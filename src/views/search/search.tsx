@@ -2,6 +2,10 @@ import { Component, Suspense, use, useEffect, useMemo, useRef, useState, type Fo
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import capitalize from 'lodash/capitalize';
+import BoardPagination, { type BoardPaginationFooterLink } from '../../components/board-pagination/board-pagination';
+import { BottomButton, TopButton } from '../../components/board-buttons/board-buttons';
+import { PageFooterDesktop, PageFooterMobile } from '../../components/footer/footer';
+import mobileFooterStyles from '../../components/footer/footer.module.css';
 import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis';
 import useSearchMatchHighlight from '../../hooks/use-search-match-highlight';
 import { clearIndexerSearch, getIndexedPostComment, getIndexerSearch } from '../../lib/search-indexer';
@@ -15,19 +19,79 @@ const getPage = (value: string | null): number => {
   return Number.isInteger(page) && page > 0 ? page : 1;
 };
 
-const getSearchPath = (query: string, page = 1): string => {
+const SEARCH_PATH = '/search';
+
+const getSearchPageHref = (query: string, page = 1): { pathname: string; search: string } => {
   const params = new URLSearchParams({ q: query });
   if (page > 1) params.set('page', String(page));
-  return `/search?${params.toString()}`;
+  return { pathname: SEARCH_PATH, search: `?${params.toString()}` };
+};
+
+const getSearchPath = (query: string, page = 1): string => {
+  const { pathname, search } = getSearchPageHref(query, page);
+  return `${pathname}${search}`;
 };
 
 const MAX_SEARCH_QUERY_LENGTH = 200;
+/** Boards cap their pagelist at 10 pages, and search follows the same convention. */
+const MAX_SEARCH_PAGES = 10;
+
+const SEARCH_DIRECTORY_PATH = '/search/directory';
+/** The provider directory has its own button row, so the pagelist keeps only the page links. */
+const NO_FOOTER_LINKS: BoardPaginationFooterLink[] = [];
+
+/** Keeps the current query out of the directory URL while still allowing a return to it. */
+const getDirectoryLinkState = (query: string) => (query ? { returnPath: getSearchPath(query) } : undefined);
+
+const SearchDirectoryLink = ({ query }: { query: string }) => {
+  const { t } = useTranslation();
+
+  return (
+    <Link className='button' to={SEARCH_DIRECTORY_PATH} state={getDirectoryLinkState(query)}>
+      {t('directory')}
+    </Link>
+  );
+};
+
+const SearchDesktopTopControls = ({ query }: { query: string }) => (
+  <div className={styles.desktopNavLinks}>
+    <span>
+      [<BottomButton />]
+    </span>
+    {/* Boards keep the directory button on the right of the button row. */}
+    <span className={styles.rightSideButtons}>
+      [<SearchDirectoryLink query={query} />]
+    </span>
+  </div>
+);
+
+const SearchDesktopFooterControls = ({ query }: { query: string }) => (
+  <div className={styles.desktopFooterButtons}>
+    <span>
+      [<TopButton />]
+    </span>
+    <span className={styles.rightSideButtons}>
+      [<SearchDirectoryLink query={query} />]
+    </span>
+  </div>
+);
+
+const SearchMobileTopControls = ({ query }: { query: string }) => (
+  <div className={styles.mobileNavLinks}>
+    <SearchDirectoryLink query={query} />
+    <BottomButton />
+  </div>
+);
+
+const SearchMobileFooterControls = ({ query }: { query: string }) => (
+  <div className={styles.mobileFooterButtons}>
+    <SearchDirectoryLink query={query} />
+    <TopButton />
+  </div>
+);
 
 const SearchProviderAttribution = ({ provider, query }: { provider: SearchProvider; query: string }) => {
   const { t } = useTranslation();
-  const directoryParams = new URLSearchParams();
-  if (query) directoryParams.set('q', query);
-  const directoryPath = `/search/directory${directoryParams.size > 0 ? `?${directoryParams.toString()}` : ''}`;
 
   return (
     <div className={styles.providerNote}>
@@ -35,10 +99,51 @@ const SearchProviderAttribution = ({ provider, query }: { provider: SearchProvid
       <a href={provider.siteUrl} target='_blank' rel='noreferrer noopener'>
         {provider.name}
       </a>{' '}
-      [<Link to={directoryPath}>{t('change_provider')}</Link>]
+      [
+      <Link to={SEARCH_DIRECTORY_PATH} state={getDirectoryLinkState(query)}>
+        {t('change_provider')}
+      </Link>
+      ]
     </div>
   );
 };
+
+const SearchFooter = ({ page, query, totalPages }: { page: number; query: string; totalPages: number }) => (
+  <>
+    <PageFooterDesktop
+      firstRow={<SearchDesktopFooterControls query={query} />}
+      styleRow={
+        <BoardPagination
+          basePath={SEARCH_PATH}
+          currentPage={page}
+          totalPages={totalPages}
+          footerStyle
+          getPageHref={(nextPage) => getSearchPageHref(query, nextPage)}
+          footerLinks={NO_FOOTER_LINKS}
+        />
+      }
+    />
+    <PageFooterMobile>
+      <SearchMobileFooterControls query={query} />
+      {totalPages > 1 && (
+        <>
+          <hr />
+          <div className={mobileFooterStyles.mobileFooterPagination}>
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+              <span key={pageNumber}>
+                [
+                <Link to={getSearchPageHref(query, pageNumber)} className={pageNumber === page ? mobileFooterStyles.mobileFooterPaginationCurrent : undefined}>
+                  {pageNumber}
+                </Link>
+                ]
+              </span>
+            ))}
+          </div>
+        </>
+      )}
+    </PageFooterMobile>
+  </>
+);
 
 const SearchResults = ({ page, provider, query }: { page: number; provider: SearchProvider; query: string }) => {
   const { t } = useTranslation();
@@ -58,8 +163,7 @@ const SearchResults = ({ page, provider, query }: { page: number; provider: Sear
       }),
     [result],
   );
-  const hasPrevious = result.page > 1;
-  const hasNext = result.page * result.limit < result.total;
+  const totalPages = Math.min(MAX_SEARCH_PAGES, Math.max(1, Math.ceil(result.total / result.limit)));
 
   useSearchMatchHighlight(resultsRef, query);
 
@@ -79,15 +183,7 @@ const SearchResults = ({ page, provider, query }: { page: number; provider: Sear
           )}
         </div>
       )}
-      {(hasPrevious || hasNext) && (
-        <nav className={styles.pagination} aria-label={t('pagination.pageLabel')}>
-          {hasPrevious ? <Link to={getSearchPath(query, page - 1)}>{t('previous')}</Link> : <span>{t('previous')}</span>}
-          {' ['}
-          {result.page}
-          {'] '}
-          {hasNext ? <Link to={getSearchPath(query, page + 1)}>{t('next')}</Link> : <span>{t('next')}</span>}
-        </nav>
-      )}
+      <SearchFooter page={page} query={query} totalPages={totalPages} />
     </>
   );
 };
@@ -136,7 +232,11 @@ const Search = () => {
   };
 
   return (
-    <main className={styles.page}>
+    <main id='top' className={styles.page}>
+      <SearchMobileTopControls query={query} />
+      <hr className={styles.desktopDivider} />
+      <SearchDesktopTopControls query={query} />
+      <hr className={styles.divider} />
       <form className={styles.searchForm} role='search' onSubmit={handleSubmit}>
         <input
           key={query}
@@ -158,27 +258,36 @@ const Search = () => {
         <SearchErrorBoundary
           key={`${provider.id}:${query}:${page}:${retryKey}`}
           fallback={
-            <div className={styles.error} role='alert'>
-              {t('search_provider_unavailable')} [
-              <button type='button' onClick={retry}>
-                {t('refresh')}
-              </button>
-              ]
-            </div>
+            <>
+              <div className={styles.error} role='alert'>
+                {t('search_provider_unavailable')} [
+                <button type='button' onClick={retry}>
+                  {t('refresh')}
+                </button>
+                ]
+              </div>
+              <SearchFooter page={page} query={query} totalPages={1} />
+            </>
           }
         >
           <Suspense
             fallback={
-              <div className={styles.loading}>
-                <LoadingEllipsis centered string={t('loading')} />
-              </div>
+              <>
+                <div className={styles.loading}>
+                  <LoadingEllipsis centered string={t('loading')} />
+                </div>
+                <SearchFooter page={page} query={query} totalPages={1} />
+              </>
             }
           >
             <SearchResults page={page} provider={provider} query={query} />
           </Suspense>
         </SearchErrorBoundary>
       ) : (
-        <p className={styles.intro}>{t('archive_search_subtitle')}</p>
+        <>
+          <p className={styles.intro}>{t('archive_search_subtitle')}</p>
+          <SearchFooter page={page} query={query} totalPages={1} />
+        </>
       )}
     </main>
   );

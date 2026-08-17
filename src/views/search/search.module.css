@@ -7,6 +7,65 @@
   font-size: var(--body-font-size);
 }
 
+.desktopDivider,
+.divider {
+  display: block;
+}
+
+.desktopNavLinks {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-align: left;
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+.desktopNavLinks a:not([class~='button']),
+.desktopFooterButtons a:not([class~='button']) {
+  all: unset;
+}
+
+.desktopNavLinks .rightSideButtons,
+.desktopFooterButtons .rightSideButtons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.mobileNavLinks {
+  display: none;
+  text-align: center;
+  text-transform: capitalize;
+  margin-top: 5px;
+}
+
+.mobileNavLinks button,
+.mobileNavLinks a[class~='button'],
+.mobileFooterButtons button,
+.mobileFooterButtons a[class~='button'] {
+  text-transform: capitalize;
+  margin: 5px 2px;
+}
+
+.mobileNavLinks a:not([class~='button']),
+.mobileFooterButtons a:not([class~='button']) {
+  all: unset;
+}
+
+.desktopFooterButtons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  text-transform: capitalize;
+}
+
+.mobileFooterButtons {
+  text-align: center;
+  text-transform: capitalize;
+}
+
 .searchForm {
   display: flex;
   justify-content: center;
@@ -14,21 +73,23 @@
   width: min(620px, calc(100% - 10px));
 }
 
+/* Same field tokens as the post form, so the search bar follows the theme. */
 .searchForm input {
   box-sizing: border-box;
   min-width: 0;
   flex: 1;
   padding: 3px 5px;
-  border: 1px solid #aaa;
+  border: var(--post-form-field-input-border, revert);
   border-radius: 0;
-  background: #fff;
-  color: #000;
+  appearance: var(--post-form-field-input-appearance, revert);
+  outline: var(--post-form-field-input-outline, revert);
+  background-color: var(--post-form-field-input-background-color, revert);
+  color: var(--post-form-field-input-color, revert);
   font: inherit;
 }
 
 .searchForm input:focus {
-  border-color: #ea8;
-  outline: none;
+  border: var(--post-form-field-input-focus-border, revert);
 }
 
 .searchForm button {
@@ -178,6 +239,15 @@
 @media (max-width: 640px) {
   .page {
     padding-top: 2px;
+  }
+
+  .desktopDivider,
+  .desktopNavLinks {
+    display: none;
+  }
+
+  .mobileNavLinks {
+    display: block;
   }
 
   .searchForm input {

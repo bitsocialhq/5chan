@@ -36,7 +36,7 @@ const LocationProbe = () => {
 let container: HTMLDivElement;
 let root: Root;
 
-const renderRoute = async (entry: string) => {
+const renderRoute = async (entry: string | { pathname: string; search?: string; state?: unknown }) => {
   await act(async () => {
     root.render(
       createElement(
@@ -118,7 +118,8 @@ describe('archive search', () => {
     expect(container.querySelector<HTMLImageElement>('img[title="archived"]')).toBeTruthy();
     expect(container.querySelector<HTMLAnchorElement>('a[href="/mu"]')).toBeTruthy();
     expect(container.querySelector<HTMLAnchorElement>('a[href="/mu/thread/reply-cid"]')).toBeTruthy();
-    expect(container.querySelector<HTMLAnchorElement>(`a[href="/search/directory?q=${encodeURIComponent(query)}"]`)).toBeTruthy();
+    // The query travels in the router state, not in the provider directory URL.
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/search/directory"]')).toBeTruthy();
   });
 
   it('renders a matched thread OP on its own, without its replies', async () => {
@@ -170,13 +171,19 @@ describe('archive search', () => {
     expect(container.textContent).toContain('archive_search_subtitle');
   });
 
-  it('lists the current provider in the provider directory and returns to the query', async () => {
-    await renderRoute('/search/directory?q=archive');
+  it('lists the current provider in the provider directory and returns to the search it came from', async () => {
+    await renderRoute({ pathname: '/search/directory', state: { returnPath: '/search?q=archive' } });
 
     expect(container.textContent).toContain('5archive.org');
     expect(container.textContent).toContain('current_provider');
     expect(container.querySelector<HTMLInputElement>('input[type="radio"]')?.checked).toBe(true);
     expect(container.querySelector<HTMLAnchorElement>('a[href="/search?q=archive"]')).toBeTruthy();
+  });
+
+  it('returns to the plain search when the provider directory is opened directly', async () => {
+    await renderRoute('/search/directory');
+
+    expect(container.querySelector<HTMLAnchorElement>('a[href="/search"]')).toBeTruthy();
   });
 
   it('submits a new query into the URL', async () => {
