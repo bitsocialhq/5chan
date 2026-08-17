@@ -67,33 +67,39 @@
 
 .searchForm {
   display: flex;
+  align-items: flex-start;
   justify-content: center;
   margin: 8px auto 4px;
-  width: min(620px, calc(100% - 10px));
+  max-width: calc(100% - 10px);
 }
 
-/* Same field tokens as the post form, so the search bar follows the theme. */
+/* 4chan field metrics (padding 2px 4px 3px, 10pt arial), themed like the post form fields. */
 .searchForm input {
-  box-sizing: border-box;
+  box-sizing: content-box;
   min-width: 0;
-  flex: 1;
-  padding: 3px 5px;
+  padding: 2px 4px 3px;
   border: var(--post-form-field-input-border, revert);
   border-radius: 0;
   appearance: var(--post-form-field-input-appearance, revert);
   outline: var(--post-form-field-input-outline, revert);
   background-color: var(--post-form-field-input-background-color, revert);
   color: var(--post-form-field-input-color, revert);
-  font: inherit;
+  font-family: var(--post-form-field-font-family, arial, helvetica, sans-serif);
+  font-size: 10pt;
 }
 
 .searchForm input:focus {
   border: var(--post-form-field-input-focus-border, revert);
 }
 
+/* 4chan spaces the search controls with .g-search-ctrl { margin: 0 3px }. */
+.searchForm input,
 .searchForm button {
-  margin-left: 4px;
-  padding: 2px 6px;
+  margin: 0 3px;
+  vertical-align: top;
+}
+
+.searchForm button {
   cursor: pointer;
 }
 

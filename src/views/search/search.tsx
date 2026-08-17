@@ -32,6 +32,8 @@ const getPage = (value: string | null): number => {
   return Number.isInteger(page) && page > 0 ? page : 1;
 };
 
+/** The field is sized in characters like 4chan's, whose search controls carry no CSS width. */
+const SEARCH_FIELD_CHARACTERS = 45;
 /** Boards cap their pagelist at 10 pages, and search follows the same convention. */
 const MAX_SEARCH_PAGES = 10;
 
@@ -288,6 +290,7 @@ const Search = () => {
           spellCheck='false'
           autoCapitalize='off'
           maxLength={MAX_SEARCH_QUERY_LENGTH}
+          size={SEARCH_FIELD_CHARACTERS}
           aria-label={t('archive_search_subtitle')}
           placeholder={t('archive_search_subtitle')}
         />
