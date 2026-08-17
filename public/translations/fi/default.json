@@ -466,11 +466,12 @@
   "archive_search_title": "/search/ - Arkistohaku",
   "search_posts_or_board": "Hae viestejä tai syötä lauta",
   "archive_search_subtitle": "Hae indeksoituja viestejä 5chan-foorumeilta.",
-  "search_results_heading": "Näytetään {{count}}/{{total}} tulosta haulle ”{{query}}”",
   "search_no_results": "Indeksoituja julkaisuja ei löytynyt. Kokeile yleisempiä hakusanoja.",
   "change_provider": "Vaihda palveluntarjoajaa",
   "results_provided_by": "Tulokset tarjoaa",
   "search_provider_unavailable": "Hakupalveluntarjoaja ei ole käytettävissä. Yritä myöhemmin uudelleen tai vaihda palveluntarjoajaa.",
   "current_provider": "nykyinen palveluntarjoaja",
-  "search_provider_directory_subtitle": "Valitse, mikä riippumaton indeksoija tarjoaa /search/-haun. Palveluntarjoajat voivat nähdä hakutermisi."
+  "search_provider_directory_subtitle": "Valitse, mikä riippumaton indeksoija tarjoaa /search/-haun. Palveluntarjoajat voivat nähdä hakutermisi.",
+  "search_provider": "Indeksoija",
+  "use": "käytä"
 }

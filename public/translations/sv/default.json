@@ -466,11 +466,12 @@
   "archive_search_title": "/search/ - Arkivsökning",
   "search_posts_or_board": "Sök bland inlägg eller ange ett board",
   "archive_search_subtitle": "Sök bland indexerade inlägg på 5chan-forum.",
-  "search_results_heading": "Visar {{count}} av {{total}} resultat för ”{{query}}”",
   "search_no_results": "Inga indexerade inlägg matchade. Prova mer allmänna sökord.",
   "change_provider": "Byt leverantör",
   "results_provided_by": "Resultat tillhandahållna av",
   "search_provider_unavailable": "Sökleverantören är inte tillgänglig. Försök igen senare eller byt leverantör.",
   "current_provider": "nuvarande leverantör",
-  "search_provider_directory_subtitle": "Välj vilken oberoende indexerare som driver /search/. Leverantörer kan se dina söktermer."
+  "search_provider_directory_subtitle": "Välj vilken oberoende indexerare som driver /search/. Leverantörer kan se dina söktermer.",
+  "search_provider": "Indexerare",
+  "use": "använd"
 }

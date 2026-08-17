@@ -466,11 +466,12 @@
   "archive_search_title": "/search/ - ఆర్కైవ్ శోధన",
   "search_posts_or_board": "పోస్ట్‌లను వెతకండి లేదా బోర్డ్‌ను నమోదు చేయండి",
   "archive_search_subtitle": "5chan బోర్డులలో ఇండెక్స్ చేసిన పోస్ట్‌లను వెతకండి.",
-  "search_results_heading": "“{{query}}” కోసం మొత్తం {{total}} ఫలితాల్లో {{count}} ఫలితాలు చూపబడుతున్నాయి",
   "search_no_results": "ఇండెక్స్ చేసిన పోస్ట్‌లేవీ సరిపోలలేదు. మరింత సాధారణ పదాలతో ప్రయత్నించండి.",
   "change_provider": "ప్రొవైడర్‌ను మార్చండి",
   "results_provided_by": "ఫలితాల ప్రదాత",
   "search_provider_unavailable": "శోధన ప్రొవైడర్ అందుబాటులో లేదు. తర్వాత మళ్లీ ప్రయత్నించండి లేదా ప్రొవైడర్‌ను మార్చండి.",
   "current_provider": "ప్రస్తుత ప్రొవైడర్",
-  "search_provider_directory_subtitle": "ఏ స్వతంత్ర ఇండెక్సర్ /search/ను నడపాలో ఎంచుకోండి. ప్రొవైడర్లు మీ శోధన పదాలను చూడగలరు."
+  "search_provider_directory_subtitle": "ఏ స్వతంత్ర ఇండెక్సర్ /search/ను నడపాలో ఎంచుకోండి. ప్రొవైడర్లు మీ శోధన పదాలను చూడగలరు.",
+  "search_provider": "ఇండెక్సర్",
+  "use": "ఉపయోగించు"
 }

@@ -466,11 +466,12 @@
   "archive_search_title": "/search/ - Paghahanap sa Arkibo",
   "search_posts_or_board": "Maghanap ng mga post o maglagay ng board",
   "archive_search_subtitle": "Maghanap ng mga naka-index na post sa mga board ng 5chan.",
-  "search_results_heading": "Ipinapakita ang {{count}} sa kabuuang {{total}} resulta para sa “{{query}}”",
   "search_no_results": "Walang tumugmang naka-index na post. Subukan ang mas pangkalahatang mga termino.",
   "change_provider": "Palitan ang provider",
   "results_provided_by": "Mga resultang ibinigay ng",
   "search_provider_unavailable": "Hindi available ang search provider. Subukan muli mamaya o palitan ang provider.",
   "current_provider": "kasalukuyang provider",
-  "search_provider_directory_subtitle": "Piliin kung aling independiyenteng indexer ang magpapatakbo sa /search/. Makikita ng mga provider ang iyong mga termino sa paghahanap."
+  "search_provider_directory_subtitle": "Piliin kung aling independiyenteng indexer ang magpapatakbo sa /search/. Makikita ng mga provider ang iyong mga termino sa paghahanap.",
+  "search_provider": "Indexer",
+  "use": "gamitin"
 }

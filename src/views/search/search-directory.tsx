@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import capitalize from 'lodash/capitalize';
+import { BottomButton, TopButton } from '../../components/board-buttons/board-buttons';
+import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer/footer';
+import { SEARCH_PATH } from '../../lib/search-navigation';
 import { SEARCH_PROVIDERS } from '../../lib/search-providers';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
-import styles from './search.module.css';
-
-const SEARCH_PATH = '/search';
+import styles from '../directory/directory.module.css';
 
 /** The search that linked here travels in the router state, so the query stays out of this URL. */
 const getReturnPath = (state: unknown): string => {
@@ -13,6 +15,61 @@ const getReturnPath = (state: unknown): string => {
   return typeof returnPath === 'string' && returnPath.startsWith(`${SEARCH_PATH}?`) ? returnPath : SEARCH_PATH;
 };
 
+const ReturnToSearchButton = ({ returnPath }: { returnPath: string }) => {
+  const { t } = useTranslation();
+
+  return (
+    <Link className='button' to={returnPath}>
+      {t('return')}
+    </Link>
+  );
+};
+
+const DesktopTopControls = ({ returnPath }: { returnPath: string }) => (
+  <div className={styles.desktopNavLinks}>
+    <div className={styles.navButtonGroup}>
+      <span>
+        [<ReturnToSearchButton returnPath={returnPath} />]
+      </span>
+      <span>
+        [<BottomButton />]
+      </span>
+    </div>
+  </div>
+);
+
+const DesktopFooterControls = ({ returnPath }: { returnPath: string }) => (
+  <div className={styles.desktopFooterButtons}>
+    <div className={styles.navButtonGroup}>
+      <span>
+        [<ReturnToSearchButton returnPath={returnPath} />]
+      </span>
+      <span>
+        [<TopButton />]
+      </span>
+    </div>
+  </div>
+);
+
+const MobileTopControls = ({ returnPath }: { returnPath: string }) => (
+  <div className={styles.mobileNavLinks}>
+    <div>
+      <ReturnToSearchButton returnPath={returnPath} />
+      <BottomButton />
+    </div>
+  </div>
+);
+
+const MobileFooterControls = ({ returnPath }: { returnPath: string }) => (
+  <div className={styles.mobileFooterButtons}>
+    <div>
+      <ReturnToSearchButton returnPath={returnPath} />
+      <TopButton />
+    </div>
+  </div>
+);
+
+/** Directory of the indexers that can power /search/, laid out like the board directories. */
 const SearchDirectory = () => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -25,49 +82,73 @@ const SearchDirectory = () => {
   }, [t]);
 
   return (
-    <main className={styles.page}>
-      <div className={styles.directoryNav}>
-        [<Link to={returnPath}>{t('return')}</Link>]
-      </div>
-      <h4 className={styles.summary}>{t('search_provider_directory_subtitle')}</h4>
-      <table className={styles.providerTable}>
+    <div id='top' className={styles.page}>
+      <MobileTopControls returnPath={returnPath} />
+      <hr className={styles.desktopDivider} />
+      <DesktopTopControls returnPath={returnPath} />
+      <hr className={styles.divider} />
+
+      <table className={styles.flashListing}>
         <thead>
           <tr>
-            <th scope='col'>No.</th>
-            <th scope='col'>{capitalizeFirst(t('name'))}</th>
-            <th scope='col'>API</th>
-            <th scope='col'>{t('directory_status')}</th>
+            <th className={styles.postblock} scope='col'>
+              No.
+            </th>
+            <th className={styles.postblock} scope='col'>
+              {t('search_provider')}
+            </th>
+            <th className={styles.postblock} scope='col'>
+              API
+            </th>
+            <th className={styles.postblock} scope='col'>
+              {t('directory_status')}
+            </th>
+            <th className={styles.postblock} scope='col'>
+              {capitalize(t('use'))}
+            </th>
           </tr>
         </thead>
         <tbody>
           {SEARCH_PROVIDERS.map((provider, index) => {
             const isSelected = provider.id === selectedProviderId;
+
             return (
-              <tr key={provider.id} className={index % 2 === 0 ? styles.rowOdd : undefined}>
-                <td>{index + 1}</td>
-                <td>
-                  <label>
-                    <input type='radio' name='search-provider' value={provider.id} checked={isSelected} onChange={() => setSelectedProviderId(provider.id)} />{' '}
-                    <a href={provider.siteUrl} target='_blank' rel='noreferrer noopener'>
-                      {provider.name}
-                    </a>
-                  </label>
+              <tr key={provider.id} className={`${styles.dirRow} ${index % 2 === 0 ? styles.rowOdd : ''}`}>
+                <td className={styles.numberCell}>{index + 1}</td>
+                <td className={styles.boardCol}>
+                  <a href={provider.siteUrl} target='_blank' rel='noreferrer noopener'>
+                    {provider.name}
+                  </a>
                 </td>
-                <td>
+                <td className={styles.ownerCell}>
                   <a href={provider.apiUrl} target='_blank' rel='noreferrer noopener'>
                     {new URL(provider.apiUrl).host}
                   </a>
                 </td>
-                <td>{isSelected ? t('current_provider') : ''}</td>
+                <td className={styles.statusCell}>{isSelected ? <span className={styles.statusOnline}>{t('current_provider')}</span> : null}</td>
+                <td className={styles.actionsCell}>
+                  {isSelected ? null : (
+                    <>
+                      [
+                      <button type='button' className={styles.actionButton} onClick={() => setSelectedProviderId(provider.id)}>
+                        {t('use')}
+                      </button>
+                      ]
+                    </>
+                  )}
+                </td>
               </tr>
             );
           })}
         </tbody>
       </table>
-    </main>
+
+      <PageFooterDesktop firstRow={<DesktopFooterControls returnPath={returnPath} />} styleRow={<ThreadFooterStyleRow />} />
+      <PageFooterMobile>
+        <MobileFooterControls returnPath={returnPath} />
+      </PageFooterMobile>
+    </div>
   );
 };
-
-const capitalizeFirst = (value: string): string => (value ? `${value[0].toUpperCase()}${value.slice(1)}` : value);
 
 export default SearchDirectory;

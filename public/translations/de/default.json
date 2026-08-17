@@ -466,11 +466,12 @@
   "archive_search_title": "/search/ - Archivsuche",
   "search_posts_or_board": "Beiträge durchsuchen oder Board eingeben",
   "archive_search_subtitle": "Durchsuche indexierte Beiträge auf 5chan-Boards.",
-  "search_results_heading": "{{count}} von {{total}} Ergebnissen für „{{query}}“ werden angezeigt",
   "search_no_results": "Keine indexierten Beiträge entsprechen der Suche. Versuche es mit allgemeineren Suchbegriffen.",
   "change_provider": "Anbieter wechseln",
   "results_provided_by": "Ergebnisse bereitgestellt von",
   "search_provider_unavailable": "Der Suchanbieter ist nicht verfügbar. Versuchen Sie es später erneut oder wechseln Sie den Anbieter.",
   "current_provider": "aktueller Anbieter",
-  "search_provider_directory_subtitle": "Wählen Sie aus, welcher unabhängige Indexer /search/ betreibt. Anbieter können Ihre Suchbegriffe sehen."
+  "search_provider_directory_subtitle": "Wählen Sie aus, welcher unabhängige Indexer /search/ betreibt. Anbieter können Ihre Suchbegriffe sehen.",
+  "search_provider": "Indexer",
+  "use": "verwenden"
 }

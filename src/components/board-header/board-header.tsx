@@ -122,9 +122,11 @@ const BoardHeader = memo(() => {
       ? '/subs/ - Subscriptions'
       : isInModView
         ? '/mod/ - Boards You Moderate'
-        : isInSearchView
-          ? getSearchTitle(searchQuery, searchSummary)
-          : defaultCommunity?.title || specialBoard?.title || stableCommunity?.title;
+        : isInSearchDirectoryView
+          ? '/search/ - 5chan Search'
+          : isInSearchView
+            ? getSearchTitle(searchQuery, searchSummary)
+            : defaultCommunity?.title || specialBoard?.title || stableCommunity?.title;
   const subtitle = isInAllView ? (
     t('all_subtitle')
   ) : isInSubscriptionsView ? (

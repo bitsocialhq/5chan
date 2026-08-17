@@ -466,11 +466,12 @@
   "archive_search_title": "/search/ - संग्रह शोध",
   "search_posts_or_board": "पोस्ट शोधा किंवा बोर्ड प्रविष्ट करा",
   "archive_search_subtitle": "5chan च्या बोर्डांवरील अनुक्रमित पोस्ट शोधा.",
-  "search_results_heading": "“{{query}}” साठी {{total}} पैकी {{count}} परिणाम दाखवले जात आहेत",
   "search_no_results": "कोणतीही अनुक्रमित पोस्ट जुळली नाही. अधिक सामान्य संज्ञा वापरून पहा.",
   "change_provider": "प्रदाता बदला",
   "results_provided_by": "निकाल प्रदाता",
   "search_provider_unavailable": "शोध प्रदाता उपलब्ध नाही. नंतर पुन्हा प्रयत्न करा किंवा प्रदाता बदला.",
   "current_provider": "सध्याचा प्रदाता",
-  "search_provider_directory_subtitle": "कोणता स्वतंत्र इंडेक्सर /search/ चालवेल ते निवडा. प्रदाते तुमच्या शोध संज्ञा पाहू शकतात."
+  "search_provider_directory_subtitle": "कोणता स्वतंत्र इंडेक्सर /search/ चालवेल ते निवडा. प्रदाते तुमच्या शोध संज्ञा पाहू शकतात.",
+  "search_provider": "इंडेक्सर",
+  "use": "वापरा"
 }

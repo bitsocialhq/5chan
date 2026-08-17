@@ -466,11 +466,12 @@
   "archive_search_title": "/search/ - Пошук в архіві",
   "search_posts_or_board": "Шукайте дописи або введіть дошку",
   "archive_search_subtitle": "Шукайте проіндексовані дописи на дошках 5chan.",
-  "search_results_heading": "Показано {{count}} із {{total}} результатів для запиту «{{query}}»",
   "search_no_results": "Не знайдено відповідних проіндексованих дописів. Спробуйте загальніші пошукові терміни.",
   "change_provider": "Змінити провайдера",
   "results_provided_by": "Результати від",
   "search_provider_unavailable": "Пошуковий провайдер недоступний. Спробуйте пізніше або змініть провайдера.",
   "current_provider": "поточний провайдер",
-  "search_provider_directory_subtitle": "Виберіть, який незалежний індексатор обслуговуватиме /search/. Провайдери можуть бачити ваші пошукові запити."
+  "search_provider_directory_subtitle": "Виберіть, який незалежний індексатор обслуговуватиме /search/. Провайдери можуть бачити ваші пошукові запити.",
+  "search_provider": "Індексатор",
+  "use": "вибрати"
 }

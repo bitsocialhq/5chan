@@ -466,11 +466,12 @@
   "archive_search_title": "/search/ - جست‌وجو در بایگانی",
   "search_posts_or_board": "پست‌ها را جست‌وجو کنید یا یک برد وارد کنید",
   "archive_search_subtitle": "پست‌های نمایه‌شده را در بردهای 5chan جست‌وجو کنید.",
-  "search_results_heading": "نمایش {{count}} مورد از {{total}} نتیجه برای «{{query}}»",
   "search_no_results": "هیچ پست نمایه‌شده‌ای مطابقت نداشت. عبارت‌های کلی‌تری را امتحان کنید.",
   "change_provider": "تغییر ارائه‌دهنده",
   "results_provided_by": "نتایج ارائه‌شده توسط",
   "search_provider_unavailable": "ارائه‌دهندهٔ جست‌وجو در دسترس نیست. بعداً دوباره تلاش کنید یا ارائه‌دهنده را تغییر دهید.",
   "current_provider": "ارائه‌دهنده فعلی",
-  "search_provider_directory_subtitle": "انتخاب کنید کدام نمایه‌ساز مستقل /search/ را اجرا کند. ارائه‌دهندگان می‌توانند عبارت‌های جست‌وجوی شما را ببینند."
+  "search_provider_directory_subtitle": "انتخاب کنید کدام نمایه‌ساز مستقل /search/ را اجرا کند. ارائه‌دهندگان می‌توانند عبارت‌های جست‌وجوی شما را ببینند.",
+  "search_provider": "نمایه‌ساز",
+  "use": "استفاده"
 }

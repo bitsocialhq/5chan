@@ -466,11 +466,12 @@
   "archive_search_title": "/search/ - Arkivsøgning",
   "search_posts_or_board": "Søg i opslag, eller indtast et board",
   "archive_search_subtitle": "Søg i indekserede indlæg på tværs af 5chan-boards.",
-  "search_results_heading": "Viser {{count}} ud af {{total}} resultater for “{{query}}”",
   "search_no_results": "Ingen indekserede opslag matchede. Prøv mere generelle søgeord.",
   "change_provider": "Skift udbyder",
   "results_provided_by": "Resultater leveret af",
   "search_provider_unavailable": "Søgeudbyderen er ikke tilgængelig. Prøv igen senere, eller skift udbyder.",
   "current_provider": "nuværende udbyder",
-  "search_provider_directory_subtitle": "Vælg, hvilken uafhængig indekseringstjeneste der driver /search/. Udbydere kan se dine søgeord."
+  "search_provider_directory_subtitle": "Vælg, hvilken uafhængig indekseringstjeneste der driver /search/. Udbydere kan se dine søgeord.",
+  "search_provider": "Indeksering",
+  "use": "brug"
 }

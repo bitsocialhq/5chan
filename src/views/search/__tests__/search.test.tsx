@@ -215,7 +215,10 @@ describe('archive search', () => {
 
     expect(container.textContent).toContain('5archive.org');
     expect(container.textContent).toContain('current_provider');
-    expect(container.querySelector<HTMLInputElement>('input[type="radio"]')?.checked).toBe(true);
+    // The selected provider has no [use] action, the way board directories mark their current board.
+    expect([...container.querySelectorAll('button')].some((button) => button.textContent === 'use')).toBe(false);
+    // It is laid out like the board directories, with their button rows and footer.
+    expect([...container.querySelectorAll('button')].some((button) => button.textContent === 'bottom')).toBe(true);
     expect(container.querySelector<HTMLAnchorElement>('a[href="/search?q=archive"]')).toBeTruthy();
   });
 

@@ -7,8 +7,7 @@
   font-size: var(--body-font-size);
 }
 
-.desktopDivider,
-.divider {
+.desktopDivider {
   display: block;
 }
 
@@ -98,47 +97,21 @@
   cursor: pointer;
 }
 
-.providerNote,
 .intro,
-.summary,
-.empty,
-.error,
-.loading,
-.pagination {
+.error {
   text-align: center;
 }
 
-.providerNote {
-  margin: 0 5px 12px;
-  font-size: 11px;
-}
-
-.providerNote a,
-.pagination a,
-.directoryNav a,
-.providerTable a {
-  color: var(--post-link-text-color);
-  text-decoration: var(--post-content-link-text-decoration);
-}
-
-.providerNote a:hover,
-.pagination a:hover,
-.directoryNav a:hover,
-.providerTable a:hover {
-  color: var(--post-link-text-color-hover);
-  text-decoration: var(--post-content-link-text-decoration-hover);
+/* Feed states sit where the results do, like the board feed footer. */
+.empty,
+.loading {
+  color: var(--post-mobile-abbr-text-color);
+  padding: 15px 0 20px 5px;
 }
 
 .intro,
-.summary,
-.empty,
-.error,
-.loading {
+.error {
   margin: 12px 5px;
-}
-
-.summary {
-  font-size: 10pt;
 }
 
 .error {
@@ -170,72 +143,6 @@
   color: #000;
 }
 
-.pagination {
-  margin: 12px 5px 0;
-}
-
-.directoryNav {
-  margin: 0 0 8px;
-}
-
-.providerTable {
-  width: min(810px, calc(100% - 10px));
-  margin: 10px auto 0;
-  border-collapse: separate;
-  border-spacing: 1px;
-}
-
-.providerTable th,
-.providerTable td {
-  padding: 3px 5px;
-  text-align: center;
-  font-size: 12px;
-}
-
-.providerTable th {
-  padding: 5px;
-  border: 1px solid #000;
-  background: #98e;
-}
-
-:global(body.yotsuba) .providerTable th {
-  background: #ea8;
-}
-
-:global(body.futaba) .providerTable th {
-  background: #f0e0d6;
-}
-
-:global(body.burichan) .providerTable th {
-  background: #c3c9e9;
-}
-
-:global(body.tomorrow) .providerTable th {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-:global(body.spooky) .providerTable th {
-  background: #1b1024;
-}
-
-:global(body.yotsuba) .rowOdd td,
-:global(body.futaba) .rowOdd td {
-  background: #ede2d4;
-}
-
-:global(body.yotsuba-b) .rowOdd td,
-:global(body.burichan) .rowOdd td {
-  background: #e0e5f6;
-}
-
-:global(body.tomorrow) .rowOdd td {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-:global(body.spooky) .rowOdd td {
-  background: #1b1024;
-}
-
 @media (max-width: 640px) {
   .page {
     padding-top: 2px;
@@ -254,12 +161,4 @@
     font-size: 16px;
   }
 
-  .providerTable {
-    width: calc(100% - 10px);
-  }
-
-  .providerTable th,
-  .providerTable td {
-    overflow-wrap: anywhere;
-  }
 }

@@ -466,11 +466,12 @@
   "archive_search_title": "/search/ - Arşiv Arama",
   "search_posts_or_board": "Gönderilerde ara veya bir pano gir",
   "archive_search_subtitle": "5chan panolarındaki dizine eklenmiş gönderileri arayın.",
-  "search_results_heading": "“{{query}}” için {{total}} sonuçtan {{count}} tanesi gösteriliyor",
   "search_no_results": "Dizine alınmış hiçbir gönderi eşleşmedi. Daha genel terimler deneyin.",
   "change_provider": "Sağlayıcıyı değiştir",
   "results_provided_by": "Sonuç sağlayıcısı",
   "search_provider_unavailable": "Arama sağlayıcısı kullanılamıyor. Daha sonra tekrar deneyin veya sağlayıcıyı değiştirin.",
   "current_provider": "mevcut sağlayıcı",
-  "search_provider_directory_subtitle": "/search/ özelliğini hangi bağımsız dizin oluşturucunun destekleyeceğini seçin. Sağlayıcılar arama terimlerinizi görebilir."
+  "search_provider_directory_subtitle": "/search/ özelliğini hangi bağımsız dizin oluşturucunun destekleyeceğini seçin. Sağlayıcılar arama terimlerinizi görebilir.",
+  "search_provider": "Dizinleyici",
+  "use": "kullan"
 }

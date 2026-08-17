@@ -466,11 +466,12 @@
   "archive_search_title": "/search/ - Zoeken in het archief",
   "search_posts_or_board": "Zoek berichten of voer een board in",
   "archive_search_subtitle": "Doorzoek geïndexeerde berichten op 5chan-boards.",
-  "search_results_heading": "{{count}} van {{total}} resultaten voor ‘{{query}}’ worden weergegeven",
   "search_no_results": "Er zijn geen overeenkomende geïndexeerde berichten gevonden. Probeer algemenere zoektermen.",
   "change_provider": "Provider wijzigen",
   "results_provided_by": "Resultaten geleverd door",
   "search_provider_unavailable": "De zoekprovider is niet beschikbaar. Probeer het later opnieuw of kies een andere provider.",
   "current_provider": "huidige provider",
-  "search_provider_directory_subtitle": "Kies welke onafhankelijke indexer /search/ aandrijft. Providers kunnen je zoektermen zien."
+  "search_provider_directory_subtitle": "Kies welke onafhankelijke indexer /search/ aandrijft. Providers kunnen je zoektermen zien.",
+  "search_provider": "Indexeerder",
+  "use": "gebruiken"
 }
