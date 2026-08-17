@@ -135,6 +135,10 @@ vi.mock('../../../hooks/use-now-seconds', () => ({
   useNowSeconds: () => testState.nowSeconds,
 }));
 
+vi.mock('../../../hooks/use-pubsub-voter', () => ({
+  usePubsubVoter: () => ({ state: 'unavailable' }),
+}));
+
 vi.mock('../../../stores/use-community-offline-store', () => ({
   default: <T,>(selector: (state: { communityOfflineState: typeof testState.offlineStates }) => T) =>
     selector({
@@ -223,6 +227,7 @@ describe('Directory', () => {
   it('shows online status for a listed board after loading its community', async () => {
     await renderDirectory();
 
+    expect(container.querySelector('#top')?.getAttribute('data-pubsub-voter-state')).toBe('unavailable');
     const cells = Array.from(getDirectoryRow()?.querySelectorAll('td') ?? []).map((cell) => cell.textContent?.replace(/\s+/g, ' ').trim());
     expect(cells.slice(0, 5)).toEqual(['1', 'anime-and-manga.bso', 'directory_owner_anonymous', 'online', '12']);
     expect(cells[5]).toContain('+1');

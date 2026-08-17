@@ -18,6 +18,7 @@ import { get5chanDeveloperBadge } from '../../lib/utils/author-display-utils';
 import useCommunityOfflineStore from '../../stores/use-community-offline-store';
 import useIsCommunityOffline from '../../hooks/use-is-community-offline';
 import { useNowSeconds } from '../../hooks/use-now-seconds';
+import { usePubsubVoter } from '../../hooks/use-pubsub-voter';
 import postStyles from '../post/post.module.css';
 import styles from './directory.module.css';
 
@@ -206,6 +207,7 @@ const Directory = () => {
   const { list, loading } = useDirectoryList(isValidDirectoryCode ? boardIdentifier : undefined);
   const communityAddress = useResolvedCommunityAddress();
   const nowSeconds = useNowSeconds();
+  const pubsubVoter = usePubsubVoter();
 
   const ranked = useMemo(() => (list ? sortDirectoryBoardsByRank(list.boards) : []), [list]);
   const directoryTitle = list?.title || (boardIdentifier ? `/${boardIdentifier}/ - ${t('directory')}` : t('directory'));
@@ -229,7 +231,7 @@ const Directory = () => {
   const repoEditUrl = getRepoEditUrl(boardIdentifier!);
 
   return (
-    <div id='top' className={`${styles.page} ${shouldShowSnow() ? styles.garland : ''}`}>
+    <div id='top' className={`${styles.page} ${shouldShowSnow() ? styles.garland : ''}`} data-pubsub-voter-state={pubsubVoter.state}>
       <DirectoryMobileTopControls communityAddress={communityAddress} submitHref={repoEditUrl} />
       <hr className={styles.desktopDivider} />
       <DirectoryDesktopTopControls communityAddress={communityAddress} submitHref={repoEditUrl} />
