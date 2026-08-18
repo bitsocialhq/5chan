@@ -406,7 +406,7 @@
   "not_a_file": "bukan file",
   "tor_author_flag_label": "Pengguna ini ada di Tor",
   "copy_share_link": "Salin tautan bagian",
-  "directory_submit_board": "Kirim board Anda",
+  "directory_submit_board": "Kirim board",
   "all_subtitle": "Forum dengan skor tertinggi dari setiap direktori",
   "tex_preview_protip": "Gunakan tag [math][/math] untuk persamaan sebaris dan tag [eqn][/eqn] untuk persamaan blok.",
   "post_form_math_tags_prompt": "Gunakan <tex>TeX</tex> dengan tag [math] untuk persamaan sebaris dan tag [eqn] untuk persamaan blok.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "Pilih pengindeks independen yang menjalankan /search/. Penyedia dapat melihat istilah pencarian Anda.",
   "search_provider": "Pengindeks",
   "use": "gunakan",
-  "auto": "otomatis"
+  "auto": "otomatis",
+  "directory_submit_provider": "Kirim penyedia"
 }

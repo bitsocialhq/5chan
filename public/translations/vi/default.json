@@ -406,7 +406,7 @@
   "not_a_file": "không phải tệp",
   "tor_author_flag_label": "Người dùng này đang ở trên Tor",
   "copy_share_link": "Sao chép liên kết chia sẻ",
-  "directory_submit_board": "Gửi bảng của bạn",
+  "directory_submit_board": "Gửi một bảng",
   "all_subtitle": "Diễn đàn có điểm cao nhất từ mỗi thư mục",
   "tex_preview_protip": "Sử dụng thẻ [math][/math] cho các phương trình nội dòng và thẻ [eqn][/eqn] cho các phương trình khối.",
   "post_form_math_tags_prompt": "Sử dụng <tex>TeX</tex> với thẻ [math] cho phương trình nội dòng và thẻ [eqn] cho phương trình khối.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "Chọn trình lập chỉ mục độc lập hỗ trợ /search/. Nhà cung cấp có thể thấy các cụm từ tìm kiếm của bạn.",
   "search_provider": "Trình lập chỉ mục",
   "use": "dùng",
-  "auto": "tự động"
+  "auto": "tự động",
+  "directory_submit_provider": "Gửi một nhà cung cấp"
 }

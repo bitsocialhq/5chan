@@ -406,7 +406,7 @@
   "not_a_file": "파일이 아님",
   "tor_author_flag_label": "이 사용자는 Tor를 사용 중입니다",
   "copy_share_link": "공유 링크 복사",
-  "directory_submit_board": "게시판 제출하기",
+  "directory_submit_board": "게시판 제출",
   "all_subtitle": "각 디렉토리의 가장 높은 점수 게시판",
   "tex_preview_protip": "[math][/math] 태그를 인라인 방정식에, [eqn][/eqn] 태그를 블록 방정식에 사용하세요.",
   "post_form_math_tags_prompt": "<tex>TeX</tex>를 인라인 방정식에는 [math] 태그와, 블록 방정식에는 [eqn] 태그와 함께 사용하세요.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "어떤 독립 인덱서가 /search/를 구동할지 선택하세요. 제공업체는 검색어를 볼 수 있습니다.",
   "search_provider": "인덱서",
   "use": "사용",
-  "auto": "자동"
+  "auto": "자동",
+  "directory_submit_provider": "제공자 제출"
 }

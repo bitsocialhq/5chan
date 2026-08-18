@@ -406,7 +406,7 @@
   "not_a_file": "不是文件",
   "tor_author_flag_label": "该用户正在使用 Tor",
   "copy_share_link": "复制分享链接",
-  "directory_submit_board": "提交你的版块",
+  "directory_submit_board": "提交板块",
   "all_subtitle": "来自每个目录的最高评分论坛",
   "tex_preview_protip": "对于行内方程使用 [math][/math] 标签，对于块级方程使用 [eqn][/eqn] 标签。",
   "post_form_math_tags_prompt": "在<tex>TeX</tex>中使用[math]标签表示行内公式，使用[eqn]标签表示块级公式。",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "选择由哪个独立索引器为 /search/ 提供支持。提供商可以看到你的搜索词。",
   "search_provider": "索引器",
   "use": "使用",
-  "auto": "自动"
+  "auto": "自动",
+  "directory_submit_provider": "提交提供方"
 }

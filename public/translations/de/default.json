@@ -406,7 +406,7 @@
   "not_a_file": "keine Datei",
   "tor_author_flag_label": "Dieser Benutzer ist auf Tor",
   "copy_share_link": "Freigabelink kopieren",
-  "directory_submit_board": "Reiche dein Board ein",
+  "directory_submit_board": "Board einreichen",
   "all_subtitle": "Das höchstbewertete Forum aus jedem Verzeichnis",
   "tex_preview_protip": "Verwenden Sie [math][/math]-Tags für Inline-Gleichungen und [eqn][/eqn]-Tags für Block-Gleichungen.",
   "post_form_math_tags_prompt": "Nutze <tex>TeX</tex> mit [math]-Tags für Inline-Gleichungen und [eqn]-Tags für Block-Gleichungen.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "Wählen Sie aus, welcher unabhängige Indexer /search/ betreibt. Anbieter können Ihre Suchbegriffe sehen.",
   "search_provider": "Indexer",
   "use": "verwenden",
-  "auto": "auto"
+  "auto": "auto",
+  "directory_submit_provider": "Anbieter einreichen"
 }

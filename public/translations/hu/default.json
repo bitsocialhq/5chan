@@ -406,7 +406,7 @@
   "not_a_file": "nem fájl",
   "tor_author_flag_label": "Ez a felhasználó a Tor hálózatán van",
   "copy_share_link": "Megosztási hivatkozás másolása",
-  "directory_submit_board": "Küldd be a boardodat",
+  "directory_submit_board": "Board beküldése",
   "all_subtitle": "A legmagasabb pontszámú Fórum minden könyvtárból",
   "tex_preview_protip": "Használja a [math][/math] címkéket beágyazott egyenletekhez és a [eqn][/eqn] címkéket blokk egyenletekhez.",
   "post_form_math_tags_prompt": "Használjon <tex>TeX</tex>-et [math] címkékkel az inline egyenletekhez és [eqn] címkékkel a blokk egyenletekhez.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "Válassza ki, melyik független indexelő működtesse a /search/ keresőt. A szolgáltatók láthatják az Ön keresőkifejezéseit.",
   "search_provider": "Indexelő",
   "use": "használ",
-  "auto": "auto"
+  "auto": "auto",
+  "directory_submit_provider": "Szolgáltató beküldése"
 }

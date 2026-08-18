@@ -406,7 +406,7 @@
   "not_a_file": "ليس ملفًا",
   "tor_author_flag_label": "هذا المستخدم يستخدم Tor",
   "copy_share_link": "نسخ رابط المشاركة",
-  "directory_submit_board": "أرسل لوحتك",
+  "directory_submit_board": "أضف لوحة",
   "all_subtitle": "المنتدى الأعلى تصنيفاً من كل دليل",
   "tex_preview_protip": "استخدم وسوم [math][/math] للمعادلات المضمّنة، و [eqn][/eqn] للمعادلات الكتلية.",
   "post_form_math_tags_prompt": "استخدم <tex>TeX</tex> مع علامات [math] للمعادلات المضمنة وعلامات [eqn] للمعادلات الكاملة.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "اختر أي مفهرس مستقل يشغّل /search/. يمكن للمزوّدين رؤية عبارات البحث الخاصة بك.",
   "search_provider": "مُفهرِس",
   "use": "استخدام",
-  "auto": "تلقائي"
+  "auto": "تلقائي",
+  "directory_submit_provider": "أضف مزودًا"
 }

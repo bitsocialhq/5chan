@@ -406,7 +406,7 @@
   "not_a_file": "ikke en fil",
   "tor_author_flag_label": "Denne brukeren er på Tor",
   "copy_share_link": "Kopier delingslenke",
-  "directory_submit_board": "Send inn boardet ditt",
+  "directory_submit_board": "Send inn et board",
   "all_subtitle": "Forummet med høyest poengsum fra hver katalog",
   "tex_preview_protip": "Bruk [math][/math]-tagger for innebygde ligninger og [eqn][/eqn]-tagger for blokkligninger.",
   "post_form_math_tags_prompt": "Bruk <tex>TeX</tex> med [math] tags for inline ligninger og [eqn] tags for blokk ligninger.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "Velg hvilken uavhengig indekseringstjeneste som driver /search/. Leverandører kan se søkeordene dine.",
   "search_provider": "Indekserer",
   "use": "bruk",
-  "auto": "auto"
+  "auto": "auto",
+  "directory_submit_provider": "Send inn en leverandør"
 }

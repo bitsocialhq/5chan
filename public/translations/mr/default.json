@@ -406,7 +406,7 @@
   "not_a_file": "फाइल नाही",
   "tor_author_flag_label": "हा वापरकर्ता Tor वर आहे",
   "copy_share_link": "शेअर लिंक कॉपी करा",
-  "directory_submit_board": "तुमचा बोर्ड सबमिट करा",
+  "directory_submit_board": "बोर्ड सबमिट करा",
   "all_subtitle": "प्रत्येक डायरेक्टरीमधील सर्वोच्च स्कोर केलेले फोरम",
   "tex_preview_protip": "इनलाइन समीकरणांसाठी [math][/math] टॅग्ज आणि ब्लॉक समीकरणांसाठी [eqn][/eqn] टॅग्ज वापरा.",
   "post_form_math_tags_prompt": "<tex>TeX</tex> चा वापर [math] टॅग्ज सह इनलाइन समीकरणांसाठी आणि [eqn] टॅग्ज सह ब्लॉक समीकरणांसाठी करा.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "कोणता स्वतंत्र इंडेक्सर /search/ चालवेल ते निवडा. प्रदाते तुमच्या शोध संज्ञा पाहू शकतात.",
   "search_provider": "इंडेक्सर",
   "use": "वापरा",
-  "auto": "स्वयं"
+  "auto": "स्वयं",
+  "directory_submit_provider": "प्रदाता सबमिट करा"
 }

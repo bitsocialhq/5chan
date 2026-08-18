@@ -406,7 +406,7 @@
   "not_a_file": "inte en fil",
   "tor_author_flag_label": "Den här användaren är på Tor",
   "copy_share_link": "Kopiera delningslänk",
-  "directory_submit_board": "Skicka in ditt board",
+  "directory_submit_board": "Skicka in ett board",
   "all_subtitle": "Forummet med högst poäng från varje katalog",
   "tex_preview_protip": "Använd [math][/math]-taggar för inline-ekvationer och [eqn][/eqn]-taggar för block-ekvationer.",
   "post_form_math_tags_prompt": "Använd <tex>TeX</tex> med [math] tags för inline ekvationer och [eqn] tags för block ekvationer.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "Välj vilken oberoende indexerare som driver /search/. Leverantörer kan se dina söktermer.",
   "search_provider": "Indexerare",
   "use": "använd",
-  "auto": "auto"
+  "auto": "auto",
+  "directory_submit_provider": "Skicka in en leverantör"
 }

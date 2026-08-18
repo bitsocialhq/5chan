@@ -406,7 +406,7 @@
   "not_a_file": "не файл",
   "tor_author_flag_label": "Цей користувач у Tor",
   "copy_share_link": "Копіювати посилання для спільного доступу",
-  "directory_submit_board": "Надіслати свою дошку",
+  "directory_submit_board": "Додати дошку",
   "all_subtitle": "Форум з найвищим рейтингом з кожного каталогу",
   "tex_preview_protip": "Використовуйте теги [math][/math] для вбудованих рівнянь та теги [eqn][/eqn] для блокових рівнянь.",
   "post_form_math_tags_prompt": "Використовуйте <tex>TeX</tex> з тегами [math] для вбудованих рівнянь та [eqn] для блокових рівнянь.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "Виберіть, який незалежний індексатор обслуговуватиме /search/. Провайдери можуть бачити ваші пошукові запити.",
   "search_provider": "Індексатор",
   "use": "вибрати",
-  "auto": "авто"
+  "auto": "авто",
+  "directory_submit_provider": "Додати провайдера"
 }

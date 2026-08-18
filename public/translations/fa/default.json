@@ -406,7 +406,7 @@
   "not_a_file": "فایل نیست",
   "tor_author_flag_label": "این کاربر روی Tor است",
   "copy_share_link": "کپی کردن لینک اشتراک",
-  "directory_submit_board": "برد خود را ارسال کنید",
+  "directory_submit_board": "ثبت یک برد",
   "all_subtitle": "تالار بالاترین امتیاز از هر دایرکتوری",
   "tex_preview_protip": "برای معادلات درون‌خطی از برچسب‌های [math][/math] و برای معادلات بلوکی از برچسب‌های [eqn][/eqn] استفاده کنید.",
   "post_form_math_tags_prompt": "از <tex>TeX</tex> با برچسب‌های [math] برای معادلات درون‌متنی و برچسب‌های [eqn] برای معادلات بلاکی استفاده کنید.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "انتخاب کنید کدام نمایه‌ساز مستقل /search/ را اجرا کند. ارائه‌دهندگان می‌توانند عبارت‌های جست‌وجوی شما را ببینند.",
   "search_provider": "نمایه‌ساز",
   "use": "استفاده",
-  "auto": "خودکار"
+  "auto": "خودکار",
+  "directory_submit_provider": "ثبت یک ارائه‌دهنده"
 }

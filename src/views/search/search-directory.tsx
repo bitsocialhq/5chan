@@ -15,6 +15,19 @@ const getReturnPath = (state: unknown): string => {
   return typeof returnPath === 'string' && returnPath.startsWith(`${SEARCH_PATH}?`) ? returnPath : SEARCH_PATH;
 };
 
+/** The provider list lives in the same repo the board directories are submitted to. */
+const SUBMIT_PROVIDER_URL = 'https://github.com/bitsocialnet/lists/edit/master/5chan-search-providers.json';
+
+const SubmitProviderLink = () => {
+  const { t } = useTranslation();
+
+  return (
+    <a className='button' href={SUBMIT_PROVIDER_URL} target='_blank' rel='noreferrer noopener'>
+      {t('directory_submit_provider')}
+    </a>
+  );
+};
+
 const ReturnToSearchButton = ({ returnPath }: { returnPath: string }) => {
   const { t } = useTranslation();
 
@@ -35,6 +48,9 @@ const DesktopTopControls = ({ returnPath }: { returnPath: string }) => (
         [<BottomButton />]
       </span>
     </div>
+    <span className={styles.submitBoardControl}>
+      [<SubmitProviderLink />]
+    </span>
   </div>
 );
 
@@ -48,6 +64,9 @@ const DesktopFooterControls = ({ returnPath }: { returnPath: string }) => (
         [<TopButton />]
       </span>
     </div>
+    <span className={styles.submitBoardControl}>
+      [<SubmitProviderLink />]
+    </span>
   </div>
 );
 
@@ -57,6 +76,9 @@ const MobileTopControls = ({ returnPath }: { returnPath: string }) => (
       <ReturnToSearchButton returnPath={returnPath} />
       <BottomButton />
     </div>
+    <div className={styles.mobileSubmitRow}>
+      <SubmitProviderLink />
+    </div>
   </div>
 );
 
@@ -65,6 +87,9 @@ const MobileFooterControls = ({ returnPath }: { returnPath: string }) => (
     <div>
       <ReturnToSearchButton returnPath={returnPath} />
       <TopButton />
+    </div>
+    <div className={styles.mobileSubmitRow}>
+      <SubmitProviderLink />
     </div>
   </div>
 );
@@ -87,8 +112,7 @@ const SearchDirectory = () => {
 
   // Voting is not enabled for any directory yet, so the buttons explain that, as the board ones do.
   const handleVoteUnavailable = () => {
-    const values = { boardIdentifier: 'search' };
-    window.alert(`${t('directory_voting_unavailable_intro', values)}\n\n${t('directory_voting_unavailable_outro', values)}`);
+    window.alert(`${t('search_directory_voting_unavailable_intro')}\n\n${t('search_directory_voting_unavailable_outro')}`);
   };
 
   return (

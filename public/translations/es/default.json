@@ -406,7 +406,7 @@
   "not_a_file": "no es un archivo",
   "tor_author_flag_label": "Este usuario está en Tor",
   "copy_share_link": "Copiar enlace compartido",
-  "directory_submit_board": "Envía tu board",
+  "directory_submit_board": "Enviar un tablón",
   "all_subtitle": "El foro de mayor puntuación de cada directorio",
   "tex_preview_protip": "Usa etiquetas [math][/math] para ecuaciones en línea y etiquetas [eqn][/eqn] para ecuaciones en bloque.",
   "post_form_math_tags_prompt": "Usa <tex>TeX</tex> con etiquetas [math] para ecuaciones en línea y etiquetas [eqn] para ecuaciones en bloque.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "Elige qué indexador independiente gestiona /search/. Los proveedores pueden ver tus términos de búsqueda.",
   "search_provider": "Indexador",
   "use": "usar",
-  "auto": "auto"
+  "auto": "auto",
+  "directory_submit_provider": "Enviar un proveedor"
 }

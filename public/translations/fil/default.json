@@ -406,7 +406,7 @@
   "not_a_file": "hindi file",
   "tor_author_flag_label": "Ang user na ito ay nasa Tor",
   "copy_share_link": "Kopyahin ang link sa pagbabahagi",
-  "directory_submit_board": "Isumite ang board mo",
+  "directory_submit_board": "Magsumite ng board",
   "all_subtitle": "Ang pinakamataas na nakakuha ng puntos na Board mula sa bawat direktoryo",
   "tex_preview_protip": "Gamitin ang [math][/math] tags para sa inline equations, at [eqn][/eqn] tags para sa block equations.",
   "post_form_math_tags_prompt": "Gumamit ng <tex>TeX</tex> na may [math] tags para sa inline at [eqn] tags para sa block equations.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "Piliin kung aling independiyenteng indexer ang magpapatakbo sa /search/. Makikita ng mga provider ang iyong mga termino sa paghahanap.",
   "search_provider": "Indexer",
   "use": "gamitin",
-  "auto": "awto"
+  "auto": "awto",
+  "directory_submit_provider": "Magsumite ng provider"
 }

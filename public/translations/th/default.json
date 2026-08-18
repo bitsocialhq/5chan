@@ -406,7 +406,7 @@
   "not_a_file": "ไม่ใช่ไฟล์",
   "tor_author_flag_label": "ผู้ใช้นี้อยู่บน Tor",
   "copy_share_link": "คัดลอกลิงก์แชร์",
-  "directory_submit_board": "ส่งบอร์ดของคุณ",
+  "directory_submit_board": "ส่งบอร์ด",
   "all_subtitle": "กระดานที่ได้คะแนนสูงสุดจากแต่ละไดเรกทอรี่",
   "tex_preview_protip": "ใช้แท็ก [math][/math] สำหรับสมการแบบอินไลน์ และใช้แท็ก [eqn][/eqn] สำหรับสมการแบบบล็อก",
   "post_form_math_tags_prompt": "ใช้ <tex>TeX</tex> พร้อมกับแท็ก [math] สำหรับสมการแบบอินไลน์ และแท็ก [eqn] สำหรับสมการแบบบล็อก",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "เลือกตัวจัดทำดัชนีอิสระที่จะขับเคลื่อน /search/ ผู้ให้บริการสามารถเห็นคำค้นหาของคุณได้",
   "search_provider": "ตัวจัดทำดัชนี",
   "use": "ใช้",
-  "auto": "อัตโนมัติ"
+  "auto": "อัตโนมัติ",
+  "directory_submit_provider": "ส่งผู้ให้บริการ"
 }

@@ -406,7 +406,7 @@
   "not_a_file": "to nie plik",
   "tor_author_flag_label": "Ten użytkownik jest w sieci Tor",
   "copy_share_link": "Kopiuj link udostępniania",
-  "directory_submit_board": "Prześlij swój board",
+  "directory_submit_board": "Zgłoś board",
   "all_subtitle": "Forum o najwyższej punktacji z każdego katalogu",
   "tex_preview_protip": "Użyj tagów [math][/math] dla równań wbudowanych i tagów [eqn][/eqn] dla równań blokowych.",
   "post_form_math_tags_prompt": "Użyj <tex>TeX</tex> ze znacznikami [math] dla równań wbudowanych i znacznikami [eqn] dla równań blokowych.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "Wybierz niezależny indekser obsługujący /search/. Dostawcy mogą zobaczyć Twoje wyszukiwane hasła.",
   "search_provider": "Indekser",
   "use": "użyj",
-  "auto": "auto"
+  "auto": "auto",
+  "directory_submit_provider": "Zgłoś dostawcę"
 }

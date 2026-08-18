@@ -406,7 +406,7 @@
   "not_a_file": "geen bestand",
   "tor_author_flag_label": "Deze gebruiker zit op Tor",
   "copy_share_link": "Delen link kopiëren",
-  "directory_submit_board": "Dien je board in",
+  "directory_submit_board": "Board indienen",
   "all_subtitle": "Het Forum met de hoogste score van elke directory",
   "tex_preview_protip": "Gebruik [math][/math]-tags voor inline-vergelijkingen en [eqn][/eqn]-tags voor blok-vergelijkingen.",
   "post_form_math_tags_prompt": "Gebruik <tex>TeX</tex> met [math] tags voor inline vergelijkingen en [eqn] tags voor blok vergelijkingen.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "Kies welke onafhankelijke indexer /search/ aandrijft. Providers kunnen je zoektermen zien.",
   "search_provider": "Indexeerder",
   "use": "gebruiken",
-  "auto": "auto"
+  "auto": "auto",
+  "directory_submit_provider": "Aanbieder indienen"
 }

@@ -406,7 +406,7 @@
   "not_a_file": "לא קובץ",
   "tor_author_flag_label": "המשתמש הזה נמצא ב-Tor",
   "copy_share_link": "העתק קישור שיתוף",
-  "directory_submit_board": "שלח את הבורד שלך",
+  "directory_submit_board": "הגשת לוח",
   "all_subtitle": "הפורום בעל הציון הגבוה ביותר מכל ספריה",
   "tex_preview_protip": "השתמש בתגיות [math][/math] לתוך-שורה, והשתמש בתגיות [eqn][/eqn] לתוך-בלוק.",
   "post_form_math_tags_prompt": "השתמשו ב-<tex>TeX</tex> עם תגי [math] למשוואות בשורה ותגי [eqn] למשוואות בבלוק.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "בחרו איזה אינדקסר עצמאי מפעיל את /search/. הספקים יכולים לראות את מונחי החיפוש שלכם.",
   "search_provider": "מפתחן",
   "use": "השתמש",
-  "auto": "אוטומטי"
+  "auto": "אוטומטי",
+  "directory_submit_provider": "הגשת ספק"
 }

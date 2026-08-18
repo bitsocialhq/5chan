@@ -406,7 +406,7 @@
   "not_a_file": "není soubor",
   "tor_author_flag_label": "Tento uživatel je na síti Tor",
   "copy_share_link": "Kopírovat odkaz pro sdílení",
-  "directory_submit_board": "Odeslat svou nástěnku",
+  "directory_submit_board": "Přidat board",
   "all_subtitle": "Fórum s nejvyšším skóre z každého adresáře",
   "tex_preview_protip": "Použijte značky [math][/math] pro vložené rovnice a značky [eqn][/eqn] pro blokové rovnice.",
   "post_form_math_tags_prompt": "Použijte <tex>TeX</tex> s tagy [math] pro vložené rovnice a tagy [eqn] pro blokové rovnice.",
@@ -474,5 +474,6 @@
   "search_provider_directory_subtitle": "Zvolte, který nezávislý indexer bude zajišťovat /search/. Poskytovatelé mohou vidět vaše hledané výrazy.",
   "search_provider": "Indexer",
   "use": "použít",
-  "auto": "auto"
+  "auto": "auto",
+  "directory_submit_provider": "Přidat poskytovatele"
 }
