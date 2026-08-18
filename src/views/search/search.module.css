@@ -66,18 +66,23 @@
 }
 
 .searchForm {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  margin: 8px auto 4px;
-  max-width: calc(100% - 10px);
+  margin: 20px 0;
+  text-align: center;
 }
 
-/* 4chan field metrics (padding 2px 4px 3px, 10pt arial), themed like the post form fields. */
+/*
+ * find.4chan.org sizes its search controls in static/css/additional.css:
+ * .commentForm input[type=text] { width: 400px; height: 30px; font-size: 18px; padding: 3px 10px }
+ * .commentForm input[type=submit] { width: 60px; height: 30px; font-size: 14px; padding: 3px }
+ * Colors stay on the theme tokens the post form fields use.
+ */
 .searchForm input {
-  box-sizing: content-box;
-  min-width: 0;
-  padding: 2px 4px 3px;
+  box-sizing: border-box;
+  width: 400px;
+  max-width: calc(100% - 10px);
+  height: 30px;
+  padding: 3px 10px;
+  font-size: 18px;
   border: var(--post-form-field-input-border, revert);
   border-radius: 0;
   appearance: var(--post-form-field-input-appearance, revert);
@@ -85,22 +90,37 @@
   background-color: var(--post-form-field-input-background-color, revert);
   color: var(--post-form-field-input-color, revert);
   font-family: var(--post-form-field-font-family, arial, helvetica, sans-serif);
-  font-size: 10pt;
 }
 
 .searchForm input:focus {
   border: var(--post-form-field-input-focus-border, revert);
 }
 
-/* 4chan spaces the search controls with .g-search-ctrl { margin: 0 3px }. */
-.searchForm input,
 .searchForm button {
-  margin: 0 3px;
+  box-sizing: border-box;
+  width: 60px;
+  height: 30px;
+  padding: 3px;
+  font-size: 14px;
   vertical-align: top;
+  cursor: pointer;
 }
 
-.searchForm button {
-  cursor: pointer;
+/* Their own mobile breakpoint and sizes. */
+@media only screen and (max-width: 480px) {
+  .searchForm input {
+    width: 80%;
+    height: 35px;
+    padding: 5px;
+    font-size: 20px;
+  }
+
+  .searchForm button {
+    width: auto;
+    height: 35px;
+    padding: 5px;
+    font-size: 14px;
+  }
 }
 
 /* Feed states sit where the results do, like the board feed footer. */
@@ -153,10 +173,6 @@
 
   .mobileNavLinks {
     display: block;
-  }
-
-  .searchForm input {
-    font-size: 16px;
   }
 
 }
