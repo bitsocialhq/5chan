@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation, useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAccountComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { accountsStore as useAccountsStore } from '../../lib/bitsocial-internals/stores';
 import getShortAddress from '../../lib/get-short-address';
@@ -9,7 +9,7 @@ import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
 import { isArchiveRoute, isDirectoryListRoute, isSearchDirectoryRoute, isSearchRoute } from '../../lib/utils/route-utils';
 import { getSpecialBoardByAddress } from '../../lib/special-boards';
-import { getSearchDirectoryLinkState, MAX_SEARCH_QUERY_LENGTH, SEARCH_DIRECTORY_PATH } from '../../lib/search-navigation';
+import { MAX_SEARCH_QUERY_LENGTH } from '../../lib/search-navigation';
 import { getSearchProvider } from '../../lib/search-providers';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
 import useSearchSummaryStore from '../../stores/use-search-summary-store';
@@ -64,19 +64,8 @@ const SearchProviderSubtitle = ({ query }: { query: string }) => {
   const answeringProviderId = useSearchSummaryStore((state) => (state.query === query ? state.providerId : null));
   const provider = getSearchProvider(answeringProviderId ?? selectedProviderId);
 
-  return (
-    <span>
-      {t('results_provided_by')}{' '}
-      <a href={provider.siteUrl} target='_blank' rel='noreferrer noopener'>
-        {provider.name}
-      </a>{' '}
-      [
-      <Link to={SEARCH_DIRECTORY_PATH} state={getSearchDirectoryLinkState(query)}>
-        {t('change_provider')}
-      </Link>
-      ]
-    </span>
-  );
+  // Plain text like the board address subtitle: the directory button is how you change indexer.
+  return <span>{`${t('results_provided_by')} ${provider.name}`}</span>;
 };
 
 // No props, so parent rerenders never change its output.

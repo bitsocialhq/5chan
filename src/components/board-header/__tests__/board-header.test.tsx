@@ -191,9 +191,9 @@ describe('BoardHeader', () => {
     await renderHeader('/search?q=esteban');
 
     expect(container.textContent).toContain('5chan Search `esteban`');
-    expect(container.textContent).toContain('results_provided_by');
-    expect(container.textContent).toContain('5archive.org');
-    expect(container.querySelector('a[href="/search/directory"]')).toBeTruthy();
+    expect(container.textContent).toContain('results_provided_by 5archive.org');
+    // The subtitle is plain text, like the board address one; the directory has its own button.
+    expect(container.querySelector('[class*="boardSubtitle"] a')).toBeNull();
     expect(container.querySelector('[data-testid="tooltip"]')).toBeNull();
 
     act(() => root.unmount());
