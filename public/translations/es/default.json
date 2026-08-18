@@ -406,7 +406,7 @@
   "not_a_file": "no es un archivo",
   "tor_author_flag_label": "Este usuario está en Tor",
   "copy_share_link": "Copiar enlace compartido",
-  "directory_submit_board": "Envía tu board",
+  "directory_submit_board": "Enviar un tablón",
   "all_subtitle": "El foro de mayor puntuación de cada directorio",
   "tex_preview_protip": "Usa etiquetas [math][/math] para ecuaciones en línea y etiquetas [eqn][/eqn] para ecuaciones en bloque.",
   "post_form_math_tags_prompt": "Usa <tex>TeX</tex> con etiquetas [math] para ecuaciones en línea y etiquetas [eqn] para ecuaciones en bloque.",
@@ -462,5 +462,18 @@
   "modQueue.transferRepliesNotice": "Las respuestas no se mueven. Se eliminan junto con la publicación original.",
   "modQueue.transferTemporaryAccountNotice": "5chan creará una nueva cuenta temporal solo para esta publicación copiada y la eliminará después de publicarla.",
   "trash": "Papelera",
-  "site_legal_meta_powered_by": "Con tecnología de"
+  "site_legal_meta_powered_by": "Con tecnología de",
+  "archive_search_title": "/search/ - Búsqueda en el archivo",
+  "search_posts_or_board": "Busca publicaciones o escribe la dirección de un tablón",
+  "archive_search_subtitle": "Busca publicaciones indexadas en los tablones de 5chan.",
+  "search_no_results": "No se encontraron publicaciones indexadas que coincidieran. Prueba con términos más generales.",
+  "change_provider": "Cambiar proveedor",
+  "results_provided_by": "Resultados proporcionados por",
+  "search_provider_unavailable": "El proveedor de búsqueda no está disponible. Inténtalo de nuevo más tarde o cambia de proveedor.",
+  "current_provider": "proveedor actual",
+  "search_provider_directory_subtitle": "Elige qué indexador independiente gestiona /search/. Los proveedores pueden ver tus términos de búsqueda.",
+  "search_provider": "Indexador",
+  "use": "usar",
+  "auto": "auto",
+  "directory_submit_provider": "Enviar un proveedor"
 }

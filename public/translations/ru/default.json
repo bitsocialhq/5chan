@@ -406,7 +406,7 @@
   "not_a_file": "не файл",
   "tor_author_flag_label": "Этот пользователь находится в Tor",
   "copy_share_link": "Копировать ссылку для общего доступа",
-  "directory_submit_board": "Отправить свою доску",
+  "directory_submit_board": "Добавить доску",
   "all_subtitle": "Форум с наивысшим рейтингом из каждого каталога",
   "tex_preview_protip": "Используйте теги [math][/math] для встроенных уравнений и теги [eqn][/eqn] для блочных уравнений.",
   "post_form_math_tags_prompt": "Используйте <tex>TeX</tex> с тегами [math] для встроенных уравнений и [eqn] для блочных уравнений.",
@@ -462,5 +462,18 @@
   "modQueue.transferRepliesNotice": "Ответы не перемещаются. Они будут удалены вместе с исходным постом.",
   "modQueue.transferTemporaryAccountNotice": "5chan создаст новый временный аккаунт только для этой скопированной публикации, а затем удалит его после публикации.",
   "trash": "Корзина",
-  "site_legal_meta_powered_by": "Работает на базе"
+  "site_legal_meta_powered_by": "Работает на базе",
+  "archive_search_title": "/search/ - Поиск по архиву",
+  "search_posts_or_board": "Поиск постов или ввод адреса доски",
+  "archive_search_subtitle": "Ищите проиндексированные посты на досках 5chan.",
+  "search_no_results": "Подходящих проиндексированных постов не найдено. Попробуйте использовать более общие запросы.",
+  "change_provider": "Сменить провайдера",
+  "results_provided_by": "Результаты от",
+  "search_provider_unavailable": "Поисковый провайдер недоступен. Попробуйте позже или смените провайдера.",
+  "current_provider": "текущий провайдер",
+  "search_provider_directory_subtitle": "Выберите, какой независимый индексатор будет обслуживать /search/. Провайдеры могут видеть ваши поисковые запросы.",
+  "search_provider": "Индексатор",
+  "use": "выбрать",
+  "auto": "авто",
+  "directory_submit_provider": "Добавить провайдера"
 }

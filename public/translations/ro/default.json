@@ -406,7 +406,7 @@
   "not_a_file": "nu este fișier",
   "tor_author_flag_label": "Acest utilizator este pe Tor",
   "copy_share_link": "Copiezi link-ul de partajare",
-  "directory_submit_board": "Trimite boardul tău",
+  "directory_submit_board": "Trimite un board",
   "all_subtitle": "Forumul cu cea mai mare punctaj din fiecare director",
   "tex_preview_protip": "Utilizează etichetele [math][/math] pentru ecuații inline și etichetele [eqn][/eqn] pentru ecuații bloc.",
   "post_form_math_tags_prompt": "Utilizați <tex>TeX</tex> cu taguri [math] pentru ecuații inline și taguri [eqn] pentru ecuații în bloc.",
@@ -462,5 +462,18 @@
   "modQueue.transferRepliesNotice": "Răspunsurile nu sunt mutate. Vor fi șterse odată cu postarea originală.",
   "modQueue.transferTemporaryAccountNotice": "5chan va crea un cont temporar nou doar pentru această postare copiată, apoi îl va șterge după publicare.",
   "trash": "Coș",
-  "site_legal_meta_powered_by": "Susținut de"
+  "site_legal_meta_powered_by": "Susținut de",
+  "archive_search_title": "/search/ - Căutare în arhivă",
+  "search_posts_or_board": "Caută postări sau introdu adresa unui board",
+  "archive_search_subtitle": "Caută postări indexate pe forumurile 5chan.",
+  "search_no_results": "Nicio postare indexată nu s-a potrivit. Încercați termeni mai generali.",
+  "change_provider": "Schimbați furnizorul",
+  "results_provided_by": "Rezultate furnizate de",
+  "search_provider_unavailable": "Furnizorul de căutare nu este disponibil. Încercați din nou mai târziu sau schimbați furnizorul.",
+  "current_provider": "furnizor actual",
+  "search_provider_directory_subtitle": "Alegeți ce indexator independent deservește /search/. Furnizorii vă pot vedea termenii de căutare.",
+  "search_provider": "Indexator",
+  "use": "folosește",
+  "auto": "auto",
+  "directory_submit_provider": "Trimite un furnizor"
 }

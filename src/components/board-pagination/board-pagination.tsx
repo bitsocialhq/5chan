@@ -7,6 +7,12 @@ import StyleSelector from '../style-selector/style-selector';
 import footerStyles from '../footer/footer.module.css';
 import styles from './board-pagination.module.css';
 
+export interface BoardPaginationFooterLink {
+  label: string;
+  state?: unknown;
+  to: string;
+}
+
 interface BoardPaginationProps {
   basePath: string;
   currentPage: number;
@@ -16,16 +22,30 @@ interface BoardPaginationProps {
   footerStyle?: boolean;
   /** When true, pagelist is never shown (multiboards always use infinite scroll) */
   isMultiboard?: boolean;
+  /** Overrides the default `<basePath>/<page>` links, for feeds paginated by query string. */
+  getPageHref?: (page: number) => { pathname: string; search?: string };
+  /** Replaces the trailing Catalog/Archive links. Feeds using it are paginated by their provider, so the infinite-scroll shortcut is dropped. */
+  footerLinks?: BoardPaginationFooterLink[];
 }
 
-const BoardPagination = ({ basePath, currentPage, search = '', totalPages, footerStyle = false, isMultiboard = false }: BoardPaginationProps) => {
+const BoardPagination = ({
+  basePath,
+  currentPage,
+  search = '',
+  totalPages,
+  footerStyle = false,
+  isMultiboard = false,
+  getPageHref,
+  footerLinks,
+}: BoardPaginationProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const directories = useDirectories();
   const enableInfiniteScroll = useFeedViewSettingsStore((state) => state.enableInfiniteScroll);
   const setEnableInfiniteScroll = useFeedViewSettingsStore((state) => state.setEnableInfiniteScroll);
 
-  const pageHref = (page: number) => ({ pathname: page === 1 ? basePath : `${basePath}/${page}`, search });
+  const supportsInfiniteScroll = !footerLinks;
+  const pageHref = (page: number) => getPageHref?.(page) ?? { pathname: page === 1 ? basePath : `${basePath}/${page}`, search };
   const boardIdentifier = basePath.replace(/^\//, '').split('/')[0];
   const showCatalogLink = !isFlashBoardRoute(boardIdentifier, directories);
   const catalogHref = { pathname: `${basePath}/catalog`, search };
@@ -40,14 +60,14 @@ const BoardPagination = ({ basePath, currentPage, search = '', totalPages, foote
 
     return (
       <div className={`${footerStyles.footerRow} ${isMultiboard ? footerStyles.footerRowRightOnly : ''}`}>
-        {!isMultiboard && !enableInfiniteScroll && (
+        {!isMultiboard && (!enableInfiniteScroll || !supportsInfiniteScroll) && (
           <div className={styles.pagelist}>
             {currentPage > 1 && (
               <button type='button' className={styles.pagelistNavButton} onClick={() => navigate(pageHref(currentPage - 1))}>
                 {t('previous')}
               </button>
             )}
-            {currentPage === 1 && (
+            {currentPage === 1 && supportsInfiniteScroll && (
               <span className={styles.footerPageItem}>
                 <span className={styles.footerPageBracket}>[</span>
                 <button
@@ -83,14 +103,24 @@ const BoardPagination = ({ basePath, currentPage, search = '', totalPages, foote
             ) : (
               <span className={styles.footerNavPlainDisabled}>{t('next')}</span>
             )}
-            {showCatalogLink && (
-              <Link to={catalogHref} className={styles.pagelistSeparatorLink}>
-                {t('catalog')}
-              </Link>
+            {footerLinks ? (
+              footerLinks.map((link) => (
+                <Link key={link.to} to={link.to} state={link.state} className={styles.pagelistSeparatorLink}>
+                  {link.label}
+                </Link>
+              ))
+            ) : (
+              <>
+                {showCatalogLink && (
+                  <Link to={catalogHref} className={styles.pagelistSeparatorLink}>
+                    {t('catalog')}
+                  </Link>
+                )}
+                <Link to={archiveHref} className={styles.pagelistSeparatorLink}>
+                  {t('archive')}
+                </Link>
+              </>
             )}
-            <Link to={archiveHref} className={styles.pagelistSeparatorLink}>
-              {t('archive')}
-            </Link>
           </div>
         )}
         <div className={footerStyles.footerRight}>

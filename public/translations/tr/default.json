@@ -406,7 +406,7 @@
   "not_a_file": "dosya değil",
   "tor_author_flag_label": "Bu kullanıcı Tor'da",
   "copy_share_link": "Paylaşma bağlantısını kopyala",
-  "directory_submit_board": "Panonu Gönder",
+  "directory_submit_board": "Pano gönder",
   "all_subtitle": "Her dizinden en yüksek skorlu Forum",
   "tex_preview_protip": "[math][/math] etiketlerini satır içi denklemler için ve [eqn][/eqn] etiketlerini blok denklemler için kullanın.",
   "post_form_math_tags_prompt": "İnline denklemler için [math] etiketleriyle ve blok denklemler için [eqn] etiketleriyle <tex>TeX</tex> kullanın.",
@@ -462,5 +462,18 @@
   "modQueue.transferRepliesNotice": "Yanıtlar taşınmaz. Orijinal gönderiyle birlikte silinirler.",
   "modQueue.transferTemporaryAccountNotice": "5chan yalnızca bu kopyalanan gönderi için yeni bir geçici hesap oluşturacak, yayımladıktan sonra da silecek.",
   "trash": "Çöp",
-  "site_legal_meta_powered_by": "Şununla desteklenmektedir:"
+  "site_legal_meta_powered_by": "Şununla desteklenmektedir:",
+  "archive_search_title": "/search/ - Arşiv Arama",
+  "search_posts_or_board": "Gönderilerde ara veya pano adresi gir",
+  "archive_search_subtitle": "5chan panolarındaki dizine eklenmiş gönderileri arayın.",
+  "search_no_results": "Dizine alınmış hiçbir gönderi eşleşmedi. Daha genel terimler deneyin.",
+  "change_provider": "Sağlayıcıyı değiştir",
+  "results_provided_by": "Sonuç sağlayıcısı",
+  "search_provider_unavailable": "Arama sağlayıcısı kullanılamıyor. Daha sonra tekrar deneyin veya sağlayıcıyı değiştirin.",
+  "current_provider": "mevcut sağlayıcı",
+  "search_provider_directory_subtitle": "/search/ özelliğini hangi bağımsız dizin oluşturucunun destekleyeceğini seçin. Sağlayıcılar arama terimlerinizi görebilir.",
+  "search_provider": "Dizinleyici",
+  "use": "kullan",
+  "auto": "otomatik",
+  "directory_submit_provider": "Sağlayıcı gönder"
 }

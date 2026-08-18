@@ -406,7 +406,7 @@
   "not_a_file": "to nie plik",
   "tor_author_flag_label": "Ten użytkownik jest w sieci Tor",
   "copy_share_link": "Kopiuj link udostępniania",
-  "directory_submit_board": "Prześlij swój board",
+  "directory_submit_board": "Zgłoś board",
   "all_subtitle": "Forum o najwyższej punktacji z każdego katalogu",
   "tex_preview_protip": "Użyj tagów [math][/math] dla równań wbudowanych i tagów [eqn][/eqn] dla równań blokowych.",
   "post_form_math_tags_prompt": "Użyj <tex>TeX</tex> ze znacznikami [math] dla równań wbudowanych i znacznikami [eqn] dla równań blokowych.",
@@ -462,5 +462,18 @@
   "modQueue.transferRepliesNotice": "Odpowiedzi nie zostaną przeniesione. Zostaną usunięte razem z oryginalnym postem.",
   "modQueue.transferTemporaryAccountNotice": "5chan utworzy nowe konto tymczasowe tylko dla tego skopiowanego posta, a potem usunie je po opublikowaniu.",
   "trash": "Kosz",
-  "site_legal_meta_powered_by": "Obsługiwane przez"
+  "site_legal_meta_powered_by": "Obsługiwane przez",
+  "archive_search_title": "/search/ - Wyszukiwanie w archiwum",
+  "search_posts_or_board": "Szukaj postów lub wpisz adres boardu",
+  "archive_search_subtitle": "Przeszukuj zindeksowane posty na tablicach 5chan.",
+  "search_no_results": "Nie znaleziono pasujących zindeksowanych postów. Spróbuj użyć bardziej ogólnych haseł.",
+  "change_provider": "Zmień dostawcę",
+  "results_provided_by": "Wyniki dostarczone przez",
+  "search_provider_unavailable": "Dostawca wyszukiwania jest niedostępny. Spróbuj ponownie później lub zmień dostawcę.",
+  "current_provider": "obecny dostawca",
+  "search_provider_directory_subtitle": "Wybierz niezależny indekser obsługujący /search/. Dostawcy mogą zobaczyć Twoje wyszukiwane hasła.",
+  "search_provider": "Indekser",
+  "use": "użyj",
+  "auto": "auto",
+  "directory_submit_provider": "Zgłoś dostawcę"
 }

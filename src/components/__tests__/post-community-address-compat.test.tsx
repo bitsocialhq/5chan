@@ -199,6 +199,7 @@ vi.mock('../../lib/utils/view-utils', () => ({
   isModView: () => false,
   isPendingPostView: () => false,
   isPostPageView: (pathname: string) => pathname.includes('/thread/'),
+  isSearchView: (pathname: string) => pathname === '/search',
   isSubscriptionsView: () => false,
 }));
 

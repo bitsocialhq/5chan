@@ -198,6 +198,7 @@ describe('BoardsBar', () => {
     expect(testState.initializeVisibilityMock).toHaveBeenCalledTimes(1);
     expect(container.textContent).toContain('all');
     expect(container.textContent).toContain('subs');
+    expect(container.textContent).toContain('search');
     expect(container.textContent).toContain('mod');
     expect(container.textContent).toContain('custom.eth');
     expect(container.textContent).toContain('mu');
@@ -250,23 +251,12 @@ describe('BoardsBar', () => {
     expect(container.textContent).toContain('[r9k / s5s / vip / q]');
   });
 
-  it('opens the desktop search bar and submits entered board addresses', async () => {
+  it('links the search button straight to the archive search', async () => {
     await renderBoardsBar('/mu');
 
-    await act(async () => {
-      findExactText('Search')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
-
-    const inputs = container.querySelectorAll<HTMLInputElement>('input[type="text"]');
-    const desktopSearchInput = inputs[0];
-    expect(desktopSearchInput).toBeTruthy();
-
-    await act(async () => {
-      desktopSearchInput.value = 'new-board.eth';
-      desktopSearchInput.form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-    });
-
-    expect(testState.navigateMock).toHaveBeenCalledWith('/new-board.eth');
+    expect(getLinkHref('Search')).toBe('/search');
+    // The floating search bar it used to open is gone.
+    expect(container.querySelector('input[type="text"]')).toBeNull();
   });
 
   it('keeps catalog navigation on desktop multiboard and board links', async () => {

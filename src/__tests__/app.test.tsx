@@ -255,6 +255,14 @@ vi.mock('../views/archive/archive', () => ({
   default: makeNamedComponent('archive-view'),
 }));
 
+vi.mock('../views/search/search', () => ({
+  default: makeNamedComponent('search-view'),
+}));
+
+vi.mock('../views/search/search-directory', () => ({
+  default: makeNamedComponent('search-directory-view'),
+}));
+
 vi.mock('../components/boards-bar-edit-modal', () => ({
   default: makeNamedComponent('boards-bar-edit-modal'),
 }));
@@ -633,6 +641,22 @@ describe('App', () => {
 
     expect(container.querySelector('[data-testid="archive-view"]')).toBeNull();
     expect(container.querySelector('[data-testid="not-found-view"]')).toBeTruthy();
+  });
+
+  it('renders search and provider directory routes inside the board shell without a feed', async () => {
+    await renderApp('/search?q=archive');
+
+    expect(container.querySelector('[data-testid="search-view"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="boards-bar"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="feed-cache-container"]')).toBeNull();
+    expect(container.querySelector('[data-testid="post-form"]')).toBeNull();
+
+    act(() => root.unmount());
+    root = createRoot(container);
+    await renderApp('/search/directory');
+
+    expect(container.querySelector('[data-testid="search-directory-view"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="feed-cache-container"]')).toBeNull();
   });
 
   it('enforces board-scoped mod queue access by account role', async () => {

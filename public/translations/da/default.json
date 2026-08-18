@@ -406,7 +406,7 @@
   "not_a_file": "ikke en fil",
   "tor_author_flag_label": "Denne bruger er på Tor",
   "copy_share_link": "Kopier delingslinkk",
-  "directory_submit_board": "Indsend dit board",
+  "directory_submit_board": "Indsend et board",
   "all_subtitle": "Forummet med højeste pointtal fra hvert katalog",
   "tex_preview_protip": "Brug [math][/math]-tags til indlejrede ligninger og [eqn][/eqn]-tags til blokligninger.",
   "post_form_math_tags_prompt": "Brug <tex>TeX</tex> med [math] tags til inline ligninger og [eqn] tags til blok ligninger.",
@@ -462,5 +462,18 @@
   "modQueue.transferRepliesNotice": "Svar flyttes ikke. De slettes sammen med det oprindelige opslag.",
   "modQueue.transferTemporaryAccountNotice": "5chan opretter en ny midlertidig konto kun til dette kopierede opslag og sletter den efter publicering.",
   "trash": "Papirkurv",
-  "site_legal_meta_powered_by": "Drevet af"
+  "site_legal_meta_powered_by": "Drevet af",
+  "archive_search_title": "/search/ - Arkivsøgning",
+  "search_posts_or_board": "Søg i indlæg eller indtast board-adresse",
+  "archive_search_subtitle": "Søg i indekserede indlæg på tværs af 5chan-boards.",
+  "search_no_results": "Ingen indekserede opslag matchede. Prøv mere generelle søgeord.",
+  "change_provider": "Skift udbyder",
+  "results_provided_by": "Resultater leveret af",
+  "search_provider_unavailable": "Søgeudbyderen er ikke tilgængelig. Prøv igen senere, eller skift udbyder.",
+  "current_provider": "nuværende udbyder",
+  "search_provider_directory_subtitle": "Vælg, hvilken uafhængig indekseringstjeneste der driver /search/. Udbydere kan se dine søgeord.",
+  "search_provider": "Indeksering",
+  "use": "brug",
+  "auto": "auto",
+  "directory_submit_provider": "Indsend en udbyder"
 }

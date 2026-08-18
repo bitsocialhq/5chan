@@ -406,7 +406,7 @@
   "not_a_file": "ファイルではありません",
   "tor_author_flag_label": "このユーザーはTorを使用しています",
   "copy_share_link": "シェアリンクをコピー",
-  "directory_submit_board": "掲示板を提出する",
+  "directory_submit_board": "板を申請",
   "all_subtitle": "各ディレクトリから最もスコアの高い掲示板",
   "tex_preview_protip": "[math][/math] タグはインライン数式に、[eqn][/eqn] タグはブロック数式に使用してください。",
   "post_form_math_tags_prompt": "<tex>TeX</tex>をインライン方程式には[math]タグ、ブロック方程式には[eqn]タグと一緒に使用してください。",
@@ -462,5 +462,18 @@
   "modQueue.transferRepliesNotice": "返信は移動されません。元の投稿と一緒に削除されます。",
   "modQueue.transferTemporaryAccountNotice": "5chan はこのコピー投稿専用の一時アカウントを新しく作成し、公開後に削除します。",
   "trash": "ゴミ箱",
-  "site_legal_meta_powered_by": "提供："
+  "site_legal_meta_powered_by": "提供：",
+  "archive_search_title": "/search/ - アーカイブ検索",
+  "search_posts_or_board": "投稿を検索、または板のアドレスを入力",
+  "archive_search_subtitle": "5chanの各掲示板からインデックス済みの投稿を検索します。",
+  "search_no_results": "一致するインデックス済みの投稿はありません。より一般的な語句を試してください。",
+  "change_provider": "プロバイダーを変更",
+  "results_provided_by": "結果の提供元",
+  "search_provider_unavailable": "検索プロバイダーは利用できません。後でもう一度試すか、プロバイダーを変更してください。",
+  "current_provider": "現在のプロバイダー",
+  "search_provider_directory_subtitle": "どの独立インデクサーで /search/ を動作させるか選択してください。プロバイダーは検索語句を見ることができます。",
+  "search_provider": "インデクサ",
+  "use": "使用",
+  "auto": "自動",
+  "directory_submit_provider": "プロバイダーを申請"
 }

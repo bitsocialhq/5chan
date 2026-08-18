@@ -56,8 +56,8 @@ const SettingsModal = () => {
 
   const closeModal = useCallback(() => {
     const newPath = pathname.replace(/\/settings$/, '');
-    navigate(newPath, { state });
-  }, [pathname, navigate, state]);
+    navigate(getSettingsSectionPath(newPath, null, search), { state });
+  }, [pathname, navigate, search, state]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {

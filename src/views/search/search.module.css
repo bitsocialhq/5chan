@@ -1,0 +1,180 @@
+.page {
+  box-sizing: border-box;
+  min-height: 45vh;
+  padding: 0 0 24px;
+  color: var(--body-font-color);
+  font-family: var(--body-font-family);
+  font-size: var(--body-font-size);
+}
+
+.desktopDivider {
+  display: block;
+}
+
+.desktopNavLinks {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-align: left;
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+.desktopNavLinks a:not([class~='button']),
+.desktopFooterButtons a:not([class~='button']) {
+  all: unset;
+}
+
+.desktopNavLinks .rightSideButtons,
+.desktopFooterButtons .rightSideButtons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.mobileNavLinks {
+  display: none;
+  text-align: center;
+  text-transform: capitalize;
+  margin-top: 5px;
+}
+
+.mobileNavLinks button,
+.mobileNavLinks a[class~='button'],
+.mobileFooterButtons button,
+.mobileFooterButtons a[class~='button'] {
+  text-transform: capitalize;
+  margin: 5px 2px;
+}
+
+.mobileNavLinks a:not([class~='button']),
+.mobileFooterButtons a:not([class~='button']) {
+  all: unset;
+}
+
+.desktopFooterButtons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  text-transform: capitalize;
+}
+
+.mobileFooterButtons {
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.searchForm {
+  margin: 20px 0;
+  text-align: center;
+}
+
+/*
+ * find.4chan.org sizes its search controls in static/css/additional.css:
+ * .commentForm input[type=text] { width: 400px; height: 30px; font-size: 18px; padding: 3px 10px }
+ * .commentForm input[type=submit] { width: 60px; height: 30px; font-size: 14px; padding: 3px }
+ * Colors stay on the theme tokens the post form fields use.
+ */
+.searchForm input {
+  box-sizing: border-box;
+  width: 400px;
+  max-width: calc(100% - 10px);
+  height: 30px;
+  padding: 3px 10px;
+  font-size: 18px;
+  border: var(--post-form-field-input-border, revert);
+  border-radius: 0;
+  appearance: var(--post-form-field-input-appearance, revert);
+  outline: var(--post-form-field-input-outline, revert);
+  background-color: var(--post-form-field-input-background-color, revert);
+  color: var(--post-form-field-input-color, revert);
+  font-family: var(--post-form-field-font-family, arial, helvetica, sans-serif);
+}
+
+.searchForm input:focus {
+  border: var(--post-form-field-input-focus-border, revert);
+}
+
+.searchForm button {
+  box-sizing: border-box;
+  width: 60px;
+  height: 30px;
+  /* Their markup separates the two controls with whitespace; JSX drops it, so space it here. */
+  margin-left: 5px;
+  padding: 3px;
+  font-size: 14px;
+  vertical-align: top;
+  cursor: pointer;
+}
+
+/* Their own mobile breakpoint and sizes. */
+@media only screen and (max-width: 480px) {
+  .searchForm input {
+    width: 80%;
+    height: 35px;
+    padding: 5px;
+    font-size: 20px;
+  }
+
+  .searchForm button {
+    width: auto;
+    height: 35px;
+    padding: 5px;
+    font-size: 14px;
+  }
+}
+
+/* Feed states sit where the results do, like the board feed footer. */
+.empty,
+.loading {
+  color: var(--post-mobile-abbr-text-color);
+  padding: 15px 0 20px 5px;
+}
+
+.error {
+  color: red;
+  margin: 12px 5px;
+  text-align: center;
+}
+
+.error button {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--post-link-text-color);
+  cursor: pointer;
+  font: inherit;
+}
+
+.error button:hover {
+  color: var(--post-link-text-color-hover);
+}
+
+.results {
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+/* Registered by use-search-match-highlight while the results are on screen. */
+:global(::highlight(search-match)) {
+  background-color: #ff0;
+  color: #000;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding-top: 2px;
+  }
+
+  .desktopDivider,
+  .desktopNavLinks {
+    display: none;
+  }
+
+  .mobileNavLinks {
+    display: block;
+  }
+
+}

@@ -186,6 +186,16 @@ describe('SettingsModal', () => {
     expect(getLocationState()).toBe(JSON.stringify(routeState));
   });
 
+  it('preserves non-section query parameters when settings closes', async () => {
+    await render('/search/settings?q=archive&section=interface-settings');
+
+    await act(async () => {
+      container.querySelector<HTMLButtonElement>('button[aria-label="close"]')?.click();
+    });
+
+    expect(getLocationText()).toBe('/search?q=archive');
+  });
+
   it('expands and collapses all settings sections', async () => {
     await render('/all/settings');
 

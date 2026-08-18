@@ -137,6 +137,23 @@ describe('useTheme', () => {
     expect(testState.updateFaviconMock).toHaveBeenLastCalledWith('default');
   });
 
+  it('shares the multiboard theme bucket on the archive search', async () => {
+    testState.boardIdentifier = undefined;
+    testState.resolvedAddress = undefined;
+    testState.locationPathname = '/search';
+
+    await renderHook();
+
+    expect(latestValue?.[0]).toBe('tomorrow');
+    expect(document.body.classList.contains('tomorrow')).toBe(true);
+
+    await act(async () => {
+      await latestValue?.[1]('futaba');
+    });
+
+    expect(testState.setThemeMock).toHaveBeenCalledWith('nsfw', 'futaba');
+  });
+
   it('keeps the board theme while an optimistic pending post is being persisted', async () => {
     testState.boardIdentifier = undefined;
     testState.directories = [{ address: 'music-posting.eth', nsfw: true }];

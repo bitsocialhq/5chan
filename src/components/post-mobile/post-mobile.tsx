@@ -10,7 +10,7 @@ import { getHasThumbnail } from '../../lib/utils/media-utils';
 import { getTextColorForBackground, hashStringToColor } from '../../lib/utils/post-utils';
 import { getFormattedDate, getFormattedTimeAgo } from '../../lib/utils/time-utils';
 import { isPendingApprovalAwaiting } from '../../lib/utils/pending-approval-moderation';
-import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { isAllView, isModQueueView, isModView, isPendingPostView, isPostPageView, isSearchView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { formatUserIDForDisplay } from '../../lib/utils/string-utils';
 import useModQueueStore from '../../stores/use-mod-queue-store';
 import { findDirectoryByAddress, useDirectories } from '../../hooks/use-directories';
@@ -113,6 +113,9 @@ const PostInfoAndMedia = ({
   const isInPostPageView = isPostPageView(location.pathname, params);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInModView = isModView(location.pathname);
+  // Search results come from every board, and unlike the multiboard feeds they can be replies too.
+  const isInSearchView = isSearchView(location.pathname);
+  const showBoardLabel = (isInAllView || isInSubscriptionsView || isInModView || isInSearchView) && (!isReply || isInSearchView);
   const isInModQueueView = isModQueueView(location.pathname);
   const getAlertThresholdSeconds = useModQueueStore((state) => state.getAlertThresholdSeconds);
   const currentTime = useCurrentTime(isInModQueueView ? 60 : false);
@@ -317,7 +320,7 @@ const PostInfoAndMedia = ({
             )}
           </span>
           <span className={styles.dateTimePostNum}>
-            {communityAddress && (isInAllView || isInSubscriptionsView || isInModView) && !isReply && boardPath && displayBoardPath && (
+            {communityAddress && showBoardLabel && boardPath && displayBoardPath && (
               <div className={styles.postNumLink}>
                 {' '}
                 <Link to={`/${boardPath}`}>Board: {displayBoardPath}</Link>

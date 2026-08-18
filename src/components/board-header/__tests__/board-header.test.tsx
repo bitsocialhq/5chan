@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BoardHeader from '../board-header';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
+import useSearchSummaryStore from '../../../stores/use-search-summary-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -138,6 +139,7 @@ describe('BoardHeader', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useSearchSummaryStore.setState({ providerId: null, query: '', status: 'pending', total: null });
     testState.accountComment = undefined;
     testState.community = { address: 'music-posting.eth' };
     testState.communityIdentifier = { name: 'music-posting.eth' };
@@ -183,6 +185,43 @@ describe('BoardHeader', () => {
     expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
     expect(container.textContent).not.toContain('subscriptions_subtitle');
     expect(container.textContent).toContain('all_subtitle');
+  });
+
+  it('titles the archive search with its query and provider, without board status chrome', async () => {
+    await renderHeader('/search?q=esteban');
+
+    expect(container.textContent).toContain('5chan Search `esteban`');
+    expect(container.textContent).toContain('results_provided_by 5archive.org');
+    // The subtitle is plain text, like the board address one; the directory has its own button.
+    expect(container.querySelector('[class*="boardSubtitle"] a')).toBeNull();
+    expect(container.querySelector('[data-testid="tooltip"]')).toBeNull();
+
+    act(() => root.unmount());
+    root = createRoot(container);
+    await renderHeader('/search/directory');
+    expect(container.textContent).toContain('search_provider_directory_subtitle');
+  });
+
+  it('credits no indexer when the search failed', async () => {
+    useSearchSummaryStore.getState().setSummary('esteban', 'failed');
+    await renderHeader('/search?q=esteban');
+
+    expect(container.textContent).toContain('5chan Search `esteban`');
+    expect(container.textContent).not.toContain('results_provided_by');
+  });
+
+  it('adds the matched comment count to the archive search title once the results report it', async () => {
+    useSearchSummaryStore.getState().setSummary('esteban', 'answered', 29, '5archive');
+    await renderHeader('/search?q=esteban');
+
+    expect(container.textContent).toContain('5chan Search `esteban` 29 comments');
+
+    // A count from an earlier query is never shown for the current one.
+    act(() => root.unmount());
+    root = createRoot(container);
+    await renderHeader('/search?q=other');
+    expect(container.textContent).toContain('5chan Search `other`');
+    expect(container.textContent).not.toContain('29 comments');
   });
 
   it('renders a clickable subscriptions subtitle that navigates to subscription settings', async () => {

@@ -406,7 +406,7 @@
   "not_a_file": "फाइल नाही",
   "tor_author_flag_label": "हा वापरकर्ता Tor वर आहे",
   "copy_share_link": "शेअर लिंक कॉपी करा",
-  "directory_submit_board": "तुमचा बोर्ड सबमिट करा",
+  "directory_submit_board": "बोर्ड सबमिट करा",
   "all_subtitle": "प्रत्येक डायरेक्टरीमधील सर्वोच्च स्कोर केलेले फोरम",
   "tex_preview_protip": "इनलाइन समीकरणांसाठी [math][/math] टॅग्ज आणि ब्लॉक समीकरणांसाठी [eqn][/eqn] टॅग्ज वापरा.",
   "post_form_math_tags_prompt": "<tex>TeX</tex> चा वापर [math] टॅग्ज सह इनलाइन समीकरणांसाठी आणि [eqn] टॅग्ज सह ब्लॉक समीकरणांसाठी करा.",
@@ -462,5 +462,18 @@
   "modQueue.transferRepliesNotice": "प्रत्युत्तरे हलवली जाणार नाहीत. ती मूळ पोस्टसोबत हटवली जातील.",
   "modQueue.transferTemporaryAccountNotice": "5chan या कॉपी केलेल्या पोस्टसाठीच एक नवीन तात्पुरते खाते तयार करेल आणि प्रकाशित झाल्यावर ते हटवेल.",
   "trash": "कचरा",
-  "site_legal_meta_powered_by": "द्वारे समर्थित"
+  "site_legal_meta_powered_by": "द्वारे समर्थित",
+  "archive_search_title": "/search/ - संग्रह शोध",
+  "search_posts_or_board": "पोस्ट शोधा किंवा बोर्डाचा पत्ता टाका",
+  "archive_search_subtitle": "5chan च्या बोर्डांवरील अनुक्रमित पोस्ट शोधा.",
+  "search_no_results": "कोणतीही अनुक्रमित पोस्ट जुळली नाही. अधिक सामान्य संज्ञा वापरून पहा.",
+  "change_provider": "प्रदाता बदला",
+  "results_provided_by": "निकाल प्रदाता",
+  "search_provider_unavailable": "शोध प्रदाता उपलब्ध नाही. नंतर पुन्हा प्रयत्न करा किंवा प्रदाता बदला.",
+  "current_provider": "सध्याचा प्रदाता",
+  "search_provider_directory_subtitle": "कोणता स्वतंत्र इंडेक्सर /search/ चालवेल ते निवडा. प्रदाते तुमच्या शोध संज्ञा पाहू शकतात.",
+  "search_provider": "इंडेक्सर",
+  "use": "वापरा",
+  "auto": "स्वयं",
+  "directory_submit_provider": "प्रदाता सबमिट करा"
 }
