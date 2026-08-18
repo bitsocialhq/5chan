@@ -1,4 +1,5 @@
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
+import useSearchSummaryStore from '../stores/use-search-summary-store';
 import getShortAddress from './get-short-address';
 import type { SearchProvider } from './search-providers';
 
@@ -37,7 +38,13 @@ export interface IndexerSearchResult {
 }
 
 const MAX_CACHED_SEARCHES = 50;
+/**
+ * A rejected request stays cached only long enough for the render that awaits it to surface the
+ * error; after that it is dropped so returning to the same search retries instead of replaying it.
+ */
+const FAILED_REQUEST_REUSE_MS = 10_000;
 const searchCache = new Map<string, Promise<IndexerSearchResult>>();
+const failedRequestTimes = new Map<string, number>();
 
 const isNullableString = (value: unknown): value is string | null => value === null || typeof value === 'string';
 const isOptionalNullableString = (value: unknown): value is string | null | undefined => value === undefined || isNullableString(value);
@@ -158,23 +165,54 @@ const fetchSearchFromChain = async (providers: SearchProvider[], query: string, 
 
 const getSearchCacheKey = (providers: SearchProvider[], query: string, page: number): string => `${providers.map((provider) => provider.id).join(',')}:${page}:${query}`;
 
+/**
+ * The board header titles the page with the query, the match count and who answered. Publishing
+ * from the request instead of a component effect keeps a reload from showing the previous numbers.
+ * The reset is queued because this runs while the results component renders.
+ */
+const publishSummary = (request: Promise<IndexerSearchResult>, query: string): void => {
+  const { setSummary } = useSearchSummaryStore.getState();
+  queueMicrotask(() => setSummary(query, null, null));
+  request.then(
+    (result) => setSummary(result.query, result.total, result.providerId),
+    () => setSummary(query, null, null),
+  );
+};
+
+const clearCachedRequest = (cacheKey: string): void => {
+  searchCache.delete(cacheKey);
+  failedRequestTimes.delete(cacheKey);
+};
+
+const isStaleFailedRequest = (cacheKey: string): boolean => {
+  const failedAt = failedRequestTimes.get(cacheKey);
+  return failedAt !== undefined && Date.now() - failedAt > FAILED_REQUEST_REUSE_MS;
+};
+
 export const getIndexerSearch = (providers: SearchProvider[], query: string, page: number): Promise<IndexerSearchResult> => {
   const cacheKey = getSearchCacheKey(providers, query, page);
   const cached = searchCache.get(cacheKey);
-  if (cached) return cached;
+  if (cached && !isStaleFailedRequest(cacheKey)) {
+    publishSummary(cached, query);
+    return cached;
+  }
 
   if (searchCache.size >= MAX_CACHED_SEARCHES) {
     const oldestKey = searchCache.keys().next().value;
-    if (oldestKey) searchCache.delete(oldestKey);
+    if (oldestKey) clearCachedRequest(oldestKey);
   }
 
   const request = fetchSearchFromChain(providers, query, page);
+  // Drop the previous failure first, or the retry would look stale too and every render would refetch.
+  failedRequestTimes.delete(cacheKey);
+  request.catch(() => failedRequestTimes.set(cacheKey, Date.now()));
   searchCache.set(cacheKey, request);
+  publishSummary(request, query);
   return request;
 };
 
 export const clearIndexerSearch = (providers: SearchProvider[], query: string, page: number): void => {
-  searchCache.delete(getSearchCacheKey(providers, query, page));
+  clearCachedRequest(getSearchCacheKey(providers, query, page));
 };
 
 type RawCommentPayload = {
@@ -226,7 +264,9 @@ export const getIndexedPostComment = (post: IndexedPost): Comment => {
     author: {
       ...updateAuthor,
       ...rawAuthor,
-      address,
+      // No address: the payload is not signature-checked here, and an address is what grants the
+      // 5chan dev capcode and board role badges. Results must not be able to claim those.
+      address: undefined,
       displayName: post.author_name ?? rawAuthor?.displayName,
       // Published comments carry the pseudonymous User ID; archived payloads only carry the address it derives from.
       shortAddress: rawAuthor?.shortAddress || (address ? getShortAddress(address) || undefined : undefined),

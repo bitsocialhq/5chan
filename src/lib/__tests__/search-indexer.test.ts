@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clearIndexerSearch, getIndexedPostComment, getIndexerSearch, type IndexedPost } from '../search-indexer';
 import { getSearchProvider } from '../search-providers';
 
@@ -25,7 +25,12 @@ const getIndexedPost = (overrides: Partial<IndexedPost> = {}): IndexedPost => ({
 });
 
 describe('search indexer client', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+  });
+
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
   });
 
@@ -109,6 +114,38 @@ describe('search indexer client', () => {
     await expect(getIndexerSearch([provider, { ...provider, id: 'backup' }], query, 1)).rejects.toThrow('503');
   });
 
+  it('replays a fresh failure so the render that awaits it can show the error', async () => {
+    const query = `replay-${Date.now()}`;
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 503 });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(getIndexerSearch(providers, query, 1)).rejects.toThrow('503');
+    await expect(getIndexerSearch(providers, query, 1)).rejects.toThrow('503');
+    // One request: re-rendering after the rejection must not spin up a new one.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries a stale failed search instead of replaying it forever', async () => {
+    const query = `retry-${Date.now()}`;
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 503 })
+      .mockResolvedValue({ ok: true, json: async () => ({ query, page: 1, limit: 25, total: 0, posts: [] }) });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(getIndexerSearch(providers, query, 1)).rejects.toThrow('503');
+
+    // Coming back to the same search later refetches rather than showing the old error.
+    vi.setSystemTime(Date.now() + 60_000);
+    await expect(getIndexerSearch(providers, query, 1)).resolves.toMatchObject({ query });
+
+    // The retry is cached like any other success, so rendering again does not refetch.
+    vi.setSystemTime(Date.now() + 60_000);
+    await expect(getIndexerSearch(providers, query, 1)).resolves.toMatchObject({ query });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
+
   it('rejects invalid provider responses and supports cache invalidation', async () => {
     const query = `invalid-${Date.now()}`;
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ nope: true }) });
@@ -173,6 +210,8 @@ describe('getIndexedPostComment', () => {
     expect(comment.author?.displayName).toBe('Esteban');
     // The User ID pill needs the pseudonym a published comment carries.
     expect(comment.author?.shortAddress).toBe('BDNnYLKvEYeo');
+    // No author address: an unverified payload must not be able to claim a dev or role badge.
+    expect(comment.author?.address).toBeUndefined();
   });
 
   it('restores the published payload from the provider raw comment', () => {

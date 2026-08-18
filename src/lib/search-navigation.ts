@@ -3,6 +3,8 @@ import { getSpecialBoardByAddress, getSpecialBoardByCode } from './special-board
 import { getBoardNameFromDirectoryTitle, getBoardPath } from './utils/route-utils';
 
 const BOARD_ADDRESS_SUFFIX = /\.(?:bso|eth|sol)$/i;
+/** Board public keys are base58btc, so a long query with other characters stays a search. */
+const BOARD_PUBLIC_KEY = /^[1-9A-HJ-NP-Za-km-z]{40,}$/;
 
 export const MAX_SEARCH_QUERY_LENGTH = 200;
 /** /search/ never runs empty: with no query in the URL it searches for 5chan itself. */
@@ -36,7 +38,7 @@ const isBoardInput = (value: string, directories: DirectoryCommunity[]): boolean
   if (getSpecialBoardByCode(value) || getSpecialBoardByAddress(value)) return true;
   if (findDirectoryByAddress(directories, value)) return true;
   if (directories.some((directory) => directory.directoryCode === value)) return true;
-  return BOARD_ADDRESS_SUFFIX.test(value) || value.startsWith('12D3Koo') || value.length > 40;
+  return BOARD_ADDRESS_SUFFIX.test(value) || value.startsWith('12D3Koo') || BOARD_PUBLIC_KEY.test(value);
 };
 
 /** Boards are listed by name on the homepage, so the name opens them too, not just the code or address. */

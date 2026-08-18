@@ -27,6 +27,13 @@ describe('getSearchDestination', () => {
     expect(getSearchDestination('music posting', directories)).toBe('/search?q=music%20posting');
   });
 
+  it('keeps a long non-address token on the search path', () => {
+    const longToken = 'supercalifragilisticexpialidocious-thread-about-nothing';
+    expect(getSearchDestination(longToken, directories)).toBe(`/search?q=${encodeURIComponent(longToken)}`);
+    // Raw board public keys still navigate.
+    expect(getSearchDestination('12D3KooWQdQ6TkVA1Xe9zzaFP6vXBgsLeMAewpLpLwbsAYKivnQy', directories)).toBe('/12D3KooWQdQ6TkVA1Xe9zzaFP6vXBgsLeMAewpLpLwbsAYKivnQy');
+  });
+
   it('ignores empty input', () => {
     expect(getSearchDestination('   ', directories)).toBeNull();
   });

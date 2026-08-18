@@ -23,7 +23,6 @@ import { getSearchProviderChain, type SearchProvider } from '../../lib/search-pr
 import { isSearchCatalogRoute } from '../../lib/utils/route-utils';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
-import useSearchSummaryStore from '../../stores/use-search-summary-store';
 import { Post } from '../post/post';
 import SearchCatalog from './search-catalog';
 import styles from './search.module.css';
@@ -192,14 +191,8 @@ const SearchResults = ({ isCatalogView, page, providers, query }: SearchControls
     return [...threadsByCid.values()];
   }, [matches]);
   const totalPages = Math.min(MAX_SEARCH_PAGES, Math.max(1, Math.ceil(result.total / result.limit)));
-  const setSummary = useSearchSummaryStore((state) => state.setSummary);
 
   useSearchMatchHighlight(resultsRef, query);
-
-  // The board header titles the page with the query, the match count and who answered.
-  useEffect(() => {
-    setSummary(result.query, result.total, result.providerId);
-  }, [result, setSummary]);
 
   return (
     <>

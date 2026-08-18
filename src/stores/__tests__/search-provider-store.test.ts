@@ -26,6 +26,24 @@ describe('search provider store', () => {
     expect(localStorage.getItem(SEARCH_PROVIDER_STORAGE_KEY)).toBeNull();
   });
 
+  it('restores a pinned indexer from storage', async () => {
+    const { SEARCH_PROVIDER_STORAGE_KEY } = await import('../use-search-provider-store');
+    localStorage.setItem(SEARCH_PROVIDER_STORAGE_KEY, '5archive');
+    vi.resetModules();
+
+    const { default: useSearchProviderStore } = await import('../use-search-provider-store');
+    expect(useSearchProviderStore.getState().selectedProviderId).toBe('5archive');
+  });
+
+  it('ignores a stored id that is no longer listed', async () => {
+    const { SEARCH_PROVIDER_STORAGE_KEY } = await import('../use-search-provider-store');
+    localStorage.setItem(SEARCH_PROVIDER_STORAGE_KEY, 'delisted');
+    vi.resetModules();
+
+    const { default: useSearchProviderStore } = await import('../use-search-provider-store');
+    expect(useSearchProviderStore.getState().selectedProviderId).toBeNull();
+  });
+
   it('ignores unknown provider ids', async () => {
     const { default: useSearchProviderStore } = await import('../use-search-provider-store');
 
