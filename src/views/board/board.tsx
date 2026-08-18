@@ -30,7 +30,7 @@ import { isCommentArchived } from '../../lib/utils/comment-moderation-utils';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import { getNonokoPendingAccountCommentIndex } from '../../lib/utils/post-options-utils';
 import { getRawBoardThreadState } from '../../lib/utils/raw-board-thread-state';
-import { getSearchWithTimeFilter, getTimeFilterSuggestion, type TimeFilterSuggestion } from '../../lib/utils/time-filter-utils';
+import { getSearchWithTimeFilter, getSelectedTimeFilterValue, getTimeFilterSuggestion, type TimeFilterSuggestion } from '../../lib/utils/time-filter-utils';
 import { getPretextItemSizeFromElement, resolveFeedVirtualizationMode } from '../../lib/utils/pretext-height-estimates';
 import { isFlashDirectory, isFlashDirectoryCode } from '../../lib/flash-tags';
 import ErrorDisplay from '../../components/error-display/error-display';
@@ -85,6 +85,7 @@ interface BoardFooterProps {
   isInSubscriptionsView: boolean;
   isInModView: boolean;
   isManualRefreshPending: boolean;
+  isAutoExpandingTimeFilter: boolean;
   currentTimeFilterName: string;
   moreThreadsSuggestion: TimeFilterSuggestion | null;
   moreThreadsSuggestionPathname: string | null;
@@ -110,6 +111,7 @@ const BoardFooter = ({
   isInSubscriptionsView,
   isInModView,
   isManualRefreshPending,
+  isAutoExpandingTimeFilter,
   currentTimeFilterName,
   moreThreadsSuggestion,
   moreThreadsSuggestionPathname,
@@ -128,12 +130,13 @@ const BoardFooter = ({
     : feedStateString || (combinedFeedLength === 0 ? t('downloading_board') : t('looking_for_more_posts'));
   const isFeedSucceeded = feedState === 'succeeded';
   const isFeedFailed = feedState === 'failed';
-  const canShowNoThreads = !isManualRefreshPending && (isSingleCommunityBoard ? isKnownEmptySingleCommunityBoard : isFeedSucceeded && !hasMore);
+  const canShowNoThreads =
+    !isManualRefreshPending && !isAutoExpandingTimeFilter && (isSingleCommunityBoard ? isKnownEmptySingleCommunityBoard : isFeedSucceeded && !hasMore);
   const isEmptyFeedLoading = combinedFeedLength === 0 && !canShowNoThreads && (isSingleCommunityBoard ? communityState !== 'failed' : !isFeedFailed);
   const showFooterLoading = showLoadingEllipsis && (hasMore || isEmptyFeedLoading);
 
   let footerContent;
-  if (moreThreadsSuggestion && moreThreadsSuggestionPathname) {
+  if (moreThreadsSuggestion && moreThreadsSuggestionPathname && !isAutoExpandingTimeFilter) {
     footerContent = (
       <div className={styles.morePostsSuggestion}>
         <Trans
@@ -507,6 +510,27 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   );
 
   const navigate = useNavigate();
+  const isAllFeedRoute = routerLocation.pathname === '/all' || routerLocation.pathname === '/all/';
+  const isAutoExpandingTimeFilter =
+    isVisible &&
+    isInAllView &&
+    isAllFeedRoute &&
+    combinedFeed.length === 0 &&
+    getSelectedTimeFilterValue(routerLocation.search) === 'last' &&
+    moreThreadsSuggestion !== null;
+
+  useEffect(() => {
+    if (!isAutoExpandingTimeFilter || !moreThreadsSuggestion) return;
+
+    navigate(
+      {
+        pathname: '/all',
+        search: getSearchWithTimeFilter(routerLocation.search, moreThreadsSuggestion.timeFilterName),
+      },
+      { replace: true },
+    );
+  }, [isAutoExpandingTimeFilter, moreThreadsSuggestion, navigate, routerLocation.search]);
+
   const defaultFeedVirtualizationMode = isMobile && isMultiboardView ? 'off' : 'item-size';
   const feedVirtualizationMode = useMemo(
     () => resolveFeedVirtualizationMode(routerLocation.search, defaultFeedVirtualizationMode),
@@ -576,6 +600,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
               isInSubscriptionsView={isInSubscriptionsView}
               isInModView={isInModView}
               isManualRefreshPending={isBoardRefreshPending}
+              isAutoExpandingTimeFilter={isAutoExpandingTimeFilter}
               currentTimeFilterName={currentTimeFilterName}
               moreThreadsSuggestion={moreThreadsSuggestion}
               moreThreadsSuggestionPathname={moreThreadsSuggestionPathname}
@@ -660,6 +685,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
       isInSubscriptionsView,
       isInModView,
       isBoardRefreshPending,
+      isAutoExpandingTimeFilter,
       currentTimeFilterName,
       moreThreadsSuggestion,
       moreThreadsSuggestionPathname,

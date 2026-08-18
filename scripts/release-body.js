@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version shows newly posted threads right away, speeds up board settings navigation, and smooths out account import, the moderation queue, and board banner loading.';
+  'This version preserves your draft and shows a clear inline message when recently posted media is rejected, keeps replies and thread details visible on your own posts, and includes desktop networking and security updates.';
 
 const releaseBody = `${oneLinerDescription}
 

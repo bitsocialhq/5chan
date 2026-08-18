@@ -352,8 +352,8 @@ let root: Root;
 const LocationProbe = () => {
   const location = useLocation();
   React.useLayoutEffect(() => {
-    latestLocation = location.pathname;
-  }, [location.pathname]);
+    latestLocation = `${location.pathname}${location.search}`;
+  }, [location.pathname, location.search]);
   return null;
 };
 
@@ -1261,6 +1261,50 @@ describe('Board', () => {
 
     expect(container.textContent).toContain('no_threads');
     expect(container.querySelector('[data-testid="loading-ellipsis"]')).toBeNull();
+  });
+
+  it('automatically expands an empty dynamic all feed to the narrowest window with threads', async () => {
+    const now = Math.floor(Date.now() / 1000);
+    testState.feed = [{ cid: 'older-post', communityAddress: 'music-posting.eth', timestamp: now - 5 * 24 * 60 * 60 }];
+
+    await renderBoard({
+      boardProps: { viewType: 'all' },
+      initialEntry: '/all',
+      routePath: '/all/*',
+    });
+
+    expect(latestLocation).toBe('/all?t=1w');
+    expect(container.textContent).not.toContain('no_threads');
+  });
+
+  it('does not automatically expand an explicitly selected all-feed time filter', async () => {
+    const now = Math.floor(Date.now() / 1000);
+    testState.feed = [{ cid: 'older-post', communityAddress: 'music-posting.eth', timestamp: now - 5 * 24 * 60 * 60 }];
+
+    await renderBoard({
+      boardProps: { viewType: 'all' },
+      initialEntry: '/all?t=24h',
+      routePath: '/all/*',
+    });
+
+    expect(latestLocation).toBe('/all?t=24h');
+    expect(container.querySelector('[data-testid="expand-time-window-button"]')).toBeTruthy();
+  });
+
+  it('waits for the dynamic all feed to finish loading before expanding it', async () => {
+    const now = Math.floor(Date.now() / 1000);
+    testState.feed = [{ cid: 'older-post', communityAddress: 'music-posting.eth', timestamp: now - 5 * 24 * 60 * 60 }];
+    testState.feedState = 'fetching-ipns';
+    testState.hasMore = true;
+
+    await renderBoard({
+      boardProps: { viewType: 'all' },
+      initialEntry: '/all',
+      routePath: '/all/*',
+    });
+
+    expect(latestLocation).toBe('/all');
+    expect(container.querySelector('[data-testid="expand-time-window-button"]')).toBeNull();
   });
 
   it('shows a wider multiboard time-filter suggestion when older threads exist', async () => {

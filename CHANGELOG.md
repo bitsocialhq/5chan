@@ -1,3 +1,13 @@
+## [0.9.18](https://github.com/bitsocialnet/5chan/compare/v0.9.17...v0.9.18) (2026-08-15)
+
+
+### Bug Fixes
+
+* **post form:** show inline duplicate media errors ([1da1618](https://github.com/bitsocialnet/5chan/commit/1da16187f80902ee5a2edee9b9ed8fb8f3e344ef))
+* **thread:** preserve canonical replies for owned posts ([#1195](https://github.com/bitsocialnet/5chan/issues/1195)) ([e2ffbde](https://github.com/bitsocialnet/5chan/commit/e2ffbde45605b793b04fef8db9ede88e9bce3d6a))
+
+
+
 ## [0.9.17](https://github.com/bitsocialnet/5chan/compare/v0.9.16...v0.9.17) (2026-08-07)
 
 
