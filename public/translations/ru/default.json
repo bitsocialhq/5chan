@@ -464,7 +464,7 @@
   "trash": "Корзина",
   "site_legal_meta_powered_by": "Работает на базе",
   "archive_search_title": "/search/ - Поиск по архиву",
-  "search_posts_or_board": "Поиск постов и досок",
+  "search_posts_or_board": "Поиск постов или ввод адреса доски",
   "archive_search_subtitle": "Ищите проиндексированные посты на досках 5chan.",
   "search_no_results": "Подходящих проиндексированных постов не найдено. Попробуйте использовать более общие запросы.",
   "change_provider": "Сменить провайдера",
