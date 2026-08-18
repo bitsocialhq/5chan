@@ -1,15 +1,16 @@
 {
   "task": "pubsub-directory-voting",
-  "last_updated": "2026-08-17",
+  "last_updated": "2026-08-18",
   "decisions": {
     "signer": "EIP-6963 injected discovery first, WalletConnect fallback for mobile/Electron",
     "scope": "All three phases: read tally, cast votes, republish + homepage winner",
-    "network": "Testnet only; derive contests from the published lists manifest at runtime, nothing hardcoded"
+    "network": "Testnet only; derive contests from the published lists manifest at runtime, nothing hardcoded",
+    "republishing": "5chan owns persisted vote intent and foreground refresh prompts; pubsub-voting supplies cadence and verification state, while pkc-js stays transport-only"
   },
   "verified_facts": [
-    "@bitsocial/pubsub-voting@0.5.0 is the latest npm release; it requires the gate tree plus top-level bucketChainId criteria schema and re-topics every contest",
+    "@bitsocial/pubsub-voting@0.6.1 is the latest npm release; 0.6.0 moves the signer from PubsubVoter to each ballot, renames publishing state succeeded to published, and exposes local/peer verification evidence, while 0.6.1 signs seeder provider announcements",
     "lists/5chan-directory-criteria.jsonc is live and byte-identical to the vendored fallback: 64 valid unique contests, 1:1 with the 64 default directory codes, no per-contest overrides",
-    "bitsocial-seeder v0.10.0 uses pubsub-voting 0.5.0 and seeds that exact manifest URL by default",
+    "bitsocial-seeder v0.10.5 uses pubsub-voting 0.6.1 and seeds that exact manifest URL by default",
     "5chan Pass testnet criteria now use the erc5192-min-balance soulbound gate on Base Sepolia at 0xA8e0155E0e7d014EAF3917982db6a9A4dF98C852",
     "5chan and bitsocial-react-hooks resolve pkc-js 0.0.81; F002 exercised its browser heliaNode path successfully before app integration",
     "Rinse12/pubsub-voting-website and bso-board-vote.netlify.app use the same one-node architecture through pkc.clients.libp2pJsClients[key].heliaNode; the reference app snapshot inspected on 2026-08-15 pinned pubsub-voting 0.4.0 and pkc-js 0.0.76",
@@ -28,7 +29,7 @@
       "description": "Add @bitsocial/pubsub-voting and strip-json-comments at exact versions; add a viem resolution so the three in-tree copies dedupe to one. Confirm the browser field swaps better-sqlite3 out of the bundle.",
       "verification": ["corepack yarn install - clean", "yarn build - passes", "yarn why viem - single 2.55.8", "library smoke: derived 64 criteria + real topic CIDs off the live manifest"],
       "files": ["package.json", "yarn.lock"],
-      "notes": "Updated pubsub-voting to 0.5.0 + strip-json-comments 5.0.3. The viem resolution 2.55.8 collapses the copies. The live and vendored manifest use 0.5.0's gate tree and numeric bucketChainId with the registered erc5192-min-balance rule and current Pass contract. This cutover re-topics all 64 contests. The F002 production bundle contains no better-sqlite3 or node-gyp-build references; re-verify when F004 adds storage and chain clients."
+      "notes": "Updated pubsub-voting to 0.6.1 + strip-json-comments 5.0.3. The viem resolution 2.55.8 collapses the copies. The live and vendored manifest use the 0.5+ gate tree and numeric bucketChainId with the registered erc5192-min-balance rule and current Pass contract. The 0.6 release changes the client API but not criteria bytes, so it does not re-topic the 64 contests. The F002 production bundle contains no better-sqlite3 or node-gyp-build references; re-verify when F004 adds storage and chain clients."
     },
     {
       "id": "F015",
@@ -53,7 +54,7 @@
         "React Doctor changed-files scope, lint, and type-check passed"
       ],
       "files": ["src/hooks/use-pubsub-voter.ts", "src/hooks/__tests__/use-pubsub-voter.test.tsx", "src/views/directory/directory.tsx", "src/views/directory/__tests__/directory.test.tsx"],
-      "notes": "The spike reaches the exact public account.pkc.clients.libp2pJsClients['libp2pjs'].heliaNode seam, constructs a read-only in-memory voter, and destroys it on route cleanup. It intentionally supplies no chain clients yet; F004 owns the memoized Base Sepolia/mainnet clients, .bso resolvers, browser persistence, and singleton lifetime. Gateway mode has no Helia node and degrades cleanly to unavailable."
+      "notes": "The spike reaches the exact public account.pkc.clients.libp2pJsClients['libp2pjs'].heliaNode seam, constructs an in-memory voter, and destroys it on route cleanup. Pubsub-voting 0.6 removes the old global read-only flag because signers now belong only to ballots. The spike intentionally supplies no chain clients yet; F004 owns the memoized Base Sepolia/mainnet clients, .bso resolvers, browser persistence, and singleton lifetime. Gateway mode has no Helia node and degrades cleanly to unavailable."
     },
     {
       "id": "F003",
@@ -129,17 +130,17 @@
       "id": "F010",
       "priority": 10,
       "status": "pending",
-      "description": "Cast and withdraw: createContestVote().publish(), +1 becomes a toggle reflecting the user's current vote, remove the -1 button, surface InvalidCommunityNameError and VoteEvictedError.",
+      "description": "Cast and withdraw: createContestVote({ criteria, votes, signer }).publish(), +1 becomes a toggle reflecting the user's current vote, remove the -1 button, and surface InvalidCommunityNameError, VoteEvictedError, recipientCount, and the published / verified-locally / verified-by-peer states.",
       "verification": ["cast a real vote on testnet against a faucet-minted Pass and observe the tally change"],
       "files": ["src/views/directory/directory.tsx"],
-      "notes": "Withdraw = publish an empty ballot (LWW supersede). Downvotes are unrepresentable under this criteria."
+      "notes": "The signer belongs to each ballot, not the shared voter. Published means broadcast, not accepted; verified-locally and verified-by-peer are the positive evidence states. Withdraw = publish an empty ballot (LWW supersede). Downvotes are unrepresentable under this criteria."
     },
     {
       "id": "F011",
       "priority": 11,
       "status": "pending",
-      "description": "Cast-vote persistence store: remember what this wallet voted for per contest, with the bundle blockNumber, so republish and toggle state survive reload.",
-      "verification": ["yarn test", "reload persistence check in browser"],
+      "description": "Cast-vote persistence store: remember the vote intent plus PublishOutcome cid and bundle.blockNumber per wallet and contest, so refresh timing, toggle state, and verification evidence survive reload.",
+      "verification": ["yarn test", "reload persistence check in browser", "after contest.update(), call trackOwnBundle(cid) and restore checksFor/checkpointPeersFor evidence"],
       "files": [],
       "notes": "Zustand persisted store, keyed by wallet address + contestId."
     },
@@ -147,10 +148,10 @@
       "id": "F012",
       "priority": 12,
       "status": "pending",
-      "description": "Republish scheduling: compute expiry from republishIntervalBuckets and prompt the user to re-sign before a vote lapses (~15 days on testnet).",
-      "verification": ["unit test the bucket math against a fixed clock"],
+      "description": "5chan foreground refresh manager: inspect persisted vote intents on app start, reconnect, and visibility changes; compute the due bucket with republishIntervalBuckets and prompt the wallet to re-sign before a vote lapses (~15 days on testnet).",
+      "verification": ["unit test the bucket math against fixed current and published blocks", "browser test returning after the refresh bucket shows one actionable prompt and republishes only after wallet approval"],
       "files": [],
-      "notes": "The library deliberately never republishes on its own. Needs a re-sign prompt, not a silent background signer."
+      "notes": "Keep this in 5chan first: it owns the vote-intent store, wallet UX, and withdrawal behavior. Do not put it in pkc-js. Extract only the generic React scheduling mechanics to bitsocial-react-hooks if a second React client needs them. Automatic means detect and prompt reliably; injected and WalletConnect signers generally cannot re-sign silently or while 5chan is closed."
     },
     {
       "id": "F013",

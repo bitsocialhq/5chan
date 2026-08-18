@@ -184,3 +184,35 @@ Append one entry per session.
   this file
 - Next: F004 — production voter singleton with chain clients keyed by numeric chain id,
   `.bso` resolvers, and browser IndexedDB persistence.
+
+## 2026-08-18 — Session 5: pubsub-voting 0.6.1 and republishing ownership
+
+- Item: F001 compatibility refresh; F010-F012 design refresh
+- Summary: Updated `@bitsocial/pubsub-voting` from 0.5.0 to 0.6.1. Version 0.6.0 moves
+  `signer` from the shared `PubsubVoter` to each `createContestVote` call, renames the
+  ambiguous `succeeded` publishing state to `published`, and exposes the published bundle
+  CID plus local and peer verification evidence. Version 0.6.1 signs provider announcements
+  so current routers retain a seeder's records. Criteria bytes are unchanged, so this upgrade
+  does not fork the 64 directory topics.
+- Compatibility evidence: F002's constructor remains valid without a signer, but its test used
+  the removed `readOnly` property. The helper is now named for its actual in-memory storage and
+  the obsolete assertion is gone. Future casting passes a signer per ballot. bitsocial-seeder
+  0.10.5 also pins pubsub-voting 0.6.1.
+- Republishing decision: keep persisted vote intent and refresh UX in 5chan. Store the
+  `PublishOutcome.cid` and `bundle.blockNumber`, restore attribution with
+  `contest.trackOwnBundle(cid)`, and use `republishIntervalBuckets(criteria)` to detect when
+  a refresh is due. On app foreground, show one explicit wallet-signature prompt; do not keep
+  keys hot or pretend a closed browser can refresh. pkc-js remains the bare shared-node layer.
+  Extract generic scheduling mechanics to bitsocial-react-hooks only after another React
+  consumer proves the shared API.
+- Verification: 0.6.1 derives the same 64 criteria and topic CIDs as 0.5.0, with a
+  360-bucket recommended refresh cadence. Focused hook/criteria tests, production build,
+  lint, type-check, changed-files React Doctor, and the full suite (171 files / 1,435 tests)
+  pass. The browser JavaScript bundle contains no `better-sqlite3` or `node-gyp-build`
+  references.
+- Advisory: Knip retains only the known `strip-json-comments` false positive from the
+  directory sync script.
+- Files: `package.json`, `yarn.lock`, `src/hooks/use-pubsub-voter.ts`,
+  `src/hooks/__tests__/use-pubsub-voter.test.tsx`, feature list, this file
+- Next: F004 — production voter singleton, followed by the read tally path; F010-F012 then
+  have the updated 0.6.1 casting, persistence, and refresh contracts.

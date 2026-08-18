@@ -3,7 +3,7 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MissingFetchError, type PubsubVoterOptions } from '@bitsocial/pubsub-voting';
-import { createReadOnlyPubsubVoter, usePubsubVoter } from '../use-pubsub-voter';
+import { createInMemoryPubsubVoter, usePubsubVoter } from '../use-pubsub-voter';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -70,11 +70,10 @@ describe('usePubsubVoter', () => {
     container.remove();
   });
 
-  it('constructs a read-only voter from the public pkc heliaNode seam', async () => {
-    const voter = createReadOnlyPubsubVoter(createHeliaNode());
+  it('constructs an in-memory voter from the public pkc heliaNode seam', async () => {
+    const voter = createInMemoryPubsubVoter(createHeliaNode());
 
-    expect(voter.readOnly).toBe(true);
-    await voter.destroy();
+    await expect(voter.destroy()).resolves.toBeUndefined();
   });
 
   it('reports unavailable when the account has no browser libp2p client', async () => {

@@ -33,7 +33,7 @@ export const getBrowserHeliaNode = (account: unknown): HeliaNode | undefined => 
   return (account as BrowserLibp2pAccount).pkc?.clients?.libp2pJsClients?.libp2pjs?.heliaNode;
 };
 
-export const createReadOnlyPubsubVoter = (helia: HeliaNode) =>
+export const createInMemoryPubsubVoter = (helia: HeliaNode) =>
   new PubsubVoter({
     helia,
     chains: () => undefined,
@@ -50,7 +50,7 @@ export const usePubsubVoter = (): PubsubVoterState => {
 
     let voter: PubsubVoter;
     try {
-      voter = createReadOnlyPubsubVoter(helia);
+      voter = createInMemoryPubsubVoter(helia);
       setConstruction({ helia, voter });
     } catch (error) {
       const constructionError = error instanceof Error ? error : new Error(String(error));
