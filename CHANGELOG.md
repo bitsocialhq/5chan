@@ -1,3 +1,14 @@
+## [0.9.19](https://github.com/bitsocialnet/5chan/compare/v0.9.18...v0.9.19) (2026-08-18)
+
+
+### Features
+
+* **all:** auto-expand empty feeds to a wider time filter ([87f7910](https://github.com/bitsocialnet/5chan/commit/87f7910c9eb5a2b5a7a5ff67347fab3e9f485bfc))
+* **board-header:** show directory winner subtitle on code routes ([e57f157](https://github.com/bitsocialnet/5chan/commit/e57f1578b81368ddf0b4f5179d04e4ff75ddbd0d))
+* **search:** 5archive-powered archive search ([#1197](https://github.com/bitsocialnet/5chan/issues/1197)) ([2c4b1c6](https://github.com/bitsocialnet/5chan/commit/2c4b1c6016158cd54888399e4a6effcc626047d4))
+
+
+
 ## [0.9.18](https://github.com/bitsocialnet/5chan/compare/v0.9.17...v0.9.18) (2026-08-15)
 
 

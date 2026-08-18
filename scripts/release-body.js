@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version preserves your draft and shows a clear inline message when recently posted media is rejected, keeps replies and thread details visible on your own posts, and includes desktop networking and security updates.';
+  'This version adds /search/, which searches archived posts across every 5chan board and shows the matches inside their threads, tells you which board currently serves a directory code, and widens the time filter automatically when a feed comes up empty.';
 
 const releaseBody = `${oneLinerDescription}
 

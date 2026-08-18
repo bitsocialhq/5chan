@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "id": "release-0.9.19",
+      "kind": "release",
+      "timestamp": 1787054400,
+      "message": "v0.9.19: Archive search across every board, directory winner in board headers",
+      "version": "0.9.19"
+    },
+    {
       "id": "release-0.9.18",
       "kind": "release",
       "timestamp": 1786795200,
