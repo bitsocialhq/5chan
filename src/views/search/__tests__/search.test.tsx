@@ -241,7 +241,7 @@ describe('archive search', () => {
     await renderRoute('/search?q=first');
     await vi.waitFor(() => expect(container.textContent).toContain('search_no_results'));
 
-    const input = container.querySelector<HTMLInputElement>('input[type="search"]');
+    const input = container.querySelector<HTMLInputElement>('input[type="text"]');
     await act(async () => {
       if (input) input.value = 'second query';
       input?.form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));

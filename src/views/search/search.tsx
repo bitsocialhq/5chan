@@ -287,7 +287,7 @@ const Search = () => {
         <input
           key={query}
           ref={inputRef}
-          type='search'
+          type='text'
           defaultValue={query}
           autoCorrect='off'
           autoComplete='off'
