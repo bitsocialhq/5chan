@@ -139,7 +139,7 @@ describe('BoardHeader', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useSearchSummaryStore.setState({ providerId: null, query: '', total: null });
+    useSearchSummaryStore.setState({ providerId: null, query: '', status: 'pending', total: null });
     testState.accountComment = undefined;
     testState.community = { address: 'music-posting.eth' };
     testState.communityIdentifier = { name: 'music-posting.eth' };
@@ -202,8 +202,16 @@ describe('BoardHeader', () => {
     expect(container.textContent).toContain('search_provider_directory_subtitle');
   });
 
+  it('credits no indexer when the search failed', async () => {
+    useSearchSummaryStore.getState().setSummary('esteban', 'failed');
+    await renderHeader('/search?q=esteban');
+
+    expect(container.textContent).toContain('5chan Search `esteban`');
+    expect(container.textContent).not.toContain('results_provided_by');
+  });
+
   it('adds the matched comment count to the archive search title once the results report it', async () => {
-    useSearchSummaryStore.getState().setSummary('esteban', 29, '5archive');
+    useSearchSummaryStore.getState().setSummary('esteban', 'answered', 29, '5archive');
     await renderHeader('/search?q=esteban');
 
     expect(container.textContent).toContain('5chan Search `esteban` 29 comments');

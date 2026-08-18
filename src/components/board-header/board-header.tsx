@@ -61,8 +61,11 @@ const SearchProviderSubtitle = ({ query }: { query: string }) => {
   const { t } = useTranslation();
   const selectedProviderId = useSearchProviderStore((state) => state.selectedProviderId);
   // Credit whoever answered: a failed indexer hands the query to the next one in the directory.
-  const answeringProviderId = useSearchSummaryStore((state) => (state.query === query ? state.providerId : null));
-  const provider = getSearchProvider(answeringProviderId ?? selectedProviderId);
+  const summary = useSearchSummaryStore((state) => (state.query === query ? state : undefined));
+  const provider = getSearchProvider(summary?.providerId ?? selectedProviderId);
+
+  // Nothing answered, so nothing to credit: the page is showing the unavailable-indexer error.
+  if (summary?.status === 'failed') return null;
 
   // Plain text like the board address subtitle: the directory button is how you change indexer.
   return <span>{`${t('results_provided_by')} ${provider.name}`}</span>;

@@ -168,14 +168,16 @@ const getSearchCacheKey = (providers: SearchProvider[], query: string, page: num
 /**
  * The board header titles the page with the query, the match count and who answered. Publishing
  * from the request instead of a component effect keeps a reload from showing the previous numbers.
- * The reset is queued because this runs while the results component renders.
+ *
+ * Only the outcome is published for a cached request, and publishing it again is a no-op. Marking
+ * a cached request pending on every render would flip the store back and forth with each re-render.
  */
-const publishSummary = (request: Promise<IndexerSearchResult>, query: string): void => {
+const publishSummary = (request: Promise<IndexerSearchResult>, query: string, isNewRequest: boolean): void => {
   const { setSummary } = useSearchSummaryStore.getState();
-  queueMicrotask(() => setSummary(query, null, null));
+  if (isNewRequest) queueMicrotask(() => setSummary(query, 'pending'));
   request.then(
-    (result) => setSummary(result.query, result.total, result.providerId),
-    () => setSummary(query, null, null),
+    (result) => setSummary(result.query, 'answered', result.total, result.providerId),
+    () => setSummary(query, 'failed'),
   );
 };
 
@@ -193,7 +195,7 @@ export const getIndexerSearch = (providers: SearchProvider[], query: string, pag
   const cacheKey = getSearchCacheKey(providers, query, page);
   const cached = searchCache.get(cacheKey);
   if (cached && !isStaleFailedRequest(cacheKey)) {
-    publishSummary(cached, query);
+    publishSummary(cached, query, false);
     return cached;
   }
 
@@ -207,7 +209,7 @@ export const getIndexerSearch = (providers: SearchProvider[], query: string, pag
   failedRequestTimes.delete(cacheKey);
   request.catch(() => failedRequestTimes.set(cacheKey, Date.now()));
   searchCache.set(cacheKey, request);
-  publishSummary(request, query);
+  publishSummary(request, query, true);
   return request;
 };
 
