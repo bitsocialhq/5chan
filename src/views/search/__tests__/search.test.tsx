@@ -200,14 +200,18 @@ describe('archive search', () => {
     expect(container.querySelector<HTMLAnchorElement>(`a[href="/search?q=${encodeURIComponent(query)}"]`)).toBeTruthy();
   });
 
-  it('does not query the provider until a search term is present', async () => {
-    const fetchMock = vi.fn();
+  it('searches for 5chan when the url carries no query', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ query: '5chan', page: 1, limit: 25, total: 0, posts: [] }),
+    });
     vi.stubGlobal('fetch', fetchMock);
 
     await renderRoute('/search');
 
-    expect(fetchMock).not.toHaveBeenCalled();
-    expect(container.textContent).toContain('archive_search_subtitle');
+    // The url is normalized so links, the header and the field all show the query being searched.
+    await vi.waitFor(() => expect(container.querySelector('[data-testid="location"]')?.textContent).toBe('/search?q=5chan'));
+    expect(fetchMock.mock.calls[0][0]).toContain('q=5chan');
   });
 
   it('lists the current provider in the provider directory and returns to the search it came from', async () => {

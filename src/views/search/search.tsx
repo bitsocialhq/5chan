@@ -1,5 +1,5 @@
 import { Component, Suspense, use, useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import type { Comment } from '@bitsocial/bitsocial-react-hooks';
 import { useTranslation } from 'react-i18next';
 import capitalize from 'lodash/capitalize';
@@ -11,6 +11,7 @@ import LoadingEllipsis from '../../components/loading-ellipsis/loading-ellipsis'
 import useSearchMatchHighlight from '../../hooks/use-search-match-highlight';
 import { clearIndexerSearch, getIndexedPostComment, getIndexerSearch } from '../../lib/search-indexer';
 import {
+  DEFAULT_SEARCH_QUERY,
   getSearchPageHref,
   MAX_SEARCH_QUERY_LENGTH,
   SEARCH_CATALOG_PATH,
@@ -248,7 +249,8 @@ const Search = () => {
   const [searchParams] = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);
   const [retryKey, setRetryKey] = useState(0);
-  const query = (searchParams.get('q') ?? '').trim().slice(0, MAX_SEARCH_QUERY_LENGTH);
+  const urlQuery = (searchParams.get('q') ?? '').trim().slice(0, MAX_SEARCH_QUERY_LENGTH);
+  const query = urlQuery || DEFAULT_SEARCH_QUERY;
   const page = getPage(searchParams.get('page'));
   const isCatalogView = isSearchCatalogRoute(location.pathname);
   const selectedProviderId = useSearchProviderStore((state) => state.selectedProviderId);
@@ -256,15 +258,14 @@ const Search = () => {
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
 
   useEffect(() => {
-    const title = query ? `${query} - ${t('archive_search_title')}` : t('archive_search_title');
+    const title = `${query} - ${t('archive_search_title')}`;
     document.title = isCatalogView ? `${title} - ${t('catalog')} - 5chan` : `${title} - 5chan`;
   }, [isCatalogView, query, t]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const nextQuery = inputRef.current?.value.trim().slice(0, MAX_SEARCH_QUERY_LENGTH) ?? '';
-    const basePath = isCatalogView ? SEARCH_CATALOG_PATH : SEARCH_PATH;
-    navigate(nextQuery ? getSearchPageHref(basePath, nextQuery) : basePath);
+    const nextQuery = inputRef.current?.value.trim().slice(0, MAX_SEARCH_QUERY_LENGTH) || DEFAULT_SEARCH_QUERY;
+    navigate(getSearchPageHref(isCatalogView ? SEARCH_CATALOG_PATH : SEARCH_PATH, nextQuery));
   };
 
   const retry = useCallback(() => {
@@ -276,6 +277,11 @@ const Search = () => {
   useEffect(() => {
     setResetFunction(retry);
   }, [retry, setResetFunction]);
+
+  // The URL always carries the query the page is showing, so links and the header agree.
+  if (!urlQuery) {
+    return <Navigate to={getSearchPageHref(location.pathname, DEFAULT_SEARCH_QUERY, page)} replace />;
+  }
 
   return (
     <main id='top' className={styles.page}>
@@ -299,41 +305,34 @@ const Search = () => {
       <SearchMobileTopControls isCatalogView={isCatalogView} query={query} />
       <hr className={styles.desktopDivider} />
       <SearchDesktopTopControls isCatalogView={isCatalogView} query={query} />
-      {query ? (
-        <SearchErrorBoundary
-          key={`${providers.map((entry) => entry.id).join(',')}:${query}:${page}:${retryKey}`}
+      <SearchErrorBoundary
+        key={`${providers.map((entry) => entry.id).join(',')}:${query}:${page}:${retryKey}`}
+        fallback={
+          <>
+            <div className={styles.error} role='alert'>
+              {t('search_provider_unavailable')} [
+              <button type='button' onClick={retry}>
+                {t('refresh')}
+              </button>
+              ]
+            </div>
+            <SearchFooter isCatalogView={isCatalogView} page={page} query={query} totalPages={1} />
+          </>
+        }
+      >
+        <Suspense
           fallback={
             <>
-              <div className={styles.error} role='alert'>
-                {t('search_provider_unavailable')} [
-                <button type='button' onClick={retry}>
-                  {t('refresh')}
-                </button>
-                ]
+              <div className={styles.loading}>
+                <LoadingEllipsis string={t('loading')} />
               </div>
               <SearchFooter isCatalogView={isCatalogView} page={page} query={query} totalPages={1} />
             </>
           }
         >
-          <Suspense
-            fallback={
-              <>
-                <div className={styles.loading}>
-                  <LoadingEllipsis string={t('loading')} />
-                </div>
-                <SearchFooter isCatalogView={isCatalogView} page={page} query={query} totalPages={1} />
-              </>
-            }
-          >
-            <SearchResults isCatalogView={isCatalogView} page={page} providers={providers} query={query} />
-          </Suspense>
-        </SearchErrorBoundary>
-      ) : (
-        <>
-          <p className={styles.intro}>{t('archive_search_subtitle')}</p>
-          <SearchFooter isCatalogView={isCatalogView} page={page} query={query} totalPages={1} />
-        </>
-      )}
+          <SearchResults isCatalogView={isCatalogView} page={page} providers={providers} query={query} />
+        </Suspense>
+      </SearchErrorBoundary>
     </main>
   );
 };

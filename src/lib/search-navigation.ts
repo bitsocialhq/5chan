@@ -5,6 +5,8 @@ import { getBoardNameFromDirectoryTitle, getBoardPath } from './utils/route-util
 const BOARD_ADDRESS_SUFFIX = /\.(?:bso|eth|sol)$/i;
 
 export const MAX_SEARCH_QUERY_LENGTH = 200;
+/** /search/ never runs empty: with no query in the URL it searches for 5chan itself. */
+export const DEFAULT_SEARCH_QUERY = '5chan';
 export const SEARCH_PATH = '/search';
 export const SEARCH_CATALOG_PATH = '/search/catalog';
 export const SEARCH_DIRECTORY_PATH = '/search/directory';

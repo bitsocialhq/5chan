@@ -103,11 +103,6 @@
   cursor: pointer;
 }
 
-.intro,
-.error {
-  text-align: center;
-}
-
 /* Feed states sit where the results do, like the board feed footer. */
 .empty,
 .loading {
@@ -115,13 +110,10 @@
   padding: 15px 0 20px 5px;
 }
 
-.intro,
-.error {
-  margin: 12px 5px;
-}
-
 .error {
   color: red;
+  margin: 12px 5px;
+  text-align: center;
 }
 
 .error button {
