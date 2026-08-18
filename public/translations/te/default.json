@@ -475,5 +475,6 @@
   "search_provider": "ఇండెక్సర్",
   "use": "ఉపయోగించు",
   "auto": "ఆటో",
-  "directory_submit_provider": "ఒక ప్రొవైడర్‌ను సమర్పించండి"
+  "directory_submit_provider": "ఒక ప్రొవైడర్‌ను సమర్పించండి",
+  "directory_winner_subtitle": "ప్రస్తుత /{{boardIdentifier}}/ విజేత: {{address}}"
 }

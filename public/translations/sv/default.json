@@ -475,5 +475,6 @@
   "search_provider": "Indexerare",
   "use": "använd",
   "auto": "auto",
-  "directory_submit_provider": "Skicka in en leverantör"
+  "directory_submit_provider": "Skicka in en leverantör",
+  "directory_winner_subtitle": "Nuvarande /{{boardIdentifier}}/ vinnare: {{address}}"
 }

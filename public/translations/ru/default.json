@@ -475,5 +475,6 @@
   "search_provider": "Индексатор",
   "use": "выбрать",
   "auto": "авто",
-  "directory_submit_provider": "Добавить провайдера"
+  "directory_submit_provider": "Добавить провайдера",
+  "directory_winner_subtitle": "Текущий победитель /{{boardIdentifier}}/: {{address}}"
 }

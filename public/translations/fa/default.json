@@ -475,5 +475,6 @@
   "search_provider": "نمایه‌ساز",
   "use": "استفاده",
   "auto": "خودکار",
-  "directory_submit_provider": "ثبت یک ارائه‌دهنده"
+  "directory_submit_provider": "ثبت یک ارائه‌دهنده",
+  "directory_winner_subtitle": "برنده فعلی /{{boardIdentifier}}/: {{address}}"
 }

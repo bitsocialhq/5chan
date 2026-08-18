@@ -475,5 +475,6 @@
   "search_provider": "Indexelő",
   "use": "használ",
   "auto": "auto",
-  "directory_submit_provider": "Szolgáltató beküldése"
+  "directory_submit_provider": "Szolgáltató beküldése",
+  "directory_winner_subtitle": "Jelenlegi /{{boardIdentifier}}/ nyertes: {{address}}"
 }

@@ -475,5 +475,6 @@
   "search_provider": "ตัวจัดทำดัชนี",
   "use": "ใช้",
   "auto": "อัตโนมัติ",
-  "directory_submit_provider": "ส่งผู้ให้บริการ"
+  "directory_submit_provider": "ส่งผู้ให้บริการ",
+  "directory_winner_subtitle": "ผู้ชนะปัจจุบัน /{{boardIdentifier}}/: {{address}}"
 }

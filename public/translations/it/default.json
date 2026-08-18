@@ -475,5 +475,6 @@
   "search_provider": "Indicizzatore",
   "use": "usa",
   "auto": "auto",
-  "directory_submit_provider": "Proponi un provider"
+  "directory_submit_provider": "Proponi un provider",
+  "directory_winner_subtitle": "Attuale vincitore di /{{boardIdentifier}}/: {{address}}"
 }

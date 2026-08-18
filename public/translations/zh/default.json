@@ -475,5 +475,6 @@
   "search_provider": "索引器",
   "use": "使用",
   "auto": "自动",
-  "directory_submit_provider": "提交提供方"
+  "directory_submit_provider": "提交提供方",
+  "directory_winner_subtitle": "当前 /{{boardIdentifier}}/ 获胜者：{{address}}"
 }

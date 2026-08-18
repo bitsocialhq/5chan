@@ -475,5 +475,6 @@
   "search_provider": "Indexador",
   "use": "usar",
   "auto": "auto",
-  "directory_submit_provider": "Enviar um provedor"
+  "directory_submit_provider": "Enviar um provedor",
+  "directory_winner_subtitle": "Vencedor atual de /{{boardIdentifier}}/: {{address}}"
 }

@@ -475,5 +475,6 @@
   "search_provider": "ইনডেক্সার",
   "use": "ব্যবহার",
   "auto": "স্বয়ংক্রিয়",
-  "directory_submit_provider": "একটি প্রোভাইডার জমা দিন"
+  "directory_submit_provider": "একটি প্রোভাইডার জমা দিন",
+  "directory_winner_subtitle": "বর্তমান /{{boardIdentifier}}/ বিজয়ী: {{address}}"
 }

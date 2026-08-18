@@ -475,5 +475,6 @@
   "search_provider": "Indexer",
   "use": "použít",
   "auto": "auto",
-  "directory_submit_provider": "Přidat poskytovatele"
+  "directory_submit_provider": "Přidat poskytovatele",
+  "directory_winner_subtitle": "Aktuální vítěz /{{boardIdentifier}}/: {{address}}"
 }

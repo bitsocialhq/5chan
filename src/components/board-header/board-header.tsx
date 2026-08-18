@@ -7,7 +7,7 @@ import getShortAddress from '../../lib/get-short-address';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
-import { isArchiveRoute, isDirectoryListRoute, isSearchDirectoryRoute, isSearchRoute } from '../../lib/utils/route-utils';
+import { isArchiveRoute, isDirectoryListRoute, isDirectoryRoute, isSearchDirectoryRoute, isSearchRoute } from '../../lib/utils/route-utils';
 import { getSpecialBoardByAddress } from '../../lib/special-boards';
 import { MAX_SEARCH_QUERY_LENGTH } from '../../lib/search-navigation';
 import { getSearchProvider } from '../../lib/search-providers';
@@ -98,6 +98,10 @@ const BoardHeader = memo(() => {
 
   const directories = useDirectories();
 
+  // Directory-code routes (e.g. /biz) serve whichever board currently wins that directory,
+  // so the subtitle explains that relationship instead of showing a bare address.
+  const isDirectoryCodeRoute = !!params.boardIdentifier && isDirectoryRoute(params.boardIdentifier, directories);
+
   // Find matching community from default list to get its title
   const defaultCommunity = communityAddress ? directories.find((s) => s.address === communityAddress) : null;
   const specialBoard = getSpecialBoardByAddress(communityAddress);
@@ -171,6 +175,10 @@ const BoardHeader = memo(() => {
           </button>
         ) : isInDirectoryListView || isInAllView || isInSearchView ? (
           <span>{subtitle}</span>
+        ) : isDirectoryCodeRoute && subtitle ? (
+          <span title={t('directory_subtitle', { boardIdentifier: params.boardIdentifier })}>
+            {t('directory_winner_subtitle', { boardIdentifier: params.boardIdentifier, address: subtitle })}
+          </span>
         ) : !isInModView && subtitle ? (
           <span title={t('board_address_tooltip')}>{subtitle}</span>
         ) : (

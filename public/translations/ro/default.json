@@ -475,5 +475,6 @@
   "search_provider": "Indexator",
   "use": "folosește",
   "auto": "auto",
-  "directory_submit_provider": "Trimite un furnizor"
+  "directory_submit_provider": "Trimite un furnizor",
+  "directory_winner_subtitle": "Câștigătorul actual de /{{boardIdentifier}}/: {{address}}"
 }

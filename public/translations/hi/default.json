@@ -475,5 +475,6 @@
   "search_provider": "इंडेक्सर",
   "use": "उपयोग करें",
   "auto": "स्वतः",
-  "directory_submit_provider": "एक प्रदाता सबमिट करें"
+  "directory_submit_provider": "एक प्रदाता सबमिट करें",
+  "directory_winner_subtitle": "वर्तमान /{{boardIdentifier}}/ विजेता: {{address}}"
 }

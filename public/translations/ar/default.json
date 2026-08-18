@@ -475,5 +475,6 @@
   "search_provider": "مُفهرِس",
   "use": "استخدام",
   "auto": "تلقائي",
-  "directory_submit_provider": "أضف مزودًا"
+  "directory_submit_provider": "أضف مزودًا",
+  "directory_winner_subtitle": "المتصدر الحالي لـ /{{boardIdentifier}}/: {{address}}"
 }

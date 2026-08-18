@@ -475,5 +475,6 @@
   "search_provider": "Indexer",
   "use": "gamitin",
   "auto": "awto",
-  "directory_submit_provider": "Magsumite ng provider"
+  "directory_submit_provider": "Magsumite ng provider",
+  "directory_winner_subtitle": "Kasalukuyang /{{boardIdentifier}}/ nanalo: {{address}}"
 }

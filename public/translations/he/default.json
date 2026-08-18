@@ -475,5 +475,6 @@
   "search_provider": "מאנדקס",
   "use": "השתמש",
   "auto": "אוטומטי",
-  "directory_submit_provider": "הגשת ספק"
+  "directory_submit_provider": "הגשת ספק",
+  "directory_winner_subtitle": "הזוכה הנוכחי של /{{boardIdentifier}}/: {{address}}"
 }

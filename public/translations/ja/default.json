@@ -475,5 +475,6 @@
   "search_provider": "インデクサ",
   "use": "使用",
   "auto": "自動",
-  "directory_submit_provider": "プロバイダーを申請"
+  "directory_submit_provider": "プロバイダーを申請",
+  "directory_winner_subtitle": "現在の /{{boardIdentifier}}/ 優勝者: {{address}}"
 }

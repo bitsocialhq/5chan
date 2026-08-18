@@ -475,5 +475,6 @@
   "search_provider": "Dizinleyici",
   "use": "kullan",
   "auto": "otomatik",
-  "directory_submit_provider": "Sağlayıcı gönder"
+  "directory_submit_provider": "Sağlayıcı gönder",
+  "directory_winner_subtitle": "Mevcut /{{boardIdentifier}}/ kazananı: {{address}}"
 }

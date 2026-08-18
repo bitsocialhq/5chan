@@ -475,5 +475,6 @@
   "search_provider": "Indexeerder",
   "use": "gebruiken",
   "auto": "auto",
-  "directory_submit_provider": "Aanbieder indienen"
+  "directory_submit_provider": "Aanbieder indienen",
+  "directory_winner_subtitle": "Huidige /{{boardIdentifier}}/ winnaar: {{address}}"
 }

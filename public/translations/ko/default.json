@@ -475,5 +475,6 @@
   "search_provider": "인덱서",
   "use": "사용",
   "auto": "자동",
-  "directory_submit_provider": "제공자 제출"
+  "directory_submit_provider": "제공자 제출",
+  "directory_winner_subtitle": "현재 /{{boardIdentifier}}/ 우승자: {{address}}"
 }

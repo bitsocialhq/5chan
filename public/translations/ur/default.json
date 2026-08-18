@@ -475,5 +475,6 @@
   "search_provider": "انڈیکسر",
   "use": "استعمال",
   "auto": "خودکار",
-  "directory_submit_provider": "فراہم کنندہ جمع کریں"
+  "directory_submit_provider": "فراہم کنندہ جمع کریں",
+  "directory_winner_subtitle": "موجودہ /{{boardIdentifier}}/ فاتح: {{address}}"
 }

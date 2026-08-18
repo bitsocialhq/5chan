@@ -475,5 +475,6 @@
   "search_provider": "Pengindeks",
   "use": "gunakan",
   "auto": "otomatis",
-  "directory_submit_provider": "Kirim penyedia"
+  "directory_submit_provider": "Kirim penyedia",
+  "directory_winner_subtitle": "Pemenang /{{boardIdentifier}}/ saat ini: {{address}}"
 }

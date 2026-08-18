@@ -475,5 +475,6 @@
   "search_provider": "Trình lập chỉ mục",
   "use": "dùng",
   "auto": "tự động",
-  "directory_submit_provider": "Gửi một nhà cung cấp"
+  "directory_submit_provider": "Gửi một nhà cung cấp",
+  "directory_winner_subtitle": "Người chiến thắng /{{boardIdentifier}}/ hiện tại: {{address}}"
 }

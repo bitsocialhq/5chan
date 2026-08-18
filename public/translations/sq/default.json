@@ -475,5 +475,6 @@
   "search_provider": "Indeksues",
   "use": "përdor",
   "auto": "auto",
-  "directory_submit_provider": "Dërgo një ofrues"
+  "directory_submit_provider": "Dërgo një ofrues",
+  "directory_winner_subtitle": "Fitues aktual i /{{boardIdentifier}}/: {{address}}"
 }

@@ -269,6 +269,7 @@
   "directory_status_offline": "offline",
   "directory_owner_anonymous": "Anonymous",
   "directory_subtitle": "The highest-scoring board resolves /{{boardIdentifier}}/; if it goes offline, 5chan rotates to the next-highest.",
+  "directory_winner_subtitle": "Current /{{boardIdentifier}}/ winner: {{address}}",
   "directory_footnote": "To submit your own board, open a pull request <repoLink>here</repoLink>. Read more on the <passLink>5chan Pass</passLink> page.",
   "directory_voting_unavailable_intro": "Voting isn't enabled yet. The board ranked #1 in /{{boardIdentifier}}/ is temporarily fixed because it's currently managed by devs.",
   "directory_voting_unavailable_outro": "5chan Pass holders and BSO token holders will be able to upvote and downvote each board in this list. Learn more at 5chan.app/pass.",

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BoardHeader from '../board-header';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
@@ -129,8 +129,26 @@ let container: HTMLDivElement;
 let root: Root;
 
 const renderHeader = async (initialEntry: string | { pathname: string; state?: unknown }) => {
+  // Route patterns mirror the app's board routes so the component sees real params (e.g. boardIdentifier).
+  const element = createElement(BoardHeader);
   await act(async () => {
-    root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(BoardHeader)));
+    root.render(
+      createElement(
+        MemoryRouter,
+        { initialEntries: [initialEntry] },
+        createElement(
+          Routes,
+          null,
+          createElement(Route, { path: '/all', element }),
+          createElement(Route, { path: '/subs', element }),
+          createElement(Route, { path: '/pending/:accountCommentIndex', element }),
+          createElement(Route, { path: '/search', element }),
+          createElement(Route, { path: '/search/catalog', element }),
+          createElement(Route, { path: '/search/directory', element }),
+          createElement(Route, { path: '/:boardIdentifier', element }),
+        ),
+      ),
+    );
   });
 };
 
@@ -252,6 +270,34 @@ describe('BoardHeader', () => {
     expect(container.textContent).toContain('music-posting.eth');
     expect(container.querySelector('[data-testid="tooltip"]')?.getAttribute('data-content')).toBe('Board offline');
     expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
+  });
+
+  it('renders the current directory winner subtitle as plain text on directory-code routes', async () => {
+    testState.community = { address: 'bizraelis.bso' };
+    testState.communityIdentifier = { name: 'bizraelis.bso' };
+    testState.directories = [{ address: 'bizraelis.bso', title: '/biz/ - Business & Finance' }];
+    testState.resolvedAddress = 'bizraelis.bso';
+    testState.stableCommunity = { address: 'bizraelis.bso', shortAddress: 'bizraelis.bso', title: '/biz/ - Business & Finance' };
+
+    await renderHeader('/biz');
+
+    expect(container.textContent).toContain('/biz/ - Business & Finance');
+
+    // The subtitle explains the directory mechanism on hover; navigation stays with the [Directory] board button.
+    const winnerSubtitle = container.querySelector('span[title^="directory_subtitle"]');
+    expect(winnerSubtitle?.textContent).toBe('directory_winner_subtitle:{"boardIdentifier":"biz","address":"bizraelis.bso"}');
+    expect(winnerSubtitle?.getAttribute('title')).toBe('directory_subtitle:{"boardIdentifier":"biz"}');
+    expect(container.querySelector('a')).toBeNull();
+  });
+
+  it('keeps the raw address subtitle for direct board-address routes', async () => {
+    testState.directories = [];
+
+    await renderHeader('/music-posting.eth');
+
+    const addressSubtitle = container.querySelector('span[title="board_address_tooltip"]');
+    expect(addressSubtitle?.textContent).toBe('music-posting.eth');
+    expect(container.querySelector('a[href$="/directory"]')).toBeNull();
   });
 
   it('keeps the banner stable while a directory route resolves different board candidates', async () => {

@@ -475,5 +475,6 @@
   "search_provider": "Ευρετηριαστής",
   "use": "χρήση",
   "auto": "αυτόματο",
-  "directory_submit_provider": "Υποβολή παρόχου"
+  "directory_submit_provider": "Υποβολή παρόχου",
+  "directory_winner_subtitle": "Τρέχων νικητής /{{boardIdentifier}}/: {{address}}"
 }
