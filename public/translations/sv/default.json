@@ -473,5 +473,6 @@
   "current_provider": "nuvarande leverantör",
   "search_provider_directory_subtitle": "Välj vilken oberoende indexerare som driver /search/. Leverantörer kan se dina söktermer.",
   "search_provider": "Indexerare",
-  "use": "använd"
+  "use": "använd",
+  "auto": "auto"
 }

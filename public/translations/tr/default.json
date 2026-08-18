@@ -473,5 +473,6 @@
   "current_provider": "mevcut sağlayıcı",
   "search_provider_directory_subtitle": "/search/ özelliğini hangi bağımsız dizin oluşturucunun destekleyeceğini seçin. Sağlayıcılar arama terimlerinizi görebilir.",
   "search_provider": "Dizinleyici",
-  "use": "kullan"
+  "use": "kullan",
+  "auto": "otomatik"
 }

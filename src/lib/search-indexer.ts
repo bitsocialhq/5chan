@@ -28,6 +28,8 @@ export interface IndexerSearchResult {
   limit: number;
   page: number;
   posts: IndexedPost[];
+  /** The indexer that answered, which is not the first one when a higher-ranked one was down. */
+  providerId: string;
   query: string;
   /** Thread OPs of the matched replies, keyed by post cid. Missing when the provider could not serve them. */
   threadPosts: Record<string, IndexedPost>;
@@ -70,7 +72,7 @@ const isIndexedPost = (value: unknown): value is IndexedPost => {
   );
 };
 
-type IndexerSearchResponse = Omit<IndexerSearchResult, 'threadPosts'>;
+type IndexerSearchResponse = Omit<IndexerSearchResult, 'providerId' | 'threadPosts'>;
 
 const isSearchResult = (value: unknown): value is IndexerSearchResponse => {
   if (!value || typeof value !== 'object') return false;
@@ -136,11 +138,28 @@ const fetchSearch = async (provider: SearchProvider, query: string, page: number
   const result: unknown = await fetchProviderJson(getSearchUrl(provider, query, page));
   if (!isSearchResult(result)) throw new Error('Search provider returned an invalid response');
 
-  return { ...result, threadPosts: await fetchThreadPosts(provider, result.posts) };
+  return { ...result, providerId: provider.id, threadPosts: await fetchThreadPosts(provider, result.posts) };
 };
 
-export const getIndexerSearch = (provider: SearchProvider, query: string, page: number): Promise<IndexerSearchResult> => {
-  const cacheKey = `${provider.id}:${page}:${query}`;
+/** Ask each indexer in rank order, so one that is down or broken hands over to the next. */
+const fetchSearchFromChain = async (providers: SearchProvider[], query: string, page: number): Promise<IndexerSearchResult> => {
+  let lastError: unknown = new Error('No search provider is available');
+
+  for (const provider of providers) {
+    try {
+      return await fetchSearch(provider, query, page);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError;
+};
+
+const getSearchCacheKey = (providers: SearchProvider[], query: string, page: number): string => `${providers.map((provider) => provider.id).join(',')}:${page}:${query}`;
+
+export const getIndexerSearch = (providers: SearchProvider[], query: string, page: number): Promise<IndexerSearchResult> => {
+  const cacheKey = getSearchCacheKey(providers, query, page);
   const cached = searchCache.get(cacheKey);
   if (cached) return cached;
 
@@ -149,13 +168,13 @@ export const getIndexerSearch = (provider: SearchProvider, query: string, page: 
     if (oldestKey) searchCache.delete(oldestKey);
   }
 
-  const request = fetchSearch(provider, query, page);
+  const request = fetchSearchFromChain(providers, query, page);
   searchCache.set(cacheKey, request);
   return request;
 };
 
-export const clearIndexerSearch = (provider: SearchProvider, query: string, page: number): void => {
-  searchCache.delete(`${provider.id}:${page}:${query}`);
+export const clearIndexerSearch = (providers: SearchProvider[], query: string, page: number): void => {
+  searchCache.delete(getSearchCacheKey(providers, query, page));
 };
 
 type RawCommentPayload = {

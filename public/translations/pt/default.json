@@ -473,5 +473,6 @@
   "current_provider": "provedor atual",
   "search_provider_directory_subtitle": "Escolha qual indexador independente gerencia /search/. Os provedores podem ver os seus termos de pesquisa.",
   "search_provider": "Indexador",
-  "use": "usar"
+  "use": "usar",
+  "auto": "auto"
 }

@@ -5,7 +5,7 @@ import capitalize from 'lodash/capitalize';
 import { BottomButton, TopButton } from '../../components/board-buttons/board-buttons';
 import { PageFooterDesktop, PageFooterMobile, ThreadFooterStyleRow } from '../../components/footer/footer';
 import { SEARCH_PATH } from '../../lib/search-navigation';
-import { SEARCH_PROVIDERS } from '../../lib/search-providers';
+import { getDirectorySearchProvider, getRankedSearchProviders } from '../../lib/search-providers';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
 import styles from '../directory/directory.module.css';
 
@@ -69,6 +69,8 @@ const MobileFooterControls = ({ returnPath }: { returnPath: string }) => (
   </div>
 );
 
+const DIRECTORY_SCORE_UNAVAILABLE_MARKER = '\u2014';
+
 /** Directory of the indexers that can power /search/, laid out like the board directories. */
 const SearchDirectory = () => {
   const { t } = useTranslation();
@@ -76,10 +78,18 @@ const SearchDirectory = () => {
   const selectedProviderId = useSearchProviderStore((state) => state.selectedProviderId);
   const setSelectedProviderId = useSearchProviderStore((state) => state.setSelectedProviderId);
   const returnPath = getReturnPath(location.state);
+  const rankedProviders = getRankedSearchProviders();
+  const directoryProviderId = getDirectorySearchProvider().id;
 
   useEffect(() => {
     document.title = `${t('change_provider')} - ${t('archive_search_title')} - 5chan`;
   }, [t]);
+
+  // Voting is not enabled for any directory yet, so the buttons explain that, as the board ones do.
+  const handleVoteUnavailable = () => {
+    const values = { boardIdentifier: 'search' };
+    window.alert(`${t('directory_voting_unavailable_intro', values)}\n\n${t('directory_voting_unavailable_outro', values)}`);
+  };
 
   return (
     <div id='top' className={styles.page}>
@@ -104,13 +114,21 @@ const SearchDirectory = () => {
               {t('directory_status')}
             </th>
             <th className={styles.postblock} scope='col'>
+              {t('directory_score')}
+            </th>
+            <th className={styles.postblock} scope='col'>
+              {t('directory_vote')}
+            </th>
+            <th className={styles.postblock} scope='col'>
               {capitalize(t('use'))}
             </th>
           </tr>
         </thead>
         <tbody>
-          {SEARCH_PROVIDERS.map((provider, index) => {
-            const isSelected = provider.id === selectedProviderId;
+          {rankedProviders.map((provider, index) => {
+            const isPinned = provider.id === selectedProviderId;
+            // With nobody pinned, /search/ runs on whichever indexer the directory ranks first.
+            const isAnswering = selectedProviderId === null ? provider.id === directoryProviderId : isPinned;
 
             return (
               <tr key={provider.id} className={`${styles.dirRow} ${index % 2 === 0 ? styles.rowOdd : ''}`}>
@@ -125,9 +143,31 @@ const SearchDirectory = () => {
                     {new URL(provider.apiUrl).host}
                   </a>
                 </td>
-                <td className={styles.statusCell}>{isSelected ? <span className={styles.statusOnline}>{t('current_provider')}</span> : null}</td>
+                <td className={styles.statusCell}>{isAnswering ? <span className={styles.statusOnline}>{t('current_provider')}</span> : null}</td>
+                <td className={styles.scoreCell}>
+                  <span className={styles.scoreValue}>{provider.score ?? DIRECTORY_SCORE_UNAVAILABLE_MARKER}</span>
+                </td>
                 <td className={styles.actionsCell}>
-                  {isSelected ? null : (
+                  [
+                  <button type='button' className={styles.actionButton} onClick={handleVoteUnavailable} aria-label={t('upvote')} title={t('upvote')}>
+                    +1
+                  </button>
+                  ] [
+                  <button type='button' className={styles.actionButton} onClick={handleVoteUnavailable} aria-label={t('downvote')} title={t('downvote')}>
+                    -1
+                  </button>
+                  ]
+                </td>
+                <td className={styles.actionsCell}>
+                  {isPinned ? (
+                    <>
+                      [
+                      <button type='button' className={styles.actionButton} onClick={() => setSelectedProviderId(null)} title={t('search_provider_directory_subtitle')}>
+                        {t('auto')}
+                      </button>
+                      ]
+                    </>
+                  ) : (
                     <>
                       [
                       <button type='button' className={styles.actionButton} onClick={() => setSelectedProviderId(provider.id)}>

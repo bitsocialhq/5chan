@@ -473,5 +473,6 @@
   "current_provider": "aktueller Anbieter",
   "search_provider_directory_subtitle": "Wählen Sie aus, welcher unabhängige Indexer /search/ betreibt. Anbieter können Ihre Suchbegriffe sehen.",
   "search_provider": "Indexer",
-  "use": "verwenden"
+  "use": "verwenden",
+  "auto": "auto"
 }

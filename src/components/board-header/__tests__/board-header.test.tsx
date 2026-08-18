@@ -139,7 +139,7 @@ describe('BoardHeader', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useSearchSummaryStore.setState({ query: '', total: null });
+    useSearchSummaryStore.setState({ providerId: null, query: '', total: null });
     testState.accountComment = undefined;
     testState.community = { address: 'music-posting.eth' };
     testState.communityIdentifier = { name: 'music-posting.eth' };
@@ -203,7 +203,7 @@ describe('BoardHeader', () => {
   });
 
   it('adds the matched comment count to the archive search title once the results report it', async () => {
-    useSearchSummaryStore.getState().setSummary('esteban', 29);
+    useSearchSummaryStore.getState().setSummary('esteban', 29, '5archive');
     await renderHeader('/search?q=esteban');
 
     expect(container.textContent).toContain('5chan Search `esteban` 29 comments');

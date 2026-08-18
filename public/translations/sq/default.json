@@ -473,5 +473,6 @@
   "current_provider": "ofruesi aktual",
   "search_provider_directory_subtitle": "Zgjidhni cili indeksues i pavarur mundëson /search/. Ofruesit mund t’i shohin termat tuaj të kërkimit.",
   "search_provider": "Indeksues",
-  "use": "përdor"
+  "use": "përdor",
+  "auto": "auto"
 }

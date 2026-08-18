@@ -473,5 +473,6 @@
   "current_provider": "nhà cung cấp hiện tại",
   "search_provider_directory_subtitle": "Chọn trình lập chỉ mục độc lập hỗ trợ /search/. Nhà cung cấp có thể thấy các cụm từ tìm kiếm của bạn.",
   "search_provider": "Trình lập chỉ mục",
-  "use": "dùng"
+  "use": "dùng",
+  "auto": "tự động"
 }

@@ -3,6 +3,7 @@ import { clearIndexerSearch, getIndexedPostComment, getIndexerSearch, type Index
 import { getSearchProvider } from '../search-providers';
 
 const provider = getSearchProvider('5archive');
+const providers = [provider];
 
 const getIndexedPost = (overrides: Partial<IndexedPost> = {}): IndexedPost => ({
   archived: 1,
@@ -34,11 +35,11 @@ describe('search indexer client', () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => response });
     vi.stubGlobal('fetch', fetchMock);
 
-    const first = getIndexerSearch(provider, query, 2);
-    const second = getIndexerSearch(provider, query, 2);
+    const first = getIndexerSearch(providers, query, 2);
+    const second = getIndexerSearch(providers, query, 2);
 
     expect(first).toBe(second);
-    await expect(first).resolves.toEqual({ ...response, threadPosts: {} });
+    await expect(first).resolves.toEqual({ ...response, providerId: provider.id, threadPosts: {} });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0][0]).toBe(`https://api.5archive.org/api/search?q=${encodeURIComponent(query)}&page=2&limit=25`);
   });
@@ -56,7 +57,7 @@ describe('search indexer client', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await getIndexerSearch(provider, query, 1);
+    const result = await getIndexerSearch(providers, query, 1);
 
     expect(result.threadPosts).toEqual({ 'post-cid': threadPost });
     // One search request plus a single request for the thread both replies belong to.
@@ -75,10 +76,37 @@ describe('search indexer client', () => {
       );
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await getIndexerSearch(provider, query, 1);
+    const result = await getIndexerSearch(providers, query, 1);
 
     expect(result.posts).toHaveLength(1);
     expect(result.threadPosts).toEqual({});
+  });
+
+  it('hands the query to the next indexer when the ranked one fails', async () => {
+    const query = `failover-${Date.now()}`;
+    const backup = { ...provider, apiUrl: 'https://api.backup.example', id: 'backup' };
+    const fetchMock = vi
+      .fn()
+      .mockImplementation((url: string) =>
+        url.startsWith('https://api.5archive.org')
+          ? Promise.reject(new Error('down'))
+          : Promise.resolve({ ok: true, json: async () => ({ query, page: 1, limit: 25, total: 0, posts: [] }) }),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await getIndexerSearch([provider, backup], query, 1);
+
+    // The answering indexer is reported, so the page can credit it instead of the ranked-first one.
+    expect(result.providerId).toBe('backup');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('reports the last failure when no indexer answers', async () => {
+    const query = `all-down-${Date.now()}`;
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 503 });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(getIndexerSearch([provider, { ...provider, id: 'backup' }], query, 1)).rejects.toThrow('503');
   });
 
   it('rejects invalid provider responses and supports cache invalidation', async () => {
@@ -86,9 +114,9 @@ describe('search indexer client', () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ nope: true }) });
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(getIndexerSearch(provider, query, 1)).rejects.toThrow('invalid response');
-    clearIndexerSearch(provider, query, 1);
-    void getIndexerSearch(provider, query, 1).catch(() => undefined);
+    await expect(getIndexerSearch(providers, query, 1)).rejects.toThrow('invalid response');
+    clearIndexerSearch(providers, query, 1);
+    void getIndexerSearch(providers, query, 1).catch(() => undefined);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
@@ -124,7 +152,7 @@ describe('search indexer client', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(getIndexerSearch(provider, query, 1)).rejects.toThrow('invalid response');
+    await expect(getIndexerSearch(providers, query, 1)).rejects.toThrow('invalid response');
   });
 });
 

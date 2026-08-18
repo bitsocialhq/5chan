@@ -473,5 +473,6 @@
   "current_provider": "ספק נוכחי",
   "search_provider_directory_subtitle": "בחרו איזה אינדקסר עצמאי מפעיל את /search/. הספקים יכולים לראות את מונחי החיפוש שלכם.",
   "search_provider": "מפתחן",
-  "use": "השתמש"
+  "use": "השתמש",
+  "auto": "אוטומטי"
 }

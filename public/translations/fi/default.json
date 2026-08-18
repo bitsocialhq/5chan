@@ -473,5 +473,6 @@
   "current_provider": "nykyinen palveluntarjoaja",
   "search_provider_directory_subtitle": "Valitse, mikä riippumaton indeksoija tarjoaa /search/-haun. Palveluntarjoajat voivat nähdä hakutermisi.",
   "search_provider": "Indeksoija",
-  "use": "käytä"
+  "use": "käytä",
+  "auto": "auto"
 }

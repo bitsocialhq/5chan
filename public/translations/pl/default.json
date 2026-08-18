@@ -473,5 +473,6 @@
   "current_provider": "obecny dostawca",
   "search_provider_directory_subtitle": "Wybierz niezależny indekser obsługujący /search/. Dostawcy mogą zobaczyć Twoje wyszukiwane hasła.",
   "search_provider": "Indekser",
-  "use": "użyj"
+  "use": "użyj",
+  "auto": "auto"
 }

@@ -60,7 +60,9 @@ const getSearchTitle = (query: string, total: number | null): string => {
 const SearchProviderSubtitle = ({ query }: { query: string }) => {
   const { t } = useTranslation();
   const selectedProviderId = useSearchProviderStore((state) => state.selectedProviderId);
-  const provider = getSearchProvider(selectedProviderId);
+  // Credit whoever answered: a failed indexer hands the query to the next one in the directory.
+  const answeringProviderId = useSearchSummaryStore((state) => (state.query === query ? state.providerId : null));
+  const provider = getSearchProvider(answeringProviderId ?? selectedProviderId);
 
   return (
     <span>

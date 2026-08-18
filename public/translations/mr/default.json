@@ -473,5 +473,6 @@
   "current_provider": "सध्याचा प्रदाता",
   "search_provider_directory_subtitle": "कोणता स्वतंत्र इंडेक्सर /search/ चालवेल ते निवडा. प्रदाते तुमच्या शोध संज्ञा पाहू शकतात.",
   "search_provider": "इंडेक्सर",
-  "use": "वापरा"
+  "use": "वापरा",
+  "auto": "स्वयं"
 }

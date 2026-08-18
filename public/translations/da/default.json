@@ -473,5 +473,6 @@
   "current_provider": "nuværende udbyder",
   "search_provider_directory_subtitle": "Vælg, hvilken uafhængig indekseringstjeneste der driver /search/. Udbydere kan se dine søgeord.",
   "search_provider": "Indeksering",
-  "use": "brug"
+  "use": "brug",
+  "auto": "auto"
 }

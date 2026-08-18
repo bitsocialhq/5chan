@@ -473,5 +473,6 @@
   "current_provider": "jelenlegi szolgáltató",
   "search_provider_directory_subtitle": "Válassza ki, melyik független indexelő működtesse a /search/ keresőt. A szolgáltatók láthatják az Ön keresőkifejezéseit.",
   "search_provider": "Indexelő",
-  "use": "használ"
+  "use": "használ",
+  "auto": "auto"
 }

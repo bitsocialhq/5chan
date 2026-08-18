@@ -473,5 +473,6 @@
   "current_provider": "현재 제공업체",
   "search_provider_directory_subtitle": "어떤 독립 인덱서가 /search/를 구동할지 선택하세요. 제공업체는 검색어를 볼 수 있습니다.",
   "search_provider": "인덱서",
-  "use": "사용"
+  "use": "사용",
+  "auto": "자동"
 }

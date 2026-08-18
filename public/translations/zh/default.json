@@ -473,5 +473,6 @@
   "current_provider": "当前提供商",
   "search_provider_directory_subtitle": "选择由哪个独立索引器为 /search/ 提供支持。提供商可以看到你的搜索词。",
   "search_provider": "索引器",
-  "use": "使用"
+  "use": "使用",
+  "auto": "自动"
 }

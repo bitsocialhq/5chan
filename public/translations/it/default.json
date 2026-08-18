@@ -473,5 +473,6 @@
   "current_provider": "provider attuale",
   "search_provider_directory_subtitle": "Scegli quale indicizzatore indipendente gestisce /search/. I provider possono vedere i tuoi termini di ricerca.",
   "search_provider": "Indicizzatore",
-  "use": "usa"
+  "use": "usa",
+  "auto": "auto"
 }

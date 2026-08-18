@@ -473,5 +473,6 @@
   "current_provider": "penyedia saat ini",
   "search_provider_directory_subtitle": "Pilih pengindeks independen yang menjalankan /search/. Penyedia dapat melihat istilah pencarian Anda.",
   "search_provider": "Pengindeks",
-  "use": "gunakan"
+  "use": "gunakan",
+  "auto": "otomatis"
 }

@@ -473,5 +473,6 @@
   "current_provider": "kasalukuyang provider",
   "search_provider_directory_subtitle": "Piliin kung aling independiyenteng indexer ang magpapatakbo sa /search/. Makikita ng mga provider ang iyong mga termino sa paghahanap.",
   "search_provider": "Indexer",
-  "use": "gamitin"
+  "use": "gamitin",
+  "auto": "awto"
 }

@@ -473,5 +473,6 @@
   "current_provider": "ప్రస్తుత ప్రొవైడర్",
   "search_provider_directory_subtitle": "ఏ స్వతంత్ర ఇండెక్సర్ /search/ను నడపాలో ఎంచుకోండి. ప్రొవైడర్లు మీ శోధన పదాలను చూడగలరు.",
   "search_provider": "ఇండెక్సర్",
-  "use": "ఉపయోగించు"
+  "use": "ఉపయోగించు",
+  "auto": "ఆటో"
 }

@@ -473,5 +473,6 @@
   "current_provider": "huidige provider",
   "search_provider_directory_subtitle": "Kies welke onafhankelijke indexer /search/ aandrijft. Providers kunnen je zoektermen zien.",
   "search_provider": "Indexeerder",
-  "use": "gebruiken"
+  "use": "gebruiken",
+  "auto": "auto"
 }

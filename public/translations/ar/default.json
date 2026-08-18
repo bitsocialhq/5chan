@@ -473,5 +473,6 @@
   "current_provider": "مزود الخدمة الحالي",
   "search_provider_directory_subtitle": "اختر أي مفهرس مستقل يشغّل /search/. يمكن للمزوّدين رؤية عبارات البحث الخاصة بك.",
   "search_provider": "مُفهرِس",
-  "use": "استخدام"
+  "use": "استخدام",
+  "auto": "تلقائي"
 }

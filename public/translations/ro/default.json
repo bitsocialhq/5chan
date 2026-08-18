@@ -473,5 +473,6 @@
   "current_provider": "furnizor actual",
   "search_provider_directory_subtitle": "Alegeți ce indexator independent deservește /search/. Furnizorii vă pot vedea termenii de căutare.",
   "search_provider": "Indexator",
-  "use": "folosește"
+  "use": "folosește",
+  "auto": "auto"
 }

@@ -18,7 +18,7 @@ import {
   SEARCH_PATH,
   getSearchDirectoryLinkState,
 } from '../../lib/search-navigation';
-import { getSearchProvider, type SearchProvider } from '../../lib/search-providers';
+import { getSearchProviderChain, type SearchProvider } from '../../lib/search-providers';
 import { isSearchCatalogRoute } from '../../lib/utils/route-utils';
 import useFeedResetStore from '../../stores/use-feed-reset-store';
 import useSearchProviderStore from '../../stores/use-search-provider-store';
@@ -163,9 +163,9 @@ const SearchFooter = ({ isCatalogView, page, query, totalPages }: SearchControls
   );
 };
 
-const SearchResults = ({ isCatalogView, page, provider, query }: SearchControlsProps & { page: number; provider: SearchProvider }) => {
+const SearchResults = ({ isCatalogView, page, providers, query }: SearchControlsProps & { page: number; providers: SearchProvider[] }) => {
   const { t } = useTranslation();
-  const result = use(getIndexerSearch(provider, query, page));
+  const result = use(getIndexerSearch(providers, query, page));
   const resultsRef = useRef<HTMLDivElement>(null);
   // A matched reply is shown in its thread: the OP, then that one reply.
   const matches = useMemo(
@@ -197,9 +197,9 @@ const SearchResults = ({ isCatalogView, page, provider, query }: SearchControlsP
 
   useSearchMatchHighlight(resultsRef, query);
 
-  // The board header titles the page with the query and how many comments matched it.
+  // The board header titles the page with the query, the match count and who answered.
   useEffect(() => {
-    setSummary(result.query, result.total);
+    setSummary(result.query, result.total, result.providerId);
   }, [result, setSummary]);
 
   return (
@@ -252,7 +252,7 @@ const Search = () => {
   const page = getPage(searchParams.get('page'));
   const isCatalogView = isSearchCatalogRoute(location.pathname);
   const selectedProviderId = useSearchProviderStore((state) => state.selectedProviderId);
-  const provider = getSearchProvider(selectedProviderId);
+  const providers = useMemo(() => getSearchProviderChain(selectedProviderId), [selectedProviderId]);
   const setResetFunction = useFeedResetStore((state) => state.setResetFunction);
 
   useEffect(() => {
@@ -268,9 +268,9 @@ const Search = () => {
   };
 
   const retry = useCallback(() => {
-    clearIndexerSearch(provider, query, page);
+    clearIndexerSearch(providers, query, page);
     setRetryKey((value) => value + 1);
-  }, [page, provider, query]);
+  }, [page, providers, query]);
 
   // The shared refresh button reruns whichever feed is on screen.
   useEffect(() => {
@@ -301,7 +301,7 @@ const Search = () => {
       <SearchDesktopTopControls isCatalogView={isCatalogView} query={query} />
       {query ? (
         <SearchErrorBoundary
-          key={`${provider.id}:${query}:${page}:${retryKey}`}
+          key={`${providers.map((entry) => entry.id).join(',')}:${query}:${page}:${retryKey}`}
           fallback={
             <>
               <div className={styles.error} role='alert'>
@@ -325,7 +325,7 @@ const Search = () => {
               </>
             }
           >
-            <SearchResults isCatalogView={isCatalogView} page={page} provider={provider} query={query} />
+            <SearchResults isCatalogView={isCatalogView} page={page} providers={providers} query={query} />
           </Suspense>
         </SearchErrorBoundary>
       ) : (

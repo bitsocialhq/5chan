@@ -473,5 +473,6 @@
   "current_provider": "gjeldende leverandør",
   "search_provider_directory_subtitle": "Velg hvilken uavhengig indekseringstjeneste som driver /search/. Leverandører kan se søkeordene dine.",
   "search_provider": "Indekserer",
-  "use": "bruk"
+  "use": "bruk",
+  "auto": "auto"
 }
