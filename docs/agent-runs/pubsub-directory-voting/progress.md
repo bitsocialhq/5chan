@@ -245,3 +245,29 @@ Append one entry per session.
 - Blockers: none
 - Next: F005 — lazily create and subscribe to only the directory contest being viewed,
   expose its verified ranking, and stop that topic on unmount.
+
+## 2026-08-21 — Session 6 (cont.): lazy per-directory tally hook
+
+- Item: F005 (done)
+- Summary: Added a `useSyncExternalStore` read path that refreshes the canonical criteria
+  manifest, creates only the contest for the directory currently being viewed, and exposes
+  its ranking plus `chainVerified` and `nameResolved` flags. Identical live and vendored
+  criteria keep the same object identity, avoiding a pointless leave/rejoin when the runtime
+  manifest is unchanged. Transient contest errors preserve the last tally so the directory
+  can remain useful while explaining that verification is degraded.
+- Library surprise: pubsub-voting's `Contest.on()` has no matching unsubscribe method, while
+  repeated `createContest()` calls return the same cached Contest. Attaching callbacks from a
+  normal React effect would accumulate dead callbacks on every directory revisit. The hook
+  therefore keeps one WeakMap-backed adapter per voter and criteria object; it attaches one
+  permanent update/error pair to the cached Contest, fans out only to current React
+  subscribers, reference-counts them, and calls `stop()` when the last one leaves.
+- Files: `src/lib/directory-vote-criteria.ts`,
+  `src/lib/__tests__/directory-vote-criteria.test.ts`,
+  `src/hooks/use-directory-vote-criteria.ts`, `src/hooks/use-vote-tally.ts`,
+  `src/hooks/__tests__/use-vote-tally.test.tsx`, feature list, this file
+- Verification: focused criteria/tally tests (14), full suite (177 files / 1,487 tests),
+  production build, lint, type-check, changed-files React Doctor, and advisory Knip. Knip
+  retains only the known `strip-json-comments` false positive from the directory sync script.
+- Blockers: none
+- Next: F006 — consume the hook on the directory page, map tally rows to boards by public key,
+  render verified/provisional scores in the existing column, and order the list by live weight.

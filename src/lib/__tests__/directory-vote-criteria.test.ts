@@ -8,6 +8,7 @@ import {
   getVendoredDirectoryVoteCriteria,
   loadDirectoryVoteCriteria,
   parseDirectoryVoteCriteria,
+  subscribeDirectoryVoteCriteria,
 } from '../directory-vote-criteria';
 
 const withUpdatedRandomContest = (suffix: number) =>
@@ -77,6 +78,30 @@ describe('directory-vote-criteria', () => {
 
     const cached = await loadDirectoryVoteCriteria();
     expect(cached.criteriaByDirectoryCode.get('b')?.contestId).toBe('5chan-dir-b-vote-test-2');
+  });
+
+  it('notifies subscribers only when runtime criteria change', async () => {
+    getCachedDirectoryVoteCriteria();
+    const listener = vi.fn();
+    const fetchMock = vi.fn().mockResolvedValue(new Response(vendoredManifestSource, { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const unsubscribe = subscribeDirectoryVoteCriteria(listener);
+    await loadDirectoryVoteCriteria();
+
+    expect(listener).not.toHaveBeenCalled();
+    unsubscribe();
+
+    __resetDirectoryVoteCriteriaForTests();
+    localStorage.clear();
+    getCachedDirectoryVoteCriteria();
+    fetchMock.mockResolvedValue(new Response(withUpdatedRandomContest(2), { status: 200 }));
+    const changedListener = vi.fn();
+    const unsubscribeChanged = subscribeDirectoryVoteCriteria(changedListener);
+    await loadDirectoryVoteCriteria();
+
+    expect(changedListener).toHaveBeenCalledOnce();
+    unsubscribeChanged();
   });
 
   it('falls back to the vendored manifest when the network and cache are unavailable', async () => {

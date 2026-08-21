@@ -22,6 +22,7 @@ let vendoredCriteria: DirectoryVoteCriteria | undefined;
 let inFlightFetch: Promise<DirectoryVoteCriteria> | undefined;
 let lastFetchAttemptAt: number | undefined;
 let lastFetchSuccessAt: number | undefined;
+const criteriaListeners = new Set<() => void>();
 
 export const getDirectoryCodeFromContestId = (contestId: string): string | undefined => DIRECTORY_CONTEST_ID_PATTERN.exec(contestId)?.[1];
 
@@ -87,6 +88,12 @@ const saveCachedSource = (source: string) => {
   }
 };
 
+const haveSameCriteria = (first: DirectoryVoteCriteria, second: DirectoryVoteCriteria): boolean => JSON.stringify(first.criteria) === JSON.stringify(second.criteria);
+
+const notifyCriteriaListeners = () => {
+  for (const listener of criteriaListeners) listener();
+};
+
 export const getCachedDirectoryVoteCriteria = (): DirectoryVoteCriteria => {
   if (cachedCriteria) return cachedCriteria;
   const cached = readCachedSource();
@@ -110,10 +117,12 @@ const fetchDirectoryVoteCriteria = async (): Promise<DirectoryVoteCriteria> => {
     }
     const source = await response.text();
     const parsed = parseDirectoryVoteCriteria(source);
-    cachedCriteria = parsed;
+    const previous = cachedCriteria;
+    cachedCriteria = previous && haveSameCriteria(previous, parsed) ? previous : parsed;
     lastFetchSuccessAt = Date.now();
     saveCachedSource(source);
-    return parsed;
+    if (cachedCriteria !== previous) notifyCriteriaListeners();
+    return cachedCriteria;
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
       throw new Error(`Timed out fetching ${DIRECTORY_VOTE_CRITERIA_URL}`);
@@ -146,10 +155,19 @@ export const loadDirectoryVoteCriteria = async (): Promise<DirectoryVoteCriteria
   return inFlightFetch;
 };
 
+export const subscribeDirectoryVoteCriteria = (listener: () => void) => {
+  criteriaListeners.add(listener);
+  void loadDirectoryVoteCriteria().catch((error) => console.error('Failed to load directory vote criteria', error));
+  return () => {
+    criteriaListeners.delete(listener);
+  };
+};
+
 export const __resetDirectoryVoteCriteriaForTests = () => {
   cachedCriteria = undefined;
   vendoredCriteria = undefined;
   inFlightFetch = undefined;
   lastFetchAttemptAt = undefined;
   lastFetchSuccessAt = undefined;
+  criteriaListeners.clear();
 };

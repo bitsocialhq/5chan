@@ -19,7 +19,8 @@
     "https://base-sepolia.drpc.org serves current ERC-5192 checks and eth_call at 1,296,000 blocks deep (the full 30-day expiry window); the official standard and preconf endpoints were temporarily unhealthy on 2026-08-21 and remain fallbacks",
     "All candidate boards in the vendored directory lists carry both a .bso name and a publicKey, which is what a ballot requires",
     "Criteria is upvote-only (voteSchema min=1 max=1) and maxVotesPerAddress=1, so the existing -1 button cannot be represented",
-    "Testnet cadence: 1800-block buckets (1h on Base Sepolia) x 720 buckets = 30 day expiry; republishIntervalBuckets = 360 buckets = ~15 days"
+    "Testnet cadence: 1800-block buckets (1h on Base Sepolia) x 720 buckets = 30 day expiry; republishIntervalBuckets = 360 buckets = ~15 days",
+    "pubsub-voting Contest.on has no unsubscribe API and createContest returns one cached Contest per topic, so React consumers need one stable fan-out adapter instead of attaching callbacks on every mount"
   ],
   "items": [
     {
@@ -90,11 +91,17 @@
     {
       "id": "F005",
       "priority": 5,
-      "status": "pending",
+      "status": "done",
       "description": "use-vote-tally hook: createContest for the directory being viewed, subscribe to update/error, expose ranking with chainVerified/nameResolved flags. Lazy per-page, not all 64.",
-      "verification": ["yarn doctor", "yarn type-check"],
-      "files": [],
-      "notes": "Must stop() the contest on unmount to leave the topic."
+      "verification": [
+        "Focused criteria subscription and tally hook tests: 14 passed",
+        "Full suite: 177 files, 1,487 tests passed",
+        "Production build, lint, type-check, and changed-files React Doctor passed",
+        "Remount test proves one cached Contest receives only one update/error callback pair and stop() runs when the last React subscriber leaves",
+        "Knip retains only the known strip-json-comments sync-script false positive"
+      ],
+      "files": ["src/lib/directory-vote-criteria.ts", "src/lib/__tests__/directory-vote-criteria.test.ts", "src/hooks/use-directory-vote-criteria.ts", "src/hooks/use-vote-tally.ts", "src/hooks/__tests__/use-vote-tally.test.tsx"],
+      "notes": "The hook refreshes the canonical manifest through useSyncExternalStore, keeps an equivalent vendored/live manifest on the same contest object, joins only the requested directory, and stops the topic when its last subscriber unmounts. A WeakMap adapter installs exactly one update/error callback pair per cached Contest because pubsub-voting 0.6.1 exposes no off/removeListener method. Ready state retains the last tally while surfacing transient RPC or resolver errors."
     },
     {
       "id": "F006",
