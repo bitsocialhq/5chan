@@ -1,6 +1,6 @@
 {
   "task": "pubsub-directory-voting",
-  "last_updated": "2026-08-18",
+  "last_updated": "2026-08-21",
   "decisions": {
     "signer": "EIP-6963 injected discovery first, WalletConnect fallback for mobile/Electron",
     "scope": "All three phases: read tally, cast votes, republish + homepage winner",
@@ -12,11 +12,11 @@
     "lists/5chan-directory-criteria.jsonc is live and byte-identical to the vendored fallback: 64 valid unique contests, 1:1 with the 64 default directory codes, no per-contest overrides",
     "bitsocial-seeder v0.10.5 uses pubsub-voting 0.6.1 and seeds that exact manifest URL by default",
     "5chan Pass testnet criteria now use the erc5192-min-balance soulbound gate on Base Sepolia at 0xA8e0155E0e7d014EAF3917982db6a9A4dF98C852",
-    "5chan and bitsocial-react-hooks resolve pkc-js 0.0.81; F002 exercised its browser heliaNode path successfully before app integration",
+    "5chan and bitsocial-react-hooks resolve pkc-js 0.0.85; F002 exercised its browser heliaNode path successfully before app integration",
     "Rinse12/pubsub-voting-website and bso-board-vote.netlify.app use the same one-node architecture through pkc.clients.libp2pJsClients[key].heliaNode; the reference app snapshot inspected on 2026-08-15 pinned pubsub-voting 0.4.0 and pkc-js 0.0.76",
     "better-sqlite3 already arrives via pkc-js, so pubsub-voting adds no new native dependency",
     "pubsub-voting wants viem 2.54.0; the project resolution dedupes pubsub-voting, bitsocial-react-hooks, and bso-resolver onto viem 2.55.8",
-    "https://sepolia.base.org serves eth_call at 1,296,000 blocks deep (full 30-day expiry window) and has multicall3; base-sepolia-rpc.publicnode.com rejects archive requests",
+    "https://base-sepolia.drpc.org serves current ERC-5192 checks and eth_call at 1,296,000 blocks deep (the full 30-day expiry window); the official standard and preconf endpoints were temporarily unhealthy on 2026-08-21 and remain fallbacks",
     "All candidate boards in the vendored directory lists carry both a .bso name and a publicKey, which is what a ballot requires",
     "Criteria is upvote-only (voteSchema min=1 max=1) and maxVotesPerAddress=1, so the existing -1 button cannot be represented",
     "Testnet cadence: 1800-block buckets (1h on Base Sepolia) x 720 buckets = 30 day expiry; republishIntervalBuckets = 360 buckets = ~15 days"
@@ -75,11 +75,17 @@
     {
       "id": "F004",
       "priority": 4,
-      "status": "pending",
-      "description": "Voter singleton + seams: ChainClientFactory keyed by numeric chainId (84532 for the Base Sepolia bucket/gate), eth mainnet client for .bso resolution, nameResolvers from @bitsocial/bso-resolver, browser IndexedDB storage, no httpRouterUrls.",
-      "verification": ["yarn type-check", "unit test that an unresolvable chain recuses via MissingChainClientError"],
-      "files": [],
-      "notes": "One memoized viem PublicClient per chain so parallel contests coalesce reads. Default Base Sepolia RPC: https://sepolia.base.org (verified archive-deep)."
+      "status": "done",
+      "description": "Voter singleton + seams: ChainClientFactory keyed by numeric chainId (84532 for the Base Sepolia bucket/gate), reuse the PKC account's .bso name resolvers, browser IndexedDB storage, no httpRouterUrls.",
+      "verification": [
+        "Focused voter hook tests: 7 passed, including a MissingChainClientError recusal for an unsupported chain",
+        "Live Base Sepolia check: dRPC served current ERC-5192 detection and an eth_call 1,296,000 blocks behind head",
+        "Full suite: 176 files, 1,480 tests passed",
+        "Production build, lint, type-check, changed-files React Doctor, and desktop/mobile smoke passed",
+        "Knip retains only the known strip-json-comments sync-script false positive"
+      ],
+      "files": ["package.json", "yarn.lock", "src/lib/pubsub-voter.ts", "src/hooks/use-pubsub-voter.ts", "src/hooks/__tests__/use-pubsub-voter.test.tsx"],
+      "notes": "One memoized PubsubVoter per PKC Helia node and resolver array, one shared viem PublicClient for Base Sepolia, and persistent browser IndexedDB storage. The archive-tested dRPC endpoint is first, with the official standard and preconf endpoints as fallbacks. Unknown chains recuse. The shared PKC .bso resolver instances already own their Ethereum resolution client, so 5chan does not construct a duplicate resolver or mainnet client."
     },
     {
       "id": "F005",

@@ -216,3 +216,32 @@ Append one entry per session.
   `src/hooks/__tests__/use-pubsub-voter.test.tsx`, feature list, this file
 - Next: F004 — production voter singleton, followed by the read tally path; F010-F012 then
   have the updated 0.6.1 casting, persistence, and refresh contracts.
+
+## 2026-08-21 — Session 6: master sync + production voter singleton
+
+- Item: F004 (done)
+- Summary: Merged current `origin/master` as `4acef71a4`, bringing the WIP branch current
+  with 5chan's `/search/` directory, bitsocial-react-hooks 0.1.39, pkc-js 0.0.85, and the
+  v0.9.19 app baseline. Replaced the F002 in-memory construction spike with a long-lived
+  browser voter shared by every route using the same PKC Helia node and `.bso` resolver set.
+  The voter now uses persistent IndexedDB storage and a shared Base Sepolia viem client;
+  individual contest hooks remain responsible for joining and stopping their own topic.
+- Chain evidence: the previously verified official Base Sepolia endpoint returned
+  `no backend is currently healthy to serve traffic` during this session, and the preconf
+  endpoint was also unavailable. `https://base-sepolia.drpc.org` successfully served both
+  the current Pass contract ERC-5192 check and a historical call 1,296,000 blocks behind
+  head. The voter therefore uses dRPC first with the official standard and preconf endpoints
+  as fallbacks. PublicNode remains excluded because its historical call failed.
+- Architecture: 5chan reuses `account.pkc.nameResolvers` rather than constructing a second
+  `.bso` resolver or Ethereum client. No HTTP routers are added, and unsupported chain ids
+  return no client so pubsub-voting recuses the contest with `MissingChainClientError`.
+- Files: `package.json`, `yarn.lock`, `src/lib/pubsub-voter.ts`,
+  `src/hooks/use-pubsub-voter.ts`, `src/hooks/__tests__/use-pubsub-voter.test.tsx`, feature
+  list, this file
+- Verification: focused voter tests (7), full suite (176 files / 1,480 tests), production
+  build, lint, type-check, changed-files React Doctor, desktop/mobile smoke, and a live
+  current-plus-historical Base Sepolia check. Repo-wide React Doctor still exits on
+  pre-existing findings outside this branch's changed scope; the changed-files scan passes.
+- Blockers: none
+- Next: F005 — lazily create and subscribe to only the directory contest being viewed,
+  expose its verified ranking, and stop that topic on unmount.

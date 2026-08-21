@@ -50,6 +50,7 @@
     "strip-json-comments": "5.0.3",
     "tcp-port-used": "1.0.2",
     "typescript": "7.0.2",
+    "viem": "2.55.8",
     "workbox-core": "7.4.0",
     "workbox-expiration": "7.4.0",
     "workbox-precaching": "7.4.0",

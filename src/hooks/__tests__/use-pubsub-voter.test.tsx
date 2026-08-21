@@ -2,8 +2,10 @@ import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MissingFetchError, type PubsubVoterOptions } from '@bitsocial/pubsub-voting';
-import { createInMemoryPubsubVoter, usePubsubVoter } from '../use-pubsub-voter';
+import { MissingChainClientError, MissingFetchError, type NameResolver, type PubsubVoterOptions } from '@bitsocial/pubsub-voting';
+import { getVendoredDirectoryVoteCriteria } from '../../lib/directory-vote-criteria';
+import { createBrowserPubsubVoter, getOrCreateBrowserPubsubVoter, getVotingChainClient } from '../../lib/pubsub-voter';
+import { getBrowserNameResolvers, usePubsubVoter } from '../use-pubsub-voter';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -70,10 +72,46 @@ describe('usePubsubVoter', () => {
     container.remove();
   });
 
-  it('constructs an in-memory voter from the public pkc heliaNode seam', async () => {
-    const voter = createInMemoryPubsubVoter(createHeliaNode());
+  it('constructs a persistent voter with the supported Base Sepolia chain', async () => {
+    const voter = createBrowserPubsubVoter({ helia: createHeliaNode() });
+    const criteria = getVendoredDirectoryVoteCriteria().criteriaByDirectoryCode.get('b')!;
 
+    expect(getVotingChainClient({ chainId: criteria.bucketChainId })).toBe(getVotingChainClient({ chainId: criteria.bucketChainId }));
+    await expect(voter.createContest({ criteria })).resolves.toMatchObject({ criteria });
     await expect(voter.destroy()).resolves.toBeUndefined();
+  });
+
+  it('recuses contests whose chain is not configured', async () => {
+    const voter = createBrowserPubsubVoter({ helia: createHeliaNode() });
+    const criteria = {
+      ...getVendoredDirectoryVoteCriteria().criteriaByDirectoryCode.get('b')!,
+      bucketChainId: 1,
+    };
+
+    expect(getVotingChainClient({ chainId: 1 })).toBeUndefined();
+    await expect(voter.createContest({ criteria })).rejects.toBeInstanceOf(MissingChainClientError);
+    await voter.destroy();
+  });
+
+  it('shares one voter for the same PKC node and resolver set', async () => {
+    const helia = createHeliaNode();
+    const first = getOrCreateBrowserPubsubVoter({ helia });
+    const second = getOrCreateBrowserPubsubVoter({ helia });
+
+    expect(second).toBe(first);
+    await first.destroy();
+  });
+
+  it('reuses the account name resolvers for vote-name verification', () => {
+    const resolver = {
+      key: 'bso-test',
+      provider: 'test',
+      canResolve: vi.fn(() => true),
+      resolve: vi.fn(),
+    } satisfies NameResolver;
+    const nameResolvers = [resolver];
+
+    expect(getBrowserNameResolvers({ pkc: { nameResolvers } })).toBe(nameResolvers);
   });
 
   it('reports unavailable when the account has no browser libp2p client', async () => {
