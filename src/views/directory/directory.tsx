@@ -11,14 +11,15 @@ import { useDirectories } from '../../hooks/use-directories';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { isDirectoryRoute } from '../../lib/utils/route-utils';
-import { DirectoryListBoard, sortDirectoryBoardsByRank, useDirectoryList } from '../../hooks/use-directory-list';
+import { useDirectoryList } from '../../hooks/use-directory-list';
 import { type CommunityFreshnessState, isCommunityKnownOffline } from '../../lib/utils/community-freshness-utils';
 import getShortAddress from '../../lib/get-short-address';
 import { get5chanDeveloperBadge } from '../../lib/utils/author-display-utils';
 import useCommunityOfflineStore from '../../stores/use-community-offline-store';
 import useIsCommunityOffline from '../../hooks/use-is-community-offline';
 import { useNowSeconds } from '../../hooks/use-now-seconds';
-import { usePubsubVoter } from '../../hooks/use-pubsub-voter';
+import { useVoteTally } from '../../hooks/use-vote-tally';
+import { rankDirectoryBoardsByVoteTally, type RankedDirectoryVoteBoard } from '../../lib/directory-vote-ranking';
 import postStyles from '../post/post.module.css';
 import styles from './directory.module.css';
 
@@ -117,14 +118,15 @@ const DirectoryMobileFooterControls = ({ communityAddress, submitHref }: { commu
 );
 
 interface DirectoryRowProps {
-  board: DirectoryListBoard;
+  rankedBoard: RankedDirectoryVoteBoard;
   nowSeconds: number;
   rank: number;
   onVote: () => void;
 }
 
-const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) => {
+const DirectoryRow = ({ rankedBoard, nowSeconds, rank, onVote }: DirectoryRowProps) => {
   const { t } = useTranslation();
+  const { board, chainVerified, nameResolved, weight } = rankedBoard;
   const statusUnavailableReason = t('directory_status_unavailable_reason');
   const ownerAddress = board.owner;
   const ownerDisplay = ownerAddress ? getShortAddress(ownerAddress) || ownerAddress : undefined;
@@ -136,6 +138,8 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
   const offlineState = useCommunityOfflineStore((state) => (shouldCheckStatus ? state.communityOfflineState[board.address] : undefined));
   const status = shouldCheckStatus ? computeBoardStatus(community, offlineState, nowSeconds, isOffline, isOnlineStatusLoading) : 'unavailable';
   const boardLink = `/${board.address}`;
+  const isVoteVerificationPending = weight !== undefined && (!chainVerified || nameResolved === false);
+  const score = weight?.toString() ?? board.score ?? DIRECTORY_STATUS_UNAVAILABLE_MARKER;
 
   return (
     <tr className={`${styles.dirRow} ${rank % 2 === 1 ? styles.rowOdd : ''}`}>
@@ -175,7 +179,14 @@ const DirectoryRow = ({ board, nowSeconds, rank, onVote }: DirectoryRowProps) =>
         )}
       </td>
       <td className={styles.scoreCell}>
-        <span className={styles.scoreValue}>{board.score ?? DIRECTORY_STATUS_UNAVAILABLE_MARKER}</span>
+        <span className={styles.scoreValue} data-score-verification={weight === undefined ? 'fallback' : isVoteVerificationPending ? 'pending' : 'verified'}>
+          {score}
+          {isVoteVerificationPending && (
+            <sup className={styles.scorePending} title={t('pending')} aria-label={t('pending')}>
+              ?
+            </sup>
+          )}
+        </span>
       </td>
       <td className={styles.actionsCell}>
         [
@@ -207,9 +218,10 @@ const Directory = () => {
   const { list, loading } = useDirectoryList(isValidDirectoryCode ? boardIdentifier : undefined);
   const communityAddress = useResolvedCommunityAddress();
   const nowSeconds = useNowSeconds();
-  const pubsubVoter = usePubsubVoter();
+  const voteTally = useVoteTally(isValidDirectoryCode ? boardIdentifier : undefined);
+  const tally = voteTally.state === 'ready' ? voteTally.tally : undefined;
 
-  const ranked = useMemo(() => (list ? sortDirectoryBoardsByRank(list.boards) : []), [list]);
+  const ranked = useMemo(() => (list ? rankDirectoryBoardsByVoteTally(list.boards, tally) : []), [list, tally]);
   const directoryTitle = list?.title || (boardIdentifier ? `/${boardIdentifier}/ - ${t('directory')}` : t('directory'));
 
   useEffect(() => {
@@ -231,7 +243,7 @@ const Directory = () => {
   const repoEditUrl = getRepoEditUrl(boardIdentifier!);
 
   return (
-    <div id='top' className={`${styles.page} ${shouldShowSnow() ? styles.garland : ''}`} data-pubsub-voter-state={pubsubVoter.state}>
+    <div id='top' className={`${styles.page} ${shouldShowSnow() ? styles.garland : ''}`} data-pubsub-vote-tally-state={voteTally.state}>
       <DirectoryMobileTopControls communityAddress={communityAddress} submitHref={repoEditUrl} />
       <hr className={styles.desktopDivider} />
       <DirectoryDesktopTopControls communityAddress={communityAddress} submitHref={repoEditUrl} />
@@ -272,8 +284,8 @@ const Directory = () => {
               </tr>
             </thead>
             <tbody>
-              {ranked.map((board, index) => (
-                <DirectoryRow key={board.address} board={board} nowSeconds={nowSeconds} rank={index + 1} onVote={handleVoteUnavailable} />
+              {ranked.map((rankedBoard, index) => (
+                <DirectoryRow key={rankedBoard.board.address} rankedBoard={rankedBoard} nowSeconds={nowSeconds} rank={index + 1} onVote={handleVoteUnavailable} />
               ))}
             </tbody>
           </table>

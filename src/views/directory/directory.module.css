@@ -205,6 +205,12 @@
   font-weight: 700;
 }
 
+.scorePending {
+  margin-left: 1px;
+  font-size: 0.75em;
+  cursor: help;
+}
+
 .statusOnline {
   color: green;
 }

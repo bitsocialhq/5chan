@@ -19,7 +19,7 @@ const testState = vi.hoisted(() => ({
       address: 'anime-and-manga.bso',
       score: 12,
     },
-  ],
+  ] as Array<{ address: string; publicKey?: string; score: number }>,
   directories: [
     {
       address: 'anime-and-manga.bso',
@@ -36,6 +36,7 @@ const testState = vi.hoisted(() => ({
   },
   offlineStates: {} as Record<string, { state?: string; updatedAt?: number }>,
   nowSeconds: 1_704_067_210,
+  voteTally: { state: 'unavailable', reason: 'no-voter' } as Record<string, unknown>,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -135,8 +136,8 @@ vi.mock('../../../hooks/use-now-seconds', () => ({
   useNowSeconds: () => testState.nowSeconds,
 }));
 
-vi.mock('../../../hooks/use-pubsub-voter', () => ({
-  usePubsubVoter: () => ({ state: 'unavailable' }),
+vi.mock('../../../hooks/use-vote-tally', () => ({
+  useVoteTally: () => testState.voteTally,
 }));
 
 vi.mock('../../../stores/use-community-offline-store', () => ({
@@ -210,6 +211,7 @@ describe('Directory', () => {
     };
     testState.offlineStates = {};
     testState.nowSeconds = 1_704_067_210;
+    testState.voteTally = { state: 'unavailable', reason: 'no-voter' };
     originalAlert = window.alert;
     window.alert = vi.fn();
 
@@ -227,7 +229,7 @@ describe('Directory', () => {
   it('shows online status for a listed board after loading its community', async () => {
     await renderDirectory();
 
-    expect(container.querySelector('#top')?.getAttribute('data-pubsub-voter-state')).toBe('unavailable');
+    expect(container.querySelector('#top')?.getAttribute('data-pubsub-vote-tally-state')).toBe('unavailable');
     const cells = Array.from(getDirectoryRow()?.querySelectorAll('td') ?? []).map((cell) => cell.textContent?.replace(/\s+/g, ' ').trim());
     expect(cells.slice(0, 5)).toEqual(['1', 'anime-and-manga.bso', 'directory_owner_anonymous', 'online', '12']);
     expect(cells[5]).toContain('+1');
@@ -254,6 +256,34 @@ describe('Directory', () => {
       expect(link.getAttribute('rel')).toContain('noreferrer');
       expect(link.getAttribute('rel')).toContain('noopener');
     }
+  });
+
+  it('makes the live public-key tally authoritative and marks provisional scores', async () => {
+    testState.directoryBoards = [
+      { address: 'manual-winner.bso', publicKey: '12D3KooWManual', score: 100 },
+      { address: 'vote-winner.bso', publicKey: '12D3KooWVote', score: 1 },
+      { address: 'no-votes.bso', publicKey: '12D3KooWNone', score: 50 },
+    ];
+    testState.communities = Object.fromEntries(testState.directoryBoards.map((board) => [board.address, createCommunity(board.address)]));
+    testState.voteTally = {
+      state: 'ready',
+      tally: {
+        contestId: '5chan-dir-a-vote-test-1',
+        ranking: [
+          { community: { name: 'vote-winner.bso', publicKey: '12D3KooWVote' }, weight: BigInt(9), chainVerified: false, nameResolved: false },
+          { community: { name: 'manual-winner.bso', publicKey: '12D3KooWManual' }, weight: BigInt(2), chainVerified: true, nameResolved: true },
+        ],
+      },
+    };
+
+    await renderDirectory();
+
+    const rows = Array.from(container.querySelectorAll('tbody tr'));
+    expect(rows.map((row) => row.querySelector('td:nth-child(2)')?.textContent)).toEqual(['vote-winner.bso', 'manual-winner.bso', 'no-votes.bso']);
+    expect(rows.map((row) => row.querySelector('td:nth-child(5)')?.textContent)).toEqual(['9?', '2', '0']);
+    expect(rows[0].querySelector('[data-score-verification]')?.getAttribute('data-score-verification')).toBe('pending');
+    expect(rows[0].querySelector('sup')?.getAttribute('title')).toBe('pending');
+    expect(rows[1].querySelector('[data-score-verification]')?.getAttribute('data-score-verification')).toBe('verified');
   });
 
   it('shows loading status while the listed board status is loading', async () => {

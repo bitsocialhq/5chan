@@ -4,6 +4,7 @@ import { getCachedDirectoryVoteCriteria, subscribeDirectoryVoteCriteria } from '
 
 export const useDirectoryVoteCriteria = (directoryCode: string | undefined): Criteria | undefined => {
   const getSnapshot = useCallback(() => (directoryCode ? getCachedDirectoryVoteCriteria().criteriaByDirectoryCode.get(directoryCode) : undefined), [directoryCode]);
+  const subscribe = useCallback((listener: () => void) => (directoryCode ? subscribeDirectoryVoteCriteria(listener) : () => {}), [directoryCode]);
 
-  return useSyncExternalStore(subscribeDirectoryVoteCriteria, getSnapshot, getSnapshot);
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 };

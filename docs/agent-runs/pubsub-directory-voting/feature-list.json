@@ -106,11 +106,18 @@
     {
       "id": "F006",
       "priority": 6,
-      "status": "pending",
+      "status": "done",
       "description": "Directory page read path: render tally weight into the existing score column, show a verifying state while chainVerified is false, order rows by weight. Phase 1 ships here.",
-      "verification": ["playwright-cli across Blink/Gecko/WebKit, desktop + mobile", "self-review diff against DESIGN.md Do/Don't"],
-      "files": ["src/views/directory/directory.tsx"],
-      "notes": "Score column already exists and currently always renders the em-dash placeholder."
+      "verification": [
+        "Focused ranking, tally hook, and directory UI tests: 18 passed",
+        "Full suite: 178 files, 1,492 tests passed",
+        "Production build, lint, type-check, changed-files React Doctor, and Knip passed",
+        "Production browser bundle contains no better-sqlite3 or node-gyp-build references",
+        "Fresh Chrome, Firefox, and WebKit sessions at 1440x900 and 390x844 all reached a ready, fully verified live /a/ tally score of 1 with no page overflow",
+        "Diff self-reviewed against DESIGN.md: compact theme-native table retained, with no rounding, shadows, transitions, hover fills, or new accent colors"
+      ],
+      "files": ["src/lib/directory-vote-ranking.ts", "src/lib/__tests__/directory-vote-ranking.test.ts", "src/hooks/use-directory-vote-criteria.ts", "src/views/directory/directory.tsx", "src/views/directory/directory.module.css", "src/views/directory/__tests__/directory.test.tsx"],
+      "notes": "Static list scores/order remain the fallback while the tally is unavailable or joining. Once ready, allowlisted boards are matched only by publicKey, bigint weight is authoritative, unmatched candidates show zero, and the old manual score cannot break live ties. A compact question-mark marker uses the existing Pending translation while either chain or carried-name verification is unfinished. Vote controls remain intentionally unavailable until the wallet/casting phases."
     },
     {
       "id": "F007",

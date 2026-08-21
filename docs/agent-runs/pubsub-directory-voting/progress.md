@@ -271,3 +271,33 @@ Append one entry per session.
 - Blockers: none
 - Next: F006 — consume the hook on the directory page, map tally rows to boards by public key,
   render verified/provisional scores in the existing column, and order the list by live weight.
+
+## 2026-08-21 — Session 6 (cont.): live directory scores
+
+- Item: F006 (done)
+- Summary: Connected the lazy tally hook to the existing directory table. Before a tally is
+  ready, 5chan preserves the current static score and ordering as an offline/gateway fallback.
+  Once ready, only allowlisted boards whose public key matches a tally row receive that row;
+  bigint vote weight becomes authoritative, zero-vote candidates render `0`, and static manual
+  scores no longer influence live ties. Rows still awaiting either chain or carried-name
+  verification show a compact `?` with the existing Pending label.
+- Live evidence: fresh isolated Chrome, Firefox, and WebKit sessions all loaded
+  `/a/directory`, joined only the `/a/` contest, and settled on the same fully verified live
+  score of `1`. Desktop (1440x900) and mobile (390x844) stayed within the viewport in every
+  engine. Browser consoles continued to show existing delegated-routing 404s and failed peer
+  WebSocket dials, but no tally-hook exception; the contest reached `ready` despite that normal
+  decentralized discovery churn.
+- UX review: the existing dense table, theme colors, square geometry, and text controls are
+  unchanged. The only new visual is the small superscript pending marker; no rounded UI,
+  shadows, transitions, hover fills, or new accent colors were introduced.
+- Files: `src/lib/directory-vote-ranking.ts`,
+  `src/lib/__tests__/directory-vote-ranking.test.ts`,
+  `src/hooks/use-directory-vote-criteria.ts`, `src/views/directory/directory.tsx`,
+  `src/views/directory/directory.module.css`, `src/views/directory/__tests__/directory.test.tsx`,
+  feature list, this file
+- Verification: focused tests (18), full suite (178 files / 1,492 tests), production build,
+  lint, type-check, changed-files React Doctor, Knip, native-dependency bundle scan, and the
+  three-engine desktop/mobile browser matrix.
+- Blockers: none
+- Next: F007 — add an injected-wallet connection model and mismatch warning, without enabling
+  vote publication until the per-ballot signer adapter is covered by the conformance vector.
