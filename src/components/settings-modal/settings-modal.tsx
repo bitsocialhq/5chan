@@ -1,22 +1,34 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAccount, usePkcRpcSettings } from '@bitsocial/bitsocial-react-hooks';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import styles from './settings-modal.module.css';
+import LazySection, { createSectionLoader } from './lazy-section';
 import { P2P_STATS_SECTION_ID, shouldShowP2PSettingsSection } from '../../lib/p2p-runtime';
 import { getReviewableSettingsUpgrades, getSettingsUpgradeKey, type SettingsUpgradeAccount } from '../../lib/settings-upgrades';
 import useSettingsUpgradeReviewStore from '../../stores/use-settings-upgrade-review-store';
 import { getSettingsSectionPath } from '../../lib/utils/route-utils';
 
-const AccountSettings = lazy(() => import('./account-settings/account-settings'));
-const CryptoAddressSetting = lazy(() => import('./crypto-address-setting/crypto-address-setting'));
-const CryptoWalletsSetting = lazy(() => import('./crypto-wallets-setting/crypto-wallets-setting'));
-const InterfaceSettings = lazy(() => import('./interface-settings/interface-settings'));
-const MediaHostingSettings = lazy(() => import('./media-hosting-settings/media-hosting-settings'));
-const AdvancedSettings = lazy(() => import('./advanced-settings/advanced-settings'));
-const SubscriptionsSetting = lazy(() => import('./subscriptions-setting/subscriptions-setting'));
-const TrustedBoardLinksSetting = lazy(() => import('./trusted-board-links-setting/trusted-board-links-setting'));
-const P2PStatsSettings = lazy(() => import('./p2p-stats-settings/p2p-stats-settings'));
+const loadAccountSettings = createSectionLoader(() => import('./account-settings/account-settings'));
+const loadCryptoAddressSetting = createSectionLoader(() => import('./crypto-address-setting/crypto-address-setting'));
+const loadCryptoWalletsSetting = createSectionLoader(() => import('./crypto-wallets-setting/crypto-wallets-setting'));
+const loadInterfaceSettings = createSectionLoader(() => import('./interface-settings/interface-settings'));
+const loadMediaHostingSettings = createSectionLoader(() => import('./media-hosting-settings/media-hosting-settings'));
+const loadAdvancedSettings = createSectionLoader(() => import('./advanced-settings/advanced-settings'));
+const loadSubscriptionsSetting = createSectionLoader(() => import('./subscriptions-setting/subscriptions-setting'));
+const loadTrustedBoardLinksSetting = createSectionLoader(() => import('./trusted-board-links-setting/trusted-board-links-setting'));
+const loadP2PStatsSettings = createSectionLoader(() => import('./p2p-stats-settings/p2p-stats-settings'));
+
+const alwaysVisibleSectionLoaders = [
+  loadInterfaceSettings,
+  loadMediaHostingSettings,
+  loadAccountSettings,
+  loadCryptoAddressSetting,
+  loadCryptoWalletsSetting,
+  loadSubscriptionsSetting,
+  loadTrustedBoardLinksSetting,
+  loadAdvancedSettings,
+];
 
 const allSectionIds = [
   'interface-settings',
@@ -58,6 +70,17 @@ const SettingsModal = () => {
     const newPath = pathname.replace(/\/settings$/, '');
     navigate(getSettingsSectionPath(newPath, null, search), { state });
   }, [pathname, navigate, search, state]);
+
+  const showsP2PStatsSection = sectionIds.includes(P2P_STATS_SECTION_ID);
+
+  // Fetch every section chunk as soon as settings opens, so expanding a section
+  // renders it in the same commit as the click instead of waiting on a request.
+  useEffect(() => {
+    alwaysVisibleSectionLoaders.forEach((load) => load());
+    if (showsP2PStatsSection) {
+      loadP2PStatsSettings();
+    }
+  }, [showsP2PStatsSection]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -167,7 +190,7 @@ const SettingsModal = () => {
         </div>
         {showInterfaceSettings && (
           <Suspense fallback={null}>
-            <InterfaceSettings />
+            <LazySection load={loadInterfaceSettings} />
           </Suspense>
         )}
         <div id='media-hosting-settings' className={`${styles.setting} ${styles.category}`}>
@@ -178,7 +201,7 @@ const SettingsModal = () => {
         </div>
         {showMediaHostingSettings && (
           <Suspense fallback={null}>
-            <MediaHostingSettings />
+            <LazySection load={loadMediaHostingSettings} />
           </Suspense>
         )}
         <div id='account-settings' className={`${styles.setting} ${styles.category}`}>
@@ -190,15 +213,15 @@ const SettingsModal = () => {
         {showAccountSettings && (
           <>
             <Suspense fallback={null}>
-              <AccountSettings />
+              <LazySection load={loadAccountSettings} />
             </Suspense>
             <div className={styles.subSectionHeader}>{t('crypto_address')}</div>
             <Suspense fallback={null}>
-              <CryptoAddressSetting />
+              <LazySection load={loadCryptoAddressSetting} />
             </Suspense>
             <div className={styles.subSectionHeader}>{t('crypto_wallets')}</div>
             <Suspense fallback={null}>
-              <CryptoWalletsSetting />
+              <LazySection load={loadCryptoWalletsSetting} />
             </Suspense>
           </>
         )}
@@ -210,7 +233,7 @@ const SettingsModal = () => {
         </div>
         {showSubscriptionsSettings && (
           <Suspense fallback={null}>
-            <SubscriptionsSetting />
+            <LazySection load={loadSubscriptionsSetting} />
           </Suspense>
         )}
         <div id='board-link-permissions-settings' className={`${styles.setting} ${styles.category}`}>
@@ -221,7 +244,7 @@ const SettingsModal = () => {
         </div>
         {showBoardLinkPermissionsSettings && (
           <Suspense fallback={null}>
-            <TrustedBoardLinksSetting />
+            <LazySection load={loadTrustedBoardLinksSetting} />
           </Suspense>
         )}
         <div id='advanced-settings' className={`${styles.setting} ${styles.category}`}>
@@ -232,10 +255,10 @@ const SettingsModal = () => {
         </div>
         {showAdvancedSettings && (
           <Suspense fallback={null}>
-            <AdvancedSettings />
+            <LazySection load={loadAdvancedSettings} />
           </Suspense>
         )}
-        {sectionIds.includes(P2P_STATS_SECTION_ID) && (
+        {showsP2PStatsSection && (
           <>
             <div id={P2P_STATS_SECTION_ID} className={`${styles.setting} ${styles.category}`}>
               <button type='button' className={styles.categoryButton} onClick={() => handleCategoryClick(P2P_STATS_SECTION_ID)}>
@@ -245,7 +268,7 @@ const SettingsModal = () => {
             </div>
             {showP2PStatsSettings && (
               <Suspense fallback={null}>
-                <P2PStatsSettings />
+                <LazySection load={loadP2PStatsSettings} />
               </Suspense>
             )}
           </>
