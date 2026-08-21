@@ -1,6 +1,6 @@
 {
   "name": "5chan",
-  "version": "0.9.17",
+  "version": "0.9.19",
   "packageManager": "yarn@4.17.1+sha512.ccbfabf7d7b6b32075088be9386fb9a2e00bb6887ef07fa56effabc890a56d53da1ccc4128d62db245fcbd3961b236d75335bdf7d5320ed6eafb7588b7ad4697",
   "description": "A Bitsocial client with an imageboard UI",
   "type": "module",
@@ -9,7 +9,7 @@
   "private": true,
   "dependencies": {
     "@bbob/parser": "4.3.1",
-    "@bitsocial/bitsocial-react-hooks": "0.1.37",
+    "@bitsocial/bitsocial-react-hooks": "0.1.39",
     "@bitsocial/bso-resolver": "0.0.10",
     "@bitsocial/pubsub-voting": "0.6.1",
     "@capacitor/app": "7.0.1",
@@ -18,7 +18,7 @@
     "@capawesome/capacitor-android-edge-to-edge-support": "7.2.2",
     "@chenglou/pretext": "0.0.8",
     "@floating-ui/react": "0.26.1",
-    "@pkcprotocol/pkc-js": "0.0.81",
+    "@pkcprotocol/pkc-js": "0.0.85",
     "@react-spring/web": "10.0.3",
     "@ruffle-rs/ruffle": "0.2.0",
     "@types/node": "20.19.37",
@@ -190,7 +190,7 @@
   },
   "resolutions": {
     "follow-redirects": "1.16.0",
-    "@pkcprotocol/pkc-js": "0.0.81",
+    "@pkcprotocol/pkc-js": "0.0.85",
     "@libp2p/gossipsub": "16.0.4",
     "@libp2p/kad-dht": "16.2.6",
     "viem": "2.55.8",

@@ -1,3 +1,24 @@
+## [0.9.19](https://github.com/bitsocialnet/5chan/compare/v0.9.18...v0.9.19) (2026-08-18)
+
+
+### Features
+
+* **all:** auto-expand empty feeds to a wider time filter ([87f7910](https://github.com/bitsocialnet/5chan/commit/87f7910c9eb5a2b5a7a5ff67347fab3e9f485bfc))
+* **board-header:** show directory winner subtitle on code routes ([e57f157](https://github.com/bitsocialnet/5chan/commit/e57f1578b81368ddf0b4f5179d04e4ff75ddbd0d))
+* **search:** 5archive-powered archive search ([#1197](https://github.com/bitsocialnet/5chan/issues/1197)) ([2c4b1c6](https://github.com/bitsocialnet/5chan/commit/2c4b1c6016158cd54888399e4a6effcc626047d4))
+
+
+
+## [0.9.18](https://github.com/bitsocialnet/5chan/compare/v0.9.17...v0.9.18) (2026-08-15)
+
+
+### Bug Fixes
+
+* **post form:** show inline duplicate media errors ([1da1618](https://github.com/bitsocialnet/5chan/commit/1da16187f80902ee5a2edee9b9ed8fb8f3e344ef))
+* **thread:** preserve canonical replies for owned posts ([#1195](https://github.com/bitsocialnet/5chan/issues/1195)) ([e2ffbde](https://github.com/bitsocialnet/5chan/commit/e2ffbde45605b793b04fef8db9ede88e9bce3d6a))
+
+
+
 ## [0.9.17](https://github.com/bitsocialnet/5chan/compare/v0.9.16...v0.9.17) (2026-08-07)
 
 

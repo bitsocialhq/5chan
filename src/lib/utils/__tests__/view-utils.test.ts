@@ -11,6 +11,7 @@ import {
   isPendingPostView,
   isPostPageView,
   isSettingsView,
+  isSearchView,
   isSubscriptionsView,
 } from '../view-utils';
 
@@ -29,6 +30,9 @@ describe('view-utils', () => {
     expect(isNotFoundView('/settings/account-data', {})).toBe(false);
     expect(isNotFoundView('/not-allowed', {})).toBe(false);
     expect(isNotFoundView('/not-found', {})).toBe(true);
+    expect(isSearchView('/search/directory/settings')).toBe(true);
+    expect(isNotFoundView('/search', {})).toBe(false);
+    expect(isNotFoundView('/search/directory/settings', {})).toBe(false);
     expect(isNotFoundView('/faq/missing', {})).toBe(true);
   });
 

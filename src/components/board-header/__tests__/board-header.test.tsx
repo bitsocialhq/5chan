@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BoardHeader from '../board-header';
 import { TRASH_BOARD_ADDRESS, TRASH_BOARD_TITLE } from '../../../lib/special-boards';
+import useSearchSummaryStore from '../../../stores/use-search-summary-store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const act = (React as { act?: (cb: () => void | Promise<void>) => void | Promise<void> }).act as (cb: () => void | Promise<void>) => void | Promise<void>;
@@ -128,8 +129,26 @@ let container: HTMLDivElement;
 let root: Root;
 
 const renderHeader = async (initialEntry: string | { pathname: string; state?: unknown }) => {
+  // Route patterns mirror the app's board routes so the component sees real params (e.g. boardIdentifier).
+  const element = createElement(BoardHeader);
   await act(async () => {
-    root.render(createElement(MemoryRouter, { initialEntries: [initialEntry] }, createElement(BoardHeader)));
+    root.render(
+      createElement(
+        MemoryRouter,
+        { initialEntries: [initialEntry] },
+        createElement(
+          Routes,
+          null,
+          createElement(Route, { path: '/all', element }),
+          createElement(Route, { path: '/subs', element }),
+          createElement(Route, { path: '/pending/:accountCommentIndex', element }),
+          createElement(Route, { path: '/search', element }),
+          createElement(Route, { path: '/search/catalog', element }),
+          createElement(Route, { path: '/search/directory', element }),
+          createElement(Route, { path: '/:boardIdentifier', element }),
+        ),
+      ),
+    );
   });
 };
 
@@ -138,6 +157,7 @@ describe('BoardHeader', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useSearchSummaryStore.setState({ providerId: null, query: '', status: 'pending', total: null });
     testState.accountComment = undefined;
     testState.community = { address: 'music-posting.eth' };
     testState.communityIdentifier = { name: 'music-posting.eth' };
@@ -185,6 +205,43 @@ describe('BoardHeader', () => {
     expect(container.textContent).toContain('all_subtitle');
   });
 
+  it('titles the archive search with its query and provider, without board status chrome', async () => {
+    await renderHeader('/search?q=esteban');
+
+    expect(container.textContent).toContain('5chan Search `esteban`');
+    expect(container.textContent).toContain('results_provided_by 5archive.org');
+    // The subtitle is plain text, like the board address one; the directory has its own button.
+    expect(container.querySelector('[class*="boardSubtitle"] a')).toBeNull();
+    expect(container.querySelector('[data-testid="tooltip"]')).toBeNull();
+
+    act(() => root.unmount());
+    root = createRoot(container);
+    await renderHeader('/search/directory');
+    expect(container.textContent).toContain('search_provider_directory_subtitle');
+  });
+
+  it('credits no indexer when the search failed', async () => {
+    useSearchSummaryStore.getState().setSummary('esteban', 'failed');
+    await renderHeader('/search?q=esteban');
+
+    expect(container.textContent).toContain('5chan Search `esteban`');
+    expect(container.textContent).not.toContain('results_provided_by');
+  });
+
+  it('adds the matched comment count to the archive search title once the results report it', async () => {
+    useSearchSummaryStore.getState().setSummary('esteban', 'answered', 29, '5archive');
+    await renderHeader('/search?q=esteban');
+
+    expect(container.textContent).toContain('5chan Search `esteban` 29 comments');
+
+    // A count from an earlier query is never shown for the current one.
+    act(() => root.unmount());
+    root = createRoot(container);
+    await renderHeader('/search?q=other');
+    expect(container.textContent).toContain('5chan Search `other`');
+    expect(container.textContent).not.toContain('29 comments');
+  });
+
   it('renders a clickable subscriptions subtitle that navigates to subscription settings', async () => {
     await renderHeader('/subs');
 
@@ -213,6 +270,34 @@ describe('BoardHeader', () => {
     expect(container.textContent).toContain('music-posting.eth');
     expect(container.querySelector('[data-testid="tooltip"]')?.getAttribute('data-content')).toBe('Board offline');
     expect(container.querySelector('img')?.getAttribute('src')).toBe('banner-a.png');
+  });
+
+  it('renders the current directory winner subtitle as plain text on directory-code routes', async () => {
+    testState.community = { address: 'bizraelis.bso' };
+    testState.communityIdentifier = { name: 'bizraelis.bso' };
+    testState.directories = [{ address: 'bizraelis.bso', title: '/biz/ - Business & Finance' }];
+    testState.resolvedAddress = 'bizraelis.bso';
+    testState.stableCommunity = { address: 'bizraelis.bso', shortAddress: 'bizraelis.bso', title: '/biz/ - Business & Finance' };
+
+    await renderHeader('/biz');
+
+    expect(container.textContent).toContain('/biz/ - Business & Finance');
+
+    // The subtitle explains the directory mechanism on hover; navigation stays with the [Directory] board button.
+    const winnerSubtitle = container.querySelector('span[title^="directory_subtitle"]');
+    expect(winnerSubtitle?.textContent).toBe('directory_winner_subtitle:{"boardIdentifier":"biz","address":"bizraelis.bso"}');
+    expect(winnerSubtitle?.getAttribute('title')).toBe('directory_subtitle:{"boardIdentifier":"biz"}');
+    expect(container.querySelector('a')).toBeNull();
+  });
+
+  it('keeps the raw address subtitle for direct board-address routes', async () => {
+    testState.directories = [];
+
+    await renderHeader('/music-posting.eth');
+
+    const addressSubtitle = container.querySelector('span[title="board_address_tooltip"]');
+    expect(addressSubtitle?.textContent).toBe('music-posting.eth');
+    expect(container.querySelector('a[href$="/directory"]')).toBeNull();
   });
 
   it('keeps the banner stable while a directory route resolves different board candidates', async () => {

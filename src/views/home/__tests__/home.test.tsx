@@ -325,6 +325,19 @@ describe('Home', () => {
     expect(testState.navigateMock).toHaveBeenCalledWith('/mu');
   });
 
+  it('navigates ordinary search terms to the archive search route', async () => {
+    renderHome();
+
+    const input = container.querySelector<HTMLInputElement>('input[type="text"]');
+    const form = container.querySelector('form');
+    await act(async () => {
+      if (input) input.value = 'old internet culture';
+      form?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+
+    expect(testState.navigateMock).toHaveBeenCalledWith('/search?q=old%20internet%20culture');
+  });
+
   it('closes the directory modal when the home view unmounts', () => {
     renderHome();
     expect(testState.closeDirectoryModalMock).not.toHaveBeenCalled();

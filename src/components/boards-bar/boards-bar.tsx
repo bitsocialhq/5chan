@@ -4,13 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { useAccountComment } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import { accountsStore as useAccountsStore } from '../../lib/bitsocial-internals/stores';
-import { isAllView, isCatalogView, isModView, isSubscriptionsView } from '../../lib/utils/view-utils';
+import { isAllView, isCatalogView, isModView, isSearchView, isSubscriptionsView } from '../../lib/utils/view-utils';
 import { useAccountCommunityAddresses } from '../../hooks/use-account-community-addresses';
 import { useDirectories, DirectoryCommunity } from '../../hooks/use-directories';
 import { useBoardPath, useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
 import { normalizeAccountCommentIndex } from '../../lib/utils/account-comment-index-utils';
 import { getPendingPostRoutePost } from '../../lib/utils/pending-post-route-state';
 import { getBoardPath, extractDirectoryFromTitle } from '../../lib/utils/route-utils';
+import { SEARCH_PATH } from '../../lib/search-navigation';
 import { getCommentCommunityAddress } from '../../lib/utils/comment-utils';
 import useCreateBoardModalStore from '../../stores/use-create-board-modal-store';
 import useBoardsBarEditModalStore from '../../stores/use-boards-bar-edit-modal-store';
@@ -20,72 +21,6 @@ import { BOARD_CODE_GROUPS, getAllBoardCodes } from '../../constants/board-codes
 import styles from './boards-bar.module.css';
 import capitalize from 'lodash/capitalize';
 import debounce from 'lodash/debounce';
-import lowerCase from 'lodash/lowerCase';
-
-const SearchBar = ({ setShowSearchBar }: { setShowSearchBar: (show: boolean) => void }) => {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const searchBarRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const placeholder = lowerCase(t('enter_board_address'));
-
-  useEffect(() => {
-    searchInputRef.current?.focus();
-  }, []);
-
-  useEffect(() => {
-    const closeSearchOnOutsideClick = (event: MouseEvent) => {
-      if (searchBarRef.current && !searchBarRef.current.contains(event.target as Node)) {
-        setShowSearchBar(false);
-      }
-    };
-
-    document.addEventListener('mousedown', closeSearchOnOutsideClick);
-    return () => {
-      document.removeEventListener('mousedown', closeSearchOnOutsideClick);
-    };
-  }, [setShowSearchBar]);
-
-  useEffect(() => {
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setShowSearchBar(false);
-      }
-    };
-
-    document.addEventListener('keydown', handleEscapeKey);
-    return () => {
-      document.removeEventListener('keydown', handleEscapeKey);
-    };
-  }, [setShowSearchBar]);
-
-  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const searchInput = searchInputRef.current?.value;
-    if (searchInput && searchInputRef.current) {
-      searchInputRef.current.value = '';
-      navigate(`/${searchInput}`);
-      setShowSearchBar(false);
-    }
-  };
-
-  return (
-    <div className={styles.searchBar} ref={searchBarRef}>
-      <form onSubmit={handleSearchSubmit}>
-        <input
-          type='text'
-          aria-label={placeholder}
-          autoCorrect='off'
-          autoComplete='off'
-          spellCheck='false'
-          autoCapitalize='off'
-          placeholder={placeholder}
-          ref={searchInputRef}
-        />
-      </form>
-    </div>
-  );
-};
 
 // Helper function to find board address by directory code
 const findBoardAddressByCode = (code: string, directories: DirectoryCommunity[]): string | null => {
@@ -105,7 +40,6 @@ const BoardsBarDesktop = memo(() => {
   const params = useParams();
   const isInCatalogView = isCatalogView(location.pathname, params);
   const catalogSuffix = isInCatalogView ? '/catalog' : '';
-  const [showSearchBar, setShowSearchBar] = useState(false);
   const [showAllTemporarily, setShowAllTemporarily] = useState(false);
   const { openCreateBoardModal } = useCreateBoardModalStore();
   const { openBoardsBarEditModal } = useBoardsBarEditModalStore();
@@ -290,26 +224,14 @@ const BoardsBarDesktop = memo(() => {
       </span>
       <span className={styles.navTopRight}>
         [
-        <Link to={!location.pathname.endsWith('settings') ? location.pathname.replace(/\/$/, '') + '/settings' : location.pathname} state={location.state}>
+        <Link
+          to={`${!location.pathname.endsWith('settings') ? location.pathname.replace(/\/$/, '') + '/settings' : location.pathname}${location.search}`}
+          state={location.state}
+        >
           {t('settings')}
         </Link>
-        ] [
-        <button
-          type='button'
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              setShowSearchBar(!showSearchBar);
-            }
-          }}
-          onClick={() => setShowSearchBar(!showSearchBar)}
-        >
-          {capitalize(t('search'))}
-        </button>
-        ] [<Link to='/'>{t('home')}</Link>]
+        ] [<Link to={SEARCH_PATH}>{capitalize(t('search'))}</Link>] [<Link to='/'>{t('home')}</Link>]
       </span>
-      {showSearchBar && <SearchBar setShowSearchBar={setShowSearchBar} />}
     </div>
   );
 });
@@ -320,7 +242,6 @@ const BoardsBarMobile = memo(({ communityAddress }: { communityAddress?: string 
   const navigate = useNavigate();
   const directories = useDirectories();
   const displayCommunityAddress = communityAddress && communityAddress.length > 30 ? communityAddress.slice(0, 30).concat('...') : communityAddress;
-  const [showSearchBar, setShowSearchBar] = useState(false);
 
   // Filter to only show directory boards (those with titles)
   const directoryBoards = useMemo(() => directories.filter((sub) => sub.title && extractDirectoryFromTitle(sub.title)), [directories]);
@@ -331,8 +252,9 @@ const BoardsBarMobile = memo(({ communityAddress }: { communityAddress?: string 
   const isInCatalogView = isCatalogView(location.pathname, params);
   const isInSubscriptionsView = isSubscriptionsView(location.pathname, params);
   const isInModView = isModView(location.pathname);
+  const isInSearchView = isSearchView(location.pathname);
   const boardPath = useBoardPath(communityAddress);
-  const selectValue = isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : boardPath || communityAddress;
+  const selectValue = isInAllView ? 'all' : isInSubscriptionsView ? 'subs' : isInModView ? 'mod' : isInSearchView ? 'search' : boardPath || communityAddress;
 
   const accountCommunityAddresses = useAccountCommunityAddresses();
 
@@ -344,10 +266,12 @@ const BoardsBarMobile = memo(({ communityAddress }: { communityAddress?: string 
     const allTitle = '/all/ - All 5chan Directories';
     const subsTitle = '/subs/ - Subscriptions';
     const modTitle = '/mod/ - Boards You Moderate';
+    const searchTitle = t('archive_search_title');
 
     const multiboards: Array<{ value: string; label: string }> = [
       { value: 'all', label: allTitle },
       { value: 'subs', label: subsTitle },
+      { value: 'search', label: searchTitle },
       ...(accountCommunityAddresses.length > 0 ? [{ value: 'mod', label: modTitle }] : []),
     ];
 
@@ -357,7 +281,7 @@ const BoardsBarMobile = memo(({ communityAddress }: { communityAddress?: string 
     });
 
     return [...multiboards, ...directoryOptions].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
-  }, [accountCommunityAddresses.length, directoryBoards]);
+  }, [accountCommunityAddresses.length, directoryBoards, t]);
 
   const boardSelect = (
     <select
@@ -404,24 +328,11 @@ const BoardsBarMobile = memo(({ communityAddress }: { communityAddress?: string 
         {boardSelect}
       </div>
       <div className={styles.pageJump}>
-        <Link to={location.pathname.replace(/\/$/, '') + '/settings'} state={location.state}>
+        <Link to={`${location.pathname.replace(/\/$/, '') + '/settings'}${location.search}`} state={location.state}>
           {t('settings')}
         </Link>
-        <button
-          type='button'
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              setShowSearchBar(!showSearchBar);
-            }
-          }}
-          onClick={() => setShowSearchBar(!showSearchBar)}
-        >
-          {capitalize(t('search'))}
-        </button>
+        <Link to={SEARCH_PATH}>{capitalize(t('search'))}</Link>
         <Link to='/'>{t('home')}</Link>
-        {showSearchBar && <SearchBar setShowSearchBar={setShowSearchBar} />}
       </div>
     </div>
   );

@@ -1,14 +1,18 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useParams, useNavigate } from 'react-router-dom';
+import { useLocation, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAccountComment, useCommunity } from '@bitsocial/bitsocial-react-hooks';
 import { accountsStore as useAccountsStore } from '../../lib/bitsocial-internals/stores';
 import getShortAddress from '../../lib/get-short-address';
 import { useCommunityIdentifier } from '../../hooks/use-community-identifiers';
 import { useStableCommunity } from '../../hooks/use-stable-community';
 import { isAllView, isSubscriptionsView, isModView } from '../../lib/utils/view-utils';
-import { isArchiveRoute, isDirectoryListRoute } from '../../lib/utils/route-utils';
+import { isArchiveRoute, isDirectoryListRoute, isDirectoryRoute, isSearchDirectoryRoute, isSearchRoute } from '../../lib/utils/route-utils';
 import { getSpecialBoardByAddress } from '../../lib/special-boards';
+import { MAX_SEARCH_QUERY_LENGTH } from '../../lib/search-navigation';
+import { getSearchProvider } from '../../lib/search-providers';
+import useSearchProviderStore from '../../stores/use-search-provider-store';
+import useSearchSummaryStore from '../../stores/use-search-summary-store';
 import styles from './board-header.module.css';
 import { useDirectories } from '../../hooks/use-directories';
 import { useResolvedCommunityAddress } from '../../hooks/use-resolved-community-address';
@@ -46,6 +50,27 @@ const OfflineIndicator = ({ communityAddress }: { communityAddress: string | und
   );
 };
 
+/** ``5chan Search `query` N comments``, mirroring the hardcoded titles of the other multiboard views. */
+const getSearchTitle = (query: string, total: number | null): string => {
+  if (!query) return '5chan Search';
+  if (total === null) return `5chan Search \`${query}\``;
+  return `5chan Search \`${query}\` ${total} comments`;
+};
+
+const SearchProviderSubtitle = ({ query }: { query: string }) => {
+  const { t } = useTranslation();
+  const selectedProviderId = useSearchProviderStore((state) => state.selectedProviderId);
+  // Credit whoever answered: a failed indexer hands the query to the next one in the directory.
+  const summary = useSearchSummaryStore((state) => (state.query === query ? state : undefined));
+  const provider = getSearchProvider(summary?.providerId ?? selectedProviderId);
+
+  // Nothing answered, so nothing to credit: the page is showing the unavailable-indexer error.
+  if (summary?.status === 'failed') return null;
+
+  // Plain text like the board address subtitle: the directory button is how you change indexer.
+  return <span>{`${t('results_provided_by')} ${provider.name}`}</span>;
+};
+
 // No props, so parent rerenders never change its output.
 const BoardHeader = memo(() => {
   const { t } = useTranslation();
@@ -57,7 +82,12 @@ const BoardHeader = memo(() => {
   const isInModView = isModView(location.pathname);
   const isInArchiveView = isArchiveRoute(location.pathname);
   const isInDirectoryListView = isDirectoryListRoute(location.pathname);
-  const bannerKey = isInAllView ? 'all' : isInSubscriptionsView ? 'subscriptions' : isInModView ? 'mod' : params.boardIdentifier || 'board';
+  const isInSearchView = isSearchRoute(location.pathname);
+  const isInSearchDirectoryView = isSearchDirectoryRoute(location.pathname);
+  const [searchParams] = useSearchParams();
+  const searchQuery = (searchParams.get('q') ?? '').trim().slice(0, MAX_SEARCH_QUERY_LENGTH);
+  const searchSummary = useSearchSummaryStore((state) => (state.query === searchQuery ? state.total : null));
+  const bannerKey = isInAllView ? 'all' : isInSubscriptionsView ? 'subscriptions' : isInModView ? 'mod' : isInSearchView ? 'search' : params.boardIdentifier || 'board';
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
   const resolvedAddress = useResolvedCommunityAddress();
   const communityAddress = resolvedAddress || getCommentCommunityAddress(accountComment) || getCommentCommunityAddress(getPendingPostRoutePost(location.state));
@@ -67,6 +97,10 @@ const BoardHeader = memo(() => {
   const { address, shortAddress } = stableCommunity || {};
 
   const directories = useDirectories();
+
+  // Directory-code routes (e.g. /biz) serve whichever board currently wins that directory,
+  // so the subtitle explains that relationship instead of showing a bare address.
+  const isDirectoryCodeRoute = !!params.boardIdentifier && isDirectoryRoute(params.boardIdentifier, directories);
 
   // Find matching community from default list to get its title
   const defaultCommunity = communityAddress ? directories.find((s) => s.address === communityAddress) : null;
@@ -86,16 +120,26 @@ const BoardHeader = memo(() => {
       ? '/subs/ - Subscriptions'
       : isInModView
         ? '/mod/ - Boards You Moderate'
-        : defaultCommunity?.title || specialBoard?.title || stableCommunity?.title;
-  const subtitle = isInAllView
-    ? t('all_subtitle')
-    : isInSubscriptionsView
-      ? subscriptionsSubtitle
-      : isInModView
-        ? ''
-        : isInDirectoryListView
-          ? t('directory_subtitle', { boardIdentifier: params.boardIdentifier })
-          : `${specialBoard?.address || address || communityAddress || ''}`;
+        : isInSearchDirectoryView
+          ? '/search/ - 5chan Search'
+          : isInSearchView
+            ? getSearchTitle(searchQuery, searchSummary)
+            : defaultCommunity?.title || specialBoard?.title || stableCommunity?.title;
+  const subtitle = isInAllView ? (
+    t('all_subtitle')
+  ) : isInSubscriptionsView ? (
+    subscriptionsSubtitle
+  ) : isInModView ? (
+    ''
+  ) : isInSearchDirectoryView ? (
+    t('search_provider_directory_subtitle')
+  ) : isInSearchView ? (
+    <SearchProviderSubtitle query={searchQuery} />
+  ) : isInDirectoryListView ? (
+    t('directory_subtitle', { boardIdentifier: params.boardIdentifier })
+  ) : (
+    `${specialBoard?.address || address || communityAddress || ''}`
+  );
 
   return (
     <div className={`${styles.content} ${shouldShowSnow() ? styles.garland : ''}`}>
@@ -111,7 +155,7 @@ const BoardHeader = memo(() => {
               ? shortAddress.slice(0, -4)
               : shortAddress
             : communityAddress && getShortAddress(communityAddress))}
-        {!isInAllView && !isInSubscriptionsView && !isInModView && !isInDirectoryListView && <OfflineIndicator communityAddress={communityAddress} />}
+        {!isInAllView && !isInSubscriptionsView && !isInModView && !isInSearchView && !isInDirectoryListView && <OfflineIndicator communityAddress={communityAddress} />}
       </div>
       <div className={styles.boardSubtitle}>
         {isInSubscriptionsView ? (
@@ -129,8 +173,12 @@ const BoardHeader = memo(() => {
           >
             {subtitle}
           </button>
-        ) : isInDirectoryListView || isInAllView ? (
+        ) : isInDirectoryListView || isInAllView || isInSearchView ? (
           <span>{subtitle}</span>
+        ) : isDirectoryCodeRoute && subtitle ? (
+          <span title={t('directory_subtitle', { boardIdentifier: params.boardIdentifier })}>
+            {t('directory_winner_subtitle', { boardIdentifier: params.boardIdentifier, address: subtitle })}
+          </span>
         ) : !isInModView && subtitle ? (
           <span title={t('board_address_tooltip')}>{subtitle}</span>
         ) : (

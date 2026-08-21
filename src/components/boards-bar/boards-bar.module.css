@@ -52,16 +52,6 @@
   text-transform: capitalize;
 }
 
-.searchBar {
-  position: absolute;
-  right: 0;
-  padding: 3px 5px 0 0;
-}
-
-.boardNavDesktop .searchBar {
-  margin-right: -7px;
-}
-
 .boardNavDesktop .temporaryButton {
   color: var(--boardsbar-desktop-link-text-color);
   text-decoration: var(--boardsbar-desktop-link-text-decoration);
@@ -78,13 +68,6 @@
   cursor: pointer;
 }
 
-.searchBar input[type="text"] {
-  outline: none;
-  margin: 2px;
-  padding: 1px;
-  border: 1px solid #000;
-  width: 220px;
-}
 
 .boardNavMobile {
   padding: 2px 4px;

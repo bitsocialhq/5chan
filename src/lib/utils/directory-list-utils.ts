@@ -259,13 +259,23 @@ export const sortDirectoryLists = (lists: DirectoryList[]): DirectoryList[] =>
     return a.directoryCode.localeCompare(b.directoryCode);
   });
 
+/** What a directory ranks an entry by, whichever kind of list it is. */
+export interface DirectoryRank {
+  id: string;
+  owner?: string;
+  score?: number;
+  addedAt?: number;
+}
+
 /**
- * Sort boards by future score data when present. Static list ties break in favor
+ * Sort entries by future score data when present. Static list ties break in favor
  * of known 5chan developer owners, then `addedAt` asc.
- * Final tie-break is address for deterministic rendering.
+ * Final tie-break is the entry id for deterministic rendering.
  */
-export const sortDirectoryBoardsByRank = (boards: DirectoryListBoard[]): DirectoryListBoard[] =>
-  [...boards].sort((a, b) => {
+export const sortByDirectoryRank = <T>(entries: readonly T[], getRank: (entry: T) => DirectoryRank): T[] =>
+  [...entries].sort((first, second) => {
+    const a = getRank(first);
+    const b = getRank(second);
     if ((b.score ?? 0) !== (a.score ?? 0)) return (b.score ?? 0) - (a.score ?? 0);
     const aDeveloperOwned = isKnown5chanDeveloper(a.owner);
     const bDeveloperOwned = isKnown5chanDeveloper(b.owner);
@@ -273,8 +283,11 @@ export const sortDirectoryBoardsByRank = (boards: DirectoryListBoard[]): Directo
     if ((a.addedAt ?? Number.MAX_SAFE_INTEGER) !== (b.addedAt ?? Number.MAX_SAFE_INTEGER)) {
       return (a.addedAt ?? Number.MAX_SAFE_INTEGER) - (b.addedAt ?? Number.MAX_SAFE_INTEGER);
     }
-    return a.address.localeCompare(b.address);
+    return a.id.localeCompare(b.id);
   });
+
+export const sortDirectoryBoardsByRank = (boards: DirectoryListBoard[]): DirectoryListBoard[] =>
+  sortByDirectoryRank(boards, (board) => ({ id: board.address, owner: board.owner, score: board.score, addedAt: board.addedAt }));
 
 const getPrimaryDirectoryBoard = (boards: DirectoryListBoard[]): DirectoryListBoard | null => sortDirectoryBoardsByRank(boards)[0] ?? null;
 

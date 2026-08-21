@@ -93,7 +93,11 @@ export const touchLastVisitTimestamp = (timestamp = Date.now()) => {
 };
 
 const getLastVisitTimeFilterName = (now = Date.now(), lastVisitTimestamp = readLastVisitTimestamp()): string => {
-  const secondsSinceLastVisit = lastVisitTimestamp ? (now - lastVisitTimestamp) / 1000 : Number.POSITIVE_INFINITY;
+  if (lastVisitTimestamp === null) {
+    return FALLBACK_TIME_FILTER_NAME;
+  }
+
+  const secondsSinceLastVisit = (now - lastVisitTimestamp) / 1000;
 
   if (secondsSinceLastVisit > 30 * DAY_IN_SECONDS) {
     return '1m';

@@ -1,4 +1,4 @@
-import { isArchiveRoute, isBoardModRoute, isModQueueRoute, isValidModRoute } from './route-utils';
+import { isArchiveRoute, isBoardModRoute, isModQueueRoute, isSearchRoute, isValidModRoute } from './route-utils';
 
 type ParamsType = {
   accountCommentIndex?: string;
@@ -24,6 +24,7 @@ export const isBoardView = (pathname: string, params: ParamsType): boolean => {
     pathname.startsWith('/all') ||
     pathname.startsWith('/subs') ||
     pathname.startsWith('/mod') ||
+    isSearchRoute(pathname) ||
     isArchiveRoute(pathname) ||
     isBoardModRoute(pathname) ||
     pathname.startsWith('/pending') ||
@@ -88,6 +89,8 @@ export const isSubscriptionsView = (pathname: string, _params: ParamsType): bool
   return pathname === '/subs' || pathname === '/subs/settings' || pathname === '/subs/catalog' || pathname === '/subs/catalog/settings';
 };
 
+export const isSearchView = (pathname: string): boolean => isSearchRoute(pathname);
+
 export const isArchiveView = (pathname: string, params: ParamsType): boolean => {
   const { boardIdentifier } = params;
   const identifier = boardIdentifier;
@@ -109,6 +112,7 @@ export const isNotFoundView = (pathname: string, params: ParamsType): boolean =>
     !isStaticAppRoute(normalizedPathname) &&
     !isPendingPostView(normalizedPathname, params) &&
     !isPostPageView(normalizedPathname, params) &&
+    !isSearchView(normalizedPathname) &&
     !isSettingsView(normalizedPathname, params) &&
     !isSubscriptionsView(normalizedPathname, params) &&
     !isValidModRoute(normalizedPathname) &&

@@ -103,7 +103,7 @@ const downloads = [macSection, winSection, linuxSection, androidSection, htmlSec
 
 // One-liner summary of what changed in this release. Update before each release.
 const oneLinerDescription =
-  'This version shows newly posted threads right away, speeds up board settings navigation, and smooths out account import, the moderation queue, and board banner loading.';
+  'This version adds /search/, which searches archived posts across every 5chan board and shows the matches inside their threads, tells you which board currently serves a directory code, and widens the time filter automatically when a feed comes up empty.';
 
 const releaseBody = `${oneLinerDescription}
 

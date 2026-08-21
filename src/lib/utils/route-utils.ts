@@ -11,6 +11,12 @@ export const extractDirectoryFromTitle = (title: string): string | null => {
   return match ? match[1] : null;
 };
 
+/** The board name a directory title displays: "/mu/ - Music" -> "Music". */
+export const getBoardNameFromDirectoryTitle = (title: string): string => {
+  const match = title.match(/^\/[^/]+\/\s*-\s*(.+)$/);
+  return match?.[1]?.trim() || title.trim();
+};
+
 // Cache for directory-to-address map
 let cachedCommunitiesForDirectory: DirectoryCommunity[] | null = null;
 let cachedDirectoryToAddressMap: Map<string, string> | null = null;
@@ -154,6 +160,21 @@ export const isDirectoryListRoute = (pathname: string): boolean => {
   return normalizedPath.endsWith('/directory');
 };
 
+export const isSearchRoute = (pathname: string): boolean => {
+  const normalizedPath = pathname.replace(/\/+$/, '').replace(/\/settings$/, '');
+  return normalizedPath === '/search' || normalizedPath === '/search/catalog' || normalizedPath === '/search/directory';
+};
+
+export const isSearchCatalogRoute = (pathname: string): boolean => {
+  const normalizedPath = pathname.replace(/\/+$/, '').replace(/\/settings$/, '');
+  return normalizedPath === '/search/catalog';
+};
+
+export const isSearchDirectoryRoute = (pathname: string): boolean => {
+  const normalizedPath = pathname.replace(/\/+$/, '').replace(/\/settings$/, '');
+  return normalizedPath === '/search/directory';
+};
+
 export const isFeedRoute = (pathname: string): boolean => {
   const normalizedPath = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
 
@@ -161,6 +182,7 @@ export const isFeedRoute = (pathname: string): boolean => {
   if (normalizedPath.startsWith('/pending/')) return false;
   if (isArchiveRoute(normalizedPath)) return false;
   if (isDirectoryListRoute(normalizedPath)) return false;
+  if (isSearchRoute(normalizedPath)) return false;
   if (isBoardModRoute(normalizedPath) || isModQueueRoute(normalizedPath)) return false;
 
   const pathWithoutSettings = normalizedPath.replace(/\/settings$/, '');
@@ -325,7 +347,13 @@ export const getFeedCacheKey = (pathname: string, search = ''): string | null =>
     return null;
   }
 
-  if (isArchiveRoute(normalizedPath) || isDirectoryListRoute(normalizedPath) || isBoardModRoute(normalizedPath) || isModQueueRoute(normalizedPath)) {
+  if (
+    isArchiveRoute(normalizedPath) ||
+    isDirectoryListRoute(normalizedPath) ||
+    isSearchRoute(normalizedPath) ||
+    isBoardModRoute(normalizedPath) ||
+    isModQueueRoute(normalizedPath)
+  ) {
     return null;
   }
 

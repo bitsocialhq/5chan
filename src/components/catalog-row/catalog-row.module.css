@@ -68,6 +68,8 @@
 
 .threadIcons .archivedIcon {
   background-image: url("/assets/icons/archived.gif");
+  /* Unlike the 16px sticky and closed icons this one ships at 32px, so it is scaled to the same box. */
+  background-size: 16px 16px;
 }
 
 .mediaWrapper {
