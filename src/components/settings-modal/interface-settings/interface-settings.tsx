@@ -1,4 +1,4 @@
-import { lazy, memo, Suspense } from 'react';
+import { memo, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './interface-settings.module.css';
 import capitalize from 'lodash/capitalize';
@@ -6,10 +6,17 @@ import useExpandedMediaStore from '../../../stores/use-expanded-media-store';
 import useFeedViewSettingsStore from '../../../stores/use-feed-view-settings-store';
 import Version from '../../version';
 import StyleSelector from '../../style-selector/style-selector';
+import LazySection, { createSectionLoader } from '../lazy-section';
 import { INTERFACE_LANGUAGE_STORAGE_KEY, SUPPORTED_INTERFACE_LANGUAGES } from '../../../lib/constants';
 
 const shouldRenderAppUpdateSetting = import.meta.env.VITE_APP_DISTRIBUTION !== 'fdroid';
-const AppUpdateSetting = shouldRenderAppUpdateSetting ? lazy(() => import('./app-update-setting')) : null;
+const loadAppUpdateSetting = createSectionLoader(() => import('./app-update-setting'));
+
+// This module is itself preloaded while settings is open, so start the update
+// setting's chunk here rather than when the interface section first renders.
+if (shouldRenderAppUpdateSetting) {
+  loadAppUpdateSetting();
+}
 
 const InterfaceLanguage = () => {
   const { i18n } = useTranslation();
@@ -44,9 +51,9 @@ const InterfaceSettings = () => {
       <div className={styles.version}>
         {capitalize(t('version'))}: <Version />
       </div>
-      {AppUpdateSetting && (
+      {shouldRenderAppUpdateSetting && (
         <Suspense fallback={null}>
-          <AppUpdateSetting />
+          <LazySection load={loadAppUpdateSetting} />
         </Suspense>
       )}
       <div className={styles.setting}>
