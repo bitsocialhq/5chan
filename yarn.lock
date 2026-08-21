@@ -10,7 +10,7 @@ __metadata:
   resolution: "5chan@workspace:."
   dependencies:
     "@bbob/parser": "npm:4.3.1"
-    "@bitsocial/bitsocial-react-hooks": "npm:0.1.37"
+    "@bitsocial/bitsocial-react-hooks": "npm:0.1.39"
     "@bitsocial/bso-resolver": "npm:0.0.10"
     "@capacitor/android": "npm:7.4.5"
     "@capacitor/app": "npm:7.0.1"
@@ -27,7 +27,7 @@ __metadata:
     "@electron-forge/plugin-auto-unpack-natives": "npm:7.8.0"
     "@electron/rebuild": "npm:3.7.2"
     "@floating-ui/react": "npm:0.26.1"
-    "@pkcprotocol/pkc-js": "npm:0.0.81"
+    "@pkcprotocol/pkc-js": "npm:0.0.85"
     "@react-spring/web": "npm:10.0.3"
     "@reforged/maker-appimage": "npm:5.1.1"
     "@ruffle-rs/ruffle": "npm:0.2.0"
@@ -1582,12 +1582,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bitsocial/bitsocial-react-hooks@npm:0.1.37":
-  version: 0.1.37
-  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.37"
+"@bitsocial/bitsocial-react-hooks@npm:0.1.39":
+  version: 0.1.39
+  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.39"
   dependencies:
     "@bitsocial/bso-resolver": "npm:0.0.10"
-    "@pkcprotocol/pkc-js": "npm:0.0.81"
+    "@pkcprotocol/pkc-js": "npm:0.0.85"
     "@pkcprotocol/pkc-logger": "npm:0.1.0"
     assert: "npm:2.1.0"
     ethers: "npm:5.8.0"
@@ -1603,7 +1603,7 @@ __metadata:
     zustand: "npm:4.5.7"
   peerDependencies:
     react: ">=16.8"
-  checksum: 10c0/7323a8c1a6a1324e10aab44bdf0765c1b5b1c13f206758836894e76b60f286033c7bcf0b5012af402fdbca5983c0b0c48d652ffb781e62da575afd5d8ec72af6
+  checksum: 10c0/df0038429d9d17f16998e558ff36f5af97850f0e578f0404e985394e4eb55fa5cee12a36297b0ab9beb868c44afa99465cc7312b761ab432c1a60f9562c38fd8
   languageName: node
   linkType: hard
 
@@ -6531,9 +6531,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pkcprotocol/pkc-js@npm:0.0.81":
-  version: 0.0.81
-  resolution: "@pkcprotocol/pkc-js@npm:0.0.81"
+"@pkcprotocol/pkc-js@npm:0.0.85":
+  version: 0.0.85
+  resolution: "@pkcprotocol/pkc-js@npm:0.0.85"
   dependencies:
     "@enhances/with-resolvers": "npm:0.0.5"
     "@helia/block-brokers": "npm:5.2.4"
@@ -6553,8 +6553,8 @@ __metadata:
     assert: "npm:2.1.0"
     better-sqlite3: "npm:12.9.0"
     blockstore-core: "npm:7.0.1"
-    blockstore-fs: "npm:^4.0.1"
-    blockstore-idb: "npm:^4.0.1"
+    blockstore-fs: "npm:4.0.1"
+    blockstore-idb: "npm:4.0.1"
     buffer: "npm:6.0.3"
     cbor: "npm:10.0.11"
     cborg: "npm:4.5.8"
@@ -6595,7 +6595,7 @@ __metadata:
     uuid: "npm:13.0.0"
     ws: "npm:8.20.0"
     zod: "npm:4.3.6"
-  checksum: 10c0/31307eac664b2918ff4bee0873f1953fb2b405be5230eb961c226792ae0b7bc1bdfb14e47191e0ec1727d4239fe1fc4b2962904425f6f3246ef4b4f7b52f57db
+  checksum: 10c0/eedef4700cf6baf365c9f7c60e4fdccfd2efb3cc084c303bf71934e8935afa5aeafc3468a87c3a5e0822e9b671eadce808b3638a13b22b5bfed74aca5d1ce1f3
   languageName: node
   linkType: hard
 
@@ -8644,7 +8644,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"blockstore-fs@npm:^4.0.1":
+"blockstore-fs@npm:4.0.1":
   version: 4.0.1
   resolution: "blockstore-fs@npm:4.0.1"
   dependencies:
@@ -8661,7 +8661,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"blockstore-idb@npm:^4.0.1":
+"blockstore-idb@npm:4.0.1":
   version: 4.0.1
   resolution: "blockstore-idb@npm:4.0.1"
   dependencies:
