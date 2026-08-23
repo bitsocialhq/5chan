@@ -1,6 +1,7 @@
 import './log.js';
 import { app, BrowserWindow, Menu, MenuItem, Tray, shell, dialog, nativeTheme, nativeImage, ipcMain, clipboard } from 'electron';
 import { automateUploadMedia } from './media-upload-automation.js';
+import { prepareStrippedUploadFile } from './strip-media-metadata.js';
 import { downloadAndInstallUpdate } from './app-updater.js';
 import isDev from 'electron-is-dev';
 import fs from 'fs';
@@ -414,7 +415,18 @@ ipcMain.handle('automate-upload-media', async (event, options) => {
   if (!provider || typeof filePath !== 'string') {
     throw new Error('automate-upload-media requires { provider, filePath }');
   }
-  return automateUploadMedia({ provider, filePath });
+
+  // Automate against a metadata-stripped temp copy when the file is a
+  // strippable image; the user's original file on disk is never modified.
+  const prepared = await prepareStrippedUploadFile(filePath);
+  try {
+    return await automateUploadMedia({ provider, filePath: prepared.filePath });
+  } finally {
+    if (prepared.tempDir) {
+      // Best-effort cleanup: a failed rm must not reject a successful upload.
+      await fs.promises.rm(prepared.tempDir, { force: true, recursive: true }).catch(() => {});
+    }
+  }
 });
 
 ipcMain.handle('automate-upload-generated-media', async (event, options) => {
@@ -427,7 +439,8 @@ ipcMain.handle('automate-upload-generated-media', async (event, options) => {
   try {
     return await automateUploadMedia({ provider, filePath });
   } finally {
-    await fs.promises.rm(tempDir, { force: true, recursive: true });
+    // Best-effort cleanup: a failed rm must not reject a successful upload.
+    await fs.promises.rm(tempDir, { force: true, recursive: true }).catch(() => {});
   }
 });
 

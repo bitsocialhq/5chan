@@ -5,6 +5,7 @@ import { formatAggregatedError, formatPreferredModeError, type ProviderAttempt }
 import { getProviderOrder } from '../lib/media-hosting/provider-order';
 import { getMediaHostingRuntime, isElectronRuntime } from '../lib/media-hosting/show-upload-controls';
 import { orchestrateElectronUpload } from '../lib/media-hosting/upload-orchestrator';
+import { stripMediaMetadata } from '../lib/media-metadata/strip-media-metadata';
 import { ensureProviderAvailability } from '../lib/media-hosting/provider-availability';
 import useMediaHostingStore from '../stores/use-media-hosting-store';
 import type { ProviderId, UploadAttemptStage } from '../lib/media-hosting/types';
@@ -225,11 +226,12 @@ export function useFileUpload(options: UseFileUploadOptions) {
         let result: UploadedFileResult | null = null;
 
         if (runtime === 'android') {
+          const cleanFile = await stripMediaMetadata(file);
           const pluginResult = await FileUploader.uploadGeneratedMedia({
             providerOrder: order,
-            fileName: file.name,
-            mimeType: file.type || 'application/octet-stream',
-            base64: await readFileAsBase64(file),
+            fileName: cleanFile.name,
+            mimeType: cleanFile.type || 'application/octet-stream',
+            base64: await readFileAsBase64(cleanFile),
           });
           result = pluginResult.url ? { url: pluginResult.url, fileName: pluginResult.fileName || file.name } : null;
         } else if (runtime === 'electron') {
@@ -262,6 +264,8 @@ export function useFileUpload(options: UseFileUploadOptions) {
       setUploadedFileName(null);
       const { runtime, order } = await getAvailableProviderOrder();
       if (runtime === 'android') {
+        // The native picker uploads straight from the device; the plugin strips
+        // metadata before upload (android MediaMetadataStripper).
         const result = await FileUploader.pickAndUploadMedia({ providerOrder: order });
         if (result.url) {
           if (result.fileName) setUploadedFileName(result.fileName);

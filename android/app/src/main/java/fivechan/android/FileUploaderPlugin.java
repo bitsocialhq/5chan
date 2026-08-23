@@ -2,7 +2,9 @@ package fivechan.android;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
+import android.provider.OpenableColumns;
 import android.util.Base64;
 import android.util.Log;
 
@@ -17,7 +19,9 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -96,7 +100,9 @@ public class FileUploaderPlugin extends Plugin {
                             try {
                                 cachedFile = FileUtils.writeBytesToCacheFile(getContext(), fileName, bytes);
                                 tryProvidersSequentially(Uri.fromFile(cachedFile), providerOrder, call, fileName, bytes, mimeType);
-                            } catch (Exception e) {
+                            } catch (Throwable e) {
+                                // Throwable, not Exception: an OutOfMemoryError must still
+                                // settle the call or the web layer awaits it forever.
                                 Log.e(TAG, "Generated upload failed", e);
                                 try {
                                     call.reject("Upload failed: " + e.getMessage());
@@ -177,18 +183,150 @@ public class FileUploaderPlugin extends Plugin {
 
         new Thread(
                         () -> {
+                            File strippedFile = null;
                             try {
-                                tryProvidersSequentially(uri, providerOrder, call);
-                            } catch (Exception e) {
+                                StrippedPickedMedia stripped = stripPickedMediaMetadata(uri);
+                                if (stripped == null) {
+                                    tryProvidersSequentially(uri, providerOrder, call);
+                                    return;
+                                }
+                                // Route stripped images like a generated upload (cache file for
+                                // catbox, bytes for WebView injection) so the original picked URI
+                                // is never handed to a provider page. Display name and mime type
+                                // stay those of the original file.
+                                strippedFile =
+                                        FileUtils.writeBytesToCacheFile(
+                                                getContext(), stripped.fileName, stripped.bytes);
+                                tryProvidersSequentially(
+                                        Uri.fromFile(strippedFile),
+                                        providerOrder,
+                                        call,
+                                        stripped.fileName,
+                                        stripped.bytes,
+                                        stripped.mimeType);
+                            } catch (Throwable e) {
+                                // Throwable, not Exception: an OutOfMemoryError must still
+                                // settle the call or the web layer awaits it forever.
                                 Log.e(TAG, "Upload failed", e);
                                 try {
                                     call.reject("Upload failed: " + e.getMessage());
                                 } catch (Exception rejectEx) {
                                     Log.e(TAG, "Failed to reject call", rejectEx);
                                 }
+                            } finally {
+                                if (strippedFile != null && strippedFile.exists() && !strippedFile.delete()) {
+                                    Log.w(TAG, "Could not delete stripped upload cache file: " + strippedFile.getAbsolutePath());
+                                }
                             }
                         })
                 .start();
+    }
+
+    /** Stripped copy of a picked file plus the original file's display name and mime type. */
+    private static final class StrippedPickedMedia {
+        final byte[] bytes;
+        final String fileName;
+        final String mimeType;
+
+        StrippedPickedMedia(byte[] bytes, String fileName, String mimeType) {
+            this.bytes = bytes;
+            this.fileName = fileName;
+            this.mimeType = mimeType;
+        }
+    }
+
+    /**
+     * Reads a picked JPEG/PNG/WebP and returns a losslessly metadata-stripped copy
+     * (EXIF/GPS, XMP, IPTC, comments removed). Returns null when the file should
+     * upload unchanged instead: GIF, video, or unknown formats, files over the
+     * size cap, files with nothing to remove, or any read/parse failure —
+     * stripping must never break an upload.
+     */
+    private StrippedPickedMedia stripPickedMediaMetadata(Uri uri) {
+        try {
+            byte[] original = readStrippableBytes(uri);
+            if (original == null) {
+                return null;
+            }
+            byte[] strippedBytes = MediaMetadataStripper.stripBytes(original);
+            if (strippedBytes == null) {
+                return null;
+            }
+            String mimeType = getContext().getContentResolver().getType(uri);
+            if (mimeType == null || mimeType.isEmpty()) {
+                mimeType = MediaMetadataStripper.sniffMimeType(strippedBytes);
+            }
+            return new StrippedPickedMedia(strippedBytes, getFileName(uri), mimeType);
+        } catch (Throwable e) {
+            // Throwable, not Exception: stripping a near-cap image can throw
+            // OutOfMemoryError, which must fall back to the original upload.
+            Log.w(TAG, "Metadata strip failed, uploading picked file unchanged", e);
+            return null;
+        }
+    }
+
+    /**
+     * Fully reads the picked file when its magic bytes denote a strippable image
+     * within the size cap; returns null otherwise so GIF/video/unknown files are
+     * never loaded into memory.
+     */
+    private byte[] readStrippableBytes(Uri uri) throws Exception {
+        long sizeHint = queryContentSize(uri);
+        if (sizeHint > MediaMetadataStripper.MAX_PROCESSABLE_BYTES) {
+            return null; // over the size cap: pass through without reading
+        }
+        try (InputStream input = getContext().getContentResolver().openInputStream(uri)) {
+            if (input == null) {
+                return null;
+            }
+            byte[] header = new byte[16];
+            int headerLength = 0;
+            while (headerLength < header.length) {
+                int read = input.read(header, headerLength, header.length - headerLength);
+                if (read == -1) {
+                    break;
+                }
+                headerLength += read;
+            }
+            if (!MediaMetadataStripper.isStrippableFormat(header, headerLength)) {
+                return null;
+            }
+            // Pre-size with the reported size to avoid the transient 2x cost of
+            // growth-doubling; a wrong hint self-corrects (the stream grows) and
+            // the cap check below still bounds providers that under-report.
+            ByteArrayOutputStream out = new ByteArrayOutputStream(sizeHint > 0 ? (int) sizeHint : 256 * 1024);
+            out.write(header, 0, headerLength);
+            byte[] buffer = new byte[64 * 1024];
+            int read;
+            while ((read = input.read(buffer)) != -1) {
+                if (out.size() + read > MediaMetadataStripper.MAX_PROCESSABLE_BYTES) {
+                    return null;
+                }
+                out.write(buffer, 0, read);
+            }
+            return out.toByteArray();
+        }
+    }
+
+    /** Size in bytes reported by the content provider or filesystem, or -1 when unknown. */
+    private long queryContentSize(Uri uri) {
+        if ("file".equals(uri.getScheme())) {
+            String path = uri.getPath();
+            long length = path != null ? new File(path).length() : 0;
+            return length > 0 ? length : -1;
+        }
+        try (Cursor cursor =
+                getContext()
+                        .getContentResolver()
+                        .query(uri, new String[] {OpenableColumns.SIZE}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst() && !cursor.isNull(0)) {
+                long size = cursor.getLong(0);
+                return size > 0 ? size : -1;
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Could not query picked file size", e);
+        }
+        return -1;
     }
 
     private void tryProvidersSequentially(Uri fileUri, List<String> providerOrder, PluginCall call) {
