@@ -7,6 +7,10 @@ vi.mock('../../utils/catbox-utils', () => ({
   uploadToCatbox: vi.fn(),
 }));
 
+// Minimal JPEG: SOI + COM segment ("gps!") + SOS with entropy data.
+const jpegWithComment = [0xff, 0xd8, 0xff, 0xfe, 0x00, 0x06, 0x67, 0x70, 0x73, 0x21, 0xff, 0xda, 0x00, 0x02, 0x11, 0x22];
+const jpegWithoutComment = [0xff, 0xd8, 0xff, 0xda, 0x00, 0x02, 0x11, 0x22];
+
 function createElectronApiMock() {
   return {
     isElectron: true,
@@ -33,6 +37,34 @@ describe('orchestrateElectronUpload', () => {
 
     expect(url).toBe('https://files.catbox.moe/a.png');
     expect(uploadToCatbox).toHaveBeenCalledWith(file);
+  });
+
+  it('strips image metadata before uploading to catbox', async () => {
+    vi.mocked(uploadToCatbox).mockResolvedValue('https://files.catbox.moe/b.jpg');
+    const file = new File([new Uint8Array(jpegWithComment)], 'photo.jpg', { type: 'image/jpeg' });
+
+    await orchestrateElectronUpload(file, ['catbox']);
+
+    const uploaded = vi.mocked(uploadToCatbox).mock.calls[0][0];
+    expect(uploaded).not.toBe(file);
+    expect(uploaded.name).toBe('photo.jpg');
+    expect(Array.from(new Uint8Array(await uploaded.arrayBuffer()))).toEqual(jpegWithoutComment);
+  });
+
+  it('strips image metadata before generated media automation', async () => {
+    const electronApi = createElectronApiMock();
+    electronApi.getPathForFile = vi.fn((): string | null => null);
+    window.electronApi = electronApi;
+
+    const file = new File([new Uint8Array(jpegWithComment)], 'photo.jpg', { type: 'image/jpeg' });
+    await orchestrateElectronUpload(file, ['imgur']);
+
+    expect(electronApi.automateUploadGeneratedMedia).toHaveBeenCalledWith({
+      provider: 'imgur',
+      fileName: 'photo.jpg',
+      mimeType: 'image/jpeg',
+      bytes: jpegWithoutComment,
+    });
   });
 
   it('uses electronApi.getPathForFile when File.path is unavailable', async () => {

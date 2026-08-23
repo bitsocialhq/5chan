@@ -1,4 +1,5 @@
 import type { ProviderAttempt, ProviderId, UploadAttemptStage } from './types';
+import { stripMediaMetadata } from '../media-metadata/strip-media-metadata';
 import { uploadToCatbox } from '../utils/catbox-utils';
 
 /** Attempt metadata inferred or parsed from plugin rejection. Used when plugins throw plain errors. */
@@ -65,12 +66,14 @@ async function fileToByteArray(file: File): Promise<number[]> {
  * imgur/imgbb use Electron automation when available.
  */
 async function uploadViaProvider(provider: ProviderId, file: File): Promise<string> {
-  if (provider === 'catbox') return uploadToCatbox(file);
+  if (provider === 'catbox') return uploadToCatbox(await stripMediaMetadata(file));
   if (provider === 'imgur' || provider === 'imgbb') {
     const fn = typeof window !== 'undefined' && window.electronApi?.automateUploadMedia;
     if (fn) {
       const filePath = resolveElectronFilePath(file);
       if (filePath) {
+        // Known gap: disk-path automation uploads the file as-is; metadata
+        // stripping for this route needs native-side support.
         const { url } = await fn({ provider, filePath });
         return url;
       }
@@ -79,11 +82,12 @@ async function uploadViaProvider(provider: ProviderId, file: File): Promise<stri
       if (!generatedFn) {
         throw new Error('File path unavailable and automateUploadGeneratedMedia is not available');
       }
+      const cleanFile = await stripMediaMetadata(file);
       const { url } = await generatedFn({
         provider,
-        fileName: file.name,
-        mimeType: file.type || 'application/octet-stream',
-        bytes: await fileToByteArray(file),
+        fileName: cleanFile.name,
+        mimeType: cleanFile.type || 'application/octet-stream',
+        bytes: await fileToByteArray(cleanFile),
       });
       return url;
     }
