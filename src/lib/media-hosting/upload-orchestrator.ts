@@ -72,8 +72,8 @@ async function uploadViaProvider(provider: ProviderId, file: File): Promise<stri
     if (fn) {
       const filePath = resolveElectronFilePath(file);
       if (filePath) {
-        // Known gap: disk-path automation uploads the file as-is; metadata
-        // stripping for this route needs native-side support.
+        // Bytes for this route never transit JS; the Electron main process
+        // strips metadata before automation (electron/strip-media-metadata.js).
         const { url } = await fn({ provider, filePath });
         return url;
       }

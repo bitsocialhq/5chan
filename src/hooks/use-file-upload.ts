@@ -264,8 +264,8 @@ export function useFileUpload(options: UseFileUploadOptions) {
       setUploadedFileName(null);
       const { runtime, order } = await getAvailableProviderOrder();
       if (runtime === 'android') {
-        // Known gap: the native picker uploads straight from the device, so
-        // metadata stripping for this route needs plugin-side support.
+        // The native picker uploads straight from the device; the plugin strips
+        // metadata before upload (android MediaMetadataStripper).
         const result = await FileUploader.pickAndUploadMedia({ providerOrder: order });
         if (result.url) {
           if (result.fileName) setUploadedFileName(result.fileName);
