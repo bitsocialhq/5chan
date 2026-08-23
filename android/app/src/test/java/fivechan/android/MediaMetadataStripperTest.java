@@ -94,6 +94,36 @@ public class MediaMetadataStripperTest {
             concat(SOI, APP0_JFIF, APP1_EXIF, APP1_XMP, APP13_IPTC, APP2_ICC, COM, DQT, SOF0, DHT, SOS_TO_EOF);
     private static final byte[] JPEG_STRIPPED = concat(SOI, APP0_JFIF, APP2_ICC, DQT, SOF0, DHT, SOS_TO_EOF);
 
+    /** Valid Exif APP1 whose IFD0 holds a Make entry (exercises the walk) and an Orientation entry. */
+    private static byte[] exifApp1WithOrientation(int orientation, boolean littleEndian) {
+        byte[] tiff =
+                littleEndian
+                        ? concat(
+                                bytes(0x49, 0x49, 0x2a, 0x00), u32le(8), // "II", 42, IFD0 at offset 8
+                                bytes(0x02, 0x00), // two entries
+                                bytes(0x0f, 0x01, 0x02, 0x00), u32le(4), ascii("abc"), bytes(0x00), // Make, ASCII x4 inline
+                                bytes(0x12, 0x01, 0x03, 0x00), u32le(1), bytes(orientation, 0x00, 0x00, 0x00), // Orientation, SHORT x1
+                                u32le(0)) // no next IFD
+                        : concat(
+                                bytes(0x4d, 0x4d, 0x00, 0x2a), u32be(8), // "MM", 42, IFD0 at offset 8
+                                bytes(0x00, 0x02),
+                                bytes(0x01, 0x0f, 0x00, 0x02), u32be(4), ascii("abc"), bytes(0x00),
+                                bytes(0x01, 0x12, 0x00, 0x03), u32be(1), bytes(0x00, orientation, 0x00, 0x00),
+                                u32be(0));
+        return jpegSegment(0xe1, concat(ascii("Exif"), bytes(0, 0), tiff));
+    }
+
+    /** The minimal APP1 the stripper is expected to synthesize (always little-endian). */
+    private static byte[] orientationApp1(int orientation) {
+        return concat(
+                bytes(0xff, 0xe1, 0x00, 0x22),
+                ascii("Exif"), bytes(0, 0),
+                bytes(0x49, 0x49, 0x2a, 0x00), u32le(8),
+                bytes(0x01, 0x00),
+                bytes(0x12, 0x01, 0x03, 0x00), u32le(1), bytes(orientation, 0x00, 0x00, 0x00),
+                u32le(0));
+    }
+
     // --- PNG fixtures ---
 
     private static byte[] pngChunk(String type, byte[] data) {
@@ -181,6 +211,32 @@ public class MediaMetadataStripperTest {
     @Test
     public void jpeg_returnsNullWhenMarkerStructureIsInvalid() {
         assertNull(MediaMetadataStripper.stripBytes(concat(SOI, bytes(0x00, 0x01, 0x02, 0x03))));
+    }
+
+    @Test
+    public void jpeg_reEmitsExifOrientationAsMinimalApp1() {
+        byte[] jpeg = concat(SOI, APP0_JFIF, exifApp1WithOrientation(6, true), COM, DQT, SOF0, DHT, SOS_TO_EOF);
+        byte[] expected = concat(SOI, orientationApp1(6), APP0_JFIF, DQT, SOF0, DHT, SOS_TO_EOF);
+        assertArrayEquals(expected, MediaMetadataStripper.stripBytes(jpeg));
+    }
+
+    @Test
+    public void jpeg_readsBigEndianExifAndReEmitsLittleEndian() {
+        byte[] jpeg = concat(SOI, exifApp1WithOrientation(3, false), DQT, SOF0, DHT, SOS_TO_EOF);
+        byte[] expected = concat(SOI, orientationApp1(3), DQT, SOF0, DHT, SOS_TO_EOF);
+        assertArrayEquals(expected, MediaMetadataStripper.stripBytes(jpeg));
+    }
+
+    @Test
+    public void jpeg_doesNotReEmitDefaultOrientation1() {
+        byte[] jpeg = concat(SOI, exifApp1WithOrientation(1, true), DQT, SOF0, DHT, SOS_TO_EOF);
+        assertArrayEquals(concat(SOI, DQT, SOF0, DHT, SOS_TO_EOF), MediaMetadataStripper.stripBytes(jpeg));
+    }
+
+    @Test
+    public void jpeg_doesNotReEmitOutOfRangeOrientation() {
+        byte[] jpeg = concat(SOI, exifApp1WithOrientation(9, true), DQT, SOF0, DHT, SOS_TO_EOF);
+        assertArrayEquals(concat(SOI, DQT, SOF0, DHT, SOS_TO_EOF), MediaMetadataStripper.stripBytes(jpeg));
     }
 
     // --- PNG ---

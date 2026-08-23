@@ -3,7 +3,9 @@
  * (EXIF/GPS, XMP, IPTC, comments) from images before any upload provider sees
  * the bytes — catbox and similar hosts preserve files 1:1, so phone photos
  * would otherwise leak GPS coordinates. Containers are rewritten losslessly;
- * pixel data is never re-encoded. On any parse anomaly the original file is
+ * pixel data is never re-encoded, so the JPEG Exif Orientation tag (rotation
+ * lives in metadata, not pixels) is re-emitted as a minimal APP1 to keep
+ * photos from rendering sideways. On any parse anomaly the original file is
  * returned unchanged so an upload is never blocked.
  */
 
@@ -14,6 +16,9 @@ const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 
 /** JPEG segments removed: APP1 (Exif and XMP), APP13 (IPTC/Photoshop), COM. */
 const JPEG_DROPPED_MARKERS = new Set([0xe1, 0xed, 0xfe]);
+
+/** "Exif\0\0" — the payload prefix distinguishing an Exif APP1 from XMP. */
+const EXIF_APP1_HEADER = [0x45, 0x78, 0x69, 0x66, 0x00, 0x00];
 
 /**
  * PNG ancillary chunks kept because they affect rendering (plus APNG frames).
@@ -62,6 +67,7 @@ function stripJpeg(bytes: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> | nu
   const len = bytes.length;
   const kept: Uint8Array<ArrayBuffer>[] = [bytes.subarray(0, 2)];
   let removedBytes = 0;
+  let orientation = 0;
   let pos = 2;
 
   for (;;) {
@@ -75,7 +81,11 @@ function stripJpeg(bytes: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> | nu
     if (marker === 0xda) {
       // SOS: entropy-coded data follows and contains 0xff bytes that are not
       // segment markers, so copy verbatim to EOF instead of parsing. This
-      // also preserves data deliberately appended after EOI.
+      // also preserves data deliberately appended after EOI. Marker segments
+      // after the first SOS are deliberately left untouched: cameras write
+      // metadata before the first scan, and parsing entropy-coded data risks
+      // degrading exotic-but-valid files (e.g. motion-photo trailers) into
+      // full pass-through, which would strip less than this does.
       kept.push(bytes.subarray(pos, len));
       break;
     }
@@ -89,6 +99,9 @@ function stripJpeg(bytes: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> | nu
     if (end > len) return null;
 
     if (JPEG_DROPPED_MARKERS.has(marker)) {
+      if (marker === 0xe1 && orientation === 0 && isExifApp1Payload(bytes, markerPos + 3, end)) {
+        orientation = readExifOrientation(bytes, markerPos + 9, end);
+      }
       removedBytes += end - pos;
     } else {
       kept.push(bytes.subarray(pos, end));
@@ -97,7 +110,56 @@ function stripJpeg(bytes: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> | nu
   }
 
   if (removedBytes === 0) return null;
+  // Rotation lives in metadata, not pixels: re-emit the Orientation tag (and
+  // nothing else) as a minimal APP1 after SOI so photos don't render sideways.
+  if (orientation >= 2 && orientation <= 8) {
+    kept.splice(1, 0, buildOrientationApp1(orientation));
+  }
   return concat(kept);
+}
+
+function isExifApp1Payload(bytes: Uint8Array, start: number, end: number): boolean {
+  return start + EXIF_APP1_HEADER.length <= end && EXIF_APP1_HEADER.every((b, i) => bytes[start + i] === b);
+}
+
+/** Reads the Orientation tag (1-8) from IFD0 of an Exif TIFF block, or 0 when absent or malformed. */
+function readExifOrientation(bytes: Uint8Array, tiffStart: number, end: number): number {
+  if (tiffStart + 8 > end) return 0;
+  let little: boolean;
+  if (bytes[tiffStart] === 0x49 && bytes[tiffStart + 1] === 0x49) little = true;
+  else if (bytes[tiffStart] === 0x4d && bytes[tiffStart + 1] === 0x4d) little = false;
+  else return 0;
+  const readU16 = (pos: number) => (little ? bytes[pos] | (bytes[pos + 1] << 8) : (bytes[pos] << 8) | bytes[pos + 1]);
+  const readU32 = (pos: number) => (little ? readU32le(bytes, pos) : readU32be(bytes, pos));
+  if (readU16(tiffStart + 2) !== 42) return 0;
+  const ifdOffset = readU32(tiffStart + 4);
+  if (ifdOffset < 8) return 0;
+  const ifdPos = tiffStart + ifdOffset;
+  if (ifdPos + 2 > end) return 0;
+  const entryCount = readU16(ifdPos);
+  for (let i = 0; i < entryCount; i++) {
+    const entry = ifdPos + 2 + i * 12;
+    if (entry + 12 > end) return 0;
+    if (readU16(entry) !== 0x0112) continue;
+    // Orientation must be a single SHORT; the value sits in the first two payload bytes.
+    if (readU16(entry + 2) !== 3 || readU32(entry + 4) !== 1) return 0;
+    const value = readU16(entry + 8);
+    return value >= 1 && value <= 8 ? value : 0;
+  }
+  return 0;
+}
+
+/** Minimal little-endian Exif APP1 whose IFD0 holds only the Orientation tag. */
+function buildOrientationApp1(orientation: number): Uint8Array<ArrayBuffer> {
+  // prettier-ignore
+  return new Uint8Array([
+    0xff, 0xe1, 0x00, 0x22, // APP1, length 34
+    0x45, 0x78, 0x69, 0x66, 0x00, 0x00, // "Exif\0\0"
+    0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, // "II", 42, IFD0 at offset 8
+    0x01, 0x00, // one IFD entry
+    0x12, 0x01, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, orientation, 0x00, 0x00, 0x00, // Orientation, SHORT x1
+    0x00, 0x00, 0x00, 0x00, // no next IFD
+  ]);
 }
 
 function stripPng(bytes: Uint8Array<ArrayBuffer>): Uint8Array<ArrayBuffer> | null {

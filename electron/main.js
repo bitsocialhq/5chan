@@ -423,7 +423,8 @@ ipcMain.handle('automate-upload-media', async (event, options) => {
     return await automateUploadMedia({ provider, filePath: prepared.filePath });
   } finally {
     if (prepared.tempDir) {
-      await fs.promises.rm(prepared.tempDir, { force: true, recursive: true });
+      // Best-effort cleanup: a failed rm must not reject a successful upload.
+      await fs.promises.rm(prepared.tempDir, { force: true, recursive: true }).catch(() => {});
     }
   }
 });
@@ -438,7 +439,8 @@ ipcMain.handle('automate-upload-generated-media', async (event, options) => {
   try {
     return await automateUploadMedia({ provider, filePath });
   } finally {
-    await fs.promises.rm(tempDir, { force: true, recursive: true });
+    // Best-effort cleanup: a failed rm must not reject a successful upload.
+    await fs.promises.rm(tempDir, { force: true, recursive: true }).catch(() => {});
   }
 });
 

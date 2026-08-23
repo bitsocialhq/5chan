@@ -44,6 +44,94 @@ const sosToEof = [0xff, 0xda, 0x00, 0x08, 1, 1, 0, 0, 63, 0, 0x12, 0xff, 0x00, 0
 const jpegWithMetadata = [...SOI, ...app0Jfif, ...app1Exif, ...app1Xmp, ...app13Iptc, ...app2Icc, ...com, ...dqt, ...sof0, ...dht, ...sosToEof];
 const jpegStripped = [...SOI, ...app0Jfif, ...app2Icc, ...dqt, ...sof0, ...dht, ...sosToEof];
 
+/** Valid Exif APP1 whose IFD0 holds a Make entry (exercises the walk) and an Orientation entry. */
+function exifApp1WithOrientation(orientation: number, littleEndian = true): number[] {
+  const tiff = littleEndian
+    ? [
+        0x49,
+        0x49,
+        0x2a,
+        0x00,
+        ...u32le(8), // "II", 42, IFD0 at offset 8
+        0x02,
+        0x00, // two entries
+        0x0f,
+        0x01,
+        0x02,
+        0x00,
+        ...u32le(4),
+        ...ascii('abc'),
+        0x00, // Make, ASCII x4 inline
+        0x12,
+        0x01,
+        0x03,
+        0x00,
+        ...u32le(1),
+        orientation,
+        0x00,
+        0x00,
+        0x00, // Orientation, SHORT x1
+        ...u32le(0), // no next IFD
+      ]
+    : [
+        0x4d,
+        0x4d,
+        0x00,
+        0x2a,
+        ...u32be(8), // "MM", 42, IFD0 at offset 8
+        0x00,
+        0x02,
+        0x01,
+        0x0f,
+        0x00,
+        0x02,
+        ...u32be(4),
+        ...ascii('abc'),
+        0x00,
+        0x01,
+        0x12,
+        0x00,
+        0x03,
+        ...u32be(1),
+        0x00,
+        orientation,
+        0x00,
+        0x00,
+        ...u32be(0),
+      ];
+  return jpegSegment(0xe1, [...ascii('Exif'), 0, 0, ...tiff]);
+}
+
+/** The minimal APP1 the stripper is expected to synthesize (always little-endian). */
+function orientationApp1(orientation: number): number[] {
+  return [
+    0xff,
+    0xe1,
+    0x00,
+    0x22,
+    ...ascii('Exif'),
+    0,
+    0,
+    0x49,
+    0x49,
+    0x2a,
+    0x00,
+    ...u32le(8),
+    0x01,
+    0x00,
+    0x12,
+    0x01,
+    0x03,
+    0x00,
+    ...u32le(1),
+    orientation,
+    0x00,
+    0x00,
+    0x00,
+    ...u32le(0),
+  ];
+}
+
 // --- PNG fixtures ---
 
 function crc32(bytes: number[]): number {
@@ -152,6 +240,30 @@ describe('stripMediaMetadata', () => {
       const file = makeFile([...SOI, 0x00, 0x01, 0x02, 0x03], 'garbage.jpg', 'image/jpeg');
 
       expect(await stripMediaMetadata(file)).toBe(file);
+    });
+
+    it('re-emits the Exif Orientation tag as a minimal APP1 so photos keep their rotation', async () => {
+      const file = makeFile([...SOI, ...app0Jfif, ...exifApp1WithOrientation(6), ...com, ...dqt, ...sof0, ...dht, ...sosToEof], 'portrait.jpg', 'image/jpeg');
+
+      expect(await bytesOf(await stripMediaMetadata(file))).toEqual([...SOI, ...orientationApp1(6), ...app0Jfif, ...dqt, ...sof0, ...dht, ...sosToEof]);
+    });
+
+    it('reads big-endian Exif and re-emits the orientation little-endian', async () => {
+      const file = makeFile([...SOI, ...exifApp1WithOrientation(3, false), ...dqt, ...sof0, ...dht, ...sosToEof], 'be.jpg', 'image/jpeg');
+
+      expect(await bytesOf(await stripMediaMetadata(file))).toEqual([...SOI, ...orientationApp1(3), ...dqt, ...sof0, ...dht, ...sosToEof]);
+    });
+
+    it('does not re-emit the default orientation 1', async () => {
+      const file = makeFile([...SOI, ...exifApp1WithOrientation(1), ...dqt, ...sof0, ...dht, ...sosToEof], 'upright.jpg', 'image/jpeg');
+
+      expect(await bytesOf(await stripMediaMetadata(file))).toEqual([...SOI, ...dqt, ...sof0, ...dht, ...sosToEof]);
+    });
+
+    it('does not re-emit an out-of-range orientation value', async () => {
+      const file = makeFile([...SOI, ...exifApp1WithOrientation(9), ...dqt, ...sof0, ...dht, ...sosToEof], 'invalid.jpg', 'image/jpeg');
+
+      expect(await bytesOf(await stripMediaMetadata(file))).toEqual([...SOI, ...dqt, ...sof0, ...dht, ...sosToEof]);
     });
   });
 

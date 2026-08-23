@@ -2,7 +2,9 @@ package fivechan.android;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
+import android.provider.OpenableColumns;
 import android.util.Base64;
 import android.util.Log;
 
@@ -98,7 +100,9 @@ public class FileUploaderPlugin extends Plugin {
                             try {
                                 cachedFile = FileUtils.writeBytesToCacheFile(getContext(), fileName, bytes);
                                 tryProvidersSequentially(Uri.fromFile(cachedFile), providerOrder, call, fileName, bytes, mimeType);
-                            } catch (Exception e) {
+                            } catch (Throwable e) {
+                                // Throwable, not Exception: an OutOfMemoryError must still
+                                // settle the call or the web layer awaits it forever.
                                 Log.e(TAG, "Generated upload failed", e);
                                 try {
                                     call.reject("Upload failed: " + e.getMessage());
@@ -200,7 +204,9 @@ public class FileUploaderPlugin extends Plugin {
                                         stripped.fileName,
                                         stripped.bytes,
                                         stripped.mimeType);
-                            } catch (Exception e) {
+                            } catch (Throwable e) {
+                                // Throwable, not Exception: an OutOfMemoryError must still
+                                // settle the call or the web layer awaits it forever.
                                 Log.e(TAG, "Upload failed", e);
                                 try {
                                     call.reject("Upload failed: " + e.getMessage());
@@ -251,7 +257,9 @@ public class FileUploaderPlugin extends Plugin {
                 mimeType = MediaMetadataStripper.sniffMimeType(strippedBytes);
             }
             return new StrippedPickedMedia(strippedBytes, getFileName(uri), mimeType);
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            // Throwable, not Exception: stripping a near-cap image can throw
+            // OutOfMemoryError, which must fall back to the original upload.
             Log.w(TAG, "Metadata strip failed, uploading picked file unchanged", e);
             return null;
         }
@@ -263,6 +271,10 @@ public class FileUploaderPlugin extends Plugin {
      * never loaded into memory.
      */
     private byte[] readStrippableBytes(Uri uri) throws Exception {
+        long sizeHint = queryContentSize(uri);
+        if (sizeHint > MediaMetadataStripper.MAX_PROCESSABLE_BYTES) {
+            return null; // over the size cap: pass through without reading
+        }
         try (InputStream input = getContext().getContentResolver().openInputStream(uri)) {
             if (input == null) {
                 return null;
@@ -279,7 +291,10 @@ public class FileUploaderPlugin extends Plugin {
             if (!MediaMetadataStripper.isStrippableFormat(header, headerLength)) {
                 return null;
             }
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            // Pre-size with the reported size to avoid the transient 2x cost of
+            // growth-doubling; a wrong hint self-corrects (the stream grows) and
+            // the cap check below still bounds providers that under-report.
+            ByteArrayOutputStream out = new ByteArrayOutputStream(sizeHint > 0 ? (int) sizeHint : 256 * 1024);
             out.write(header, 0, headerLength);
             byte[] buffer = new byte[64 * 1024];
             int read;
@@ -291,6 +306,27 @@ public class FileUploaderPlugin extends Plugin {
             }
             return out.toByteArray();
         }
+    }
+
+    /** Size in bytes reported by the content provider or filesystem, or -1 when unknown. */
+    private long queryContentSize(Uri uri) {
+        if ("file".equals(uri.getScheme())) {
+            String path = uri.getPath();
+            long length = path != null ? new File(path).length() : 0;
+            return length > 0 ? length : -1;
+        }
+        try (Cursor cursor =
+                getContext()
+                        .getContentResolver()
+                        .query(uri, new String[] {OpenableColumns.SIZE}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst() && !cursor.isNull(0)) {
+                long size = cursor.getLong(0);
+                return size > 0 ? size : -1;
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Could not query picked file size", e);
+        }
+        return -1;
     }
 
     private void tryProvidersSequentially(Uri fileUri, List<String> providerOrder, PluginCall call) {
