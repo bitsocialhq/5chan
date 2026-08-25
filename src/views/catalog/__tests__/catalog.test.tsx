@@ -78,6 +78,7 @@ const testState = vi.hoisted(() => ({
   setResetFunctionMock: vi.fn(),
   showOPComment: true,
   sortType: 'new' as 'active' | 'new',
+  compatiblePostSortType: 'preferred' as string | undefined,
   unblockCidMock: vi.fn(),
   virtuosoInitialScrollTops: [] as Array<number | undefined>,
   windowWidth: 900,
@@ -274,6 +275,11 @@ vi.mock('../../../hooks/use-state-string', () => ({
   useFeedStateString: () => 'loading_feed',
 }));
 
+vi.mock('../../../hooks/use-compatible-post-sort-type', () => ({
+  useCompatiblePostSortType: (_communities: unknown[], preferredSortType: string) =>
+    testState.compatiblePostSortType === 'preferred' ? preferredSortType : testState.compatiblePostSortType,
+}));
+
 vi.mock('../../../hooks/use-window-width', () => ({
   default: () => testState.windowWidth,
   useIsMobileBreakpoint: () => testState.windowWidth < 640,
@@ -446,6 +452,7 @@ describe('Catalog', () => {
     testState.searchText = '';
     testState.showOPComment = true;
     testState.sortType = 'new';
+    testState.compatiblePostSortType = 'preferred';
     testState.unblockCidMock.mockReset();
     testState.unblockCidMock.mockResolvedValue(undefined);
     testState.virtuosoInitialScrollTops = [];
@@ -503,6 +510,22 @@ describe('Catalog', () => {
     expect(testState.setCurrentCommunityAddressMock).toHaveBeenLastCalledWith(null);
 
     root = createRoot(container);
+  });
+
+  it('uses the preloaded page when a board does not publish the selected sort', async () => {
+    testState.compatiblePostSortType = undefined;
+
+    await renderCatalog({ initialEntry: '/mu/catalog', routePath: '/:boardIdentifier/catalog' });
+
+    expect(testState.feedOptionsCalls).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          communitiesLength: 1,
+          newerThan: undefined,
+          sortType: undefined,
+        }),
+      ]),
+    );
   });
 
   it('renders single-board catalogs without Virtuoso virtualization', async () => {

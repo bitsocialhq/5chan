@@ -15,6 +15,7 @@ import { filterHiddenComments, isCidHidden, useHiddenCids } from '../../hooks/us
 import useHiddenCatalogThreads from '../../hooks/use-hidden-catalog-threads';
 import usePruneHiddenCatalogThreads from '../../hooks/use-prune-hidden-catalog-threads';
 import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader';
+import { useCompatiblePostSortType } from '../../hooks/use-compatible-post-sort-type';
 import useTimeFilter from '../../hooks/use-time-filter';
 import useIsMobile from '../../hooks/use-is-mobile';
 import useWindowWidth from '../../hooks/use-window-width';
@@ -342,7 +343,8 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   }, [isInAllView, isInSubscriptionsView, isInModView, routerLocation.pathname, routerLocation.search, navigate]);
 
   const sortType = useSortingStore((state) => state.sortType);
-  const feedSortType = sortType === 'new' ? 'new' : 'active';
+  const preferredFeedSortType = sortType === 'new' ? 'new' : 'active';
+  const feedSortType = useCompatiblePostSortType(communities, preferredFeedSortType);
   const catalogVirtualizationMode = useMemo(() => resolveCatalogVirtualizationMode(routerLocation.search, 'item-size'), [routerLocation.search]);
   const themeKey = typeof document !== 'undefined' ? document.body.className : '';
   const hadVisibleHiddenThreadsRef = useRef(false);
@@ -392,7 +394,7 @@ const Catalog = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp,
   } = useHiddenCatalogThreads({
     candidateComments: feed,
     communityAddresses,
-    sortType: feedSortType,
+    sortType: preferredFeedSortType,
   });
   const hiddenThreadsCount = hiddenCatalogThreads.length;
   const requestedShowHiddenThreads = useHiddenCatalogThreadsStore((state) => state.shownScopeKey === hiddenCatalogThreadsScopeKey);

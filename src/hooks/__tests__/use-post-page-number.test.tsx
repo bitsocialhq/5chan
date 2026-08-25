@@ -13,6 +13,7 @@ const testState = vi.hoisted(() => ({
   loadedFeeds: {} as Record<string, unknown>,
   preloadFeed: undefined as Array<{ cid: string }> | undefined,
   preloadOptions: undefined as Record<string, unknown> | undefined,
+  compatiblePostSortType: 'preferred' as string | undefined,
   sizes: {
     guiPostsPerPage: 2,
     paginationFeedPostsPerPage: 20,
@@ -32,6 +33,11 @@ vi.mock('@bitsocial/bitsocial-react-hooks/dist/stores/feeds', () => ({
       feedsOptions: testState.feedsOptions,
       loadedFeeds: testState.loadedFeeds,
     }),
+}));
+
+vi.mock('../use-compatible-post-sort-type', () => ({
+  useCompatiblePostSortType: (_communities: unknown[], preferredSortType: string) =>
+    testState.compatiblePostSortType === 'preferred' ? preferredSortType : testState.compatiblePostSortType,
 }));
 
 vi.mock('../use-directories', () => ({
@@ -69,6 +75,7 @@ describe('usePostPageNumber', () => {
     testState.loadedFeeds = {};
     testState.preloadFeed = undefined;
     testState.preloadOptions = undefined;
+    testState.compatiblePostSortType = 'preferred';
     testState.sizes = {
       guiPostsPerPage: 2,
       paginationFeedPostsPerPage: 20,
@@ -111,6 +118,18 @@ describe('usePostPageNumber', () => {
       communities: [{ name: 'music.eth' }],
       postsPerPage: 20,
       sortType: 'active',
+    });
+  });
+
+  it('preloads the community default when active is not published', () => {
+    testState.compatiblePostSortType = undefined;
+
+    renderHook({ postCid: 'post-1', communityAddress: 'music.eth' });
+
+    expect(testState.preloadOptions).toEqual({
+      communities: [{ name: 'music.eth' }],
+      postsPerPage: 20,
+      sortType: undefined,
     });
   });
 

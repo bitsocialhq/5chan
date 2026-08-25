@@ -112,6 +112,7 @@ const testState = vi.hoisted(() => ({
     shortAddress: 'music-posting.eth',
     title: '/mu/ - Music',
   } as { shortAddress?: string; title?: string },
+  compatiblePostSortType: 'preferred' as string | undefined,
 }));
 
 vi.mock('react-i18next', () => ({
@@ -181,6 +182,10 @@ const getScopedFeed = (options?: { filter?: { filter: (comment: TestComment) => 
 };
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
+  resolvePostSortType: (community: TestCommunity | undefined, requestedSortType?: string) => {
+    const publishedSortTypes = [...Object.keys(community?.posts?.pages || {}), ...Object.keys(community?.posts?.pageCids || {})];
+    return requestedSortType ? (publishedSortTypes.includes(requestedSortType) ? requestedSortType : undefined) : publishedSortTypes[0];
+  },
   useAccount: () => testState.account,
   useAccountComments: (options?: { commentIndices?: number[]; communityAddress?: string; newerThan?: number; sortType?: 'new' | 'old' }) => {
     testState.accountCommentsCalls.push(options);
@@ -278,6 +283,11 @@ vi.mock('../../../hooks/use-resolved-community-address', () => ({
 
 vi.mock('../../../hooks/use-state-string', () => ({
   useFeedStateString: () => testState.feedStateString,
+}));
+
+vi.mock('../../../hooks/use-compatible-post-sort-type', () => ({
+  useCompatiblePostSortType: (_communities: unknown[], preferredSortType: string) =>
+    testState.compatiblePostSortType === 'preferred' ? preferredSortType : testState.compatiblePostSortType,
 }));
 
 vi.mock('../../../stores/use-feed-reset-store', () => ({
@@ -455,6 +465,7 @@ describe('Board', () => {
       shortAddress: 'music-posting.eth',
       title: '/mu/ - Music',
     };
+    testState.compatiblePostSortType = 'preferred';
     testState.loadMoreMock.mockReset();
     testState.resetMock.mockReset();
     testState.registerCommentsMock.mockReset();
@@ -505,6 +516,26 @@ describe('Board', () => {
         publicKey: '12D3KooWR7nTdKZqZ1twGWMfVsXYDGp1XAKUrnYznKP651jFrizE',
       },
     ]);
+  });
+
+  it('uses the preloaded page when a board does not publish the active sort', async () => {
+    testState.compatiblePostSortType = undefined;
+
+    await renderBoard({
+      boardProps: { boardIdentifier: 'mu', viewType: 'board' },
+      initialEntry: '/mu',
+      routePath: '/:boardIdentifier/*',
+    });
+
+    expect(testState.feedOptionsCalls).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          communitiesLength: 1,
+          newerThan: undefined,
+          sortType: undefined,
+        }),
+      ]),
+    );
   });
 
   it('warns when a loaded board address is not verified', async () => {

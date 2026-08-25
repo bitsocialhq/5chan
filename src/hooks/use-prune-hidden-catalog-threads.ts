@@ -11,7 +11,7 @@ type UsePruneHiddenCatalogThreadsOptions = {
   enabled: boolean;
   hiddenThreadCandidates: readonly Comment[];
   communityAddress: string | undefined;
-  sortType: 'active' | 'new';
+  sortType: string | undefined;
 };
 
 const EMPTY_RAW_BOARD_THREAD_STATE = getRawBoardThreadState({

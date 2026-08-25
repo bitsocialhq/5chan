@@ -22,6 +22,7 @@ import useExpandedTimeFilter from '../../hooks/use-expanded-time-filter';
 import useIsMobile from '../../hooks/use-is-mobile';
 import { useNowSeconds } from '../../hooks/use-now-seconds';
 import { useSuggestionFeedLoader } from '../../hooks/use-suggestion-feed-loader';
+import { useCompatiblePostSortType } from '../../hooks/use-compatible-post-sort-type';
 import useTimeFilter from '../../hooks/use-time-filter';
 import { getPageSlice } from '../../lib/utils/board-feed-pagination';
 import { getPageFromFeedPath, isDirectoryBoard, normalizeMultiboardFeedPath, stripPageFromFeedPath } from '../../lib/utils/route-utils';
@@ -51,7 +52,7 @@ const YEAR_IN_SECONDS = 365 * 24 * 60 * 60;
 const EMPTY_ACCOUNT_COMMENT_LOOKUP = { commentIndices: [-1] };
 const EMPTY_COMMUNITIES_PAGES = {};
 
-/** Board feed always uses 'active' sort; catalog dropdown does not affect board ordering. */
+/** Board feed prefers 'active' sort; catalog dropdown does not affect board ordering. */
 const BOARD_SORT_TYPE = 'active' as const;
 
 const mergeVisibleLocalAccountComments = (feed: Comment[], visibleLocalAccountComments: Comment[]) => {
@@ -228,6 +229,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     return [communityAddress];
   }, [isInAllView, isInSubscriptionsView, isInModView, communityAddress, filteredDirectoryAddresses, subscriptions, accountCommunityAddresses]);
   const communities = useCommunityIdentifiers(communityAddresses);
+  const feedSortType = useCompatiblePostSortType(communities, BOARD_SORT_TYPE);
   const communityIdentifier = useCommunityIdentifier(communityAddress);
 
   const communityDirectory = useDirectoryByAddress(isInAllView || isInSubscriptionsView || isInModView ? undefined : communityAddress);
@@ -252,12 +254,12 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   const feedOptions = useMemo(
     () => ({
       communities,
-      sortType: BOARD_SORT_TYPE,
+      sortType: feedSortType,
       postsPerPage: effectiveInfiniteScroll ? infiniteFeedPostsPerPage : paginationFeedPostsPerPage,
       filter: excludeArchivedFilter,
       newerThan: multiboardTimeFilterSeconds,
     }),
-    [communities, effectiveInfiniteScroll, infiniteFeedPostsPerPage, paginationFeedPostsPerPage, excludeArchivedFilter, multiboardTimeFilterSeconds],
+    [communities, effectiveInfiniteScroll, feedSortType, infiniteFeedPostsPerPage, paginationFeedPostsPerPage, excludeArchivedFilter, multiboardTimeFilterSeconds],
   );
 
   const { feed, hasMore, loadMore, reset, expandTimeWindow, state: feedState } = useFeed(feedOptions);
@@ -279,7 +281,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     loadMore: loadMoreWeeklyFeed,
   } = useFeed({
     communities: shouldProbeWeeklyFeed ? communities : [],
-    sortType: BOARD_SORT_TYPE,
+    sortType: feedSortType,
     postsPerPage: suggestionPostsPerPage,
     filter: excludeArchivedFilter,
     newerThan: WEEK_IN_SECONDS,
@@ -290,7 +292,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     loadMore: loadMoreMonthlyFeed,
   } = useFeed({
     communities: shouldProbeMonthlyFeed ? communities : [],
-    sortType: BOARD_SORT_TYPE,
+    sortType: feedSortType,
     postsPerPage: suggestionPostsPerPage,
     filter: excludeArchivedFilter,
     newerThan: MONTH_IN_SECONDS,
@@ -301,7 +303,7 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
     loadMore: loadMoreYearlyFeed,
   } = useFeed({
     communities: shouldProbeYearlyFeed ? communities : [],
-    sortType: BOARD_SORT_TYPE,
+    sortType: feedSortType,
     postsPerPage: suggestionPostsPerPage,
     filter: excludeArchivedFilter,
     newerThan: YEAR_IN_SECONDS,
@@ -406,9 +408,9 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
             accountId: account?.id,
             communitiesPages,
             community: communityData,
-            sortType: BOARD_SORT_TYPE,
+            sortType: feedSortType,
           }),
-    [account?.id, communitiesPages, communityData, isMultiboardView],
+    [account?.id, communitiesPages, communityData, feedSortType, isMultiboardView],
   );
   const isRawBoardThreadStateFullyLoaded = rawBoardThreadState?.isFullyLoaded ?? false;
   const isRawBoardThreadStateEmpty = isRawBoardThreadStateFullyLoaded && (rawBoardThreadState?.rootThreadCids.size ?? 0) === 0;
@@ -709,7 +711,8 @@ const Board = ({ feedCacheKey, viewType, boardIdentifier: boardIdentifierProp, t
   );
 
   const virtuosoRef = useRef<VirtuosoHandle | null>(null);
-  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${BOARD_SORT_TYPE}` : `${routerLocation.pathname}${routerLocation.search}-${BOARD_SORT_TYPE}`;
+  const feedSortStateKey = feedSortType ?? 'preloaded';
+  const virtuosoStateKey = feedCacheKey ? `${feedCacheKey}-${feedSortStateKey}` : `${routerLocation.pathname}${routerLocation.search}-${feedSortStateKey}`;
   const navigationType = useNavigationType();
   const boardViewportBuffer = isMultiboardView ? (isMobile ? { bottom: 1400, top: 2400 } : { bottom: 1200, top: 2400 }) : { bottom: 1200, top: 1200 };
   const boardMinOverscanItemCount = isMultiboardView && isMobile ? { bottom: 4, top: 8 } : undefined;
