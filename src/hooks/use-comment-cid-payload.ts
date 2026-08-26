@@ -30,7 +30,7 @@ const decodeText = (value: unknown): string | undefined => {
 };
 
 const getCommunityAddress = (payload: Record<string, unknown>): string | undefined => {
-  for (const key of ['communityName', 'communityAddress', 'subplebbitAddress', 'communityPublicKey']) {
+  for (const key of ['communityName', 'communityAddress', 'communityPublicKey']) {
     const value = payload[key];
     if (typeof value === 'string' && value) return value;
   }

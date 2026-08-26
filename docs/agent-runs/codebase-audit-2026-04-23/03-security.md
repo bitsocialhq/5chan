@@ -8,7 +8,7 @@
 
 | Trust boundary | Where it enters the client | Key files |
 |---|---|---|
-| Peer post content (title, content, link, reason) | Subplebbit/community feeds via `bitsocial-react-hooks` | `src/components/markdown/markdown.tsx`, `src/components/comment-content/comment-content.tsx`, `src/components/comment-media/comment-media.tsx`, `src/views/archive/archive.tsx` |
+| Peer post content (title, content, link, reason) | Community feeds via `bitsocial-react-hooks` | `src/components/markdown/markdown.tsx`, `src/components/comment-content/comment-content.tsx`, `src/components/comment-media/comment-media.tsx`, `src/views/archive/archive.tsx` |
 | Peer-supplied media URLs | Comment `link` field | `src/lib/utils/media-utils.ts`, `src/components/comment-media/comment-media.tsx`, `src/components/catalog-row/catalog-row.tsx`, `src/components/embed/embed.tsx` |
 | External iframe challenges (captcha) | `challenge` field of type `url/iframe` | `src/components/challenge-modal/challenge-modal.tsx` |
 | External webpage thumbnails (og:image/first `<img>`) | Community-served link preview fetched via `fetch()`/`CapacitorHttp` | `src/lib/utils/media-utils.ts` (`fetchWebpageThumbnail`) |

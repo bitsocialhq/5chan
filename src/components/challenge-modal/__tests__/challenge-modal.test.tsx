@@ -362,9 +362,9 @@ describe('ChallengeModal', () => {
 
     expect(postMessageMock).toHaveBeenCalledWith(
       {
-        source: 'plebbit-5chan',
+        source: 'bitsocial-5chan',
         theme: 'dark',
-        type: 'plebbit-theme',
+        type: 'bitsocial-theme',
       },
       'https://mintpass.org',
     );
@@ -449,9 +449,9 @@ describe('ChallengeModal', () => {
 
     expect(postMessageMock).toHaveBeenCalledWith(
       {
-        source: 'plebbit-5chan',
+        source: 'bitsocial-5chan',
         theme: 'dark',
-        type: 'plebbit-theme',
+        type: 'bitsocial-theme',
       },
       'http://localhost:3000',
     );

@@ -70,7 +70,7 @@ const validateIframeChallengeUrl = (iframeUrl: string, theme: string): Validated
 const postThemeToIframe = (iframe: HTMLIFrameElement | null, iframeOrigin: string, theme: string) => {
   if (!iframe || !iframeOrigin) return;
   try {
-    iframe.contentWindow?.postMessage({ type: 'plebbit-theme', theme, source: 'plebbit-5chan' }, iframeOrigin);
+    iframe.contentWindow?.postMessage({ type: 'bitsocial-theme', theme, source: 'bitsocial-5chan' }, iframeOrigin);
   } catch (error) {
     console.warn('Could not send theme to iframe:', error);
   }

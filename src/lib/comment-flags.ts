@@ -30,9 +30,6 @@ interface AuthorLike {
   community?: {
     flairs?: unknown;
   };
-  subplebbit?: {
-    flairs?: unknown;
-  };
 }
 
 interface CommentLike {
@@ -76,7 +73,7 @@ export const getAuthorFlagFlairs = (author: unknown): unknown => {
   if (!isRecord(author)) return undefined;
 
   const authorLike = author as AuthorLike;
-  return normalizeFlairsContainer(authorLike.community?.flairs) ?? normalizeFlairsContainer(authorLike.subplebbit?.flairs) ?? normalizeFlairsContainer(authorLike.flairs);
+  return normalizeFlairsContainer(authorLike.community?.flairs) ?? normalizeFlairsContainer(authorLike.flairs);
 };
 
 const getFiveChanFlagFlair = (comment: unknown): AuthorFlairLike | undefined => {
