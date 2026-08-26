@@ -94,7 +94,7 @@ Bad examples (and why):
 - "Pretext feed sizing" — names an internal library; user has no idea what this is.
 - "Mobile scroll perf" — "perf" is dev shorthand; say "smoother mobile scrolling".
 - "Compact account history" — describes the implementation; "performant account history" describes what the user gets.
-- "Refactor community selectors" — three dev terms in a row; rewrite or drop.
+- "Refactor memoized selectors" — three dev terms in a row; rewrite or drop.
 - "Security fixes" — generic maintenance label; invisible to regular users and not interesting to read.
 
 Save this string — you will pass it to the blotter script in Step 6.
