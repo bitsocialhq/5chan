@@ -1,4 +1,4 @@
-import type { Comment, CommunitiesPages, Community, CommunityPage } from '@bitsocial/bitsocial-react-hooks';
+import { resolvePostSortType, type Comment, type CommunitiesPages, type Community, type CommunityPage } from '@bitsocial/bitsocial-react-hooks';
 
 export type RawBoardThreadState = {
   hasExplicitEmptyPageCids: boolean;
@@ -20,7 +20,7 @@ const addRootThreadCids = (cids: Set<string>, comments: readonly Comment[] | und
   }
 };
 
-const getPostsFirstPageCid = (community: Community, sortType: 'active' | 'new') => {
+const getPostsFirstPageCid = (community: Community, sortType: string) => {
   const preloadedPage = community.posts?.pages?.[sortType];
   if (preloadedPage?.comments) {
     return preloadedPage.nextCid;
@@ -29,7 +29,7 @@ const getPostsFirstPageCid = (community: Community, sortType: 'active' | 'new') 
   return community.posts?.pageCids?.[sortType];
 };
 
-const getPostsPages = (community: Community, sortType: 'active' | 'new', communitiesPages: CommunitiesPages): CommunityPage[] => {
+const getPostsPages = (community: Community, sortType: string, communitiesPages: CommunitiesPages): CommunityPage[] => {
   const pages: CommunityPage[] = [];
   const firstPageCid = getPostsFirstPageCid(community, sortType);
 
@@ -64,18 +64,33 @@ export const getRawBoardThreadState = ({
   accountId: string | undefined;
   communitiesPages: CommunitiesPages;
   community: Community | undefined;
-  sortType: 'active' | 'new';
+  sortType: string | undefined;
 }): RawBoardThreadState => {
   if (!community) {
     return EMPTY_RAW_BOARD_THREAD_STATE;
   }
 
+  const hasFetchedCommunityUpdate = typeof community.updatedAt === 'number' || typeof community.updateCid === 'string';
+  const resolvedSortType = resolvePostSortType(community, sortType);
+  if (!resolvedSortType) {
+    const hasPublishedPostSort = Object.keys(community.posts?.pages || {}).length > 0 || Object.keys(community.posts?.pageCids || {}).length > 0;
+    const hasExplicitEmptyPageCids = hasFetchedCommunityUpdate && !hasPublishedPostSort && Boolean(community.posts?.pageCids);
+    if (hasExplicitEmptyPageCids) {
+      return {
+        hasExplicitEmptyPageCids: true,
+        isFullyLoaded: true,
+        rootThreadCids: new Set<string>(),
+      };
+    }
+    return EMPTY_RAW_BOARD_THREAD_STATE;
+  }
+
   const rootThreadCids = new Set<string>();
-  const preloadedSortPage = community.posts?.pages?.[sortType];
+  const preloadedSortPage = community.posts?.pages?.[resolvedSortType];
   addRootThreadCids(rootThreadCids, preloadedSortPage?.comments);
 
-  const firstPageCid = getPostsFirstPageCid(community, sortType);
-  const pages = firstPageCid ? getPostsPages(community, sortType, communitiesPages) : [];
+  const firstPageCid = getPostsFirstPageCid(community, resolvedSortType);
+  const pages = firstPageCid ? getPostsPages(community, resolvedSortType, communitiesPages) : [];
   for (const page of pages) {
     addRootThreadCids(rootThreadCids, page?.comments);
   }
@@ -88,8 +103,7 @@ export const getRawBoardThreadState = ({
     };
   }
 
-  const hasFetchedCommunityUpdate = typeof community.updatedAt === 'number' || typeof community.updateCid === 'string';
-  const hasPageCid = Boolean(community.posts?.pageCids?.[sortType]);
+  const hasPageCid = Boolean(community.posts?.pageCids?.[resolvedSortType]);
   const hasExplicitEmptyPageCids = hasFetchedCommunityUpdate && Boolean(community.posts?.pageCids && !hasPageCid);
   const preloadedPages = (preloadedSortPage ? [preloadedSortPage] : []) as Array<{ comments?: Comment[]; nextCid?: string }>;
   const hasCompletePreloadedChain = !hasPageCid && preloadedPages.some((page) => Array.isArray(page?.comments)) && preloadedPages.every((page) => !page?.nextCid);

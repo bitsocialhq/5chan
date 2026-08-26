@@ -9,6 +9,30 @@ const rootThread = (cid: string): Comment =>
   }) as Comment;
 
 describe('getRawBoardThreadState', () => {
+  it('uses the preloaded page when no sort is requested', () => {
+    const community = {
+      posts: {
+        pages: {
+          hot: {
+            comments: [rootThread('hot-thread')],
+          },
+        },
+      },
+    } as Community;
+
+    expect(
+      getRawBoardThreadState({
+        accountId: undefined,
+        communitiesPages: {} as CommunitiesPages,
+        community,
+        sortType: undefined,
+      }),
+    ).toMatchObject({
+      isFullyLoaded: true,
+      rootThreadCids: new Set(['hot-thread']),
+    });
+  });
+
   it('keeps the preloaded fallback scoped to the requested sort type', () => {
     const community = {
       posts: {
@@ -35,6 +59,33 @@ describe('getRawBoardThreadState', () => {
         sortType: 'active',
       }),
     ).toMatchObject({
+      isFullyLoaded: false,
+      rootThreadCids: new Set<string>(),
+    });
+  });
+
+  it('does not treat an unavailable sort as empty when another sort is published', () => {
+    const community = {
+      posts: {
+        pageCids: {},
+        pages: {
+          hot: {
+            comments: [rootThread('hot-thread')],
+          },
+        },
+      },
+      updatedAt: 1781773422,
+    } as Community;
+
+    expect(
+      getRawBoardThreadState({
+        accountId: undefined,
+        communitiesPages: {} as CommunitiesPages,
+        community,
+        sortType: 'active',
+      }),
+    ).toMatchObject({
+      hasExplicitEmptyPageCids: false,
       isFullyLoaded: false,
       rootThreadCids: new Set<string>(),
     });

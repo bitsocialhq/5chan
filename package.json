@@ -9,7 +9,7 @@
   "private": true,
   "dependencies": {
     "@bbob/parser": "4.3.1",
-    "@bitsocial/bitsocial-react-hooks": "0.1.39",
+    "@bitsocial/bitsocial-react-hooks": "0.1.40",
     "@bitsocial/bso-resolver": "0.0.10",
     "@bitsocial/pubsub-voting": "0.6.2",
     "@capacitor/app": "7.0.1",
@@ -18,7 +18,7 @@
     "@capawesome/capacitor-android-edge-to-edge-support": "7.2.2",
     "@chenglou/pretext": "0.0.8",
     "@floating-ui/react": "0.26.1",
-    "@pkcprotocol/pkc-js": "0.0.85",
+    "@pkcprotocol/pkc-js": "0.1.0",
     "@react-spring/web": "10.0.3",
     "@ruffle-rs/ruffle": "0.2.0",
     "@types/node": "20.19.37",
@@ -191,8 +191,8 @@
   },
   "resolutions": {
     "follow-redirects": "1.16.0",
-    "@pkcprotocol/pkc-js": "0.0.85",
-    "@libp2p/gossipsub": "16.0.4",
+    "@pkcprotocol/pkc-js": "0.1.0",
+    "@libp2p/gossipsub": "17.0.0",
     "@libp2p/kad-dht": "16.2.6",
     "viem": "2.55.8",
     "brace-expansion@npm:^1.1.7": "1.1.18",

@@ -23,6 +23,8 @@ const testState = vi.hoisted(() => ({
   hasMore: false,
   isMobile: false,
   loadMoreMock: vi.fn(),
+  feedOptions: undefined as { sortType?: string } | undefined,
+  compatiblePostSortType: 'preferred' as string | undefined,
   resolvedCommunityAddress: 'music-posting.eth' as string | undefined,
   community: {
     error: undefined as Error | undefined,
@@ -47,12 +49,15 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
-  useFeed: (options: { filter?: { filter?: (comment: TestComment) => boolean } }) => ({
-    feed: options.filter?.filter ? testState.feed.filter((comment) => options.filter?.filter?.(comment)) : testState.feed,
-    hasMore: testState.hasMore,
-    loadMore: testState.loadMoreMock,
-    reset: vi.fn(),
-  }),
+  useFeed: (options: { filter?: { filter?: (comment: TestComment) => boolean }; sortType?: string }) => {
+    testState.feedOptions = options;
+    return {
+      feed: options.filter?.filter ? testState.feed.filter((comment) => options.filter?.filter?.(comment)) : testState.feed,
+      hasMore: testState.hasMore,
+      loadMore: testState.loadMoreMock,
+      reset: vi.fn(),
+    };
+  },
   useCommunity: () => testState.community,
 }));
 
@@ -68,6 +73,11 @@ vi.mock('../../../hooks/use-resolved-community-address', () => ({
 
 vi.mock('../../../hooks/use-state-string', () => ({
   useFeedStateString: () => 'loading_feed',
+}));
+
+vi.mock('../../../hooks/use-compatible-post-sort-type', () => ({
+  useCompatiblePostSortType: (_communities: unknown[], preferredSortType: string) =>
+    testState.compatiblePostSortType === 'preferred' ? preferredSortType : testState.compatiblePostSortType,
 }));
 
 vi.mock('../../../hooks/use-stable-community', () => ({
@@ -132,6 +142,8 @@ describe('Archive', () => {
       title: '/mu/ - Music',
     };
     testState.loadMoreMock = vi.fn();
+    testState.feedOptions = undefined;
+    testState.compatiblePostSortType = 'preferred';
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -159,6 +171,14 @@ describe('Archive', () => {
     expect(rows[0]!.textContent).toContain('111');
     expect(rows[1]!.textContent).toContain('333');
     expect(rows[0]!.textContent).not.toContain('222');
+  });
+
+  it('uses the preloaded page when a board does not publish the active sort', async () => {
+    testState.compatiblePostSortType = undefined;
+
+    await renderArchiveRoute({ root, element: createElement(Archive), initialEntry: '/mu/archive', routePath: '/:boardIdentifier/archive' });
+
+    expect(testState.feedOptions?.sortType).toBeUndefined();
   });
 
   it('shows the archived summary window using the oldest archived timestamp', async () => {
