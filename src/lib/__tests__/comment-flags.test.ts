@@ -105,7 +105,7 @@ describe('comment-flags', () => {
       getAuthorFlagViewModels(
         getCommentFlagFlairs({
           author: {
-            subplebbit: {
+            community: {
               flairs: [{ text: 'flag:country:DE' }],
             },
           },

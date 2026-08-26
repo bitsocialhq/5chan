@@ -25,7 +25,7 @@ Builds:
       - tar xf node.tar.xz --strip-components=1 -C /usr/local/
       - corepack enable
     rm:
-      - android/plebbit.keystore
+      - android/bitsocial.keystore
     build:
       - cd .. && corepack yarn install --immutable && corepack yarn build:fdroid && corepack yarn cap sync android
     scandelete:
