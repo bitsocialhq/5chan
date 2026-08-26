@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useAccount, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, resolveReplySortType, useAccount, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { shouldShowSnow } from '../../lib/snow';
@@ -571,10 +571,12 @@ const PostMobile = ({
   const hasReplyPaginationOverride = !!replyPaginationOverride;
   const shouldFetchReplies = showReplies && !isModQueue && !hasReplyPaginationOverride;
   const shouldUsePreview = shouldFetchReplies && !showAllReplies;
+  const previewReplySortType = resolveReplySortType(resolvedPost, 'new');
+  const fullReplySortType = resolveReplySortType(resolvedPost, 'old');
   const cachedPreviewRepliesResult = useReplies({
     comment: shouldUsePreview ? resolvedPost : undefined,
     onlyIfCached: true,
-    sortType: 'new',
+    sortType: previewReplySortType,
     flat: true,
     repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
     accountComments: { newerThan: Infinity, append: true },
@@ -588,14 +590,14 @@ const PostMobile = ({
   });
   const previewRepliesResult = useReplies({
     comment: shouldUsePreview && !hasEnoughCachedPreview ? resolvedPost : undefined,
-    sortType: 'new',
+    sortType: previewReplySortType,
     flat: true,
     repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
     accountComments: { newerThan: Infinity, append: true },
   });
   const fullRepliesResult = useReplies({
     comment: shouldFetchReplies && showAllReplies ? resolvedPost : undefined,
-    sortType: 'old',
+    sortType: fullReplySortType,
     flat: true,
     repliesPerPage: REPLIES_PER_PAGE,
     accountComments: { newerThan: Infinity, append: true },

@@ -9,6 +9,7 @@ import {
   useEditedComment,
   useCommunity,
   useReplies,
+  resolveReplySortType,
 } from '@bitsocial/bitsocial-react-hooks';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { useCommunityField } from '../../hooks/use-stable-community';
@@ -460,7 +461,7 @@ const PostPage = () => {
   const queuedReply = comment?.parentCid && post?.cid && comment.cid !== post.cid ? comment : undefined;
   const queuedReplyRepliesResult = useReplies({
     comment: queuedReply && post?.cid ? post : undefined,
-    sortType: 'old',
+    sortType: resolveReplySortType(post, 'old'),
     flat: true,
     repliesPerPage: REPLIES_PER_PAGE,
     accountComments: { newerThan: Infinity, append: true },
