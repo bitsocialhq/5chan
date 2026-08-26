@@ -12,7 +12,7 @@ __metadata:
     "@bbob/parser": "npm:4.3.1"
     "@bitsocial/bitsocial-react-hooks": "npm:0.1.39"
     "@bitsocial/bso-resolver": "npm:0.0.10"
-    "@bitsocial/pubsub-voting": "npm:0.6.1"
+    "@bitsocial/pubsub-voting": "npm:0.6.2"
     "@capacitor/android": "npm:7.4.5"
     "@capacitor/app": "npm:7.0.1"
     "@capacitor/browser": "npm:7.0.5"
@@ -1620,9 +1620,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bitsocial/pubsub-voting@npm:0.6.1":
-  version: 0.6.1
-  resolution: "@bitsocial/pubsub-voting@npm:0.6.1"
+"@bitsocial/pubsub-voting@npm:0.6.2":
+  version: 0.6.2
+  resolution: "@bitsocial/pubsub-voting@npm:0.6.2"
   dependencies:
     "@ipld/dag-cbor": "npm:9.2.7"
     "@libp2p/interface": "npm:3.2.4"
@@ -1633,7 +1633,7 @@ __metadata:
     p-limit: "npm:6.2.0"
     viem: "npm:2.54.0"
     zod: "npm:4.3.6"
-  checksum: 10c0/4d39d384064aeecb942b2d73a718400e0b941cac6c4869f0ee3ad26dce3d93dccd6d632d68905ba2dbf1ce93ba5c64099a094f650bbbc3dc1f4debddcbd06da1
+  checksum: 10c0/f3e8bc78080fd56da8a5d31a6815d6a848c3221e3c97960301f5847072e55a379544cf916e3c9b5e8f13d15641ad3d0919f185754789d39497551a65b70259ec
   languageName: node
   linkType: hard
 

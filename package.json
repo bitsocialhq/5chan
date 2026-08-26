@@ -11,7 +11,7 @@
     "@bbob/parser": "4.3.1",
     "@bitsocial/bitsocial-react-hooks": "0.1.39",
     "@bitsocial/bso-resolver": "0.0.10",
-    "@bitsocial/pubsub-voting": "0.6.1",
+    "@bitsocial/pubsub-voting": "0.6.2",
     "@capacitor/app": "7.0.1",
     "@capacitor/browser": "7.0.5",
     "@capacitor/status-bar": "7.0.1",
