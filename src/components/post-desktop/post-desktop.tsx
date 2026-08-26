@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigationType, useParams } from 'react-router-dom';
 import { Virtuoso, VirtuosoHandle, StateSnapshot } from 'react-virtuoso';
-import { Comment, useAccount, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
+import { Comment, resolveReplySortType, useAccount, useAccountComment, useEditedComment, useReplies } from '@bitsocial/bitsocial-react-hooks';
 import getShortAddress from '../../lib/get-short-address';
 import styles from '../../views/post/post.module.css';
 import { CommentMediaInfo, getHasThumbnail, getMediaDimensions, getPostMediaTypeLabel, getYouTubeEmbedPostMediaFileLink } from '../../lib/utils/media-utils';
@@ -849,11 +849,13 @@ const PostDesktop = ({
   const canExpandOmittedReplies = !hasReplyPaginationOverride;
   const shouldUsePreview = showReplies && !isModQueue && !showAllReplies && !hasReplyPaginationOverride;
   const shouldFetchFull = showReplies && !isModQueue && !hasReplyPaginationOverride && (showAllReplies || showOmittedReplies[cid]);
+  const previewReplySortType = resolveReplySortType(resolvedPost, 'new');
+  const fullReplySortType = resolveReplySortType(resolvedPost, 'old');
 
   const cachedPreviewRepliesResult = useReplies({
     comment: shouldUsePreview ? resolvedPost : undefined,
     onlyIfCached: true,
-    sortType: 'new',
+    sortType: previewReplySortType,
     flat: true,
     repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
     accountComments: { newerThan: Infinity, append: true },
@@ -866,14 +868,14 @@ const PostDesktop = ({
   });
   const previewRepliesResult = useReplies({
     comment: shouldUsePreview && !showOmittedReplies[cid] && !hasEnoughCachedPreview ? resolvedPost : undefined,
-    sortType: 'new',
+    sortType: previewReplySortType,
     flat: true,
     repliesPerPage: BOARD_REPLIES_PREVIEW_FETCH_SIZE,
     accountComments: { newerThan: Infinity, append: true },
   });
   const fullRepliesResult = useReplies({
     comment: shouldFetchFull ? resolvedPost : undefined,
-    sortType: 'old',
+    sortType: fullReplySortType,
     flat: true,
     repliesPerPage: REPLIES_PER_PAGE,
     accountComments: { newerThan: Infinity, append: true },

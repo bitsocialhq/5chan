@@ -114,6 +114,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
+  resolveReplySortType: () => undefined,
   useAccount: () => activeAccount,
   useAccountComment: ({ commentCid }: { commentCid?: string }) => (commentCid ? enrichAccountCommentAuthor(testState.accountCommentsByCid[commentCid]) : undefined),
   useComment: ({ commentCid, autoUpdate, community }: { commentCid?: string; autoUpdate?: boolean; community?: { name?: string; publicKey?: string } }) => {

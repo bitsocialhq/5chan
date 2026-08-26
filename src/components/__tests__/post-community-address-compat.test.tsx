@@ -66,7 +66,9 @@ const getMockPreloadedReplies = (comment?: TestComment, sortType?: string) => {
   }
 
   const preloadedReplies =
-    comment.replies?.pages?.[sortType || 'best']?.comments ?? Object.values(comment.replies?.pages ?? {}).find((page) => page?.comments?.length)?.comments ?? [];
+    sortType === undefined
+      ? (Object.values(comment.replies?.pages ?? {}).find((page) => page?.comments?.length)?.comments ?? [])
+      : (comment.replies?.pages?.[sortType]?.comments ?? []);
 
   const compatibleReplies: TestComment[] = [];
   for (const reply of preloadedReplies) {
@@ -88,6 +90,8 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
+  resolveReplySortType: (comment?: TestComment, requestedSortType?: string) =>
+    requestedSortType && Object.hasOwn(comment?.replies?.pages ?? {}, requestedSortType) ? requestedSortType : undefined,
   useAccount: () => ({ id: 'viewer-account', author: { address: '0xviewer' } }),
   useAccountComment: (options?: { commentCid?: string }) => (options?.commentCid ? testState.accountCommentsByCid[options.commentCid] : undefined),
   useEditedComment: () => ({ editedComment: undefined }),
@@ -527,6 +531,31 @@ describe('post community address compatibility', () => {
     expect(container.querySelector('[data-testid="post-menu-mobile"]')?.textContent).toBe('music-posting.eth');
     expect(document.body.querySelector('a[href="/mu"]')?.textContent).toContain('Board: mu');
     expect(container.querySelector('[data-testid="comment-media"]')).toBeTruthy();
+    expect(container.textContent).toContain('reply-1');
+  });
+
+  it('renders desktop and mobile replies when the preferred sorts are not published', async () => {
+    const post = makeLegacyThread();
+    const publishedReplyPage = post.replies?.pages?.new;
+    if (!publishedReplyPage) {
+      throw new Error('missing fixture reply page');
+    }
+    post.replies = {
+      pages: {
+        best: publishedReplyPage,
+      },
+    };
+
+    await renderWithRoute(createElement(PostDesktop, { post, showAllReplies: true }), '/mu/thread/post-1');
+    expect(container.textContent).toContain('reply-1');
+
+    await renderWithRoute(createElement(PostMobile, { post, showAllReplies: true }), '/mu/thread/post-1');
+    expect(container.textContent).toContain('reply-1');
+
+    await renderWithRoute(createElement(PostDesktop, { post }));
+    expect(container.textContent).toContain('reply-1');
+
+    await renderWithRoute(createElement(PostMobile, { post }));
     expect(container.textContent).toContain('reply-1');
   });
 
