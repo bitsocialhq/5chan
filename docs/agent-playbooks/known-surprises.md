@@ -28,6 +28,16 @@ If uncertain, ask the developer before adding an entry.
 
 ## Entries
 
+### Agent verification can saturate contributor laptops
+
+- **Date:** 2026-08-26
+- **Observed by:** Tommaso + Codex
+- **Context:** Verifying a reply-loading fix while multiple 5chan worktrees already had Vite servers running.
+- **What was surprising:** The full Vitest suite started a coordinator plus four Node workers, and subsequent build and React Doctor work ran while existing dev servers remained active. Even sequential heavy commands can saturate several CPU cores when they stack on long-lived worktree servers.
+- **Impact:** The contributor laptop became nearly unresponsive for a short period, with several Node processes each consuming close to or more than one CPU core.
+- **Mitigation:** Before heavy verification, inspect existing repo processes; remember that `create-task-worktree.sh` automatically installs dependencies; reuse or stop only agent-owned dev servers; cap agent-invoked Vitest at two workers; run worktree creation/installs, full tests, coverage, builds, React Doctor, Electron/Android work, and browser/profiler checks sequentially across all agents; and clean up every process/session the agent starts.
+- **Status:** confirmed
+
 ### GitHub Projects are not used for repository workflow
 
 - **Date:** 2026-07-23

@@ -152,8 +152,14 @@ src/
 ### Verification Rules
 
 - Never mark work complete without verification.
+- Treat the contributor machine as a shared, resource-constrained environment. Before a CPU- or memory-intensive command, inspect existing repo workloads and stop only stale processes that the current agent owns.
+- Run heavyweight work sequentially across the whole task, including delegated agents: dependency installs, full test or coverage runs, production builds, React Doctor, Electron/Android builds, and browser/profiler verification must not overlap.
+- `./scripts/create-task-worktree.sh` runs `corepack yarn install`; treat worktree creation itself as heavyweight and do not run it alongside another intensive command.
+- On contributor machines, cap agent-invoked Vitest runs at two workers. Use `corepack yarn exec vitest run --maxWorkers=2` for the full suite, or add test paths for a targeted run. CI may keep its configured worker count.
+- Prefer the narrowest reliable check first. When a full verification pass is required, finish each heavyweight command before starting the next; parallelize only lightweight read-only checks.
+- Reuse an already-running compatible dev server for the same worktree when safe. Otherwise keep at most one dev server per active worktree, record the process/session you start, and stop it on every exit path as soon as it is no longer needed. Never stop a process whose owner or purpose is unclear.
 - After code changes, run: `yarn build`, `yarn lint`, `yarn type-check`.
-- After adding or changing tests, run `yarn test`.
+- After adding or changing tests, run the affected tests with the two-worker Vitest command above; run the full suite when the risk or repository workflow requires it.
 - Do not commit or force-add local rebuild output. `build/` is the main generated build output in this repo; remove or restore generated output directories after local verification before committing.
 - After React UI logic changes, run: `yarn doctor`.
 - Treat React Doctor output as guidance for *newly introduced* issues (the CI PR check in `.github/workflows/react-doctor.yml` runs `yarn doctor --scope changed --base <base branch>` to flag those), not as an aggregate score to grind up: many `error`-level diagnostics flag intentional patterns or current React-Compiler limitations, not bugs. See `docs/agent-playbooks/known-surprises.md`.
@@ -212,7 +218,7 @@ src/
 ## Core SHOULD Rules
 
 - Keep context lean: delegate heavy/verbose tasks to subprocesses when available.
-- For complex work, parallelize independent checks, except browser-driving checks, which must respect the machine-wide single-session resource budget.
+- For complex work, parallelize independent lightweight checks. Keep CPU- or memory-intensive commands sequential, and keep browser-driving checks within the machine-wide single-session resource budget.
 - Add or update tests for bug fixes and non-trivial logic changes when the code is reasonably testable.
 - When touching already-covered code, prefer extending nearby tests so measured coverage does not regress without a clear reason.
 - Use `yarn knip` when adding/removing dependencies or introducing new direct imports; treat findings as advisory, but resolve real issues before finishing.
@@ -238,7 +244,7 @@ corepack yarn install
 yarn start                # https://5chan.localhost
 yarn start:android-usb    # Vite + adb reverse for USB Android (http://localhost:3000 on device)
 yarn build
-yarn test
+corepack yarn exec vitest run --maxWorkers=2
 yarn test:coverage
 yarn knip
 yarn knip:full
