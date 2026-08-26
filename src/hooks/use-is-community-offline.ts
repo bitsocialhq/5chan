@@ -48,7 +48,7 @@ const useIsCommunityOffline = (community?: CommunityWithSyncLifecycle | undefine
   const hasFailed = syncState === 'failed' || (!syncState && state === 'failed');
   const isSyncLoading = isCommunitySyncLoading(syncState);
   const hasTerminalSyncState = isCommunitySyncTerminal(syncState);
-  const isFallbackLoading = !syncState && offlineState.initialLoad && nowSeconds - loadingStartTimestamp < 30;
+  const isFallbackLoading = offlineState.initialLoad && nowSeconds - loadingStartTimestamp < 30;
   const isLoading = !isOnline && !isStale && !hasFailed && (isSyncLoading || isFallbackLoading);
   const isOffline = !isOnline && !isLoading && (hasFailed || isStale || (!hasUsableCachedData && (hasTerminalSyncState || nowSeconds - loadingStartTimestamp >= 30)));
 
