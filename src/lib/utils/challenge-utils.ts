@@ -28,7 +28,6 @@ export type ChallengePublication = Partial<Omit<Comment, 'publishChallengeAnswer
   parentCid?: string;
   publishChallengeAnswers?: (challengeAnswers?: ChallengeAnswersInput) => Promise<void> | void;
   shortCommunityAddress?: string;
-  subplebbitAddress?: string;
   title?: string;
   vote?: number;
 };

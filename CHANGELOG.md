@@ -747,7 +747,7 @@
 * **ai-workflow:** scan full project item list before add ([4cb5c4a](https://github.com/bitsocialnet/5chan/commit/4cb5c4a83362cf2b4a758822c4fa9f416334c4f1))
 * **post:** align op permalinks to the outer thread container ([#1050](https://github.com/bitsocialnet/5chan/issues/1050)) ([6ed3708](https://github.com/bitsocialnet/5chan/commit/6ed3708322b43dcbd17444883e36ebdbb3eab778))
 * **post:** avoid duplicate history entries on OP permalinks ([773debe](https://github.com/bitsocialnet/5chan/commit/773debece336e5f70979fd9e5bb2236878e61ed6))
-* **subplebbit:** resolve aliased board metadata in subplebbit selectors ([a862852](https://github.com/bitsocialnet/5chan/commit/a862852e536324f0c0c09cdc59936ed3e9a4f122))
+* **community:** resolve aliased board metadata in community selectors ([a862852](https://github.com/bitsocialnet/5chan/commit/a862852e536324f0c0c09cdc59936ed3e9a4f122))
 
 
 
@@ -793,7 +793,7 @@
 * **markdown:** use BBCode-style [spoiler][/spoiler] tags ([91615db](https://github.com/bitsocialnet/5chan/commit/91615dbf4768e319cf50eb347b3138724445254d))
 * **popular-threads:** show actual feed state string instead of generic loading ([04b98b8](https://github.com/bitsocialnet/5chan/commit/04b98b84a4b858960b7120ca2054fc46526d8dde))
 * **posts:** add purge UI feedback for mods ([ae744d0](https://github.com/bitsocialnet/5chan/commit/ae744d0f78207fb5b14d82b122e5386226764f29))
-* **subscriptions:** use useAccountSubplebbitAddresses for deduplicated addresses ([e80a736](https://github.com/bitsocialnet/5chan/commit/e80a73663faa50a1d83ed6bdae4e146b76ccbdf9)), closes [bitsocial-react-hooks#16](https://github.com/bitsocial-react-hooks/issues/16)
+* **subscriptions:** use useAccountCommunityAddresses for deduplicated addresses ([e80a736](https://github.com/bitsocialnet/5chan/commit/e80a73663faa50a1d83ed6bdae4e146b76ccbdf9)), closes [bitsocial-react-hooks#16](https://github.com/bitsocial-react-hooks/issues/16)
 
 
 ### Performance Improvements
@@ -889,7 +889,7 @@
 * **posts:** Board link in multiboard views (/all/, /subs/, /mod/) ([f521bdb](https://github.com/bitsocialnet/5chan/commit/f521bdbe33ba710c0c836b134a4ac0b458b05f62))
 * **post:** show Pending for user ID when reply pending on pseudonymity boards ([21d2146](https://github.com/bitsocialnet/5chan/commit/21d214685da130134d5edd65bd24b3a4f8486a36))
 * **post:** use feed cache fallback for instant post content on catalog navigation ([609436a](https://github.com/bitsocialnet/5chan/commit/609436a0fb56aa7f7471874a6ff9333b4fe1509e))
-* **quotes:** scope post-number lookup by subplebbit, OP quote always navigates to thread ([216073a](https://github.com/bitsocialnet/5chan/commit/216073aee39396d6a8ce6a36fe4c3d70c453df29))
+* **quotes:** scope post-number lookup by community, OP quote always navigates to thread ([216073a](https://github.com/bitsocialnet/5chan/commit/216073aee39396d6a8ce6a36fe4c3d70c453df29))
 * **release:** harden release workflow installs ([ca2e024](https://github.com/bitsocialnet/5chan/commit/ca2e024c736659b9675ef540f12db868b41c774b))
 * **reply modal:** keep textarea empty when opened from Post a Reply footer button ([bb02779](https://github.com/bitsocialnet/5chan/commit/bb027794ee0dea00f553660bd6f6279b14165409))
 * **reply-modal:** remove link type previewer that displaces UI ([2733ab2](https://github.com/bitsocialnet/5chan/commit/2733ab260b149139a9b380b3ab075750258b3b2b))
@@ -938,7 +938,7 @@
 
 * **app:** enable FeedCacheContainer always, lazy-load modals ([34fdae1](https://github.com/bitsocialnet/5chan/commit/34fdae1e97828f59d7573a63a667f9cece452b5a))
 * **board:** disable Virtuoso when single-board pagination is on ([9b538f3](https://github.com/bitsocialnet/5chan/commit/9b538f324de93da6b80dd4cdf7ae36b4090e68e6))
-* **bundle:** replace plebbit-js imports with local utility, split chunks, fix CLS and rerenders ([4bdee03](https://github.com/bitsocialnet/5chan/commit/4bdee0362d4749ced52fd09d635cda4c5b5d36e6))
+* **bundle:** replace bitsocial-js imports with local utility, split chunks, fix CLS and rerenders ([4bdee03](https://github.com/bitsocialnet/5chan/commit/4bdee0362d4749ced52fd09d635cda4c5b5d36e6))
 * **catalog:** memoize handleNewerPostsButtonClick with useCallback ([8f8c625](https://github.com/bitsocialnet/5chan/commit/8f8c6254cc55a4aa8323ac241c495b4dc1e61814))
 * defer board reply fetching and remove nested mobile backlink fetch ([a13c72f](https://github.com/bitsocialnet/5chan/commit/a13c72f8881109f8f0508f012836a25564388b12))
 * **feed:** reduce Virtuoso overscan and memoize itemContent for multiboard views ([6e08203](https://github.com/bitsocialnet/5chan/commit/6e08203ce663f0e4ad564fedba59455168189033))
@@ -1095,7 +1095,7 @@
 * **error-display:** add delay to prevent false positive error displays ([341e72a](https://github.com/bitsocialnet/5chan/commit/341e72ad5b5a03152273c0060363579cbffc8cd3))
 * **hooks:** fix usePopularPosts loading state and change detection ([a7614db](https://github.com/bitsocialnet/5chan/commit/a7614db743c3eff052b48a1401f427b38dbd03d2))
 * **hooks:** remove postCid requirement from isAccountCommentAuthor check ([6175744](https://github.com/bitsocialnet/5chan/commit/6175744e7b4f9f56e562265751ac3bf5bcad6f2b))
-* **hooks:** use structural equality for roles comparison in useStableSubplebbit ([647139c](https://github.com/bitsocialnet/5chan/commit/647139c0ec4a23f21fb4d7830285cc5123f9202a))
+* **hooks:** use structural equality for roles comparison in useStableCommunity ([647139c](https://github.com/bitsocialnet/5chan/commit/647139c0ec4a23f21fb4d7830285cc5123f9202a))
 * HTML zip archive is empty in releases ([2f0fae8](https://github.com/bitsocialnet/5chan/commit/2f0fae846a49d8d5e949bf58e33381e2f08ebf81))
 * limit vite-plugin-eslint to src/ files only ([f65635b](https://github.com/bitsocialnet/5chan/commit/f65635b549a7c73f31b52c7f5656fc20b6f02a1c))
 * **lint:** use correct oxlint rule names and enable react plugin in config ([9fd41f2](https://github.com/bitsocialnet/5chan/commit/9fd41f2f9f8099fd23d2341371d6168b204c97fe))
@@ -1139,7 +1139,7 @@
 * **security:** upgrade dependencies to address dependabot alerts ([a25d4bf](https://github.com/bitsocialnet/5chan/commit/a25d4bfa9968f7b5356933d2a7654126ed223ef9))
 * **settings:** resolve theme persistence bug after hard refresh ([26d014b](https://github.com/bitsocialnet/5chan/commit/26d014b6964cc1bc5b86e4d057025ac2913ab4d0))
 * show cached feed time filter in UI ([198b613](https://github.com/bitsocialnet/5chan/commit/198b6135da410a6b6296140d6b9aa4860fe34915))
-* **subplebbit-stats:** revert broken useStableSubplebbitStats hook ([64ef0dd](https://github.com/bitsocialnet/5chan/commit/64ef0ddccf6def43abd123b33cb4c2c7b8af9eb2))
+* **community-stats:** revert broken useStableCommunityStats hook ([64ef0dd](https://github.com/bitsocialnet/5chan/commit/64ef0ddccf6def43abd123b33cb4c2c7b8af9eb2))
 * synchronize blinking animation in moderation queue ([5f4856a](https://github.com/bitsocialnet/5chan/commit/5f4856ad3c7e49fc4923d1cb25aca4cf3c50a37c))
 * **theme:** prevent theme flash on board load ([b1ebf0b](https://github.com/bitsocialnet/5chan/commit/b1ebf0b4ae4e4e9361f3a3603f9d40fece2d6ef6))
 * **themes:** all and subscriptions multiboards should use yotsuba ([9cc7869](https://github.com/bitsocialnet/5chan/commit/9cc78694d8ac4ff12a4743de08b85fb6ff8c2eec))
@@ -1148,12 +1148,12 @@
 * **topbar:** correct mobile topbar select values for directory boards ([723ad9f](https://github.com/bitsocialnet/5chan/commit/723ad9fb58b6eaa19f03b48f9e1dd80303b670d3))
 * **topbar:** didn't update when subscribing to a board ([e77dd53](https://github.com/bitsocialnet/5chan/commit/e77dd53e0ef6c123247af5ba0b7365f25533f661))
 * **translations:** move purge keys to end of EN locale file ([db413ba](https://github.com/bitsocialnet/5chan/commit/db413baa1df773c9c3ca928c784e9c28052814fa))
-* update Plebbit.getShortAddress calls to use object parameter ([4cb3bda](https://github.com/bitsocialnet/5chan/commit/4cb3bda38c2f46029b87c2f9a6d65a8b4f9c8d63))
-* update Plebbit.getShortCid calls to use object parameter format ([a57cc1e](https://github.com/bitsocialnet/5chan/commit/a57cc1e4e70bd3fb96f6b94735d4749c0f074257))
+* update Bitsocial.getShortAddress calls to use object parameter ([4cb3bda](https://github.com/bitsocialnet/5chan/commit/4cb3bda38c2f46029b87c2f9a6d65a8b4f9c8d63))
+* update Bitsocial.getShortCid calls to use object parameter format ([a57cc1e](https://github.com/bitsocialnet/5chan/commit/a57cc1e4e70bd3fb96f6b94735d4749c0f074257))
 * use stable time filter for virtuoso state key in cached feeds ([1a6ac4a](https://github.com/bitsocialnet/5chan/commit/1a6ac4a2bec7423c9e8ab43561d8b6402b839c70))
-* **use-default-subplebbits:** prevent state updates after unmount ([e548198](https://github.com/bitsocialnet/5chan/commit/e548198d0e5369779ae628186c83dcf8e83a5318))
+* **use-default-communities:** prevent state updates after unmount ([e548198](https://github.com/bitsocialnet/5chan/commit/e548198d0e5369779ae628186c83dcf8e83a5318))
 * validate thread share link cid ([23f2451](https://github.com/bitsocialnet/5chan/commit/23f245145ccbfb7d692bceddc69fdeacf76e3a66))
-* **views:** display useSubplebbit and useComment errors in board, post, and mod-queue views ([122b177](https://github.com/bitsocialnet/5chan/commit/122b17790a67389f60d7b171aedf20a7223adc43))
+* **views:** display useCommunity and useComment errors in board, post, and mod-queue views ([122b177](https://github.com/bitsocialnet/5chan/commit/122b17790a67389f60d7b171aedf20a7223adc43))
 * **views:** use directory codes in document titles and fix order ([5aa1eaf](https://github.com/bitsocialnet/5chan/commit/5aa1eaf13af842ebd78b4b7cfdbe8e563fc1e700))
 
 
@@ -1169,7 +1169,7 @@
 * **board header:** add banners, add support to gif banners ([07831cb](https://github.com/bitsocialnet/5chan/commit/07831cb8b026c230841d7c70d62078c35aa7e84c))
 * **board header:** make subscriptions subtitle clickable to go to subs settings ([cc28224](https://github.com/bitsocialnet/5chan/commit/cc28224c91bb0716dc41165cff44b806ef4ba4f8))
 * **board-buttons:** add directory-specific vote button ([af14686](https://github.com/bitsocialnet/5chan/commit/af1468669c7db81c2a28bf37f2da6fb454730784))
-* **board-header:** prioritize default subplebbit title over store title ([f44b9ae](https://github.com/bitsocialnet/5chan/commit/f44b9aefbb926ece4b432606a7f9f6ed1d9bcf39))
+* **board-header:** prioritize default community title over store title ([f44b9ae](https://github.com/bitsocialnet/5chan/commit/f44b9aefbb926ece4b432606a7f9f6ed1d9bcf39))
 * **board-header:** show subscription count in subscriptions view ([1675ab7](https://github.com/bitsocialnet/5chan/commit/1675ab7d407889750cdab2a77cb4d49b3c73e1cb))
 * **board:** add more_threads_last_year suggestion ([e3e2599](https://github.com/bitsocialnet/5chan/commit/e3e25995d6c38ba5f98128824d1c4fbc86cbcf9b))
 * **boards-list:** mark Flash, Oekaki, Artwork/Critique, Wallpapers/General as NSFW ([36bd9c5](https://github.com/bitsocialnet/5chan/commit/36bd9c5c0f6044655ae99f9fa34b34615af2f644))
@@ -1213,7 +1213,7 @@
 * eliminate redundant derived state in board and post views ([b10ada5](https://github.com/bitsocialnet/5chan/commit/b10ada55e7c7603a9d1680ee4240e120655e0798))
 * **feeds:** use hasMore instead of length check for conditional virtualization ([c0c6e9e](https://github.com/bitsocialnet/5chan/commit/c0c6e9ee315e983cbe38491d7b40a231edd44e07))
 * Fix unnecessary renders in useCurrentTime hook and ModQueueView footer ([404b613](https://github.com/bitsocialnet/5chan/commit/404b613b44c7a71511c08704dcec0a545234bfa1))
-* **hooks:** document stable reference optimization in useDefaultSubplebbits ([e7e2a2f](https://github.com/bitsocialnet/5chan/commit/e7e2a2fda70230ea02d6ac6e184c8bc9ffb48373))
+* **hooks:** document stable reference optimization in useDefaultCommunities ([e7e2a2f](https://github.com/bitsocialnet/5chan/commit/e7e2a2fda70230ea02d6ac6e184c8bc9ffb48373))
 * implement LRU-cached persistent feed mounting to eliminate Virtuoso flash ([896ca4a](https://github.com/bitsocialnet/5chan/commit/896ca4ad13072f38fbb1e81e9f2147ed99cbe009))
 * isolate IPFS state updates in board and catalog views to prevent excessive re-renders ([eb8e226](https://github.com/bitsocialnet/5chan/commit/eb8e226ff151e4c716297e81e0358e840195f5c9))
 * migrate from vite to rolldown-vite for faster builds ([10a266c](https://github.com/bitsocialnet/5chan/commit/10a266ceaba05ee33bb10be573167a37b7637101))
@@ -1243,7 +1243,7 @@
 
 ### Bug Fixes
 
-* **board header:** subplebbit address could be too long ([bc80533](https://github.com/bitsocialnet/5chan/commit/bc805337400c5233e829c823606d8a0401bedf94))
+* **board header:** community address could be too long ([bc80533](https://github.com/bitsocialnet/5chan/commit/bc805337400c5233e829c823606d8a0401bedf94))
 * **catalog search:** use query parameter so users can share searches and link to them ([6075b2e](https://github.com/bitsocialnet/5chan/commit/6075b2ebf7b7bcfc6e3bcb57dec4bb53988f658f))
 * **challenge modal:** on mobile the modal was incorrectly positioned on top left ([bb0fcb9](https://github.com/bitsocialnet/5chan/commit/bb0fcb9c1a97d2dac7ed08544bb406d3d99f0bba))
 * **mod multisub:** mod page was missing post form ([339a9bc](https://github.com/bitsocialnet/5chan/commit/339a9bc18a6ca4414a9b80f85b5d12799f68cf94))
@@ -1284,7 +1284,7 @@
 
 ### Bug Fixes
 
-* **board header:** banner could change while subplebbit is loading ([2df9a96](https://github.com/bitsocialnet/5chan/commit/2df9a964e65cf7d8968ba28d470dcf7aba58b979))
+* **board header:** banner could change while community is loading ([2df9a96](https://github.com/bitsocialnet/5chan/commit/2df9a964e65cf7d8968ba28d470dcf7aba58b979))
 * **board:** loading state wasn't showing in description page ([319d374](https://github.com/bitsocialnet/5chan/commit/319d37481044e2c7d99ac48ed94962c440558bd5))
 * **catalog:** embedded images that 404'd could overflow ([9013cb0](https://github.com/bitsocialnet/5chan/commit/9013cb02fe58655f164eb5862b1a8d3e4121d78a))
 * **css:** floating-ui portal could override app color scheme ([fc674f4](https://github.com/bitsocialnet/5chan/commit/fc674f4caf755bb3667a70f6735ae39003e17932))
@@ -1302,12 +1302,12 @@
 * **edit menu:** alert "you cannot edit this thread/reply" if without permission ([377d8cd](https://github.com/bitsocialnet/5chan/commit/377d8cdffaec7b0efbbb1dfa77b2944b34498ed5))
 * **embeds:** add support to youtube shorts ([306e7b0](https://github.com/bitsocialnet/5chan/commit/306e7b081ff72a2acfbe629e1f7ebc0f7ba432de))
 * **post:** when attempting to reply, alert reply or thread was deleted or removed ([0a7cda3](https://github.com/bitsocialnet/5chan/commit/0a7cda31bfe64986fb34788e71868ccd59bc1fad))
-* **settings:** auto-subscribe imported accounts to default subs and moderated subplebbits ([0f38fb3](https://github.com/bitsocialnet/5chan/commit/0f38fb3ae711dcea1ec317aae2fe93231e85c9e3))
+* **settings:** auto-subscribe imported accounts to default subs and moderated communities ([0f38fb3](https://github.com/bitsocialnet/5chan/commit/0f38fb3ae711dcea1ec317aae2fe93231e85c9e3))
 
 
 ### Performance Improvements
 
-* **app:** optimize loading times by using stored values of subplebbits and comments instead of fetching them multiple times ([8557ebb](https://github.com/bitsocialnet/5chan/commit/8557ebb3a73b2c62965f9f48473f5903d15425cd))
+* **app:** optimize loading times by using stored values of communities and comments instead of fetching them multiple times ([8557ebb](https://github.com/bitsocialnet/5chan/commit/8557ebb3a73b2c62965f9f48473f5903d15425cd))
 * **catalog:** each post in the feed was loading a comment needlessly ([64f984d](https://github.com/bitsocialnet/5chan/commit/64f984d2d0d85fbb8bc6b20672723c1b45a590cf))
 * **feed:** optimize posts rendering via props refactoring, memoizations ([797a1f2](https://github.com/bitsocialnet/5chan/commit/797a1f23c69374ce09b7a1ed7914e40e29acc4ca))
 * prioritize cached data from API, improving navigation speed and memory consumption ([dcb05ed](https://github.com/bitsocialnet/5chan/commit/dcb05ed3a04212b5e140ed42fa0e4bbed810781e))
@@ -1343,7 +1343,7 @@
 
 ### Features
 
-* auto subscribe new accounts to specific default subplebbits ([882703b](https://github.com/bitsocialnet/5chan/commit/882703b00d67b782d1329ee1135dda27113e9aae))
+* auto subscribe new accounts to specific default communities ([882703b](https://github.com/bitsocialnet/5chan/commit/882703b00d67b782d1329ee1135dda27113e9aae))
 * **topbar:** add temporary links to "create board" and "vote" buttons ([57fc2bb](https://github.com/bitsocialnet/5chan/commit/57fc2bbfc282bf754e16f5caba2679279e00296b))
 
 
@@ -1359,17 +1359,17 @@
 ### Bug Fixes
 
 * **account settings:** creating new account didn't automatically switch to it ([382e069](https://github.com/bitsocialnet/5chan/commit/382e0692c16b65eb4f3758a095d0a83fbc60b1e1))
-* **board:** some subplebbit avatars could overflow ([4f2308f](https://github.com/bitsocialnet/5chan/commit/4f2308fa94fb113b33f39e435e1d324b5adb8f54))
+* **board:** some community avatars could overflow ([4f2308f](https://github.com/bitsocialnet/5chan/commit/4f2308fa94fb113b33f39e435e1d324b5adb8f54))
 * **challenge modal:** user could submit empty answer ([a7beb3a](https://github.com/bitsocialnet/5chan/commit/a7beb3aebb3997ec5d0ce1d6b6270d560cd93927))
 * emptying fields could fail when publishing reply ([7ffb3ce](https://github.com/bitsocialnet/5chan/commit/7ffb3ce8c5ef5f898c615292a74e50bfb97989e0))
 * **interface setting:** improve wording ([88a5782](https://github.com/bitsocialnet/5chan/commit/88a5782118759039577cb647b0a880c7787f3b8f))
 * **post:** an hr element written in markdown could get rendered as a UI hr ([165b950](https://github.com/bitsocialnet/5chan/commit/165b9504225b252d7de0d1a8608be471bdd2f12a))
-* **post:** content could bypass max character count if posted from other plebbit client ([b9210dc](https://github.com/bitsocialnet/5chan/commit/b9210dc835fa7dcbdf0d31b7173bf7c675b25655))
+* **post:** content could bypass max character count if posted from other bitsocial client ([b9210dc](https://github.com/bitsocialnet/5chan/commit/b9210dc835fa7dcbdf0d31b7173bf7c675b25655))
 * **post:** prevent edit menu checkbox from being interactable while post is loading ([96794a0](https://github.com/bitsocialnet/5chan/commit/96794a0c1e1d5bd8278b6c321a9ae24a5761210b))
 * **post:** title would wrap incorrectly in posts with no image/thumbnail ([0e67960](https://github.com/bitsocialnet/5chan/commit/0e6796002c27af53fd3b8d9bfe4a9e94a62801da))
 * **reply modal:** changing anon mode before publishing reply didn't work ([2a20716](https://github.com/bitsocialnet/5chan/commit/2a20716212708e0ddd7cb3a036a34f223c2c9159))
 * **reply:** media thumbnail wasn't showing ([be2b65b](https://github.com/bitsocialnet/5chan/commit/be2b65b5856e463dc9e770125118472b960a3a93))
-* **subplebbit:** subplebbit could erroneously appear offline while publishing a post ([48a8046](https://github.com/bitsocialnet/5chan/commit/48a80464862f618d86d57bd3e8859077499b994a))
+* **community:** community could erroneously appear offline while publishing a post ([48a8046](https://github.com/bitsocialnet/5chan/commit/48a80464862f618d86d57bd3e8859077499b994a))
 * **theme:** christmas theme should only run on dec 24 and 25 ([cbed83c](https://github.com/bitsocialnet/5chan/commit/cbed83cd1098031113009db4fa41f522f0536584))
 * **theme:** prevent special theme from persisting outside holiday period ([65ed3df](https://github.com/bitsocialnet/5chan/commit/65ed3dffd5ac3af227d736d686f410692ce31e53))
 * **topbar:** only display the top 15 subs in the default list ([0488a6c](https://github.com/bitsocialnet/5chan/commit/0488a6c629402f0c6acff09f2a9090abe07b2c4d))
@@ -1416,7 +1416,7 @@
 * **feed:** posts could change position causing displacement ([309f766](https://github.com/bitsocialnet/5chan/commit/309f76689f3672436bc790894af4580006a4c60f))
 * **home:** stats should load regardless of the total number of online subs ([8b7730b](https://github.com/bitsocialnet/5chan/commit/8b7730b6c4f074edff602d645647d3854171a4f2))
 * **markdown:** invalid urls in content could crash the app ([73bab13](https://github.com/bitsocialnet/5chan/commit/73bab13e34302e97b3288f9e06cee681546ab417))
-* **plebbit options:** schema error prevented to save ([db8c51f](https://github.com/bitsocialnet/5chan/commit/db8c51fa72404b00bc1bc90d4e92b2e3ad5887c5))
+* **pkc options:** schema error prevented to save ([db8c51f](https://github.com/bitsocialnet/5chan/commit/db8c51fa72404b00bc1bc90d4e92b2e3ad5887c5))
 * **post:** deleted or removed post could show reply form ([0043e2b](https://github.com/bitsocialnet/5chan/commit/0043e2bdb6f86ac82278889ee18a290abd5f24fa))
 * **post:** error was displayed incorrectly ([fd8b3ea](https://github.com/bitsocialnet/5chan/commit/fd8b3ea2e9d16aeb81d08e73a2d7d6394568c555))
 * **post:** image could flicker when clicking it to expand it ([077b3bc](https://github.com/bitsocialnet/5chan/commit/077b3bc9efe25938bb3798424fe7156ba840b9b0))
@@ -1620,7 +1620,7 @@
 
 ### Features
 
-* **board stats:** remember hide/show choice per subplebbit ([d482d32](https://github.com/bitsocialnet/5chan/commit/d482d3246744b0d7701888fa0ce18433d7798381))
+* **board stats:** remember hide/show choice per community ([d482d32](https://github.com/bitsocialnet/5chan/commit/d482d3246744b0d7701888fa0ce18433d7798381))
 * **catalog:** add text pattern filters ([da33358](https://github.com/bitsocialnet/5chan/commit/da33358ca418db4cd3840b96996bed43d7825c57))
 * **feed:** show account comments instantly in the feed once published, instead of waiting for the feed to update ([8598d10](https://github.com/bitsocialnet/5chan/commit/8598d1056ee9b08cb146b129356c28c14a8ec79a))
 * **markdown:** when the user is publishing a comment, automatically format it to follow markdown rules ([c521ccb](https://github.com/bitsocialnet/5chan/commit/c521ccbc2ebf2d4d67889a28733d07eab4b8fa7b))
@@ -1662,7 +1662,7 @@
 * reply count was bugged ([6d6187e](https://github.com/bitsocialnet/5chan/commit/6d6187e531065f744dde8a16f14977112c418407))
 * **reply modal:** cursor would move to end of text while replying ([6430607](https://github.com/bitsocialnet/5chan/commit/6430607363419b695487942ec31ea071f4205912))
 * **spoiler:** spoiler image wasn't showing for iframes ([85aeb86](https://github.com/bitsocialnet/5chan/commit/85aeb860475a6efa223ec0e8b931671ca91a5edb))
-* **subplebbit stats:** stats box appeared even if stats are undefined ([811405d](https://github.com/bitsocialnet/5chan/commit/811405dea9d72ef41a115d7a0e110c57b1040f89))
+* **community stats:** stats box appeared even if stats are undefined ([811405d](https://github.com/bitsocialnet/5chan/commit/811405dea9d72ef41a115d7a0e110c57b1040f89))
 * **themes:** inherit selected theme in pending post page ([d66a0b8](https://github.com/bitsocialnet/5chan/commit/d66a0b8efe49f0401e04155e177f60d4493e289a))
 * **topbar:** empty brackets would show for sub category if empty ([a31beee](https://github.com/bitsocialnet/5chan/commit/a31beee6318047e3bed5f02820468360e6b3db5c))
 
@@ -1679,7 +1679,7 @@
 * **post:** add tooltip to comment edit timestamp ([e716a45](https://github.com/bitsocialnet/5chan/commit/e716a45a3130bcfa8877a2b347012e6b63b4d261))
 * **post:** show loading state info ([7ff8af7](https://github.com/bitsocialnet/5chan/commit/7ff8af7fcd78f044d352fc74b67f7d3a712e5a7d))
 * **settings:** add avatar setting ([f2e4f14](https://github.com/bitsocialnet/5chan/commit/f2e4f14a33ac2d41e029f54ae05000f31468f8f8))
-* use red offline icon for subplebbits that are most likely offline (ipns record fails to update) ([9f75449](https://github.com/bitsocialnet/5chan/commit/9f7544936e9418ce99f562d6ccdd1a043adf2602))
+* use red offline icon for communities that are most likely offline (ipns record fails to update) ([9f75449](https://github.com/bitsocialnet/5chan/commit/9f7544936e9418ce99f562d6ccdd1a043adf2602))
 
 
 ### Performance Improvements
@@ -1710,7 +1710,7 @@
 * add FAQ page ([66cc23c](https://github.com/bitsocialnet/5chan/commit/66cc23c404f158c839bc1382aab2f0db3181a78a))
 * **board header:** add sub online status info to offline icon title ([5276f0a](https://github.com/bitsocialnet/5chan/commit/5276f0ad43a38afc90b0341c5e91c904efb8348b))
 * **catalog:** add 'you have blocked this board' message and unblock button ([d3c29fd](https://github.com/bitsocialnet/5chan/commit/d3c29fd6ece80c0293d5d757158373edec0912e6))
-* **catalog:** display error from subplebbit in feed (such as, 'address is incorrect') ([9495e98](https://github.com/bitsocialnet/5chan/commit/9495e98183e9852d6c3ca1b172150d247c4b18e9))
+* **catalog:** display error from community in feed (such as, 'address is incorrect') ([9495e98](https://github.com/bitsocialnet/5chan/commit/9495e98183e9852d6c3ca1b172150d247c4b18e9))
 * **homepage:** offline icons give info about the board online status ([c81c7b8](https://github.com/bitsocialnet/5chan/commit/c81c7b85f099c837a1bcb9f5cbf51e018c0bbd16))
 * **post:** add 'user was banned for this post' if user was banned by board to post in it ([f6c1fb4](https://github.com/bitsocialnet/5chan/commit/f6c1fb400b4950ec38c0414e993929ecc78e8bdf))
 * **post:** add post count and highlight functionality to u/address ([a6a41ed](https://github.com/bitsocialnet/5chan/commit/a6a41edd760a9b5f41302bd8008695f290a5c9e7))
@@ -1730,7 +1730,7 @@
 
 * **catalog filters:** clarify label ([677fe64](https://github.com/bitsocialnet/5chan/commit/677fe641a3ad6aa33449ed4bf92bb31ede27dc4a))
 * **catalog:** large image size was incorrect ([b5b5c5c](https://github.com/bitsocialnet/5chan/commit/b5b5c5ca467e2b1c1695a37d43b0a9ad9adcd9ce))
-* **not found page:** only show 'back to p/...' button if subplebbitAddress is in valid format; limit img size ([1900d1c](https://github.com/bitsocialnet/5chan/commit/1900d1cdf2a9869ad3af8e9a7a2a563f9850c868))
+* **not found page:** only show 'back to p/...' button if communityAddress is in valid format; limit img size ([1900d1c](https://github.com/bitsocialnet/5chan/commit/1900d1cdf2a9869ad3af8e9a7a2a563f9850c868))
 * **post:** don't show c/quote in content if reply is removed or deleted ([533fc2f](https://github.com/bitsocialnet/5chan/commit/533fc2ffa3123519d4f0cee8c7766610a9434c44))
 * **post:** mod and author edits weren't instant ([cb745ff](https://github.com/bitsocialnet/5chan/commit/cb745ffce62e63f6721f4024f1b843c549def548))
 * **reply:** edit menu checkbox was displaced on mobile ([9052b0f](https://github.com/bitsocialnet/5chan/commit/9052b0f4f626fa70181b28986b8a3a76ae44f348))
@@ -1754,7 +1754,7 @@
 
 * **app:** prevent scrollbar glitch on board layout routes, also hiding unnecessary scrollbar in home ([61f2344](https://github.com/bitsocialnet/5chan/commit/61f23443ca6c2d48b9fdddce7e78ef948bb5ca6a))
 * audio elements were displaced in catalog ([9090c18](https://github.com/bitsocialnet/5chan/commit/9090c186528ce79cb3da1d14ec48bb6a054997ba))
-* **board banner:** subplebbit short address was wrong ([c491b07](https://github.com/bitsocialnet/5chan/commit/c491b0729588cc6f58094bea269c945fc0429de6))
+* **board banner:** community short address was wrong ([c491b07](https://github.com/bitsocialnet/5chan/commit/c491b0729588cc6f58094bea269c945fc0429de6))
 * **board buttons:** don't show subscribe button in multiboards ([22657ff](https://github.com/bitsocialnet/5chan/commit/22657ff90a709349597cf6fbc01ef58ba0da76db))
 * **board buttons:** link for return button was broken ([7086d6b](https://github.com/bitsocialnet/5chan/commit/7086d6b77711b3f45f707fead2f89d2d6ae17c4f))
 * **board buttons:** return button was broken, subscribe button shouldn't render in p/all and p/subscriptions ([6f003f9](https://github.com/bitsocialnet/5chan/commit/6f003f9c11bac3579b8cdab0e1d6fbfa7924550e))
@@ -1772,7 +1772,7 @@
 * **description:** escape character wasn't excluded from translation ([7648ef1](https://github.com/bitsocialnet/5chan/commit/7648ef1432e0bb2ce4c9aa18e68f6987314f9779))
 * don't consider 'anti' tag as nsfw tag ([62b4c71](https://github.com/bitsocialnet/5chan/commit/62b4c71eb5b2077f82b86d1496accd1211ec8e45))
 * don't show 'sub might be offline' alert in multisubs ([937abf8](https://github.com/bitsocialnet/5chan/commit/937abf8dcac03c1f6c5134449c5552f043a779cb))
-* don't show subplebbit stats in multiboard feeds ([c83169e](https://github.com/bitsocialnet/5chan/commit/c83169ea1276c58d26dff33c32f24642c61b1464))
+* don't show community stats in multiboard feeds ([c83169e](https://github.com/bitsocialnet/5chan/commit/c83169ea1276c58d26dff33c32f24642c61b1464))
 * **edit menu:** fix input value warning ([f20a5f2](https://github.com/bitsocialnet/5chan/commit/f20a5f21f9d76ea8735dd22385b112a36b359a92))
 * **edit menu:** mod and author edits were conflicting ([efc9a98](https://github.com/bitsocialnet/5chan/commit/efc9a98f47777c45f7ea54b2b2821aa6c6709714))
 * **embed:** detect uppercase extension in link ([86738de](https://github.com/bitsocialnet/5chan/commit/86738de226a57ae0b85601fbf0eef4dc591a82df))
@@ -1788,12 +1788,12 @@
 * **markdown:** remove spoiler text, there's no syntax for it yet ([3108107](https://github.com/bitsocialnet/5chan/commit/31081079bca4d490c094ea1999c0842252c170e1))
 * **markdown:** show single break ([967f781](https://github.com/bitsocialnet/5chan/commit/967f781cfd43841582b26eaff00205dfa1adc302))
 * **multisubs:** don't show subscribe button ([07af318](https://github.com/bitsocialnet/5chan/commit/07af3187c69bc0357a58d4bfef15525eef87a609))
-* **not found:** check if subplebbitAddress is valid before displaying 'back to' buttton ([f7ce689](https://github.com/bitsocialnet/5chan/commit/f7ce6890ec183cc6d287f34dc2d7fc8c5d914ed1))
+* **not found:** check if communityAddress is valid before displaying 'back to' buttton ([f7ce689](https://github.com/bitsocialnet/5chan/commit/f7ce6890ec183cc6d287f34dc2d7fc8c5d914ed1))
 * **not found:** force yotsuba theme with ref, not with params in app because they can't be detected in app ([5e8d743](https://github.com/bitsocialnet/5chan/commit/5e8d7436f9b09b39d1a5b5e8e1e2d03292a2d6c8))
 * only show catalog post preview on mouse over thumbnail ([a8e3ce8](https://github.com/bitsocialnet/5chan/commit/a8e3ce8429f4d119e74649577a18ce9b7639b12d))
 * **pending post:** settings were not shown correctly ([ddd063f](https://github.com/bitsocialnet/5chan/commit/ddd063fdef245d6a76637ce7de83f56f753aca81))
 * performance, logic ([3eb9c5c](https://github.com/bitsocialnet/5chan/commit/3eb9c5c20f604f8081b913e2577d84992fbfbd60))
-* **popular threads box:** default to worksafe content and show 8 posts for single subplebbit ([c6a1283](https://github.com/bitsocialnet/5chan/commit/c6a1283b56b0953d9513d7aa32d0d8c59a5cdfee))
+* **popular threads box:** default to worksafe content and show 8 posts for single community ([c6a1283](https://github.com/bitsocialnet/5chan/commit/c6a1283b56b0953d9513d7aa32d0d8c59a5cdfee))
 * position floating catalog post preview relative to thumbnail dimensions ([2a5ecf9](https://github.com/bitsocialnet/5chan/commit/2a5ecf90ee7372cc8aeb7d59ee14b29b3e8bb749))
 * **post form:** close after publish, reset fields ([359031c](https://github.com/bitsocialnet/5chan/commit/359031c1df344a2eea81c571b1fceb60bca453e1))
 * **post menu mobile:** close after hiding reply ([bbc3f30](https://github.com/bitsocialnet/5chan/commit/bbc3f30e18903b1fbfe076e2ed50b18976a68713))
@@ -1810,16 +1810,16 @@
 * **reply modal:** do nothing when clicking another cid while modal is opened ([4fa6f60](https://github.com/bitsocialnet/5chan/commit/4fa6f6079216b6e74c9fd1cf0616ea243bb91c75))
 * **reply modal:** get mobile scroll position from hook before render ([1e91119](https://github.com/bitsocialnet/5chan/commit/1e9111968730f05adac0267cf4efdbd146042485))
 * **reply modal:** improve c/parentCid styling in textarea ([148e6f1](https://github.com/bitsocialnet/5chan/commit/148e6f1989586db81222d80cb2cbf1d04e8932fd))
-* **settings:** decode subplebbit address with emoji to fix pathname ([2ecedcc](https://github.com/bitsocialnet/5chan/commit/2ecedcc956b456b84966b8e1a148a878af8a083b))
+* **settings:** decode community address with emoji to fix pathname ([2ecedcc](https://github.com/bitsocialnet/5chan/commit/2ecedcc956b456b84966b8e1a148a878af8a083b))
 * spoiler text wasn't rendering on mobile ([656c31c](https://github.com/bitsocialnet/5chan/commit/656c31c0132559cd23da09c3641cfaf1451b3c88))
-* **subplebbit description:** prevent escaping characters in translation ([aac20c4](https://github.com/bitsocialnet/5chan/commit/aac20c4671bbd07cd6756217ff270510bbf2464c))
+* **community description:** prevent escaping characters in translation ([aac20c4](https://github.com/bitsocialnet/5chan/commit/aac20c4671bbd07cd6756217ff270510bbf2464c))
 * **subscriptions:** show info if no subs found ([b07a06f](https://github.com/bitsocialnet/5chan/commit/b07a06fa129fd926201f3e6cb2310c40d38c3226))
 * time filter appeared twice on mobile ([ae1b860](https://github.com/bitsocialnet/5chan/commit/ae1b860f3b4a9248399ec9bbf4d34cd5329af788))
 * **topbar:** settings link would 404 ([1aff0d3](https://github.com/bitsocialnet/5chan/commit/1aff0d3adaec753e23a00276382b34641a88979b))
 * **use-replies.ts:** flatten and display replies of replies not yet published ([6e20b86](https://github.com/bitsocialnet/5chan/commit/6e20b86b7bb0bdabd524154bce01152662ee9c9a))
 * **use-replies.ts:** flatten comment pages ([087d4ab](https://github.com/bitsocialnet/5chan/commit/087d4ab738967d460e392daee291c220759bc473))
 * **use-replies:** sort by timestamp and move pinned replies to the top ([8b000a0](https://github.com/bitsocialnet/5chan/commit/8b000a0bdb225040319829b8ae92d77aa1501b83))
-* **use-subplebbits-stats:** hook would fetch the same stats if pending fetching ([79b660e](https://github.com/bitsocialnet/5chan/commit/79b660eaa02e3dac9923064b36013965be560844))
+* **use-communities-stats:** hook would fetch the same stats if pending fetching ([79b660e](https://github.com/bitsocialnet/5chan/commit/79b660eaa02e3dac9923064b36013965be560844))
 * **use-theme:** body css would bug out on navigation ([73f4136](https://github.com/bitsocialnet/5chan/commit/73f4136f535bc221c8f29abd2d29e991c09d6287))
 * video thumbnails stuck on loading, post page overflow ([0036508](https://github.com/bitsocialnet/5chan/commit/00365086623dd05ea5a81be04790a68fba45bb25))
 * wrong document titles ([19164db](https://github.com/bitsocialnet/5chan/commit/19164db606a71ea9dc2e293586d7b6c9ea52c444))
@@ -1899,7 +1899,7 @@
 * **media:** add support for audio links ([0a52944](https://github.com/bitsocialnet/5chan/commit/0a52944a07d0dff523f4e35704e4bd235e284e73))
 * **multisubs:** add catalog view ([cc2a640](https://github.com/bitsocialnet/5chan/commit/cc2a640ae247845b2ee3bf9a4d94da513dd08b91))
 * **multisubs:** add settings modal ([970c726](https://github.com/bitsocialnet/5chan/commit/970c726720f065c2c5790f42dde5c79b5817751b))
-* **multisubs:** add subplebbit address in post info ([82fe238](https://github.com/bitsocialnet/5chan/commit/82fe23897992f31eb28848bb2831c01d02a33912))
+* **multisubs:** add community address in post info ([82fe238](https://github.com/bitsocialnet/5chan/commit/82fe23897992f31eb28848bb2831c01d02a33912))
 * **p/all:** add description view ([09f05ac](https://github.com/bitsocialnet/5chan/commit/09f05ac8a0eb5b655e31f21e45c83e6e7ef8b57d))
 * **p/all:** use multisub title, description and createdAt in mock description and board header ([11d1424](https://github.com/bitsocialnet/5chan/commit/11d1424c0a890b43a5fecb048d894d3c81b7340f))
 * **post desktop:** add hide/unhide replies ([8b60172](https://github.com/bitsocialnet/5chan/commit/8b601726aeaffdabc6a55d129794e24aec96411e))
@@ -1907,7 +1907,7 @@
 * **post form:** add reply publishing in post page ([cf7d59c](https://github.com/bitsocialnet/5chan/commit/cf7d59c9b86a2e33370b2a56d6821a1b0a0a4799))
 * **post form:** add row for link type, add spoiler option ([6223cb0](https://github.com/bitsocialnet/5chan/commit/6223cb0b24fc2b74c42695e458ad768e8aaf7bcc))
 * **post form:** enable posting from p/all or p/subscriptions ([797d665](https://github.com/bitsocialnet/5chan/commit/797d66515021a181ba7b8bc9ca92aab0bda6c4cd))
-* **post form:** replace single return with double return on submit, because markdown is mandatory on plebbit, but a user from 4chan won't know that ([ccb75fc](https://github.com/bitsocialnet/5chan/commit/ccb75fcf3a6057a0a09e1fcd0456654a1af1bc00))
+* **post form:** replace single return with double return on submit, because markdown is mandatory on bitsocial, but a user from 4chan won't know that ([ccb75fc](https://github.com/bitsocialnet/5chan/commit/ccb75fcf3a6057a0a09e1fcd0456654a1af1bc00))
 * **post menu:** add copy link button (share link) ([caacd77](https://github.com/bitsocialnet/5chan/commit/caacd77bbabc26aada1845c68791144797105e86))
 * **post menu:** add reverse image search ([677407c](https://github.com/bitsocialnet/5chan/commit/677407cd52f5f25be24b56c20d500dda9692df81))
 * **post mobile:** add hide and unhide posts and replies ([0c02a6b](https://github.com/bitsocialnet/5chan/commit/0c02a6b9b68e5f525a784b68cc294a8c6ac91948))
@@ -1935,7 +1935,7 @@
 * **reply modal:** add link type previewer, spoiler option ([c5d55a9](https://github.com/bitsocialnet/5chan/commit/c5d55a9dd5e6b0d9072f34e9abe636ad1a121c50))
 * **reply modal:** change displayName from name field, style focused inputs, translate title ([1e5c675](https://github.com/bitsocialnet/5chan/commit/1e5c675e95f9c7a9eb5f96204a4e4788cc32ab3b))
 * **reply modal:** disable draggable on mobile and calculate absolute top position ([d6179d0](https://github.com/bitsocialnet/5chan/commit/d6179d0fdca562a376cf0fd8bb18f1fa9cc7144c))
-* **reply modal:** show alert before posting if subplebbit might be offline ([d71889a](https://github.com/bitsocialnet/5chan/commit/d71889a3de40de6a0347c82cc7ece2b178e6be54))
+* **reply modal:** show alert before posting if community might be offline ([d71889a](https://github.com/bitsocialnet/5chan/commit/d71889a3de40de6a0347c82cc7ece2b178e6be54))
 * **reply:** add floating quote preview ([b44fb15](https://github.com/bitsocialnet/5chan/commit/b44fb150785ac7f04e73fb1e251eb25a635087b9))
 * **settings:** add 'check for updates' button ([ca22841](https://github.com/bitsocialnet/5chan/commit/ca22841ea48114e5fbf143587911d0ae608da0c9))
 * **settings:** add account data settings ([b2bfc24](https://github.com/bitsocialnet/5chan/commit/b2bfc2440da171e967fb3bc883df50c00fb32b80))
@@ -1943,18 +1943,18 @@
 * **settings:** add crypto wallets ([ae02eba](https://github.com/bitsocialnet/5chan/commit/ae02eba4df7253e4a01deb4a9a6065e71bc74e9d))
 * **settings:** add expand all button ([91d2a5a](https://github.com/bitsocialnet/5chan/commit/91d2a5ae014dd8498cb9d3284904db333fb2bf5d))
 * **settings:** add interface settings category ([d78924f](https://github.com/bitsocialnet/5chan/commit/d78924facbd6c86995ee5c21075a0416b555a799))
-* **settings:** add plebbit options ([bf09de9](https://github.com/bitsocialnet/5chan/commit/bf09de98f9ddf68965252d975c3fad72a097428a))
-* **subplebbit:** add automatic theme based on nsfw or sfw tags ([22c1acd](https://github.com/bitsocialnet/5chan/commit/22c1acdd3dbe29cab05626018538dd4361b28933))
-* **subplebbit:** add feed, posts ([f1af55e](https://github.com/bitsocialnet/5chan/commit/f1af55edf0069da7c3f016d93b2a67b7b68ab4dc))
+* **settings:** add pkc options ([bf09de9](https://github.com/bitsocialnet/5chan/commit/bf09de98f9ddf68965252d975c3fad72a097428a))
+* **community:** add automatic theme based on nsfw or sfw tags ([22c1acd](https://github.com/bitsocialnet/5chan/commit/22c1acdd3dbe29cab05626018538dd4361b28933))
+* **community:** add feed, posts ([f1af55e](https://github.com/bitsocialnet/5chan/commit/f1af55edf0069da7c3f016d93b2a67b7b68ab4dc))
 * **topbar:** add search bar ([e39c171](https://github.com/bitsocialnet/5chan/commit/e39c171eac566daa447153e8bb6f3a71b494dcc6))
 
 
 ### Performance Improvements
 
 * abstract reply modal logic into hook for post page and board page ([ff8882c](https://github.com/bitsocialnet/5chan/commit/ff8882ce9c32aac0034a6b09b18979eca0d26d1b))
-* **app:** limit load of subplebbit with preload of layout ([9626c6c](https://github.com/bitsocialnet/5chan/commit/9626c6c9d8a24859ea9a206c41c3cdb0785f5750))
+* **app:** limit load of community with preload of layout ([9626c6c](https://github.com/bitsocialnet/5chan/commit/9626c6c9d8a24859ea9a206c41c3cdb0785f5750))
 * apply cachebuster to not found img and board banners ([1f4213a](https://github.com/bitsocialnet/5chan/commit/1f4213ae0bc7279b6ba3cf441611b3fb3f3d9ad6))
-* **app:** memoize board layout, update subplebbit view ([f4dba57](https://github.com/bitsocialnet/5chan/commit/f4dba57945cc70e624d57cf770f06a5fb9294e4d))
+* **app:** memoize board layout, update community view ([f4dba57](https://github.com/bitsocialnet/5chan/commit/f4dba57945cc70e624d57cf770f06a5fb9294e4d))
 * **app:** optimize subs loading as much as possible ([311896d](https://github.com/bitsocialnet/5chan/commit/311896d1220477e2979b9bb8bd09afb0688d1639))
 * **board nav:** reduce animation rerenders with useRef ([3eabe70](https://github.com/bitsocialnet/5chan/commit/3eabe70e1cf4e393be551dccc2367f04542d3974))
 * **catalog:** optimize feed row rendering ([34f79bf](https://github.com/bitsocialnet/5chan/commit/34f79bf67d2e0c92c9e9967ac805fadea7d819de))
@@ -1992,13 +1992,13 @@
 ### Bug Fixes
 
 * add multisub.json ([b50dcef](https://github.com/bitsocialnet/5chan/commit/b50dcef2ab207aa0ded92b6950251c52a461a4eb))
-* **share:** copy thread link to clipboard instead of post link when sharing a reply, because reply links aren't implemented yet on plebbit ([e2da7e7](https://github.com/bitsocialnet/5chan/commit/e2da7e7e9647a8f5feb346066e8212ed1cd76787))
+* **share:** copy thread link to clipboard instead of post link when sharing a reply, because reply links aren't implemented yet on bitsocial ([e2da7e7](https://github.com/bitsocialnet/5chan/commit/e2da7e7e9647a8f5feb346066e8212ed1cd76787))
 
 
 ### Features
 
 * add 'view on seedit' links ([83c93c5](https://github.com/bitsocialnet/5chan/commit/83c93c5861cf96edfa9f0912eafa82f7c4d5ee80))
-* **electron:** add plebbit rpc ([03b9b82](https://github.com/bitsocialnet/5chan/commit/03b9b82a6fbecba4658cc68d43523b9e862da298))
+* **electron:** add pkc rpc ([03b9b82](https://github.com/bitsocialnet/5chan/commit/03b9b82a6fbecba4658cc68d43523b9e862da298))
 * **SettingsModal:** add export/import full account data ([07daa4e](https://github.com/bitsocialnet/5chan/commit/07daa4eeb315d13f756e4196253fe02d8a989284))
 * **share:** add seedit to share button ([a13fe45](https://github.com/bitsocialnet/5chan/commit/a13fe45c6446527f52dac9dd25e32c4e23c364e3))
 
@@ -2042,7 +2042,7 @@
 * **Thread:** fix undefined ([fdebe14](https://github.com/bitsocialnet/5chan/commit/fdebe14cdb8134ece9d5161ce5c572862c4aec89))
 * **Thread:** remove useless wrapper for webpage comment.link with no thumbnail ([e4b1fc6](https://github.com/bitsocialnet/5chan/commit/e4b1fc6d35c34c5c4108f20a0bd211ddb4031497))
 * **thread:** replying to a reply didn't show the pending comment ([9f5f2d1](https://github.com/bitsocialnet/5chan/commit/9f5f2d16638101b3b7d86a15854f4838abcd200d))
-* **usestatestring:** don't show updating state if comment/subplebbit is succeeded ([7169366](https://github.com/bitsocialnet/5chan/commit/7169366d11d433f6e30c4c213a8f9bcf0a02685c))
+* **usestatestring:** don't show updating state if comment/community is succeeded ([7169366](https://github.com/bitsocialnet/5chan/commit/7169366d11d433f6e30c4c213a8f9bcf0a02685c))
 * **views:** add CSS effect for useAuthorAddress jank ([40a2ff9](https://github.com/bitsocialnet/5chan/commit/40a2ff94ea1fa80deb9f2384fc05f5e90d14590c))
 * **views:** add missing parser for quote links in thread op content ([be8bed7](https://github.com/bitsocialnet/5chan/commit/be8bed74ef04162fe5824a1c6e9be2e39f356098))
 * **views:** fix scrolling jank removing margin between desktop reply cards ([288ae4d](https://github.com/bitsocialnet/5chan/commit/288ae4d066d310f1e5df8d433124015b1c63c63e))
@@ -2145,7 +2145,7 @@
 
 ### Reverts
 
-* Revert "fix subplebbitAddress in ReplyModal" ([24b2177](https://github.com/bitsocialnet/5chan/commit/24b2177e8743785591a0947cbdb85bd87a9cdc56))
+* Revert "fix communityAddress in ReplyModal" ([24b2177](https://github.com/bitsocialnet/5chan/commit/24b2177e8743785591a0947cbdb85bd87a9cdc56))
 * Revert "removed markdown" ([33eec76](https://github.com/bitsocialnet/5chan/commit/33eec7644a564bc8825f48927b3a054858991744))
 * Revert "fix touch bug" ([777935e](https://github.com/bitsocialnet/5chan/commit/777935ecbe1e3d781bc4bbadf8f824323acc8c8d))
 * Revert "test InfiniteScroll" ([212a0c1](https://github.com/bitsocialnet/5chan/commit/212a0c10e8a563b75eb35f8d20ba8b93d0adec45))

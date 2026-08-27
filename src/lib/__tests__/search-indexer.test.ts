@@ -222,7 +222,7 @@ describe('getIndexedPostComment', () => {
         linkHeight: 200,
         linkWidth: 300,
         spoiler: true,
-        subplebbitAddress: 'business-and-finance.eth',
+        communityAddress: 'business-and-finance.eth',
       },
       commentUpdate: {
         author: { community: { firstCommentTimestamp: 1_600_000_000 } },
