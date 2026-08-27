@@ -345,7 +345,7 @@
   "pass_answer_vip": "只有 5chan Pass 用户才能在 <vip>/vip/</vip> 发帖。该版面的浏览规则和长期方向仍可能继续调整，但当前计划是只有 pass 持有者才能在那里发帖。",
   "pass_answer_what_not": "5chan Pass 不会赋予版务权限、版块所有权、目录治理的最终控制权，也不会提供任何绕过版块特定 <rules>rules</rules> 的方式。而且它今天也不会解锁任何东西，因为这项功能尚未上线。",
   "pass_answer_pricing": "是的，计划中的定价模式保持同样简单的结构：Passes 的价格是 1 year 为 $30，3 years 为 $60，折合每月约 $1.67，或者还不到一瓶 20oz 汽水的价格。",
-  "pass_answer_proceeds": "5chan Pass 的全部收入都将用于 burn BSO，也就是 <bitsocial>Bitsocial</bitsocial> 的官方 cryptocurrency token。计划是在 smart contract 中自动完成这一过程。这个 burn 会支持 BSO，但持有 pass 并不是为了取代 BSO-aligned governance。由此产生的 on-chain transactions 将是透明的，因此购买者应当假设其 purchase wallet activity 可能会被公开看到。",
+  "pass_answer_proceeds": "5chan Pass 的净收益将用于支持 5chan 的持续开发和运营，包括向核心贡献者支付报酬，以及支付基础设施和其他项目成本。未来如有任何用于购买或 burn BSO 的资金分配，将在生效前另行披露。购买将产生公开的 on-chain transactions，因此买家应假定其购买 wallet 的 activity 可能会被公开看到。",
   "pass_answer_nft": "5chan Pass 在底层会是一个 NFT，由开源的 <mintPass>MintPass</mintPass> 服务提供支持。5chan Pass challenge 只会接受过去一年内 mint 的 NFTs，因此超过一年的 NFT 在续期或替换之前都会被视为已过期。",
   "pass_answer_need": "不需要。阅读 boards、订阅 boards 或正常发帖都不需要 5chan Pass。它用于一些特定权益，例如参与目录投票、在 <vip>/vip/</vip> 发帖，以及在支持 challenge 的 boards 上无障碍发帖。",
   "pass_answer_vpn": "不是。由于 5chan Pass 计划作为基于 NFT 的凭证，因此并不打算依赖固定的 IP 地址。并没有基于使用 VPN、代理或更换网络的预期限制。",

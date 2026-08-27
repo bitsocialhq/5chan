@@ -154,14 +154,7 @@ const Pass = () => {
                   />
                 </dd>
                 <dt id='proceeds'>{t('pass_question_proceeds')}</dt>
-                <dd>
-                  <Trans
-                    i18nKey='pass_answer_proceeds'
-                    components={{
-                      bitsocial: <a href='https://bitsocial.net' target='_blank' rel='noopener noreferrer' aria-label='Bitsocial' />,
-                    }}
-                  />
-                </dd>
+                <dd>{t('pass_answer_proceeds')}</dd>
                 <dt id='faq'>{t('pass_question_need')}</dt>
                 <dd id='needpass'>
                   <Trans

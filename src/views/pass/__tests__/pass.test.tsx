@@ -90,13 +90,14 @@ describe('Pass', () => {
     expect(container.textContent).toContain('$30 for 1 year');
     expect(container.textContent).toContain('$60 for 3 years');
     expect(container.textContent).toContain('MintPass');
-    expect(container.textContent).toContain('burn BSO');
-    expect(container.textContent).toContain('automatically in the smart contract');
+    expect(container.textContent).toContain('support the continued development and operation of 5chan');
+    expect(container.textContent).toContain('compensating core contributors');
+    expect(container.textContent).toContain('Any future allocation to buying or burning BSO will be disclosed separately');
+    expect(container.textContent).not.toContain('automatically in the smart contract');
     expect(container.textContent).toContain('purchase wallet activity can be publicly visible');
     expect(container.querySelector('a[href="/rules"]')?.textContent).toBe('rules');
     expect(container.querySelector('a[href="/vip"]')?.textContent).toBe('/vip/');
     expect(container.querySelector('a[href="https://github.com/bitsocialnet/mintpass"]')?.textContent).toBe('MintPass');
-    expect(container.querySelector('a[href="https://bitsocial.net"]')?.textContent).toBe('Bitsocial');
     expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
     expect(document.title).toBe((en as Record<string, string>).pass_document_title);
   });

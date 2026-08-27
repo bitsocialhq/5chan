@@ -345,7 +345,7 @@
   "pass_answer_vip": "5chan Passユーザーのみが<vip>/vip/</vip>に投稿できます。そのboardの閲覧ルールや長期的な方向性は今後も変わる可能性がありますが、現時点の計画では、そこでの投稿はpass保有者に限定されます。",
   "pass_answer_what_not": "5chan Passでモデレーション権限、板の所有権、ディレクトリガバナンスの最終的な管理権、または板固有の<rules>rules</rules>を無視する手段が与えられることはありません。また、この機能はまだ公開されていないため、今日の時点で何かがアンロックされることもありません。",
   "pass_answer_pricing": "はい、予定されている料金モデルは同じシンプルな仕組みです。Passes は 1 year で $30、3 years で $60 で、1か月あたり約 $1.67、または 20oz のソーダ1本より安い計算です。",
-  "pass_answer_proceeds": "5chan Pass からの収益はすべて、<bitsocial>Bitsocial</bitsocial> の公式 cryptocurrency token である BSO を burn するために使われる想定です。これは smart contract で自動的に行われる予定です。この burn は BSO を支えますが、pass ownership は BSO-aligned governance を置き換えることを意図したものではありません。結果として生じる on-chain transactions は透明になるため、購入者は自分の purchase wallet activity が公開で見える可能性があると考えるべきです。",
+  "pass_answer_proceeds": "5chan Pass の純収益は、主要な貢献者への報酬やインフラなどのプロジェクト費用を含む、5chan の継続的な開発と運営を支援するために使用される予定です。将来 BSO の購入または burn に充てる場合は、実施前に別途開示します。購入により公開 on-chain transaction が作成されるため、購入者は購入に使用した wallet の activity が公開される可能性があるものと考えてください。",
   "pass_answer_nft": "5chan Pass は内部的には NFT で、オープンソースの <mintPass>MintPass</mintPass> サービスによって支えられます。5chan Pass challenge では過去1年以内に mint された NFTs だけが受け入れられるため、1年以上前の NFT は更新または置き換えられるまで期限切れとして扱われます。",
   "pass_answer_need": "いいえ。5chan Pass は、board を読むこと、board を購読すること、または通常どおり投稿することに必須ではありません。これは、ディレクトリ投票への参加、<vip>/vip/</vip> への投稿、そして challenge をサポートする board での摩擦のない投稿といった特定の特典のためのものです。",
   "pass_answer_vpn": "いいえ。5chan Pass は NFT ベースの認証資格として計画されているため、固定の IP アドレスに依存することは想定されていません。VPN の使用、プロキシ、またはネットワークの変更に基づく制限は意図されていません。",
