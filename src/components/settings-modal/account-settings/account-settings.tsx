@@ -5,12 +5,15 @@ import styles from './account-settings.module.css';
 import { getSettingsSectionPath } from '../../../lib/utils/route-utils';
 import { Capacitor } from '@capacitor/core';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getLegacyDefaultBrowserHttpRoutersOptions } from '../../../lib/p2p-browser-config';
-import { getBrowserPureP2PAccountOptions, shouldUpgradeBrowserPureP2PAccount } from '../../../lib/p2p-runtime';
+import { isElectronRuntime } from '../../../lib/p2p-browser-config';
+import {
+  getImportedAccountActiveName,
+  processImportedAccount,
+  readImportedAccountAddresses,
+  rememberImportedAccountAddress,
+} from '../../../lib/utils/account-import-utils';
 
 const isAndroid = Capacitor.getPlatform() === 'android';
-const IMPORTED_ACCOUNT_ADDRESSES_STORAGE_KEY = 'importedAccountAddresses';
-const IMPORTED_ACCOUNT_ADDRESS_LEGACY_STORAGE_KEY = 'importedAccountAddress';
 
 const safeParseJSON = <T,>(value: string): T | null => {
   try {
@@ -29,50 +32,10 @@ const withErrorHandling = async <T,>(fn: () => Promise<T>, onError: (e: unknown)
   }
 };
 
-const readImportedAccountAddresses = (): string[] => {
-  try {
-    const storedAddresses = localStorage.getItem(IMPORTED_ACCOUNT_ADDRESSES_STORAGE_KEY);
-    const parsedAddresses = storedAddresses ? safeParseJSON<unknown>(storedAddresses) : null;
-    const normalizedAddresses = Array.isArray(parsedAddresses)
-      ? parsedAddresses.filter((address): address is string => typeof address === 'string' && address.length > 0)
-      : [];
-    const legacyAddress = localStorage.getItem(IMPORTED_ACCOUNT_ADDRESS_LEGACY_STORAGE_KEY);
-    return [...new Set(legacyAddress ? [...normalizedAddresses, legacyAddress] : normalizedAddresses)];
-  } catch (error) {
-    console.warn('Failed to read imported account addresses from localStorage:', error);
-    return [];
-  }
-};
-
-const rememberImportedAccountAddress = (address: string) => {
-  try {
-    const importedAddresses = readImportedAccountAddresses();
-    const nextImportedAddresses = [...new Set([...importedAddresses, address])];
-    localStorage.setItem(IMPORTED_ACCOUNT_ADDRESSES_STORAGE_KEY, JSON.stringify(nextImportedAddresses));
-    localStorage.setItem(IMPORTED_ACCOUNT_ADDRESS_LEGACY_STORAGE_KEY, address);
-  } catch (error) {
-    console.warn('Failed to save imported account address to localStorage:', error);
-  }
-};
-
 const getSafeAccountBackupFileName = (accountName: string | undefined): string => {
   const safeName = (accountName || 'account').replace(/[^\w.-]/g, '_') || 'account';
   return `${safeName}.json`;
 };
-
-const getImportedAccountActiveName = (importedAccountName: string | undefined, accounts: Array<{ name?: string }>): string | undefined => {
-  if (!importedAccountName) {
-    return undefined;
-  }
-  return accounts.some((account) => account?.name === importedAccountName) ? `${importedAccountName} 2` : importedAccountName;
-};
-
-type ImportedAccountProtocolOptions = Record<string, unknown> & {
-  httpRoutersOptions?: unknown;
-};
-
-const toImportedAccountProtocolOptions = (protocolOptions: unknown): ImportedAccountProtocolOptions =>
-  protocolOptions && typeof protocolOptions === 'object' && !Array.isArray(protocolOptions) ? (protocolOptions as ImportedAccountProtocolOptions) : {};
 
 // Inner component keyed by account id so state resets when user switches account
 const AccountSettingsEditor = ({
@@ -82,8 +45,9 @@ const AccountSettingsEditor = ({
 }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const { accounts } = useAccounts();
+  const { accounts, state: accountsState } = useAccounts();
   const navigate = useNavigate();
+  const isElectron = isElectronRuntime(window);
 
   const _deleteAccount = (accountName: string) => {
     if (!accountName) {
@@ -148,55 +112,11 @@ const AccountSettingsEditor = ({
           return;
         }
 
-        const accountData = safeParseJSON<{
-          account?: {
-            communities?: Record<string, unknown>;
-            subscriptions?: string[];
-            author?: { address?: string };
-            name?: string;
-            pkcOptions?: ImportedAccountProtocolOptions;
-          };
-        }>(fileContent);
-        if (!accountData) {
-          alert('Invalid JSON in file.');
-          return;
-        }
-
-        if (accountData.account?.communities) {
-          const communityAddresses = Object.keys(accountData.account.communities);
-          if (!accountData.account.subscriptions) {
-            accountData.account.subscriptions = [];
-          }
-          const uniqueSubscriptions = [...accountData.account.subscriptions];
-          const knownSubscriptions = new Set(uniqueSubscriptions);
-          for (const address of communityAddresses) {
-            if (!knownSubscriptions.has(address)) {
-              uniqueSubscriptions.push(address);
-              knownSubscriptions.add(address);
-            }
-          }
-          accountData.account.subscriptions = uniqueSubscriptions;
-        }
-
-        const explicitImportedHttpRoutersOptions = toImportedAccountProtocolOptions(accountData.account?.pkcOptions).httpRoutersOptions;
-        if (accountData.account && !Array.isArray(explicitImportedHttpRoutersOptions)) {
-          accountData.account.pkcOptions = {
-            ...toImportedAccountProtocolOptions(accountData.account.pkcOptions),
-            httpRoutersOptions: getLegacyDefaultBrowserHttpRoutersOptions(),
-          };
-        }
-
-        if (accountData.account && shouldUpgradeBrowserPureP2PAccount(accountData.account)) {
-          accountData.account.pkcOptions = {
-            ...getBrowserPureP2PAccountOptions(accountData.account),
-            ...(Array.isArray(explicitImportedHttpRoutersOptions) ? { httpRoutersOptions: explicitImportedHttpRoutersOptions } : {}),
-          };
-        }
-
-        const modifiedAccountJson = JSON.stringify(accountData);
-        const importedAccountActiveName = getImportedAccountActiveName(accountData.account?.name, accounts);
         const result = await withErrorHandling(
           async () => {
+            const modifiedAccountJson = processImportedAccount(fileContent, isElectron);
+            const accountData = JSON.parse(modifiedAccountJson) as { account?: { author?: { address?: string }; name?: string } };
+            const importedAccountActiveName = getImportedAccountActiveName(accountData.account?.name, accounts);
             await importAccount(modifiedAccountJson);
             if (accountData.account?.author?.address) {
               rememberImportedAccountAddress(accountData.account.author.address);
@@ -204,7 +124,7 @@ const AccountSettingsEditor = ({
             if (importedAccountActiveName) {
               await setActiveAccount(importedAccountActiveName);
             }
-            return true;
+            return importedAccountActiveName;
           },
           (error) => {
             if (error instanceof Error) {
@@ -217,7 +137,7 @@ const AccountSettingsEditor = ({
         );
         if (result === undefined) return;
 
-        alert(`Imported ${accountData.account?.name}`);
+        alert(`Imported ${result}`);
         if (new URLSearchParams(location.search).get('section') !== 'account-settings') {
           navigate(getSettingsSectionPath(location.pathname, 'account-settings', location.search), { replace: true });
         }
@@ -255,7 +175,7 @@ const AccountSettingsEditor = ({
         <div className={styles.info}>{accountStorageInfo}</div>
       </div>
       <div>
-        <button type='button' onClick={handleImportAccount}>
+        <button type='button' disabled={accountsState !== 'succeeded'} onClick={handleImportAccount}>
           {t('import_account_backup')}
         </button>
         <button type='button' className={styles.deleteAccount} onClick={() => _deleteAccount(account?.name ?? '')}>
