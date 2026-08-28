@@ -114,6 +114,7 @@ describe('AccountSettings', () => {
     });
     hookMocks.useAccounts.mockReturnValue({
       accounts: [{ id: 'test-id', name: 'Account 1', author: { shortAddress: '0x1...3' } }],
+      state: 'succeeded',
     });
 
     createObjectUrlSpy = vi.fn(() => 'blob:test-account');
@@ -192,6 +193,14 @@ describe('AccountSettings', () => {
     expect(buttonTexts.some((text) => text.includes('download_backup'))).toBe(true);
     expect(buttonTexts.some((text) => text.includes('import_account_backup'))).toBe(true);
     expect(buttonTexts.some((text) => text.includes('delete_account'))).toBe(true);
+  });
+
+  it('disables importing until the hooks account store is ready', () => {
+    hookMocks.useAccounts.mockReturnValue({ accounts: [], state: 'initializing' });
+
+    render();
+
+    expect(getButtonByText('import_account_backup').disabled).toBe(true);
   });
 
   it('shows generated-account copy for app-created accounts', () => {
@@ -324,7 +333,7 @@ describe('AccountSettings', () => {
       createdInput?.onchange?.({ target: { files: [file] } } as unknown as Event);
     });
 
-    expect(alertSpy).toHaveBeenCalledWith('Invalid JSON in file.');
+    expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to parse account data:'));
     expect(hookMocks.importAccount).not.toHaveBeenCalled();
   });
 
@@ -448,12 +457,14 @@ describe('AccountSettings', () => {
     expect(importedPayload.account.pkcOptions).not.toHaveProperty('ipfsGatewayUrls');
   });
 
-  it('activates the resolved account name when an imported account name already exists', async () => {
+  it('activates the next available account name when imported suffixes already exist', async () => {
     hookMocks.useAccounts.mockReturnValue({
       accounts: [
         { id: 'test-id', name: 'Account 1', author: { shortAddress: '0x1...3' } },
         { id: 'existing-imported-id', name: 'Imported', author: { shortAddress: '0x9...9' } },
+        { id: 'existing-imported-2-id', name: 'Imported 2', author: { shortAddress: '0x8...8' } },
       ],
+      state: 'succeeded',
     });
     fileReaderState.result = JSON.stringify({
       account: {
@@ -479,7 +490,8 @@ describe('AccountSettings', () => {
     await flushMicrotasks();
 
     expect(hookMocks.importAccount).toHaveBeenCalledOnce();
-    expect(hookMocks.setActiveAccount).toHaveBeenCalledWith('Imported 2');
+    expect(hookMocks.setActiveAccount).toHaveBeenCalledWith('Imported 3');
+    expect(alertSpy).toHaveBeenCalledWith('Imported Imported 3');
   });
 
   it('surfaces import errors without navigating or reloading', async () => {
