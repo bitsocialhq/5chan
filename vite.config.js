@@ -391,10 +391,6 @@ export default defineConfig({
       },
       srcDir: 'src',
       filename: 'sw.ts',
-      devOptions: {
-        enabled: true,
-        type: 'module',
-      },
       includeAssets: ['favicon.ico', 'favicon-404.ico', 'favicon2.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
         name: '5chan',
