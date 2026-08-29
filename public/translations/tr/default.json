@@ -476,5 +476,6 @@
   "use": "kullan",
   "auto": "otomatik",
   "directory_submit_provider": "Sağlayıcı gönder",
-  "directory_winner_subtitle": "Mevcut /{{boardIdentifier}}/ kazananı: {{address}}"
+  "directory_winner_subtitle": "Mevcut /{{boardIdentifier}}/ kazananı: {{address}}",
+  "image_cannot_be_embedded": "{{host}} kaynağındaki görsel yerleştirilemiyor"
 }

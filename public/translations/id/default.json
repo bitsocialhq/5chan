@@ -476,5 +476,6 @@
   "use": "gunakan",
   "auto": "otomatis",
   "directory_submit_provider": "Kirim penyedia",
-  "directory_winner_subtitle": "Pemenang /{{boardIdentifier}}/ saat ini: {{address}}"
+  "directory_winner_subtitle": "Pemenang /{{boardIdentifier}}/ saat ini: {{address}}",
+  "image_cannot_be_embedded": "Gambar dari {{host}} tidak dapat disematkan"
 }

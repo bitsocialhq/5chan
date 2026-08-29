@@ -476,5 +476,6 @@
   "use": "χρήση",
   "auto": "αυτόματο",
   "directory_submit_provider": "Υποβολή παρόχου",
-  "directory_winner_subtitle": "Τρέχων νικητής /{{boardIdentifier}}/: {{address}}"
+  "directory_winner_subtitle": "Τρέχων νικητής /{{boardIdentifier}}/: {{address}}",
+  "image_cannot_be_embedded": "Δεν είναι δυνατή η ενσωμάτωση της εικόνας από {{host}}"
 }

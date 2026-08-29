@@ -476,5 +476,6 @@
   "use": "brug",
   "auto": "auto",
   "directory_submit_provider": "Indsend en udbyder",
-  "directory_winner_subtitle": "Nuværende /{{boardIdentifier}}/ vinder: {{address}}"
+  "directory_winner_subtitle": "Nuværende /{{boardIdentifier}}/ vinder: {{address}}",
+  "image_cannot_be_embedded": "Billedet fra {{host}} kan ikke indlejres"
 }

@@ -476,5 +476,6 @@
   "use": "použít",
   "auto": "auto",
   "directory_submit_provider": "Přidat poskytovatele",
-  "directory_winner_subtitle": "Aktuální vítěz /{{boardIdentifier}}/: {{address}}"
+  "directory_winner_subtitle": "Aktuální vítěz /{{boardIdentifier}}/: {{address}}",
+  "image_cannot_be_embedded": "Obrázek z {{host}} nelze vložit"
 }

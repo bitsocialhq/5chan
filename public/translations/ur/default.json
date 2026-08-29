@@ -476,5 +476,6 @@
   "use": "استعمال",
   "auto": "خودکار",
   "directory_submit_provider": "فراہم کنندہ جمع کریں",
-  "directory_winner_subtitle": "موجودہ /{{boardIdentifier}}/ فاتح: {{address}}"
+  "directory_winner_subtitle": "موجودہ /{{boardIdentifier}}/ فاتح: {{address}}",
+  "image_cannot_be_embedded": "{{host}} سے تصویر ایمبیڈ نہیں کی جا سکتی"
 }

@@ -7,7 +7,14 @@ import { Comment, setAccount, useAccount, useAccountComment, useEditedComment } 
 import getShortAddress from '../../lib/get-short-address';
 import { communitiesPagesStore as useCommunitiesPagesStore } from '../../lib/bitsocial-internals/stores';
 import { getDisplayMediaInfoType, getLinkMediaInfo, getTwimgMediaFilePublishUrl } from '../../lib/utils/media-utils';
-import { getExpiringMediaLinkAlert, getPublishFileDisplayName, getPublishLinkOptions, isPublishFileMediaType } from '../../lib/utils/media-link-validation-utils';
+import {
+  canLoadMediaLinkInBrowser,
+  getExpiringMediaLinkAlert,
+  getPublishFileDisplayName,
+  getPublishLinkOptions,
+  isPublishFileMediaType,
+  requiresBrowserMediaLoadValidation,
+} from '../../lib/utils/media-link-validation-utils';
 import {
   getEffectivePostLinkFeatures,
   getEffectiveReplyLinkFeatures,
@@ -32,7 +39,7 @@ import {
   isPostOptionsValidationError,
 } from '../../lib/utils/post-options-utils';
 import { truncateWithEllipsisInMiddle } from '../../lib/utils/string-utils';
-import { isValidURL } from '../../lib/utils/url-utils';
+import { getHostname, isValidURL } from '../../lib/utils/url-utils';
 import { getModerationPostingRoleLabel } from '../../lib/utils/author-display-utils';
 import { hasModQueueAccessRole } from '../../lib/utils/mod-access';
 import { getPageDraftKey } from '../../lib/utils/location-draft-utils';
@@ -76,6 +83,27 @@ import debounce from 'lodash/debounce';
 const FILE_LINK_PLACEHOLDER = 'https://website.com/image.jpg';
 const POST_FORM_FILE_DISPLAY_MAX_LENGTH = 28;
 
+type LinkMediaLoadStatus = 'loading' | 'ready' | 'error';
+type SettledLinkMediaLoadStatus = Exclude<LinkMediaLoadStatus, 'loading'>;
+
+interface LinkMediaLoadResult {
+  link: string;
+  status: SettledLinkMediaLoadStatus;
+}
+
+const getLinkMediaLoadStatus = (link: string, result: LinkMediaLoadResult | null): LinkMediaLoadStatus | null => {
+  const normalizedLink = link.trim();
+  if (!normalizedLink || !requiresBrowserMediaLoadValidation(normalizedLink)) {
+    return null;
+  }
+  return result?.link.trim() === normalizedLink ? result.status : 'loading';
+};
+
+const getLinkMediaLoadError = (link: string, t: TFunction): string => {
+  const hostname = getHostname(link);
+  return hostname ? `${t('error')}: ${t('image_cannot_be_embedded', { host: hostname })}.` : `${t('error')}: ${t('media_failed_to_load')}.`;
+};
+
 const mergeFlairs = (...flairGroups: Array<Comment['flairs'] | undefined>): Comment['flairs'] | undefined => {
   const flairs = flairGroups.flatMap((group) => (Array.isArray(group) ? group : []));
   return flairs.length > 0 ? flairs : undefined;
@@ -87,14 +115,40 @@ const getPostFormFileDisplayLabel = (url: string, uploadedFileName: string | nul
   return truncateWithEllipsisInMiddle(raw, POST_FORM_FILE_DISPLAY_MAX_LENGTH);
 };
 
-export const LinkTypePreviewer = ({ link, requireFile = false }: { link: string; requireFile?: boolean }) => {
+export const LinkTypePreviewer = ({
+  link,
+  requireFile = false,
+  settledMediaLoadResult,
+  onMediaLoadStatusChange,
+}: {
+  link: string;
+  requireFile?: boolean;
+  settledMediaLoadResult?: LinkMediaLoadResult | null;
+  onMediaLoadStatusChange?: (link: string, status: SettledLinkMediaLoadStatus) => void;
+}) => {
   const { t } = useTranslation();
   const mediaInfo = getLinkMediaInfo(link);
-  let type = mediaInfo?.type;
+  const rawType = mediaInfo?.type;
+  let type = rawType;
+  const [localMediaLoadResult, setLocalMediaLoadResult] = useState<LinkMediaLoadResult | null>(null);
+  const mediaLoadStatus = getLinkMediaLoadStatus(link, settledMediaLoadResult ?? localMediaLoadResult);
   const { status: gifFrameStatus } = useFetchGifFirstFrame(type === 'gif' ? mediaInfo?.url : undefined);
+
+  const settleMediaLoad = (status: SettledLinkMediaLoadStatus) => {
+    setLocalMediaLoadResult({ link, status });
+    onMediaLoadStatusChange?.(link, status);
+  };
 
   if (requireFile && isValidURL(link) && !isPublishFileMediaType(type)) {
     return <span className={styles.linkTypeError}>{t('not_a_file')}</span>;
+  }
+
+  if (mediaLoadStatus === 'error') {
+    return (
+      <span className={styles.linkTypeError} role='alert'>
+        {t('failed')}
+      </span>
+    );
   }
 
   if (type === 'gif' && gifFrameStatus === 'ready') {
@@ -105,7 +159,15 @@ export const LinkTypePreviewer = ({ link, requireFile = false }: { link: string;
     type = getDisplayMediaInfoType(type, t);
   }
 
-  return isValidURL(link) ? `${t('file')}: ${type}` : t('invalid_url');
+  return (
+    <>
+      {isValidURL(link) ? `${t('file')}: ${type}` : t('invalid_url')}
+      {mediaLoadStatus === 'loading' ? ` (${t('loading')})` : null}
+      {(rawType === 'image' || rawType === 'gif') && (
+        <img hidden src={mediaInfo?.url} alt='' onLoad={() => settleMediaLoad('ready')} onError={() => settleMediaLoad('error')} />
+      )}
+    </>
+  );
 };
 
 const PostFormActions = ({
@@ -177,6 +239,8 @@ interface PostFormFieldsProps {
   handleLinkBlur: () => void;
   handleOptionsChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   disableLinkInput: boolean;
+  mediaLoadResult: LinkMediaLoadResult | null;
+  onMediaLoadStatusChange: (link: string, status: SettledLinkMediaLoadStatus) => void;
   setPublishPostOptions: (opts: Record<string, unknown>) => void;
   setPublishReplyOptions: (opts: Record<string, unknown>) => void;
   isUploading: boolean;
@@ -235,6 +299,8 @@ const PostFormFields = ({
   handleLinkBlur,
   handleOptionsChange,
   disableLinkInput,
+  mediaLoadResult,
+  onMediaLoadStatusChange,
   setPublishPostOptions,
   setPublishReplyOptions,
   isUploading,
@@ -420,7 +486,17 @@ const PostFormFields = ({
           }}
           onBlur={handleLinkBlur}
         />
-        <span className={styles.linkType}> {url && <LinkTypePreviewer link={url} requireFile={requireCurrentLinkIsMedia} />}</span>
+        <span className={styles.linkType}>
+          {' '}
+          {url && (
+            <LinkTypePreviewer
+              link={url}
+              requireFile={requireCurrentLinkIsMedia}
+              settledMediaLoadResult={mediaLoadResult}
+              onMediaLoadStatusChange={onMediaLoadStatusChange}
+            />
+          )}
+        </span>
       </td>
     </tr>
     {showUploadControls && (
@@ -608,6 +684,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const updateDraft = useCallback((nextDraft: Partial<PostFormDraft>) => updateStoredDraft(draftKey, nextDraft), [draftKey, updateStoredDraft]);
   const hasRestoredDraftRef = useRef(Boolean(draft.communityAddress || draft.content || draft.link || draft.options || draft.spoiler || draft.title));
   const [url, setUrl] = useState(draft.link);
+  const [mediaLoadResult, setMediaLoadResult] = useState<LinkMediaLoadResult | null>(null);
   const author = account?.author || {};
   const { displayName } = author || {};
   const accountComment = useAccountComment({ commentIndex: normalizeAccountCommentIndex(params?.accountCommentIndex) });
@@ -722,6 +799,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const requireReplyLinkIsMedia = getRequireReplyLinkIsMedia(replyLinkFeatures, isInAllView || isInSubscriptionsView);
   const noReplyLinks = getNoReplyLinks(replyLinkFeatures);
   const requireCurrentLinkIsMedia = isInPostView ? requireReplyLinkIsMedia : requirePostLinkIsMedia;
+  const currentMediaLoadError = getLinkMediaLoadStatus(url, mediaLoadResult) === 'error' ? getLinkMediaLoadError(url, t) : null;
   const flagOptions = getCommentFlagOptionsForDirectory(directoryEntry);
   const showFlashUploadPrompt = isFlashDirectoryCode(postOptionsDirectoryCode);
   const showFlashTagSelector = showFlashUploadPrompt && !isInPostView;
@@ -799,6 +877,21 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
     return params?.boardIdentifier ? `/${params.boardIdentifier}` : null;
   };
 
+  const getMediaLoadError = async (link: string): Promise<string | null> => {
+    const errorMessage = getLinkMediaLoadError(link, t);
+    const status = getLinkMediaLoadStatus(link, mediaLoadResult);
+    if (status === 'error') {
+      return errorMessage;
+    }
+    if (status !== 'loading') {
+      return null;
+    }
+
+    const didLoad = await canLoadMediaLinkInBrowser(link);
+    setMediaLoadResult({ link, status: didLoad ? 'ready' : 'error' });
+    return didLoad ? null : errorMessage;
+  };
+
   const onPublishPost = () =>
     runPublishSubmission(async () => {
       const appliedYouTubeConversion = await applyPendingConversion();
@@ -839,6 +932,10 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       });
       if (linkValidationError) {
         setFormError(linkValidationError);
+        return;
+      }
+      const mediaLoadError = await getMediaLoadError(currentUrl);
+      if (mediaLoadError) {
         return;
       }
       const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
@@ -1002,6 +1099,10 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
         setFormError(linkValidationError);
         return;
       }
+      const mediaLoadError = await getMediaLoadError(currentUrl);
+      if (mediaLoadError) {
+        return;
+      }
       const expiringMediaLinkAlert = currentUrl ? getExpiringMediaLinkAlert(currentUrl, t) : null;
       if (expiringMediaLinkAlert) {
         setFormError(expiringMediaLinkAlert);
@@ -1054,6 +1155,10 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       setFormError(null);
     }
   };
+
+  const handleMediaLoadStatusChange = useCallback((link: string, status: SettledLinkMediaLoadStatus) => {
+    setMediaLoadResult((current) => (current?.link === link && current.status === status ? current : { link, status }));
+  }, []);
 
   // Normalize pbs.twimg.com `?format=` media links to their `.jpg`/`.png` form once the field
   // loses focus, so the conversion that happens at publish time is visible in the input. Done on
@@ -1129,6 +1234,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             handleLinkBlur={handleLinkBlur}
             handleOptionsChange={handleOptionsChange}
             disableLinkInput={isUploading || youtubeThumbnailConversionCountdown !== null || (isInPostView && noReplyLinks)}
+            mediaLoadResult={mediaLoadResult}
+            onMediaLoadStatusChange={handleMediaLoadStatusChange}
             setPublishPostOptions={setPublishPostOptions}
             setPublishReplyOptions={setPublishReplyOptions}
             isUploading={isUploading}
@@ -1170,6 +1277,8 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
           {lengthError ? <PostFormErrorRow>{lengthError}</PostFormErrorRow> : null}
           {youtubeThumbnailConversionCountdown !== null ? (
             <PostFormErrorRow ariaLive='polite'>{t('youtube_thumbnail_link_conversion_notice', { count: youtubeThumbnailConversionCountdown })}</PostFormErrorRow>
+          ) : currentMediaLoadError ? (
+            <PostFormErrorRow>{currentMediaLoadError}</PostFormErrorRow>
           ) : formError ? (
             <PostFormErrorRow>
               {isPostOptionsValidationError(formError) ? <PostOptionsErrorMessage error={formError} directories={directories} /> : formError}

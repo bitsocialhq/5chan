@@ -476,5 +476,6 @@
   "use": "उपयोग करें",
   "auto": "स्वतः",
   "directory_submit_provider": "एक प्रदाता सबमिट करें",
-  "directory_winner_subtitle": "वर्तमान /{{boardIdentifier}}/ विजेता: {{address}}"
+  "directory_winner_subtitle": "वर्तमान /{{boardIdentifier}}/ विजेता: {{address}}",
+  "image_cannot_be_embedded": "{{host}} से इमेज एम्बेड नहीं की जा सकती"
 }

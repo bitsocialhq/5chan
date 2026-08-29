@@ -5,6 +5,7 @@ import { getLinkMediaInfo, getTwimgMediaFilePublishUrl } from './media-utils';
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
 const PUBLISH_FILE_MEDIA_TYPES = new Set(['gif', 'image', 'video']);
+const BROWSER_LOAD_VALIDATED_MEDIA_TYPES = new Set(['gif', 'image']);
 
 export const getExpiringMediaLinkAlert = (url: string, t: TranslateFn): string | null => {
   const expiringMediaLinkHostname = getExpiringMediaLinkHostname(url);
@@ -14,6 +15,22 @@ export const getExpiringMediaLinkAlert = (url: string, t: TranslateFn): string |
 export const isPublishFileMediaType = (type: string | undefined): boolean => Boolean(type && PUBLISH_FILE_MEDIA_TYPES.has(type));
 
 export const isPublishFileMediaLink = (link: string): boolean => isPublishFileMediaType(getLinkMediaInfo(link)?.type);
+
+export const requiresBrowserMediaLoadValidation = (link: string): boolean => BROWSER_LOAD_VALIDATED_MEDIA_TYPES.has(getLinkMediaInfo(link.trim())?.type || '');
+
+export const canLoadMediaLinkInBrowser = async (link: string): Promise<boolean> => {
+  const type = getLinkMediaInfo(link.trim())?.type;
+  if (!type || !BROWSER_LOAD_VALIDATED_MEDIA_TYPES.has(type)) {
+    return true;
+  }
+
+  return await new Promise<boolean>((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(true);
+    image.onerror = () => resolve(false);
+    image.src = link;
+  });
+};
 
 export const getPublishFileDisplayName = (url: string, uploadedFileName: string | null | undefined, requireFile: boolean): string | null => {
   if (!url) {

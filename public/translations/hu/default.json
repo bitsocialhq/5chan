@@ -476,5 +476,6 @@
   "use": "használ",
   "auto": "auto",
   "directory_submit_provider": "Szolgáltató beküldése",
-  "directory_winner_subtitle": "Jelenlegi /{{boardIdentifier}}/ nyertes: {{address}}"
+  "directory_winner_subtitle": "Jelenlegi /{{boardIdentifier}}/ nyertes: {{address}}",
+  "image_cannot_be_embedded": "A(z) {{host}} webhelyről származó kép nem ágyazható be"
 }

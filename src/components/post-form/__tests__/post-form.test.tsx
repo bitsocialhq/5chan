@@ -43,6 +43,7 @@ const testState = vi.hoisted(() => ({
   isUploading: false,
   isResolvingExternalQuotes: false,
   mediaHostingRuntime: 'web' as 'web' | 'android' | 'electron',
+  mediaLinkLoadMock: vi.fn<(link: string) => Promise<boolean>>(),
   navigateMock: vi.fn(),
   onAbandonPost: undefined as undefined | (() => void),
   onDuplicateMediaRejected: undefined as undefined | ((error: string) => void),
@@ -107,6 +108,7 @@ vi.mock('react-i18next', async () => {
         if (key === 'choose_one') return 'Choose one:';
         if (key === 'post_form_code_tags_prompt') return 'You may highlight syntax and preserve whitespace by using [code] tags.';
         if (typeof options?.count !== 'undefined') return `${key}:${options.count}`;
+        if (options?.host) return `${key}:${options.host}`;
         return options?.domain ? `${key}:${options.domain}` : key;
       },
     }),
@@ -118,6 +120,14 @@ vi.mock('react-router-dom', async () => {
   return {
     ...actual,
     useNavigate: () => testState.navigateMock,
+  };
+});
+
+vi.mock('../../../lib/utils/media-link-validation-utils', async () => {
+  const actual = await vi.importActual<typeof import('../../../lib/utils/media-link-validation-utils')>('../../../lib/utils/media-link-validation-utils');
+  return {
+    ...actual,
+    canLoadMediaLinkInBrowser: (link: string) => testState.mediaLinkLoadMock(link),
   };
 });
 
@@ -605,6 +615,8 @@ describe('PostForm', () => {
     testState.isUploading = false;
     testState.isResolvingExternalQuotes = false;
     testState.mediaHostingRuntime = 'web';
+    testState.mediaLinkLoadMock.mockReset();
+    testState.mediaLinkLoadMock.mockResolvedValue(true);
     testState.offlineTitle = 'offline board';
     testState.onAbandonPost = undefined;
     testState.onDuplicateMediaRejected = undefined;
@@ -912,7 +924,27 @@ describe('PostForm', () => {
     expect(container.textContent).toContain('error: link_not_image_or_video_alert');
     expect(testState.publishPostMock).not.toHaveBeenCalled();
 
+    await dispatchInput(linkInput, 'https://example.com/blocked-image.jpg');
+    const publishButton = Array.from(table.querySelectorAll('button')).find((button) => button.textContent === 'post') as HTMLButtonElement;
+    expect(publishButton.disabled).toBe(false);
+
+    await act(async () => {
+      table.querySelector('img[hidden]')?.dispatchEvent(new Event('error'));
+    });
+
+    expect(container.textContent).toContain('failed');
+    const mediaLoadError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'error: image_cannot_be_embedded:example.com.');
+    expect(mediaLoadError?.className).toContain('formError');
+    expect(mediaLoadError?.closest('tfoot')).toBeTruthy();
+    expect(publishButton.disabled).toBe(false);
+
+    await clickByText(table, 'post');
+
+    expect(testState.mediaLinkLoadMock).not.toHaveBeenCalled();
+    expect(testState.publishPostMock).not.toHaveBeenCalled();
+
     await dispatchInput(linkInput, 'https://example.com/image.jpg');
+    expect(publishButton.disabled).toBe(false);
     await clickByText(table, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
@@ -2231,6 +2263,34 @@ describe('PostForm', () => {
     expect(testState.publishReplyMock).not.toHaveBeenCalled();
   });
 
+  it('rejects inline image replies that the browser cannot load', async () => {
+    testState.comments = {
+      'thread-cid': {
+        postCid: 'thread-cid',
+      },
+    };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await renderPostForm('/mu/thread/thread-cid');
+    await clickByText(container, 'post_a_reply');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    const linkInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[2];
+    const publishButton = Array.from(table.querySelectorAll('button')).find((button) => button.textContent === 'post') as HTMLButtonElement;
+
+    await dispatchInput(textarea, 'Reply body');
+    await dispatchInput(linkInput, 'https://example.com/blocked-reply.jpg');
+    testState.mediaLinkLoadMock.mockResolvedValueOnce(false);
+    await clickByText(table, 'post');
+
+    const mediaLoadError = Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'error: image_cannot_be_embedded:example.com.');
+    expect(mediaLoadError?.className).toContain('formError');
+    expect(mediaLoadError?.closest('tfoot')).toBeTruthy();
+    expect(publishButton.disabled).toBe(false);
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+  });
+
   it('publishes known twimg query-format reply links with a path extension without editing the field', async () => {
     const twimgLink = 'https://pbs.twimg.com/media/HJxnhNKWMAAhqFU?format=jpg&name=medium';
     const publishLink = 'https://pbs.twimg.com/media/HJxnhNKWMAAhqFU.jpg';
@@ -2282,6 +2342,10 @@ describe('LinkTypePreviewer', () => {
     await act(async () => {
       root.render(createElement(LinkTypePreviewer, { link: 'https://example.com/file.gif' }));
     });
+    expect(container.textContent).toBe('file: animated_gif (loading)');
+    await act(async () => {
+      container.querySelector('img')?.dispatchEvent(new Event('load'));
+    });
     expect(container.textContent).toBe('file: animated_gif');
 
     await act(async () => {
@@ -2293,6 +2357,18 @@ describe('LinkTypePreviewer', () => {
       root.render(createElement(LinkTypePreviewer, { link: 'not-a-url' }));
     });
     expect(container.textContent).toBe('invalid_url');
+  });
+
+  it('reports direct media that the browser cannot load', async () => {
+    await act(async () => {
+      root.render(createElement(LinkTypePreviewer, { link: 'https://example.com/blocked.jpg' }));
+    });
+    await act(async () => {
+      container.querySelector('img')?.dispatchEvent(new Event('error'));
+    });
+
+    expect(container.textContent).toBe('failed');
+    expect(container.querySelector('[role="alert"]')?.className).toContain('linkTypeError');
   });
 
   it('shows unsupported file links as not a file on media-only forms', async () => {

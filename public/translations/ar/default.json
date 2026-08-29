@@ -476,5 +476,6 @@
   "use": "استخدام",
   "auto": "تلقائي",
   "directory_submit_provider": "أضف مزودًا",
-  "directory_winner_subtitle": "المتصدر الحالي لـ /{{boardIdentifier}}/: {{address}}"
+  "directory_winner_subtitle": "المتصدر الحالي لـ /{{boardIdentifier}}/: {{address}}",
+  "image_cannot_be_embedded": "لا يمكن تضمين الصورة من {{host}}"
 }

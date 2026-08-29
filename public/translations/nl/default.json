@@ -476,5 +476,6 @@
   "use": "gebruiken",
   "auto": "auto",
   "directory_submit_provider": "Aanbieder indienen",
-  "directory_winner_subtitle": "Huidige /{{boardIdentifier}}/ winnaar: {{address}}"
+  "directory_winner_subtitle": "Huidige /{{boardIdentifier}}/ winnaar: {{address}}",
+  "image_cannot_be_embedded": "De afbeelding van {{host}} kan niet worden ingesloten"
 }

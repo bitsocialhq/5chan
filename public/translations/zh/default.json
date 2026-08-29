@@ -476,5 +476,6 @@
   "use": "使用",
   "auto": "自动",
   "directory_submit_provider": "提交提供方",
-  "directory_winner_subtitle": "当前 /{{boardIdentifier}}/ 获胜者：{{address}}"
+  "directory_winner_subtitle": "当前 /{{boardIdentifier}}/ 获胜者：{{address}}",
+  "image_cannot_be_embedded": "无法嵌入来自 {{host}} 的图片"
 }

@@ -476,5 +476,6 @@
   "use": "folosește",
   "auto": "auto",
   "directory_submit_provider": "Trimite un furnizor",
-  "directory_winner_subtitle": "Câștigătorul actual de /{{boardIdentifier}}/: {{address}}"
+  "directory_winner_subtitle": "Câștigătorul actual de /{{boardIdentifier}}/: {{address}}",
+  "image_cannot_be_embedded": "Imaginea de la {{host}} nu poate fi încorporată"
 }

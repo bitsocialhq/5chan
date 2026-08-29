@@ -476,5 +476,6 @@
   "use": "выбрать",
   "auto": "авто",
   "directory_submit_provider": "Добавить провайдера",
-  "directory_winner_subtitle": "Текущий победитель /{{boardIdentifier}}/: {{address}}"
+  "directory_winner_subtitle": "Текущий победитель /{{boardIdentifier}}/: {{address}}",
+  "image_cannot_be_embedded": "Изображение с {{host}} нельзя встроить"
 }

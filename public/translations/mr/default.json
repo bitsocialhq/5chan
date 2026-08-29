@@ -476,5 +476,6 @@
   "use": "वापरा",
   "auto": "स्वयं",
   "directory_submit_provider": "प्रदाता सबमिट करा",
-  "directory_winner_subtitle": "वर्तमान /{{boardIdentifier}}/ विजेता: {{address}}"
+  "directory_winner_subtitle": "वर्तमान /{{boardIdentifier}}/ विजेता: {{address}}",
+  "image_cannot_be_embedded": "{{host}} वरील प्रतिमा एम्बेड करता येत नाही"
 }

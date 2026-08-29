@@ -476,5 +476,6 @@
   "use": "käytä",
   "auto": "auto",
   "directory_submit_provider": "Lähetä palveluntarjoaja",
-  "directory_winner_subtitle": "Nykyinen /{{boardIdentifier}}/ voittaja: {{address}}"
+  "directory_winner_subtitle": "Nykyinen /{{boardIdentifier}}/ voittaja: {{address}}",
+  "image_cannot_be_embedded": "Kuvaa kohteesta {{host}} ei voi upottaa"
 }

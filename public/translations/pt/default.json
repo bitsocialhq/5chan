@@ -476,5 +476,6 @@
   "use": "usar",
   "auto": "auto",
   "directory_submit_provider": "Enviar um provedor",
-  "directory_winner_subtitle": "Vencedor atual de /{{boardIdentifier}}/: {{address}}"
+  "directory_winner_subtitle": "Vencedor atual de /{{boardIdentifier}}/: {{address}}",
+  "image_cannot_be_embedded": "Não é possível incorporar a imagem de {{host}}"
 }

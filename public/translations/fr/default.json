@@ -476,5 +476,6 @@
   "use": "utiliser",
   "auto": "auto",
   "directory_submit_provider": "Proposer un fournisseur",
-  "directory_winner_subtitle": "Gagnant actuel de /{{boardIdentifier}}/: {{address}}"
+  "directory_winner_subtitle": "Gagnant actuel de /{{boardIdentifier}}/: {{address}}",
+  "image_cannot_be_embedded": "Impossible d’intégrer l’image de {{host}}"
 }

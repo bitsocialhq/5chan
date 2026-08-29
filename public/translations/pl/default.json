@@ -476,5 +476,6 @@
   "use": "użyj",
   "auto": "auto",
   "directory_submit_provider": "Zgłoś dostawcę",
-  "directory_winner_subtitle": "Obecny zwycięzca /{{boardIdentifier}}/: {{address}}"
+  "directory_winner_subtitle": "Obecny zwycięzca /{{boardIdentifier}}/: {{address}}",
+  "image_cannot_be_embedded": "Nie można osadzić obrazu z {{host}}"
 }

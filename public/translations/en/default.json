@@ -497,5 +497,6 @@
   "auto": "auto",
   "search_directory_voting_unavailable_intro": "Voting isn't enabled yet. The indexer that powers /search/ is temporarily fixed because it's currently managed by devs.",
   "search_directory_voting_unavailable_outro": "5chan Pass holders and BSO token holders will be able to upvote and downvote each indexer in this list. Learn more at 5chan.app/pass.",
-  "directory_submit_provider": "Submit a Provider"
+  "directory_submit_provider": "Submit a Provider",
+  "image_cannot_be_embedded": "Can't embed image from {{host}}"
 }

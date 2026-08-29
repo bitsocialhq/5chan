@@ -476,5 +476,6 @@
   "use": "ব্যবহার",
   "auto": "স্বয়ংক্রিয়",
   "directory_submit_provider": "একটি প্রোভাইডার জমা দিন",
-  "directory_winner_subtitle": "বর্তমান /{{boardIdentifier}}/ বিজয়ী: {{address}}"
+  "directory_winner_subtitle": "বর্তমান /{{boardIdentifier}}/ বিজয়ী: {{address}}",
+  "image_cannot_be_embedded": "{{host}} থেকে ছবিটি এম্বেড করা যাচ্ছে না"
 }

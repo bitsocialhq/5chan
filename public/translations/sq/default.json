@@ -476,5 +476,6 @@
   "use": "përdor",
   "auto": "auto",
   "directory_submit_provider": "Dërgo një ofrues",
-  "directory_winner_subtitle": "Fitues aktual i /{{boardIdentifier}}/: {{address}}"
+  "directory_winner_subtitle": "Fitues aktual i /{{boardIdentifier}}/: {{address}}",
+  "image_cannot_be_embedded": "Imazhi nga {{host}} nuk mund të integrohet"
 }

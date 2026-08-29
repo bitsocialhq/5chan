@@ -476,5 +476,6 @@
   "use": "השתמש",
   "auto": "אוטומטי",
   "directory_submit_provider": "הגשת ספק",
-  "directory_winner_subtitle": "הזוכה הנוכחי של /{{boardIdentifier}}/: {{address}}"
+  "directory_winner_subtitle": "הזוכה הנוכחי של /{{boardIdentifier}}/: {{address}}",
+  "image_cannot_be_embedded": "לא ניתן להטמיע תמונה מהאתר {{host}}"
 }

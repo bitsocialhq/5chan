@@ -476,5 +476,6 @@
   "use": "ఉపయోగించు",
   "auto": "ఆటో",
   "directory_submit_provider": "ఒక ప్రొవైడర్‌ను సమర్పించండి",
-  "directory_winner_subtitle": "ప్రస్తుత /{{boardIdentifier}}/ విజేత: {{address}}"
+  "directory_winner_subtitle": "ప్రస్తుత /{{boardIdentifier}}/ విజేత: {{address}}",
+  "image_cannot_be_embedded": "{{host}} నుండి చిత్రాన్ని ఎంబెడ్ చేయడం సాధ్యం కాదు"
 }

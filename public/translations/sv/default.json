@@ -476,5 +476,6 @@
   "use": "använd",
   "auto": "auto",
   "directory_submit_provider": "Skicka in en leverantör",
-  "directory_winner_subtitle": "Nuvarande /{{boardIdentifier}}/ vinnare: {{address}}"
+  "directory_winner_subtitle": "Nuvarande /{{boardIdentifier}}/ vinnare: {{address}}",
+  "image_cannot_be_embedded": "Bilden från {{host}} kan inte bäddas in"
 }
