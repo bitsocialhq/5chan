@@ -784,7 +784,7 @@ describe('PostForm', () => {
     await dispatchInput(textarea, 'Account switch regression');
     await clickByText(table, 'post');
 
-    expect(testState.publishedPostOptions?.displayName).toBeUndefined();
+    expect(testState.publishPostMock).toHaveBeenCalledWith(expect.objectContaining({ displayName: undefined }));
   });
 
   it('converts YouTube links to thumbnail file links on media-only post forms', async () => {
