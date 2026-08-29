@@ -10,7 +10,7 @@ __metadata:
   resolution: "5chan@workspace:."
   dependencies:
     "@bbob/parser": "npm:4.3.1"
-    "@bitsocial/bitsocial-react-hooks": "npm:0.1.41"
+    "@bitsocial/bitsocial-react-hooks": "npm:0.1.43"
     "@bitsocial/bso-resolver": "npm:0.0.10"
     "@capacitor/android": "npm:7.4.5"
     "@capacitor/app": "npm:7.0.1"
@@ -1582,9 +1582,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bitsocial/bitsocial-react-hooks@npm:0.1.41":
-  version: 0.1.41
-  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.41"
+"@bitsocial/bitsocial-react-hooks@npm:0.1.43":
+  version: 0.1.43
+  resolution: "@bitsocial/bitsocial-react-hooks@npm:0.1.43"
   dependencies:
     "@bitsocial/bso-resolver": "npm:0.0.10"
     "@pkcprotocol/pkc-js": "npm:0.0.88"
@@ -1603,7 +1603,7 @@ __metadata:
     zustand: "npm:4.5.7"
   peerDependencies:
     react: ">=16.8"
-  checksum: 10c0/af08919ddd253223932b033bc7c0ef18df76fc2120ec83518c31ad41d27051ec1c5470102ce4198db4a6c17d39a78ffe8fed25bb165f90828759e487a7d761d9
+  checksum: 10c0/00ea3ee96894ddf5ac4f92cf31e1bc74e22abb02ffe71b4c2c2cd364474b3c8803d905cb5a3d7c99b70e850cf6bd9aca707149f51b4ef9a3eb55210921ff50c3
   languageName: node
   linkType: hard
 
