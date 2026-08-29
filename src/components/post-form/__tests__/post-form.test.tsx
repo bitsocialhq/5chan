@@ -16,7 +16,7 @@ const testState = vi.hoisted(() => ({
   account: {
     author: { address: 'alice.eth', displayName: 'Alice' },
     subscriptions: ['music-posting.eth'],
-  },
+  } as { author?: { address?: string; displayName?: string }; subscriptions?: string[] },
   accountComment: undefined as { communityAddress?: string } | undefined,
   bestAvailableYouTubeThumbnailMock: undefined as undefined | ((link: string) => Promise<string | undefined>),
   accountCommunityAddresses: ['mod.eth'] as string[],
@@ -757,6 +757,36 @@ describe('PostForm', () => {
     expect(testState.setPublishPostOptionsMock).toHaveBeenCalledWith({ communityAddress: 'music-posting.eth' });
   });
 
+  it('does not reuse the previous account display name after switching to an anonymous account', async () => {
+    testState.account = {
+      author: { address: 'dev-account.bso', displayName: 'Old Dev Name' },
+      subscriptions: ['music-posting.eth'],
+    };
+    testState.resolvedCommunityAddress = 'music-posting.eth';
+
+    await renderPostForm('/mu');
+    await clickByText(container, 'start_new_thread');
+
+    const devNameInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[0];
+    await dispatchInput(devNameInput, '5chan Dev');
+    expect(testState.publishPostOptions.displayName).toBe('5chan Dev');
+
+    testState.account = {
+      author: { address: 'anonymous-account' },
+      subscriptions: ['music-posting.eth'],
+    };
+    await renderPostForm('/mu');
+
+    const table = container.querySelector('table') as HTMLTableElement;
+    const nameInput = table.querySelectorAll<HTMLInputElement>('input[type="text"]')[0];
+    const textarea = table.querySelector('textarea') as HTMLTextAreaElement;
+    expect(nameInput.value).toBe('');
+    await dispatchInput(textarea, 'Account switch regression');
+    await clickByText(table, 'post');
+
+    expect(testState.publishedPostOptions?.displayName).toBeUndefined();
+  });
+
   it('converts YouTube links to thumbnail file links on media-only post forms', async () => {
     const youtubeLink = 'https://www.youtube.com/watch?v=abc123';
     const thumbnailLink = 'https://img.youtube.com/vi/abc123/maxresdefault.jpg';
@@ -1019,7 +1049,10 @@ describe('PostForm', () => {
     expect(linkInput.value).toBe(twimgLink);
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.publishPostMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'Twimg thread',
+      displayName: 'Alice',
+      flairs: undefined,
       link: publishLink,
     });
     expect(testState.publishedPostOptions?.link).toBe(publishLink);
@@ -1141,7 +1174,10 @@ describe('PostForm', () => {
 
     await clickByText(table as HTMLTableElement, 'post');
     expect(testState.publishPostMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'saved board draft',
+      displayName: 'Alice',
+      flairs: undefined,
       link: 'https://example.com/saved.png',
       spoiler: true,
       title: 'Saved subject',
@@ -1188,6 +1224,7 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
       content: 'flagged post',
+      displayName: 'Alice',
       challengeRequest: {
         challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },
@@ -1219,6 +1256,7 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
       content: 'candidate board flag post',
+      displayName: 'Alice',
       challengeRequest: {
         challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },
@@ -1243,6 +1281,7 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
       content: 'sports post',
+      displayName: 'Alice',
       challengeRequest: {
         challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },
@@ -1265,7 +1304,9 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'memeflag post',
+      displayName: 'Alice',
       flairs: [{ type: 'pol', code: 'AC', text: 'flag:pol:AC' }],
     });
   });
@@ -1303,7 +1344,9 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'flash thread',
+      displayName: 'Alice',
       flairs: [{ text: 'flash:loop' }],
     });
   });
@@ -1323,7 +1366,10 @@ describe('PostForm', () => {
     await clickByText(table as HTMLTableElement, 'post');
 
     expect(testState.publishPostMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'flash thread',
+      displayName: 'Alice',
+      flairs: undefined,
     });
   });
 
@@ -1365,7 +1411,10 @@ describe('PostForm', () => {
 
     expect(testState.publishPostMock).toHaveBeenCalledTimes(1);
     expect(testState.publishPostMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'fortune body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+      displayName: 'Alice',
+      flairs: undefined,
     });
     randomSpy.mockRestore();
   });
@@ -2207,7 +2256,10 @@ describe('PostForm', () => {
     expect(linkInput.value).toBe(twimgLink);
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'Twimg reply',
+      displayName: 'Alice',
+      flairs: undefined,
       link: publishLink,
     });
   });

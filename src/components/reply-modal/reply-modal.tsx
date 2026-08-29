@@ -153,6 +153,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   const moderationPostingRoleLabel = getModerationPostingRoleLabel({ address: accountAddress, role: accountRole });
   const moderationPostingWarning = showBbcodeToolbar && moderationPostingRoleLabel ? `warning: posting as ${moderationPostingRoleLabel}` : undefined;
   const textRef = useRef<HTMLTextAreaElement | null>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
   const setTextRef = useRef((element: HTMLTextAreaElement | null) => {
     textRef.current = element;
     if (!element) return;
@@ -226,6 +227,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       const appliedYouTubeConversion = await applyPendingConversion();
 
       const currentContent = textRef.current?.value || '';
+      const currentDisplayName = nameRef.current?.value.trim() || undefined;
       const currentUrl = urlRef.current?.value.trim() || '';
       const currentOptions = optionsRef.current?.value || '';
       const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
@@ -276,6 +278,7 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       setError(null);
       nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? `/${postOptionsDirectoryCode || params.boardIdentifier || communityAddress}` : null;
       await publishReply({
+        displayName: currentDisplayName,
         content: publishContent,
         ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion),
         ...flagPublishOptions,
@@ -619,14 +622,6 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
   const youtubeThumbnailConversionNotice =
     youtubeThumbnailConversionCountdown !== null ? t('youtube_thumbnail_link_conversion_notice', { count: youtubeThumbnailConversionCountdown }) : null;
 
-  const hasInitializedDisplayName = useRef(false);
-  useEffect(() => {
-    if (displayName && !hasInitializedDisplayName.current) {
-      hasInitializedDisplayName.current = true;
-      setPublishReplyOptions({ displayName });
-    }
-  }, [displayName, setPublishReplyOptions]);
-
   const modalContent = (
     <animated.div
       className={styles.container}
@@ -673,7 +668,9 @@ const ReplyModal = ({ closeModal, locationDraftKey, showReplyModal, parentCid, p
       <div className={styles.replyForm}>
         <div className={styles.name}>
           <input
+            key={account?.id ?? account?.name ?? account?.author?.address}
             type='text'
+            ref={nameRef}
             aria-label={t('name')}
             defaultValue={displayName}
             placeholder={displayName ? undefined : capitalize(t('name'))}
