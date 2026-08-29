@@ -554,7 +554,22 @@ describe('ReplyModal', () => {
     expect(container.textContent).toContain('Spoiler?');
     expect(container.textContent).toContain('posts_last_synced_info:{"time":"ago:1000"}');
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: '>>42\nselected text' });
-    expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ displayName: 'Alice' });
+  });
+
+  it('publishes without the previous account display name after switching to an anonymous account', async () => {
+    await renderReplyModal('/mu/thread/post-1');
+
+    testState.account = { author: { address: 'anonymous-account' } };
+    await rerenderReplyModal('/mu/thread/post-1');
+
+    const nameInput = container.querySelectorAll<HTMLInputElement>('input[type="text"]')[0];
+    const textarea = container.querySelector<HTMLTextAreaElement>('textarea') as HTMLTextAreaElement;
+    expect(nameInput.value).toBe('');
+
+    await dispatchInput(textarea, 'Account switch regression');
+    await clickButtonByText('post');
+
+    expect(testState.publishReplyMock).toHaveBeenCalledWith(expect.objectContaining({ displayName: undefined }));
   });
 
   it('shows Oekaki draw controls on /i/ replies', async () => {
@@ -651,6 +666,7 @@ describe('ReplyModal', () => {
 
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
       content: '>>42\nselected text',
+      displayName: 'Alice',
       challengeRequest: {
         challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },
@@ -677,6 +693,7 @@ describe('ReplyModal', () => {
 
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
       content: '>>42\nselected text',
+      displayName: 'Alice',
       challengeRequest: {
         challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },
@@ -697,6 +714,7 @@ describe('ReplyModal', () => {
 
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
       content: '>>42\nselected text',
+      displayName: 'Alice',
       challengeRequest: {
         challengeAnswers: ['bitsocial-flags:5chan:flag:country:auto'],
       },
@@ -718,7 +736,9 @@ describe('ReplyModal', () => {
     await clickButtonByText('post');
 
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'reply body',
+      displayName: 'Alice',
       flairs: [{ type: 'pol', code: 'AC', text: 'flag:pol:AC' }],
     });
   });
@@ -1041,7 +1061,10 @@ describe('ReplyModal', () => {
     expect(linkInput.value).toBe(thumbnailLink);
     expect(textarea.value).toBe(`reply ${youtubeLink} body`);
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: `reply ${youtubeLink} body`,
+      displayName: 'Alice',
+      flairs: undefined,
       link: thumbnailLink,
     });
   });
@@ -1170,7 +1193,10 @@ describe('ReplyModal', () => {
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: `reply body ${youtubeLink}`,
+      displayName: 'Alice',
+      flairs: undefined,
       link: thumbnailLink,
     });
   });
@@ -1209,7 +1235,10 @@ describe('ReplyModal', () => {
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'reply body[fortune color=#fd4d32]Excellent Luck[/fortune]',
+      displayName: 'Alice',
+      flairs: undefined,
     });
     randomSpy.mockRestore();
   });
@@ -1270,7 +1299,10 @@ describe('ReplyModal', () => {
 
     expect(testState.publishReplyMock).toHaveBeenCalledTimes(1);
     expect(testState.publishReplyMock).toHaveBeenCalledWith({
+      challengeRequest: undefined,
       content: 'silly reply[fortune color=#fd4d32]Excellent Luck[/fortune]',
+      displayName: 'Alice',
+      flairs: undefined,
     });
     expect(testState.setPublishReplyOptionsMock).toHaveBeenCalledWith({ content: 'silly reply' });
     randomSpy.mockRestore();

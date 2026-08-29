@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, type Ref, useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Trans, useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -159,6 +159,7 @@ interface PostFormFieldsProps {
   t: TFunction;
   account: ReturnType<typeof useAccount>;
   displayName: string | undefined;
+  nameRef: Ref<HTMLInputElement>;
   bbcodePreviewContent: string;
   isInPostView: boolean;
   isBbcodePreviewing: boolean;
@@ -216,6 +217,7 @@ const PostFormFields = ({
   t,
   account,
   displayName,
+  nameRef,
   bbcodePreviewContent,
   isInPostView,
   isBbcodePreviewing,
@@ -273,7 +275,9 @@ const PostFormFields = ({
       <td>{t('name')}</td>
       <td>
         <input
+          key={account?.id ?? account?.name ?? account?.author?.address}
           type='text'
+          ref={nameRef}
           aria-label={t('name')}
           placeholder={!displayName ? capitalize(t('anonymous')) : undefined}
           defaultValue={displayName || undefined}
@@ -686,6 +690,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const effectiveBoardAddress = communityAddress || draft.communityAddress || publishPostOptions.communityAddress;
 
   const textRef = useRef<HTMLTextAreaElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
   const urlRef = useRef<HTMLInputElement>(null);
   const subjectRef = useRef<HTMLInputElement>(null);
   const optionsRef = useRef<HTMLInputElement>(null);
@@ -799,6 +804,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       const appliedYouTubeConversion = await applyPendingConversion();
 
       const currentTitle = subjectRef.current?.value.trim() || '';
+      const currentDisplayName = nameRef.current?.value.trim() || undefined;
       const currentContent = textRef.current?.value || '';
       const currentUrl = urlRef.current?.value.trim() || '';
       const currentOptions = optionsRef.current?.value || '';
@@ -862,6 +868,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
       pendingPostBoardPathRef.current = pendingPostBoardPath;
       await publishPost({
+        displayName: currentDisplayName,
         content: publishContent,
         ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
         ...publishOptions,
@@ -960,6 +967,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
       const appliedYouTubeConversion = await applyPendingConversion();
 
       const currentUrl = urlRef.current?.value.trim() || '';
+      const currentDisplayName = nameRef.current?.value.trim() || undefined;
       const currentOptions = optionsRef.current?.value || '';
       const currentOptionsError = getPostOptionsValidationError(currentOptions, postOptionsDirectoryCode);
       const publishContent = getContentWithOptions(textRef.current?.value || '', currentOptions, fortuneEntryRef, diceRollRef, postOptionsDirectoryCode);
@@ -1009,6 +1017,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
 
       nonokoRedirectPathRef.current = hasNonokoOption(currentOptions) ? getBoardIndexPath() : null;
       await publishReply({
+        displayName: currentDisplayName,
         content: publishContent,
         ...getPublishLinkOptions(currentUrl, appliedYouTubeConversion || (hasRestoredDraftRef.current && Boolean(currentUrl))),
         ...flagPublishOptions,
@@ -1094,18 +1103,6 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
   const uploadMode = useMediaHostingStore((state) => state.uploadMode);
   const showUploadControls = getShowUploadControls(uploadMode, isWebRuntime());
 
-  const hasInitializedDisplayName = useRef(false);
-  useEffect(() => {
-    if (displayName && !hasInitializedDisplayName.current) {
-      hasInitializedDisplayName.current = true;
-      if (isInPostView) {
-        setPublishReplyOptions({ displayName });
-      } else {
-        setPublishPostOptions({ displayName });
-      }
-    }
-  }, [displayName, isInPostView, setPublishReplyOptions, setPublishPostOptions]);
-
   return (
     <>
       <table className={styles.postFormTable}>
@@ -1114,6 +1111,7 @@ const PostFormTable = ({ closeForm, draftKey, hideForm, postCid }: { closeForm: 
             t={t}
             account={account}
             displayName={displayName}
+            nameRef={nameRef}
             bbcodePreviewContent={bbcodePreviewContent}
             isInPostView={isInPostView}
             isBbcodePreviewing={isBbcodePreviewing}
