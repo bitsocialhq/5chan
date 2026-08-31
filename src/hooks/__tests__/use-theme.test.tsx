@@ -14,6 +14,7 @@ const testState = vi.hoisted(() => ({
   isSpecialThemeEnabled: false as boolean | null,
   locationPathname: '/trash',
   locationState: null as { pendingPost?: { communityAddress?: string } } | null,
+  liveCommunity: undefined as { features?: { safeForWork?: unknown } } | undefined,
   resolvedAddress: 'off-topic.bso' as string | undefined,
   setIsEnabledMock: vi.fn(),
   setThemeMock: vi.fn().mockResolvedValue(undefined),
@@ -39,6 +40,10 @@ vi.mock('@bitsocial/bitsocial-react-hooks', () => ({
 
 vi.mock('../use-directories', () => ({
   useDirectories: () => testState.directories,
+}));
+
+vi.mock('../use-stable-community', () => ({
+  useCommunityField: <T,>(_address: string | undefined, selector: (community: typeof testState.liveCommunity) => T) => selector(testState.liveCommunity),
 }));
 
 vi.mock('../use-resolved-community-address', () => ({
@@ -94,6 +99,7 @@ describe('useTheme', () => {
     testState.isSpecialThemeEnabled = false;
     testState.locationPathname = `/${TRASH_BOARD_CODE}`;
     testState.locationState = null;
+    testState.liveCommunity = undefined;
     testState.resolvedAddress = TRASH_BOARD_ADDRESS;
     testState.themes = {
       nsfw: 'tomorrow',
@@ -166,5 +172,47 @@ describe('useTheme', () => {
     expect(latestValue?.[0]).toBe('tomorrow');
     expect(document.body.classList.contains('tomorrow')).toBe(true);
     expect(document.body.classList.contains('yotsuba')).toBe(false);
+  });
+
+  it('keeps the nsfw theme when a live community claims to be safe for work on an nsfw directory board', async () => {
+    testState.boardIdentifier = 'b';
+    testState.directories = [{ address: 'random-nsfw.bso', nsfw: true }];
+    testState.liveCommunity = { features: { safeForWork: true } };
+    testState.locationPathname = '/b';
+    testState.resolvedAddress = 'random-nsfw.bso';
+
+    await renderHook();
+
+    expect(latestValue?.[0]).toBe('tomorrow');
+
+    await act(async () => {
+      await latestValue?.[1]('photon');
+    });
+
+    expect(testState.setThemeMock).toHaveBeenCalledWith('nsfw', 'photon');
+  });
+
+  it('uses the nsfw theme for a board outside the directory that declares itself not safe for work', async () => {
+    testState.boardIdentifier = 'unlisted';
+    testState.directories = [];
+    testState.liveCommunity = { features: { safeForWork: false } };
+    testState.locationPathname = '/unlisted.bso';
+    testState.resolvedAddress = 'unlisted.bso';
+
+    await renderHook();
+
+    expect(latestValue?.[0]).toBe('tomorrow');
+  });
+
+  it('keeps the sfw theme for a board outside the directory that declares nothing', async () => {
+    testState.boardIdentifier = 'unlisted';
+    testState.directories = [];
+    testState.liveCommunity = { features: { safeForWork: 'false' } };
+    testState.locationPathname = '/unlisted.bso';
+    testState.resolvedAddress = 'unlisted.bso';
+
+    await renderHook();
+
+    expect(latestValue?.[0]).toBe('yotsuba-b');
   });
 });

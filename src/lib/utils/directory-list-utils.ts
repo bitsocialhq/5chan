@@ -165,8 +165,13 @@ export const normalizeDirectoryDefaultsData = (raw: unknown): DirectoryDefaultsD
   };
 };
 
-const deriveNsfw = (value: { nsfw?: unknown; features?: { nsfw?: boolean; safeForWork?: boolean } }): boolean | undefined => {
-  const features = value.features;
+/**
+ * The one place `features.safeForWork` is read and inverted into `nsfw` polarity.
+ * Only a real boolean declares the setting, so `'true'`, `null`, `0` and `{}` all mean undeclared
+ * and yield `undefined`. Callers decide what an undeclared community means.
+ */
+const deriveNsfw = (value: { nsfw?: unknown; features?: unknown }): boolean | undefined => {
+  const features = isRecord(value.features) ? value.features : undefined;
   const safeForWork = typeof features?.safeForWork === 'boolean' ? features.safeForWork : undefined;
   if (safeForWork !== undefined) {
     return !safeForWork;
@@ -174,6 +179,29 @@ const deriveNsfw = (value: { nsfw?: unknown; features?: { nsfw?: boolean; safeFo
   const featuresNsfw = typeof features?.nsfw === 'boolean' ? features.nsfw : undefined;
   const topLevelNsfw = typeof value.nsfw === 'boolean' ? value.nsfw : undefined;
   return topLevelNsfw ?? featuresNsfw;
+};
+
+/**
+ * Three-state NSFW verdict for one community: `true`, `false`, or `undefined` when neither the
+ * protocol nor the curated directory declared it.
+ *
+ * `community` is a live community resolved from the protocol; `directoryEntry` is the curated
+ * verdict already derived from `5chan-directories-defaults.json`. Both go through `deriveNsfw`,
+ * so the `typeof === 'boolean'` guard and the `safeForWork -> nsfw` inversion exist exactly once.
+ *
+ * NSFW only escalates: whichever side says NSFW wins, and the live setting is the fallback only
+ * where the directory has nothing to say. `features.safeForWork` is an editable community setting,
+ * so letting it override the curated directory would let a board opt itself out of the NSFW theme,
+ * favicon and feed filter. Escalation still works in the useful direction: a board the directory
+ * does not cover, or covers as SFW, becomes NSFW as soon as the protocol says so.
+ */
+export const deriveCommunityNsfw = (community?: { features?: unknown } | null, directoryEntry?: { nsfw?: unknown } | null): boolean | undefined => {
+  const communityNsfw = deriveNsfw({ features: community?.features });
+  const directoryNsfw = deriveNsfw({ nsfw: directoryEntry?.nsfw });
+  if (communityNsfw === true || directoryNsfw === true) {
+    return true;
+  }
+  return communityNsfw ?? directoryNsfw;
 };
 
 export const toCanonicalCommunity = (value: {

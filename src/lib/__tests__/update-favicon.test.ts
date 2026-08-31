@@ -108,4 +108,26 @@ describe('update-favicon', () => {
       }),
     ).toBe(false);
   });
+
+  it('prefers the derived community verdict over the directory lookup', async () => {
+    const { isSfwBoard } = await import('../update-favicon');
+
+    const base = {
+      pathname: '/flash.eth',
+      isSpecialTheme: false,
+      isInAllView: false,
+      isInSubscriptionsView: false,
+      isInModView: false,
+      communityAddress: 'flash.eth',
+    };
+
+    // An undeclared board stays on the directory verdict.
+    expect(isSfwBoard({ ...base, communityNsfw: undefined, directories: [{ address: 'flash.eth', nsfw: true }] })).toBe(false);
+
+    // A board outside the directory that the protocol declares NSFW is no longer treated as sfw.
+    expect(isSfwBoard({ ...base, communityNsfw: true, directories: [] })).toBe(false);
+
+    // A declared-sfw verdict is still sfw.
+    expect(isSfwBoard({ ...base, communityNsfw: false, directories: [] })).toBe(true);
+  });
 });

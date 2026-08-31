@@ -12,6 +12,8 @@ import { isSfwBoard, updateFavicon } from '../lib/update-favicon';
 import { getCommentCommunityAddress } from '../lib/utils/comment-utils';
 import { normalizeAccountCommentIndex } from '../lib/utils/account-comment-index-utils';
 import { getPendingPostRoutePost } from '../lib/utils/pending-post-route-state';
+import { deriveCommunityNsfw } from '../lib/utils/directory-list-utils';
+import { useCommunityField } from './use-stable-community';
 
 const themeClasses = ['yotsuba', 'yotsuba-b', 'futaba', 'burichan', 'tomorrow', 'photon', 'spooky'];
 
@@ -50,6 +52,12 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
   const communityAddress = resolvedAddress || pendingPostCommunityAddress || routePendingPostCommunityAddress || routeIdentifier;
   const activeSpecialTheme = getActiveSpecialTheme();
 
+  // Select the primitive rather than the whole `features` object: pkc-js replaces the community on
+  // every loading tick, so subscribing to an object would rerender the app shell on each one.
+  const liveSafeForWork = useCommunityField(communityAddress, (community) => community?.features?.safeForWork);
+  const directoryEntry = communityAddress ? directories.find((entry) => entry.address === communityAddress) : undefined;
+  const communityNsfw = deriveCommunityNsfw({ features: { safeForWork: liveSafeForWork } }, directoryEntry);
+
   useEffect(() => {
     if (activeSpecialTheme && isEnabled === null && communityAddress && !isInAllView && !isInSubscriptionsView && !isInModView) {
       setIsEnabled(true);
@@ -75,9 +83,8 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
     if (isMultiboardView) {
       storedTheme = themes.nsfw;
     } else if (communityAddress) {
-      const community = directories.find((entry) => entry.address === communityAddress);
       const specialBoard = getSpecialBoardByAddress(communityAddress);
-      if (community?.nsfw || specialBoard?.nsfw) {
+      if (communityNsfw || specialBoard?.nsfw) {
         storedTheme = themes.nsfw;
       } else {
         storedTheme = themes.sfw;
@@ -85,7 +92,7 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
     }
 
     return storedTheme || 'yotsuba';
-  }, [location.pathname, isEnabled, activeSpecialTheme, isMultiboardView, communityAddress, directories, themes]);
+  }, [location.pathname, isEnabled, activeSpecialTheme, isMultiboardView, communityAddress, communityNsfw, themes]);
 
   const sfw = isSfwBoard({
     pathname: location.pathname,
@@ -94,6 +101,7 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
     isInSubscriptionsView,
     isInModView,
     communityAddress,
+    communityNsfw,
     directories,
   });
 
@@ -113,16 +121,15 @@ const useTheme = ({ applyDocumentEffects = false }: UseThemeOptions = {}): [stri
       if (isMultiboardView) {
         await setThemeStore('nsfw', newTheme);
       } else if (communityAddress) {
-        const community = directories.find((entry) => entry.address === communityAddress);
         const specialBoard = getSpecialBoardByAddress(communityAddress);
-        if (community?.nsfw || specialBoard?.nsfw) {
+        if (communityNsfw || specialBoard?.nsfw) {
           await setThemeStore('nsfw', newTheme);
         } else {
           await setThemeStore('sfw', newTheme);
         }
       }
     },
-    [isMultiboardView, communityAddress, directories, setThemeStore],
+    [isMultiboardView, communityAddress, communityNsfw, setThemeStore],
   );
 
   return [currentTheme, setCommunityTheme];

@@ -48,6 +48,10 @@ export const updateFavicon = (variant: FaviconVariant): void => {
 /**
  * Determine whether the current navigation context is a SFW board.
  *
+ * `communityNsfw` is the already-derived verdict from `deriveCommunityNsfw` when the caller has
+ * one; it takes precedence over the directory lookup because it already folds that lookup in.
+ * Callers without a live community can omit it and keep the directory-only behaviour.
+ *
  * Pure function — no hooks, no side-effects, fully testable.
  */
 export const isSfwBoard = ({
@@ -57,6 +61,7 @@ export const isSfwBoard = ({
   isInSubscriptionsView,
   isInModView,
   communityAddress,
+  communityNsfw,
   directories,
 }: {
   pathname: string;
@@ -65,6 +70,7 @@ export const isSfwBoard = ({
   isInSubscriptionsView: boolean;
   isInModView: boolean;
   communityAddress: string | undefined;
+  communityNsfw?: boolean;
   directories: { address: string; nsfw?: boolean }[];
 }): boolean => {
   if (pathname === '/' || pathname.startsWith('/rules')) return false;
@@ -77,5 +83,5 @@ export const isSfwBoard = ({
   const specialBoard = getSpecialBoardByAddress(communityAddress);
   if (specialBoard) return !specialBoard.nsfw;
 
-  return !entry?.nsfw;
+  return !(communityNsfw ?? entry?.nsfw);
 };
