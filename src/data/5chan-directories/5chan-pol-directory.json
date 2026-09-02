@@ -4,16 +4,17 @@
   "updatedAt": 1779212075,
   "boards": [
     {
+      "address": "nothing-is-beyond-our-reach.bso",
+      "publicKey": "12D3KooWDpiDmJCGKbXB3RJFfATmRMzmwTkjimBvf8xKZmUx2L1P",
+      "score": 1,
+      "addedAt": 1779212075,
+      "owner": "bitsocialist.bso"
+    },
+    {
       "address": "politically-incorrect.bso",
       "publicKey": "12D3KooWMVob74DQoTLGZ4B8kWgPwDfbtiWqdJE4DrGtf2rmVw36",
       "addedAt": 1779182014,
       "owner": "rinse12.bso"
-    },
-    {
-      "address": "nothing-is-beyond-our-reach.bso",
-      "publicKey": "12D3KooWDpiDmJCGKbXB3RJFfATmRMzmwTkjimBvf8xKZmUx2L1P",
-      "addedAt": 1779212075,
-      "owner": "bitsocialist.bso"
     }
   ]
 }

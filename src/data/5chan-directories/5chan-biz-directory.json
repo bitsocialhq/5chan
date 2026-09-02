@@ -4,16 +4,17 @@
   "updatedAt": 1779212075,
   "boards": [
     {
+      "address": "bizraelis.bso",
+      "publicKey": "12D3KooWR7nTdKZqZ1twGWMfVsXYDGp1XAKUrnYznKP651jFrizE",
+      "score": 1,
+      "addedAt": 1779212075,
+      "owner": "bitsocialist.bso"
+    },
+    {
       "address": "business-and-finance.bso",
       "publicKey": "12D3KooWNMybS8JqELi38ZBX897PrjWbCrGoMKfw3bgoqzC2n1Dh",
       "addedAt": 1779182014,
       "owner": "rinse12.bso"
-    },
-    {
-      "address": "bizraelis.bso",
-      "publicKey": "12D3KooWR7nTdKZqZ1twGWMfVsXYDGp1XAKUrnYznKP651jFrizE",
-      "addedAt": 1779212075,
-      "owner": "bitsocialist.bso"
     }
   ]
 }
