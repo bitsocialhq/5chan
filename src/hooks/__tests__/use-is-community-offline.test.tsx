@@ -274,7 +274,7 @@ describe('useIsCommunityOffline', () => {
     });
   });
 
-  it('keeps stale cached boards offline while synchronization is retrying', async () => {
+  it('keeps stale cached boards loading while synchronization is retrying', async () => {
     const staleUpdatedAt = 1_704_067_210 - 31 * 60;
     testState.communityOfflineState = {
       'music.eth': {
@@ -286,10 +286,29 @@ describe('useIsCommunityOffline', () => {
     await renderHook({ address: 'music.eth', state: 'succeeded', syncState: 'retrying', hasCachedData: true, updatedAt: staleUpdatedAt });
 
     expect(latestValue).toEqual({
-      isOffline: true,
-      isOnlineStatusLoading: false,
-      offlineIconClass: 'redOfflineIcon',
-      offlineTitle: `posts_last_synced_info:ago:${staleUpdatedAt}`,
+      isOffline: false,
+      isOnlineStatusLoading: true,
+      offlineIconClass: 'yellowOfflineIcon',
+      offlineTitle: 'downloading board...',
+    });
+  });
+
+  it('keeps stale cached boards loading through the initial refresh grace period', async () => {
+    const staleUpdatedAt = 1_704_067_210 - 31 * 60;
+    testState.communityOfflineState = {
+      'music.eth': {
+        initialLoad: true,
+        updatedAt: staleUpdatedAt,
+      },
+    };
+
+    await renderHook({ address: 'music.eth', state: 'succeeded', syncState: 'succeeded', hasCachedData: true, updatedAt: staleUpdatedAt });
+
+    expect(latestValue).toEqual({
+      isOffline: false,
+      isOnlineStatusLoading: true,
+      offlineIconClass: 'yellowOfflineIcon',
+      offlineTitle: 'downloading board...',
     });
   });
 
