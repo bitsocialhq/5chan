@@ -28,6 +28,16 @@ If uncertain, ask the developer before adding an entry.
 
 ## Entries
 
+### Yarn Berry never runs `pre*`/`post*` hooks on user-defined scripts
+
+- **Date:** 2026-09-02
+- **Observed by:** Tommaso + Claude
+- **Context:** Investigating why the vendored directory mirror in `src/data/5chan-directories/` went stale (it lacked `/r/` until a manual `yarn sync:directories`) even though `package.json` had `prebuild`/`prestart` entries that called `sync:directories` and `generate:assets`.
+- **What was surprising:** This repo uses Corepack-managed Yarn 4 (Berry), which by design does not run npm-style `pre<script>`/`post<script>` hooks for user-defined scripts; it only honours `preinstall`/`install`/`postinstall`, `prepack`/`postpack`, and `prepublish`. `yarn build` went straight to `vite build` and `yarn start` straight to the dev server, so the "automatic" sync and asset generation never ran locally, in CI, on Vercel, or in Electron/Android builds. The entries still work when invoked by name (`yarn run prebuild`), which makes them look alive.
+- **Impact:** The committed mirror is exactly what ships; upstream directory changes only reached users when someone ran the sync by hand. Any future `pre*`/`post*` entry for a custom script is silently ignored the same way.
+- **Mitigation:** Compose lifecycle intent explicitly: `refresh:generated` runs `sync:directories` and `generate:assets`, and `build` and `start` invoke it as their first step (`corepack yarn refresh:generated && ...`); `scripts/start-android-usb.mjs` calls the same script. Never add `pre*`/`post*` entries for custom scripts in this repo; chain the step into the script itself or into the orchestrating Node script.
+- **Status:** confirmed
+
 ### Agent verification can saturate contributor laptops
 
 - **Date:** 2026-08-26

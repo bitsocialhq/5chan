@@ -14,16 +14,16 @@ function fail(message) {
   process.exit(1);
 }
 
-function runPrestart() {
-  const pre = spawnSync('corepack', ['yarn', 'run', 'prestart'], {
+function refreshGeneratedSources() {
+  const refresh = spawnSync('corepack', ['yarn', 'run', 'refresh:generated'], {
     cwd: repoRoot,
     encoding: 'utf8',
     stdio: 'inherit',
     env: process.env,
   });
 
-  if (pre.status !== 0) {
-    fail(`prestart failed with exit code ${pre.status ?? 'unknown'}`);
+  if (refresh.status !== 0) {
+    fail(`refresh:generated failed with exit code ${refresh.status ?? 'unknown'}`);
   }
 }
 
@@ -83,7 +83,7 @@ function openPreviewOnDevices(devices, url) {
   }
 }
 
-runPrestart();
+refreshGeneratedSources();
 
 const devices = getReadyDevices();
 const port = await resolvePort(requestedPort);

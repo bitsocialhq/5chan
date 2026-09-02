@@ -36,7 +36,8 @@ const fetchWithTimeout = async (url, asJson) => {
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    return asJson ? response.json() : response.text();
+    // `await` keeps the abort timer armed while the body streams; a bare `return` would clear it in `finally` first.
+    return await (asJson ? response.json() : response.text());
   } finally {
     clearTimeout(timeout);
   }
