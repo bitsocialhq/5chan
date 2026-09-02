@@ -865,6 +865,12 @@ describe('ReplyModal', () => {
     expect(container.textContent).toContain('error: expiring_media_link_alert:{"domain":"temp.sh"}');
     expect(testState.publishReplyMock).not.toHaveBeenCalled();
 
+    await dispatchInput(linkInput, 'https://media.example.com/file.png?X-Amz-Expires=3600&X-Amz-Signature=signature');
+    await clickButtonByText('post');
+
+    expect(container.textContent).toContain('error: expiring_media_link_alert:{"domain":"media.example.com"}');
+    expect(testState.publishReplyMock).not.toHaveBeenCalled();
+
     await dispatchInput(linkInput, 'https://example.com/file.png');
     await clickButtonByText('post');
 

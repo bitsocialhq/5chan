@@ -76,6 +76,45 @@ describe('url-utils', () => {
     expect(getExpiringMediaLinkHostname('not-a-url')).toBeNull();
   });
 
+  it.each([
+    '0x0.st',
+    'bashupload.app',
+    'file.io',
+    'upload.ee',
+    'wetransfer.com',
+    'we.tl',
+    'filemail.com',
+    'send.vis.ee',
+    'oshi.at',
+    'gofile.io',
+    'hotimg.com',
+    'uploadir.com',
+    'sendspace.com',
+  ])('detects temporary-by-default media host %s', (hostname) => {
+    expect(getExpiringMediaLinkHostname(`https://${hostname}/temporary-image.jpg`)).toBe(hostname);
+    expect(getExpiringMediaLinkHostname(`https://cdn.${hostname}/temporary-image.jpg`)).toBe(hostname);
+  });
+
+  it('detects signed media URLs with explicit expiration', () => {
+    expect(getExpiringMediaLinkHostname('https://cdn.discordapp.com/attachments/123/456/image.png?ex=123&is=456&hm=signature')).toBe('cdn.discordapp.com');
+    expect(getExpiringMediaLinkHostname('https://media.discordapp.net/ephemeral-attachments/123/456/image.png?ex=123&is=456&hm=signature')).toBe('media.discordapp.net');
+    expect(getExpiringMediaLinkHostname('https://media.example.com/image.jpg?X-Amz-Expires=3600&X-Amz-Signature=signature')).toBe('media.example.com');
+    expect(getExpiringMediaLinkHostname('https://storage.googleapis.com/bucket/image.jpg?X-Goog-Expires=3600&X-Goog-Signature=signature')).toBe('storage.googleapis.com');
+    expect(getExpiringMediaLinkHostname('https://account.blob.core.windows.net/container/image.jpg?se=2026-09-02T12%3A00%3A00Z&sig=signature')).toBe(
+      'account.blob.core.windows.net',
+    );
+  });
+
+  it('allows permanent hosts and URLs that merely resemble signed links', () => {
+    expect(getExpiringMediaLinkHostname('https://files.catbox.moe/permanent.png')).toBeNull();
+    expect(getExpiringMediaLinkHostname('https://i.postimg.cc/example/permanent.png')).toBeNull();
+    expect(getExpiringMediaLinkHostname('https://i.ibb.co/example/permanent.png')).toBeNull();
+    expect(getExpiringMediaLinkHostname('https://cdn.discordapp.com/avatars/123/avatar.png?size=128')).toBeNull();
+    expect(getExpiringMediaLinkHostname('https://cdn.discordapp.com/attachments/123/456/legacy.png')).toBeNull();
+    expect(getExpiringMediaLinkHostname('https://example.com/image.jpg?se=tomorrow&sig=signature')).toBeNull();
+    expect(getExpiringMediaLinkHostname('https://media.example.com/image.jpg?X-Amz-Expires=3600')).toBeNull();
+  });
+
   it('copies path-based share links for threads and catalog pages using the share subdomain', async () => {
     await copyShareLinkToClipboard('music.eth', 'thread', 'cid-123');
     expect(testState.copyToClipboardMock).toHaveBeenCalledWith('https://s.5chan.app/music.eth/thread/cid-123');
