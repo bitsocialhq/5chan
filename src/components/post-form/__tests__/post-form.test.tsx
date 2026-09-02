@@ -742,10 +742,10 @@ describe('PostForm', () => {
     expect(testState.publishPostMock).not.toHaveBeenCalled();
 
     await dispatchInput(textarea as HTMLTextAreaElement, 'A valid body');
-    await dispatchInput(linkInput as HTMLInputElement, 'https://i.4cdn.org/gif/file.jpg');
+    await dispatchInput(linkInput as HTMLInputElement, 'https://litter.catbox.moe/4p9wb8r6429l8n9s.jpg');
     await clickByText(table as HTMLTableElement, 'post');
     expect(globalThis.alert).not.toHaveBeenCalled();
-    expect(container.textContent).toContain('error: expiring_media_link_alert:i.4cdn.org');
+    expect(container.textContent).toContain('error: expiring_media_link_alert:litter.catbox.moe');
     expect(testState.publishPostMock).not.toHaveBeenCalled();
 
     await dispatchInput(linkInput as HTMLInputElement, '');

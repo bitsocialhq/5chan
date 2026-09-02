@@ -65,9 +65,13 @@ describe('url-utils', () => {
 
   it('detects publish media hosts with temporary links', () => {
     expect(getExpiringMediaLinkHostname('https://i.4cdn.org/gif/1712345678900.jpg')).toBe('i.4cdn.org');
+    expect(getExpiringMediaLinkHostname('https://litter.catbox.moe/4p9wb8r6429l8n9s.jpg')).toBe('litter.catbox.moe');
+    expect(getExpiringMediaLinkHostname('https://cdn.litter.catbox.moe/example.png')).toBe('litter.catbox.moe');
     expect(getExpiringMediaLinkHostname('http://litterbox.catbox.moe/u/example.png')).toBe('litterbox.catbox.moe');
     expect(getExpiringMediaLinkHostname('https://www.tmpfiles.org/dl/123/file.mp4')).toBe('tmpfiles.org');
     expect(getExpiringMediaLinkHostname('https://cdn.file.kiwi/example')).toBe('file.kiwi');
+    expect(getExpiringMediaLinkHostname('https://files.catbox.moe/permanent.png')).toBeNull();
+    expect(getExpiringMediaLinkHostname('https://i.postimg.cc/example/permanent.png')).toBeNull();
     expect(getExpiringMediaLinkHostname('https://example.com/file.png')).toBeNull();
     expect(getExpiringMediaLinkHostname('not-a-url')).toBeNull();
   });

@@ -70,7 +70,8 @@ export const normalizePublishURL = (url: string) => {
 const EXPIRING_MEDIA_LINK_HOSTNAMES = [
   // 4chan CDN media disappears when threads are pruned, usually after a few hours or days.
   'i.4cdn.org',
-  // Litterbox temporary uploads can expire after 1 hour, 12 hours, 1 day, or 3 days.
+  // Litterbox temporary uploads are served from litter.catbox.moe and can expire after 1 hour, 12 hours, 1 day, or 3 days.
+  'litter.catbox.moe',
   'litterbox.catbox.moe',
   // tmpfiles.org uploads expire after 60 minutes, 6 hours, 12 hours, or 24 hours.
   'tmpfiles.org',
